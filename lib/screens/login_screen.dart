@@ -102,6 +102,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Company Name',
+                        prefixIcon: Icon(Icons.business),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your company name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
                   ],
                   TextFormField(
                     controller: _emailController,
@@ -138,7 +151,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
+                  if (_isLogin) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed('/forgot-password');
+                        },
+                        child: Text(
+                          'Forgot password?',
+                          style: TextStyle(color: AppTheme.deepGreen),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
                   if (appState.error != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),

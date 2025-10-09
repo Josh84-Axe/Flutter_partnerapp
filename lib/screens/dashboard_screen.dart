@@ -36,7 +36,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {
+            Navigator.of(context).pushNamed('/settings');
+          },
+        ),
         actions: [
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/notifications');
+                },
+              ),
+              if (appState.unreadNotificationCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppTheme.errorRed,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '${appState.unreadNotificationCount}',
+                      style: const TextStyle(
+                        color: AppTheme.pureWhite,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => appState.loadDashboardData(),
@@ -49,7 +90,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           padding: const EdgeInsets.all(16.0),
           children: [
             Text(
-              'Welcome, ${appState.currentUser?.name ?? 'Partner'}!',
+              'Welcome back, ${appState.currentUser?.name ?? 'Partner'}!',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
@@ -61,7 +102,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             MetricCard(
               title: 'Total Revenue',
               value: MetricCard.formatCurrency(totalRevenue),
-              icon: Icons.attach_money,
+              icon: Icons.paid,
               accentColor: AppTheme.deepGreen,
               isLoading: appState.isLoading,
             ),
@@ -69,7 +110,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             MetricCard(
               title: 'Active Users',
               value: MetricCard.formatNumber(activeUsers),
-              icon: Icons.people,
+              icon: Icons.group,
               accentColor: AppTheme.lightGreen,
               isLoading: appState.isLoading,
             ),
@@ -77,7 +118,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             MetricCard(
               title: 'Data Usage',
               value: '${totalDataUsage.toStringAsFixed(1)} GB',
-              icon: Icons.data_usage,
+              icon: Icons.wifi,
               accentColor: AppTheme.softGold,
               isLoading: appState.isLoading,
             ),
