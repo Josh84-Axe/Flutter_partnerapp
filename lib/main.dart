@@ -2,17 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'utils/app_theme.dart';
 import 'providers/app_state.dart';
+import 'providers/theme_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/users_screen.dart';
 import 'screens/plans_screen.dart';
 import 'screens/transactions_screen.dart';
 import 'screens/health_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/notifications_screen.dart';
+import 'screens/language_screen.dart';
+import 'screens/forgot_password_screen.dart';
+import 'screens/reset_email_sent_screen.dart';
+import 'screens/set_new_password_screen.dart';
+import 'screens/password_success_screen.dart';
+import 'screens/profiles_screen.dart';
+import 'screens/router_details_screen.dart';
+import 'screens/support_screen.dart';
+import 'screens/bulk_actions_screen.dart';
+import 'screens/hotspot_user_screen.dart';
+import 'screens/configurations_screen.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AppState(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppState()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
       child: const HotspotPartnerApp(),
     ),
   );
@@ -23,14 +40,42 @@ class HotspotPartnerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    
     return MaterialApp(
       title: 'Hotspot Partner',
-      theme: AppTheme.theme,
+      theme: themeProvider.currentTheme,
       debugShowCheckedModeBanner: false,
       home: const AuthWrapper(),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
+        '/settings': (context) => const SettingsScreen(),
+        '/notifications': (context) => const NotificationsScreen(),
+        '/language': (context) => const LanguageScreen(),
+        '/forgot-password': (context) => const ForgotPasswordScreen(),
+        '/reset-email-sent': (context) => const ResetEmailSentScreen(),
+        '/set-new-password': (context) => const SetNewPasswordScreen(),
+        '/password-success': (context) => const PasswordSuccessScreen(),
+        '/profiles': (context) => const ProfilesScreen(),
+        '/support': (context) => const SupportScreen(),
+        '/bulk-actions': (context) => const BulkActionsScreen(),
+        '/hotspot-user': (context) => const HotspotUserScreen(),
+        '/configurations': (context) => const ConfigurationsScreen(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/router-details') {
+          final router = settings.arguments;
+          return MaterialPageRoute(
+            builder: (context) => RouterDetailsScreen(router: router as dynamic),
+          );
+        }
+        if (settings.name == '/profile-editor') {
+          return MaterialPageRoute(
+            builder: (context) => const ProfilesScreen(),
+          );
+        }
+        return null;
       },
     );
   }
@@ -115,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.router),
-            label: 'Health',
+            label: 'Router',
           ),
         ],
       ),
@@ -125,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             DrawerHeader(
               decoration: const BoxDecoration(
-                color: AppTheme.deepGreen,
+                color: AppTheme.primaryGreen,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Icon(
                       Icons.person,
                       size: 40,
-                      color: AppTheme.deepGreen,
+                      color: AppTheme.primaryGreen,
                     ),
                   ),
                   const SizedBox(height: 12),

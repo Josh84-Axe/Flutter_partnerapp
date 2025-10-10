@@ -32,12 +32,12 @@ class MetricCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: (accentColor ?? AppTheme.deepGreen).withOpacity(0.1),
+                    color: (accentColor ?? AppTheme.primaryGreen).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     icon,
-                    color: accentColor ?? AppTheme.deepGreen,
+                    color: accentColor ?? AppTheme.primaryGreen,
                     size: 24,
                   ),
                 ),
@@ -59,7 +59,7 @@ class MetricCard extends StatelessWidget {
               Text(
                 value,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: accentColor ?? AppTheme.deepGreen,
+                      color: accentColor ?? AppTheme.primaryGreen,
                       fontWeight: FontWeight.bold,
                     ),
               ),

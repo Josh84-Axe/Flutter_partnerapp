@@ -68,13 +68,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   Icon(
                     Icons.router,
                     size: 80,
-                    color: AppTheme.deepGreen,
+                    color: AppTheme.primaryGreen,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Hotspot Partner',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: AppTheme.deepGreen,
+                          color: AppTheme.primaryGreen,
                         ),
                     textAlign: TextAlign.center,
                   ),
@@ -97,6 +97,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Company Name',
+                        prefixIcon: Icon(Icons.business),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your company name';
                         }
                         return null;
                       },
@@ -138,7 +151,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
+                  if (_isLogin) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed('/forgot-password');
+                        },
+                        child: Text(
+                          'Forgot password?',
+                          style: TextStyle(color: AppTheme.primaryGreen),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
                   if (appState.error != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
@@ -178,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _isLogin
                           ? 'Don\'t have an account? Register'
                           : 'Already have an account? Login',
-                      style: TextStyle(color: AppTheme.deepGreen),
+                      style: TextStyle(color: AppTheme.primaryGreen),
                     ),
                   ),
                 ],
