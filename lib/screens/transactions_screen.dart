@@ -135,7 +135,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppTheme.deepGreen, AppTheme.lightGreen],
+                        colors: [AppTheme.primaryGreen, AppTheme.lightGreen],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -224,7 +224,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     icon: const Icon(Icons.payments, size: 18),
                     label: const Text('Withdraw'),
                     style: TextButton.styleFrom(
-                      foregroundColor: AppTheme.deepGreen,
+                      foregroundColor: AppTheme.primaryGreen,
                     ),
                   ),
                 ],
@@ -315,7 +315,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ListTile(
               title: const Text('All Time'),
               trailing: _selectedDateRange == 'All Time'
-                  ? const Icon(Icons.check, color: AppTheme.deepGreen)
+                  ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
               onTap: () {
                 setState(() {
@@ -327,7 +327,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ListTile(
               title: const Text('Last 7 Days'),
               trailing: _selectedDateRange == 'Last 7 Days'
-                  ? const Icon(Icons.check, color: AppTheme.deepGreen)
+                  ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
               onTap: () {
                 setState(() {
@@ -339,7 +339,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ListTile(
               title: const Text('Last 30 Days'),
               trailing: _selectedDateRange == 'Last 30 Days'
-                  ? const Icon(Icons.check, color: AppTheme.deepGreen)
+                  ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
               onTap: () {
                 setState(() {
@@ -351,7 +351,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ListTile(
               title: const Text('This Month'),
               trailing: _selectedDateRange == 'This Month'
-                  ? const Icon(Icons.check, color: AppTheme.deepGreen)
+                  ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
               onTap: () {
                 setState(() {
@@ -376,7 +376,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ListTile(
               title: const Text('All Transactions'),
               trailing: _selectedType == 'All'
-                  ? const Icon(Icons.check, color: AppTheme.deepGreen)
+                  ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
               onTap: () {
                 setState(() {
@@ -388,7 +388,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ListTile(
               title: const Text('Revenue'),
               trailing: _selectedType == 'Revenue'
-                  ? const Icon(Icons.check, color: AppTheme.deepGreen)
+                  ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
               onTap: () {
                 setState(() {
@@ -400,7 +400,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ListTile(
               title: const Text('Payout'),
               trailing: _selectedType == 'Payout'
-                  ? const Icon(Icons.check, color: AppTheme.deepGreen)
+                  ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
               onTap: () {
                 setState(() {

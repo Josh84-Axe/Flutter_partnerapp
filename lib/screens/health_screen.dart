@@ -64,7 +64,7 @@ class _HealthScreenState extends State<HealthScreen> {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: isBlocked ? AppTheme.deepGreen : Colors.red,
+              backgroundColor: isBlocked ? AppTheme.primaryGreen : Colors.red,
             ),
             child: Text(isBlocked ? 'Unblock' : 'Block'),
           ),
@@ -132,13 +132,13 @@ class _HealthScreenState extends State<HealthScreen> {
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
                                       color: isOnline
-                                          ? AppTheme.deepGreen.withOpacity(0.1)
+                                          ? AppTheme.primaryGreen.withOpacity(0.1)
                                           : AppTheme.errorRed.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Icon(
                                       isOnline ? Icons.wifi : Icons.wifi_off,
-                                      color: isOnline ? AppTheme.deepGreen : AppTheme.errorRed,
+                                      color: isOnline ? AppTheme.primaryGreen : AppTheme.errorRed,
                                       size: 24,
                                     ),
                                   ),
@@ -338,7 +338,7 @@ class _HealthScreenState extends State<HealthScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.settings, color: AppTheme.deepGreen),
+              leading: const Icon(Icons.settings, color: AppTheme.primaryGreen),
               title: const Text('Configure'),
               onTap: () {
                 Navigator.pop(context);

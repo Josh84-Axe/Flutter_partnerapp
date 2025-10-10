@@ -60,7 +60,7 @@ class ResetEmailSentScreen extends StatelessWidget {
                 },
                 child: Text(
                   'Didn\'t receive the email? Resend',
-                  style: TextStyle(color: AppTheme.deepGreen),
+                  style: TextStyle(color: AppTheme.primaryGreen),
                 ),
               ),
             ],

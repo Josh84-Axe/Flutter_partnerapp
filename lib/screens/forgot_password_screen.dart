@@ -46,7 +46,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 Icon(
                   Icons.lock_reset,
                   size: 80,
-                  color: AppTheme.deepGreen,
+                  color: AppTheme.primaryGreen,
                 ),
                 const SizedBox(height: 24),
                 Text(

@@ -36,6 +36,8 @@ class _PlansScreenState extends State<PlansScreen> {
     final dataController = TextEditingController();
     final validityController = TextEditingController();
     final speedController = TextEditingController();
+    final deviceController = TextEditingController(text: '1');
+    String selectedProfile = 'Basic';
 
     showDialog(
       context: context,
@@ -85,6 +87,31 @@ class _PlansScreenState extends State<PlansScreen> {
                 ),
                 keyboardType: TextInputType.number,
               ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: deviceController,
+                decoration: const InputDecoration(
+                  labelText: 'Device Allowed',
+                  suffixText: 'devices',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: selectedProfile,
+                decoration: const InputDecoration(
+                  labelText: 'User Profile (Predefined)',
+                ),
+                items: ['Basic', 'Standard', 'Premium', 'Ultra']
+                    .map((profile) => DropdownMenuItem(
+                          value: profile,
+                          child: Text(profile),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  selectedProfile = value!;
+                },
+              ),
             ],
           ),
         ),
@@ -101,6 +128,8 @@ class _PlansScreenState extends State<PlansScreen> {
                 'dataLimitGB': int.parse(dataController.text),
                 'validityDays': int.parse(validityController.text),
                 'speedMbps': int.parse(speedController.text),
+                'deviceAllowed': int.parse(deviceController.text),
+                'userProfile': selectedProfile,
               };
 
               context.read<AppState>().createPlan(data);
@@ -243,7 +272,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                       Text(
                                         MetricCard.formatCurrency(plan.price),
                                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                              color: AppTheme.deepGreen,
+                                              color: AppTheme.primaryGreen,
                                               fontWeight: FontWeight.bold,
                                             ),
                                       ),
@@ -290,7 +319,7 @@ class _PlansScreenState extends State<PlansScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showCreatePlanDialog,
-        backgroundColor: AppTheme.deepGreen,
+        backgroundColor: AppTheme.primaryGreen,
         child: const Icon(Icons.add),
       ),
     );
@@ -302,10 +331,10 @@ class _PlansScreenState extends State<PlansScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppTheme.deepGreen.withOpacity(0.1),
+            color: AppTheme.primaryGreen.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 20, color: AppTheme.deepGreen),
+          child: Icon(icon, size: 20, color: AppTheme.primaryGreen),
         ),
         const SizedBox(width: 12),
         Expanded(

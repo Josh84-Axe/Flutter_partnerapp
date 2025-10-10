@@ -81,7 +81,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   color: isSelected
-                      ? AppTheme.deepGreen.withOpacity(0.1)
+                      ? AppTheme.primaryGreen.withOpacity(0.1)
                       : Theme.of(context).cardTheme.color,
                   child: CheckboxListTile(
                     value: isSelected,
@@ -95,16 +95,16 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                       });
                     },
                     secondary: CircleAvatar(
-                      backgroundColor: AppTheme.deepGreen.withOpacity(0.1),
+                      backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
                       child: Text(
                         user.name[0].toUpperCase(),
-                        style: const TextStyle(color: AppTheme.deepGreen),
+                        style: const TextStyle(color: AppTheme.primaryGreen),
                       ),
                     ),
                     title: Text(user.name),
                     subtitle: Text(user.email),
                     controlAffinity: ListTileControlAffinity.leading,
-                    activeColor: AppTheme.deepGreen,
+                    activeColor: AppTheme.primaryGreen,
                   ),
                 );
               },

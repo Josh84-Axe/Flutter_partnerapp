@@ -69,7 +69,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
                 Icon(
                   Icons.lock_outline,
                   size: 80,
-                  color: AppTheme.deepGreen,
+                  color: AppTheme.primaryGreen,
                 ),
                 const SizedBox(height: 24),
                 Text(

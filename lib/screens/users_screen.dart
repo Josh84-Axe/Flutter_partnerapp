@@ -37,15 +37,19 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     final emailController = TextEditingController(text: userData?['email']);
     final phoneController = TextEditingController(text: userData?['phone']);
     String selectedRole = userData?['role'] ?? 'user';
+    final Set<String> selectedPermissions = userData?['permissions'] != null 
+        ? Set<String>.from(userData!['permissions']) 
+        : {};
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(userData == null ? 'Add User' : 'Edit User'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(userData == null ? 'Add User' : 'Edit User'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               TextField(
                 controller: nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
@@ -66,16 +70,80 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               DropdownButtonFormField<String>(
                 value: selectedRole,
                 decoration: const InputDecoration(labelText: 'Role'),
-                items: ['user', 'worker', 'admin']
+                items: ['user', 'worker', 'owner', 'admin']
                     .map((role) => DropdownMenuItem(
                           value: role,
                           child: Text(role.toUpperCase()),
                         ))
                     .toList(),
                 onChanged: (value) {
-                  selectedRole = value!;
+                  setState(() {
+                    selectedRole = value!;
+                    if (selectedRole != 'worker') {
+                      selectedPermissions.clear();
+                    }
+                  });
                 },
               ),
+              if (selectedRole == 'worker') ...[
+                const SizedBox(height: 12),
+                const Text(
+                  'Worker Permissions:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                CheckboxListTile(
+                  title: const Text('Create Plans'),
+                  value: selectedPermissions.contains('create_plans'),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value == true) {
+                        selectedPermissions.add('create_plans');
+                      } else {
+                        selectedPermissions.remove('create_plans');
+                      }
+                    });
+                  },
+                ),
+                CheckboxListTile(
+                  title: const Text('View Users'),
+                  value: selectedPermissions.contains('view_users'),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value == true) {
+                        selectedPermissions.add('view_users');
+                      } else {
+                        selectedPermissions.remove('view_users');
+                      }
+                    });
+                  },
+                ),
+                CheckboxListTile(
+                  title: const Text('View Transactions'),
+                  value: selectedPermissions.contains('view_transactions'),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value == true) {
+                        selectedPermissions.add('view_transactions');
+                      } else {
+                        selectedPermissions.remove('view_transactions');
+                      }
+                    });
+                  },
+                ),
+                CheckboxListTile(
+                  title: const Text('View Routers'),
+                  value: selectedPermissions.contains('view_routers'),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value == true) {
+                        selectedPermissions.add('view_routers');
+                      } else {
+                        selectedPermissions.remove('view_routers');
+                      }
+                    });
+                  },
+                ),
+              ],
             ],
           ),
         ),
@@ -91,6 +159,9 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 'email': emailController.text,
                 'phone': phoneController.text,
                 'role': selectedRole,
+                'permissions': selectedRole == 'worker' 
+                    ? selectedPermissions.toList() 
+                    : null,
                 if (userData != null) 'createdAt': userData['createdAt'],
                 if (userData != null) 'isActive': userData['isActive'],
               };
@@ -107,6 +178,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -115,8 +187,10 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     final appState = context.watch<AppState>();
     final allUsers = appState.users.where((user) {
       if (_searchQuery.isEmpty) return true;
-      return user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().contains(_searchQuery.toLowerCase());
+      final query = _searchQuery.toLowerCase();
+      return user.name.toLowerCase().contains(query) ||
+          user.email.toLowerCase().contains(query) ||
+          (user.phone?.toLowerCase().contains(query) ?? false);
     }).toList();
 
     final users = allUsers.where((u) => u.role == 'user').toList();
@@ -152,7 +226,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           Padding(
             padding: const EdgeInsets.all(16),
             child: SearchBarWidget(
-              hintText: 'Search users...',
+              hintText: 'Search by name, email, or phone...',
               controller: _searchController,
               onChanged: (value) {
                 setState(() {
@@ -176,7 +250,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showUserDialog(),
-        backgroundColor: AppTheme.deepGreen,
+        backgroundColor: AppTheme.primaryGreen,
         child: const Icon(Icons.add),
       ),
     );
@@ -210,11 +284,11 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             leading: Stack(
               children: [
                 CircleAvatar(
-                  backgroundColor: AppTheme.deepGreen.withOpacity(0.1),
+                  backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
                   child: Text(
                     user.name[0].toUpperCase(),
                     style: const TextStyle(
-                      color: AppTheme.deepGreen,
+                      color: AppTheme.primaryGreen,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -243,13 +317,13 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppTheme.deepGreen.withOpacity(0.1),
+                    color: AppTheme.primaryGreen.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     user.role.toUpperCase(),
                     style: const TextStyle(
-                      color: AppTheme.deepGreen,
+                      color: AppTheme.primaryGreen,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),
@@ -285,7 +359,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               },
             ),
             ListTile(
-              leading: const Icon(Icons.wifi, color: AppTheme.deepGreen),
+              leading: const Icon(Icons.wifi, color: AppTheme.primaryGreen),
               title: const Text('Assign Plan'),
               onTap: () {
                 Navigator.pop(context);

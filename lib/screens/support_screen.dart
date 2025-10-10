@@ -166,7 +166,7 @@ class _SupportScreenState extends State<SupportScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.deepGreen.withOpacity(0.1),
+              color: AppTheme.primaryGreen.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -204,10 +204,10 @@ class _SupportScreenState extends State<SupportScreen> {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppTheme.deepGreen.withOpacity(0.1),
+            color: AppTheme.primaryGreen.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: AppTheme.deepGreen),
+          child: Icon(icon, color: AppTheme.primaryGreen),
         ),
         title: Text(title),
         subtitle: Text(description),
@@ -219,7 +219,7 @@ class _SupportScreenState extends State<SupportScreen> {
 
   Widget _buildResourceLink(BuildContext context, IconData icon, String title) {
     return ListTile(
-      leading: Icon(icon, color: AppTheme.deepGreen),
+      leading: Icon(icon, color: AppTheme.primaryGreen),
       title: Text(title),
       trailing: const Icon(Icons.open_in_new),
       onTap: () {},

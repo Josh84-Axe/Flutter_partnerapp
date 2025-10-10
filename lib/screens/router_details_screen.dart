@@ -131,7 +131,7 @@ class RouterDetailsScreen extends StatelessWidget {
         Text(
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppTheme.deepGreen,
+                color: AppTheme.primaryGreen,
                 fontWeight: FontWeight.w600,
               ),
         ),
@@ -193,10 +193,10 @@ class RouterDetailsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppTheme.deepGreen.withOpacity(0.1),
+                color: AppTheme.primaryGreen.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: AppTheme.deepGreen),
+              child: Icon(icon, color: AppTheme.primaryGreen),
             ),
             const SizedBox(width: 16),
             Expanded(

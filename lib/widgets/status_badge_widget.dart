@@ -28,7 +28,7 @@ class StatusBadgeWidget extends StatelessWidget {
       case BadgeType.error:
         return AppTheme.errorRed.withOpacity(0.1);
       case BadgeType.info:
-        return AppTheme.deepGreen.withOpacity(0.1);
+        return AppTheme.primaryGreen.withOpacity(0.1);
       case BadgeType.pending:
         return AppTheme.warningAmber.withOpacity(0.1);
     }
@@ -43,7 +43,7 @@ class StatusBadgeWidget extends StatelessWidget {
       case BadgeType.error:
         return AppTheme.errorRed;
       case BadgeType.info:
-        return AppTheme.deepGreen;
+        return AppTheme.primaryGreen;
       case BadgeType.pending:
         return AppTheme.warningAmber;
     }

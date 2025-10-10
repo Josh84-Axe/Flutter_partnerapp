@@ -49,13 +49,13 @@ class _LanguageScreenState extends State<LanguageScreen> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppTheme.deepGreen.withOpacity(0.1)
+                          ? AppTheme.primaryGreen.withOpacity(0.1)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.language,
-                      color: isSelected ? AppTheme.deepGreen : AppTheme.textLight,
+                      color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight,
                     ),
                   ),
                   title: Text(
@@ -66,7 +66,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                   ),
                   subtitle: Text(language.name),
                   trailing: isSelected
-                      ? const Icon(Icons.check_circle, color: AppTheme.deepGreen)
+                      ? const Icon(Icons.check_circle, color: AppTheme.primaryGreen)
                       : null,
                   onTap: () {
                     setState(() {

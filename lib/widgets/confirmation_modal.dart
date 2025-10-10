@@ -62,7 +62,7 @@ class ConfirmationModal extends StatelessWidget {
           Icon(
             isDestructive ? Icons.warning_rounded : Icons.info_rounded,
             size: 48,
-            color: isDestructive ? AppTheme.warningAmber : AppTheme.deepGreen,
+            color: isDestructive ? AppTheme.warningAmber : AppTheme.primaryGreen,
           ),
           const SizedBox(height: 16),
           Text(
@@ -95,7 +95,7 @@ class ConfirmationModal extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDestructive
                         ? AppTheme.errorRed
-                        : AppTheme.deepGreen,
+                        : AppTheme.primaryGreen,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: Text(confirmText),

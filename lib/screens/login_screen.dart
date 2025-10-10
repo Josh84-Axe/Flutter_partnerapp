@@ -68,13 +68,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   Icon(
                     Icons.router,
                     size: 80,
-                    color: AppTheme.deepGreen,
+                    color: AppTheme.primaryGreen,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Hotspot Partner',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: AppTheme.deepGreen,
+                          color: AppTheme.primaryGreen,
                         ),
                     textAlign: TextAlign.center,
                   ),
@@ -161,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: Text(
                           'Forgot password?',
-                          style: TextStyle(color: AppTheme.deepGreen),
+                          style: TextStyle(color: AppTheme.primaryGreen),
                         ),
                       ),
                     ),
@@ -206,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _isLogin
                           ? 'Don\'t have an account? Register'
                           : 'Already have an account? Login',
-                      style: TextStyle(color: AppTheme.deepGreen),
+                      style: TextStyle(color: AppTheme.primaryGreen),
                     ),
                   ),
                 ],

@@ -28,10 +28,12 @@ class SettingsScreen extends StatelessWidget {
             items: [
               _buildSettingItem(
                 context,
-                icon: Icons.person_outline,
-                title: 'Profile Management',
-                subtitle: 'Edit your profile information',
-                onTap: () {},
+                icon: Icons.router_outlined,
+                title: 'Hotspot Management',
+                subtitle: 'Manage hotspot users and configurations',
+                onTap: () {
+                  _showHotspotManagementDialog(context);
+                },
               ),
               _buildSettingItem(
                 context,
@@ -66,7 +68,7 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: themeProvider.isDarkMode,
                   onChanged: (value) => themeProvider.toggleTheme(),
-                  activeColor: AppTheme.deepGreen,
+                  activeColor: AppTheme.primaryGreen,
                 ),
                 onTap: () => themeProvider.toggleTheme(),
               ),
@@ -191,7 +193,7 @@ class SettingsScreen extends StatelessWidget {
           child: Text(
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppTheme.deepGreen,
+                  color: AppTheme.primaryGreen,
                   fontWeight: FontWeight.w600,
                 ),
           ),
@@ -214,15 +216,57 @@ class SettingsScreen extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppTheme.deepGreen.withOpacity(0.1),
+          color: AppTheme.primaryGreen.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: AppTheme.deepGreen, size: 24),
+        child: Icon(icon, color: AppTheme.primaryGreen, size: 24),
       ),
       title: Text(title),
       subtitle: Text(subtitle),
       trailing: trailing ?? const Icon(Icons.chevron_right),
       onTap: onTap,
+    );
+  }
+
+  void _showHotspotManagementDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Hotspot Management',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Hotspot User'),
+              subtitle: const Text('Manage router profiles and settings'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).pushNamed('/hotspot-user');
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Configurations'),
+              subtitle: const Text('Rate limits, timeouts, and limits'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).pushNamed('/configurations');
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
     );
   }
 }

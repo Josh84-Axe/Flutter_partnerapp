@@ -20,6 +20,8 @@ import 'screens/profiles_screen.dart';
 import 'screens/router_details_screen.dart';
 import 'screens/support_screen.dart';
 import 'screens/bulk_actions_screen.dart';
+import 'screens/hotspot_user_screen.dart';
+import 'screens/configurations_screen.dart';
 
 void main() {
   runApp(
@@ -58,6 +60,8 @@ class HotspotPartnerApp extends StatelessWidget {
         '/profiles': (context) => const ProfilesScreen(),
         '/support': (context) => const SupportScreen(),
         '/bulk-actions': (context) => const BulkActionsScreen(),
+        '/hotspot-user': (context) => const HotspotUserScreen(),
+        '/configurations': (context) => const ConfigurationsScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/router-details') {
@@ -156,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.router),
-            label: 'Health',
+            label: 'Router',
           ),
         ],
       ),
@@ -166,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             DrawerHeader(
               decoration: const BoxDecoration(
-                color: AppTheme.deepGreen,
+                color: AppTheme.primaryGreen,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Icon(
                       Icons.person,
                       size: 40,
-                      color: AppTheme.deepGreen,
+                      color: AppTheme.primaryGreen,
                     ),
                   ),
                   const SizedBox(height: 12),

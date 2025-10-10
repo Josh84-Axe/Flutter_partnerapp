@@ -123,7 +123,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         decoration: BoxDecoration(
           color: notification.isRead
               ? Colors.transparent
-              : AppTheme.deepGreen.withOpacity(0.05),
+              : AppTheme.primaryGreen.withOpacity(0.05),
         ),
         child: ListTile(
           leading: Container(
@@ -192,7 +192,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Color _getNotificationColor(String type) {
     switch (type) {
       case 'user':
-        return AppTheme.deepGreen;
+        return AppTheme.primaryGreen;
       case 'payment':
         return AppTheme.successGreen;
       case 'router':
@@ -200,9 +200,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'system':
         return AppTheme.warningAmber;
       case 'report':
-        return AppTheme.deepGreen;
+        return AppTheme.primaryGreen;
       default:
-        return AppTheme.deepGreen;
+        return AppTheme.primaryGreen;
     }
   }
 

@@ -70,12 +70,12 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.deepGreen.withOpacity(0.1),
+                        color: AppTheme.primaryGreen.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
                         Icons.person,
-                        color: AppTheme.deepGreen,
+                        color: AppTheme.primaryGreen,
                       ),
                     ),
                     title: Text(profile.name),
@@ -138,7 +138,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
         onPressed: () {
           Navigator.of(context).pushNamed('/profile-editor');
         },
-        backgroundColor: AppTheme.deepGreen,
+        backgroundColor: AppTheme.primaryGreen,
         icon: const Icon(Icons.add),
         label: const Text('Add New Profile'),
       ),

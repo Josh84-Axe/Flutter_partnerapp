@@ -6,6 +6,8 @@ class UserModel {
   final String? phone;
   final bool isActive;
   final DateTime createdAt;
+  final List<String>? permissions;
+  final List<String>? assignedRouters;
 
   UserModel({
     required this.id,
@@ -15,6 +17,8 @@ class UserModel {
     this.phone,
     required this.isActive,
     required this.createdAt,
+    this.permissions,
+    this.assignedRouters,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,12 @@ class UserModel {
       phone: json['phone'],
       isActive: json['isActive'] ?? true,
       createdAt: DateTime.parse(json['createdAt']),
+      permissions: json['permissions'] != null 
+          ? List<String>.from(json['permissions']) 
+          : null,
+      assignedRouters: json['assignedRouters'] != null
+          ? List<String>.from(json['assignedRouters'])
+          : null,
     );
   }
 
@@ -38,6 +48,8 @@ class UserModel {
       'phone': phone,
       'isActive': isActive,
       'createdAt': createdAt.toIso8601String(),
+      'permissions': permissions,
+      'assignedRouters': assignedRouters,
     };
   }
 }

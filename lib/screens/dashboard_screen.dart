@@ -103,7 +103,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               title: 'Total Revenue',
               value: MetricCard.formatCurrency(totalRevenue),
               icon: Icons.paid,
-              accentColor: AppTheme.deepGreen,
+              accentColor: AppTheme.primaryGreen,
               isLoading: appState.isLoading,
             ),
             const SizedBox(height: 16),
@@ -134,14 +134,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: transaction.type == 'revenue'
-                        ? AppTheme.deepGreen.withOpacity(0.1)
+                        ? AppTheme.primaryGreen.withOpacity(0.1)
                         : Colors.orange.withOpacity(0.1),
                     child: Icon(
                       transaction.type == 'revenue'
                           ? Icons.trending_up
                           : Icons.trending_down,
                       color: transaction.type == 'revenue'
-                          ? AppTheme.deepGreen
+                          ? AppTheme.primaryGreen
                           : Colors.orange,
                     ),
                   ),
@@ -153,7 +153,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     MetricCard.formatCurrency(transaction.amount),
                     style: TextStyle(
                       color: transaction.type == 'revenue'
-                          ? AppTheme.deepGreen
+                          ? AppTheme.primaryGreen
                           : Colors.orange,
                       fontWeight: FontWeight.bold,
                     ),

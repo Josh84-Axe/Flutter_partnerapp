@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color deepGreen = Color(0xFF006B3F);
+  static const Color primaryGreen = Color(0xFF95FF39);
   static const Color lightGreen = Color(0xFF4CAF50);
   static const Color softGold = Color(0xFFFFD700);
   static const Color pureWhite = Color(0xFFFFFFFF);
@@ -20,28 +20,34 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       brightness: Brightness.light,
-      primaryColor: deepGreen,
+      primaryColor: primaryGreen,
       scaffoldBackgroundColor: backgroundLight,
-      fontFamily: 'Manrope',
+      fontFamily: 'Verdana',
       colorScheme: ColorScheme.light(
-        primary: deepGreen,
+        primary: primaryGreen,
         secondary: lightGreen,
         surface: pureWhite,
         error: errorRed,
-        onPrimary: pureWhite,
+        onPrimary: textDark,
         onSecondary: pureWhite,
         onSurface: textDark,
         onError: pureWhite,
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: deepGreen,
-        foregroundColor: pureWhite,
+      appBarTheme: AppBarTheme(
+        backgroundColor: primaryGreen,
+        foregroundColor: textDark,
         elevation: 0,
-        iconTheme: IconThemeData(color: pureWhite),
+        iconTheme: IconThemeData(color: textDark),
+        titleTextStyle: TextStyle(
+          fontFamily: 'Verdana',
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: textDark,
+        ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: pureWhite,
-        selectedItemColor: deepGreen,
+        selectedItemColor: primaryGreen,
         unselectedItemColor: textLight,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
@@ -60,18 +66,21 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: deepGreen, width: 2),
+          borderSide: BorderSide(color: primaryGreen, width: 2),
         ),
         filled: true,
         fillColor: Colors.grey[50],
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: deepGreen,
-          foregroundColor: pureWhite,
+          backgroundColor: primaryGreen,
+          foregroundColor: textDark,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
+          ),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
@@ -106,28 +115,34 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       brightness: Brightness.dark,
-      primaryColor: deepGreen,
+      primaryColor: primaryGreen,
       scaffoldBackgroundColor: backgroundDark,
-      fontFamily: 'Manrope',
+      fontFamily: 'Verdana',
       colorScheme: ColorScheme.dark(
-        primary: deepGreen,
+        primary: primaryGreen,
         secondary: lightGreen,
         surface: surfaceDark,
         error: errorRed,
-        onPrimary: pureWhite,
+        onPrimary: textDark,
         onSecondary: pureWhite,
         onSurface: textDarkMode,
         onError: pureWhite,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: surfaceDark,
         foregroundColor: textDarkMode,
         elevation: 0,
-        iconTheme: IconThemeData(color: textDarkMode),
+        iconTheme: const IconThemeData(color: textDarkMode),
+        titleTextStyle: const TextStyle(
+          fontFamily: 'Verdana',
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: textDarkMode,
+        ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: surfaceDark,
-        selectedItemColor: deepGreen,
+        selectedItemColor: primaryGreen,
         unselectedItemColor: textLight,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
@@ -146,18 +161,21 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: deepGreen, width: 2),
+          borderSide: BorderSide(color: primaryGreen, width: 2),
         ),
         filled: true,
         fillColor: surfaceDark,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: deepGreen,
-          foregroundColor: pureWhite,
+          backgroundColor: primaryGreen,
+          foregroundColor: textDark,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
+          ),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
