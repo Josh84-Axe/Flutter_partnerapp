@@ -359,13 +359,11 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               },
             ),
             ListTile(
-              leading: const Icon(Icons.wifi, color: AppTheme.primaryGreen),
-              title: const Text('Assign Plan'),
+              leading: const Icon(Icons.router, color: AppTheme.primaryGreen),
+              title: const Text('Assign Router'),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Plan assignment coming soon')),
-                );
+                _showAssignRouterDialog(context, user);
               },
             ),
             ListTile(
@@ -414,6 +412,59 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                   ),
                 );
               },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAssignRouterDialog(BuildContext context, user) {
+    final appState = context.read<AppState>();
+    String? selectedRouterId;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('Assign Router to ${user.name}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Select a router to assign:'),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedRouterId,
+                decoration: const InputDecoration(labelText: 'Router'),
+                items: appState.routers
+                    .map((router) => DropdownMenuItem(
+                          value: router.id,
+                          child: Text(router.name),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedRouterId = value;
+                  });
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: selectedRouterId == null
+                  ? null
+                  : () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Router assigned to ${user.name}')),
+                      );
+                    },
+              child: const Text('Assign'),
             ),
           ],
         ),

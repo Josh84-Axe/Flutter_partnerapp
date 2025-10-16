@@ -39,8 +39,10 @@ class SettingsScreen extends StatelessWidget {
                 context,
                 icon: Icons.card_membership_outlined,
                 title: 'Subscription Management',
-                subtitle: 'Manage your subscription plan',
-                onTap: () {},
+                subtitle: _getSubscriptionTier(appState),
+                onTap: () {
+                  _showSubscriptionDialog(context, appState);
+                },
               ),
               _buildSettingItem(
                 context,
@@ -97,14 +99,11 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.privacy_tip_outlined,
                 title: 'Data Privacy',
                 subtitle: 'Privacy policy and settings',
-                onTap: () {},
-              ),
-              _buildSettingItem(
-                context,
-                icon: Icons.vpn_key_outlined,
-                title: 'API Key Management',
-                subtitle: 'Manage API keys',
-                onTap: () {},
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Opening https://tiknet.africa.com/privacy')),
+                  );
+                },
               ),
             ],
           ),
@@ -139,13 +138,6 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.replay_outlined,
                 title: 'Replay Onboarding Tour',
                 subtitle: 'View the app tour again',
-                onTap: () {},
-              ),
-              _buildSettingItem(
-                context,
-                icon: Icons.info_outline,
-                title: 'System Status',
-                subtitle: 'Check system health',
                 onTap: () {},
               ),
               _buildSettingItem(
@@ -258,6 +250,61 @@ class SettingsScreen extends StatelessWidget {
                 Navigator.of(context).pushNamed('/configurations');
               },
             ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getSubscriptionTier(AppState appState) {
+    final routerCount = appState.currentUser?.numberOfRouters ?? 0;
+    if (routerCount == 1) return 'Basic (15% fee)';
+    if (routerCount >= 2 && routerCount <= 4) return 'Standard (12% fee)';
+    if (routerCount >= 5) return 'Premium (10% fee)';
+    return 'No subscription';
+  }
+
+  void _showSubscriptionDialog(BuildContext context, AppState appState) {
+    final routerCount = appState.currentUser?.numberOfRouters ?? 0;
+    String tier = 'Basic';
+    double fee = 0.15;
+    
+    if (routerCount == 1) {
+      tier = 'Basic';
+      fee = 0.15;
+    } else if (routerCount >= 2 && routerCount <= 4) {
+      tier = 'Standard';
+      fee = 0.12;
+    } else if (routerCount >= 5) {
+      tier = 'Premium';
+      fee = 0.10;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Subscription Details'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Current Tier: $tier', style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text('Number of Routers: $routerCount'),
+            const SizedBox(height: 8),
+            Text('Transaction Fee: ${(fee * 100).toStringAsFixed(0)}%'),
+            const SizedBox(height: 16),
+            const Text('Tier Breakdown:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('• Basic: 1 router (15% fee)'),
+            const Text('• Standard: 2-4 routers (12% fee)'),
+            const Text('• Premium: 5+ routers (10% fee)'),
           ],
         ),
         actions: [

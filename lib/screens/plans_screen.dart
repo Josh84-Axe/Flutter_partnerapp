@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
+import '../utils/currency_helper.dart';
+import '../services/hotspot_configuration_service.dart';
 import '../widgets/metric_card.dart';
 import '../widgets/search_bar_widget.dart';
 
@@ -33,111 +35,155 @@ class _PlansScreenState extends State<PlansScreen> {
   void _showCreatePlanDialog() {
     final nameController = TextEditingController();
     final priceController = TextEditingController();
-    final dataController = TextEditingController();
-    final validityController = TextEditingController();
-    final speedController = TextEditingController();
-    final deviceController = TextEditingController(text: '1');
+    String? selectedDataLimit;
+    String? selectedValidity;
+    String? selectedSpeed;
+    String? selectedDeviceAllowed;
     String selectedProfile = 'Basic';
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create Internet Plan'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Plan Name'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: priceController,
-                decoration: const InputDecoration(
-                  labelText: 'Price (\$)',
-                  prefixText: '\$ ',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Create Internet Plan'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Plan Name'),
                 ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: dataController,
-                decoration: const InputDecoration(
-                  labelText: 'Data Limit (GB)',
-                  suffixText: 'GB',
+                const SizedBox(height: 12),
+                TextField(
+                  controller: priceController,
+                  decoration: InputDecoration(
+                    labelText: 'Price',
+                    prefixText: '${CurrencyHelper.getCurrencySymbol(
+                      CurrencyHelper.getCurrencyCode(context.read<AppState>().currentUser?.country)
+                    )} ',
+                  ),
+                  keyboardType: TextInputType.number,
                 ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: validityController,
-                decoration: const InputDecoration(
-                  labelText: 'Validity (Days)',
-                  suffixText: 'days',
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedDataLimit,
+                  decoration: const InputDecoration(labelText: 'Data Limit'),
+                  items: HotspotConfigurationService.getDataLimits().isEmpty
+                      ? [const DropdownMenuItem(value: null, child: Text('No options configured'))]
+                      : HotspotConfigurationService.getDataLimits()
+                          .map((limit) => DropdownMenuItem(value: limit, child: Text(limit)))
+                          .toList(),
+                  onChanged: HotspotConfigurationService.getDataLimits().isEmpty
+                      ? null
+                      : (value) {
+                          setState(() {
+                            selectedDataLimit = value;
+                          });
+                        },
                 ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: speedController,
-                decoration: const InputDecoration(
-                  labelText: 'Speed (Mbps)',
-                  suffixText: 'Mbps',
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedValidity,
+                  decoration: const InputDecoration(labelText: 'Validity'),
+                  items: HotspotConfigurationService.getValidityOptions().isEmpty
+                      ? [const DropdownMenuItem(value: null, child: Text('No options configured'))]
+                      : HotspotConfigurationService.getValidityOptions()
+                          .map((validity) => DropdownMenuItem(value: validity, child: Text(validity)))
+                          .toList(),
+                  onChanged: HotspotConfigurationService.getValidityOptions().isEmpty
+                      ? null
+                      : (value) {
+                          setState(() {
+                            selectedValidity = value;
+                          });
+                        },
                 ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: deviceController,
-                decoration: const InputDecoration(
-                  labelText: 'Device Allowed',
-                  suffixText: 'devices',
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedSpeed,
+                  decoration: const InputDecoration(labelText: 'Speed'),
+                  items: HotspotConfigurationService.getSpeedOptions().isEmpty
+                      ? [const DropdownMenuItem(value: null, child: Text('No options configured'))]
+                      : HotspotConfigurationService.getSpeedOptions()
+                          .map((speed) => DropdownMenuItem(value: speed, child: Text(speed)))
+                          .toList(),
+                  onChanged: HotspotConfigurationService.getSpeedOptions().isEmpty
+                      ? null
+                      : (value) {
+                          setState(() {
+                            selectedSpeed = value;
+                          });
+                        },
                 ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: selectedProfile,
-                decoration: const InputDecoration(
-                  labelText: 'User Profile (Predefined)',
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedDeviceAllowed,
+                  decoration: const InputDecoration(labelText: 'Device Allowed'),
+                  items: HotspotConfigurationService.getDeviceAllowed().isEmpty
+                      ? [const DropdownMenuItem(value: null, child: Text('No options configured'))]
+                      : HotspotConfigurationService.getDeviceAllowed()
+                          .map((device) => DropdownMenuItem(value: device, child: Text(device)))
+                          .toList(),
+                  onChanged: HotspotConfigurationService.getDeviceAllowed().isEmpty
+                      ? null
+                      : (value) {
+                          setState(() {
+                            selectedDeviceAllowed = value;
+                          });
+                        },
                 ),
-                items: ['Basic', 'Standard', 'Premium', 'Ultra']
-                    .map((profile) => DropdownMenuItem(
-                          value: profile,
-                          child: Text(profile),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  selectedProfile = value!;
-                },
-              ),
-            ],
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedProfile,
+                  decoration: const InputDecoration(labelText: 'User Profile'),
+                  items: HotspotConfigurationService.getUserProfiles()
+                      .map((profile) => DropdownMenuItem(value: profile, child: Text(profile)))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedProfile = value!;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final data = {
-                'name': nameController.text,
-                'price': double.parse(priceController.text),
-                'dataLimitGB': int.parse(dataController.text),
-                'validityDays': int.parse(validityController.text),
-                'speedMbps': int.parse(speedController.text),
-                'deviceAllowed': int.parse(deviceController.text),
-                'userProfile': selectedProfile,
-              };
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (nameController.text.isEmpty || priceController.text.isEmpty ||
+                    selectedDataLimit == null || selectedValidity == null ||
+                    selectedSpeed == null || selectedDeviceAllowed == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please fill all fields')),
+                  );
+                  return;
+                }
 
-              context.read<AppState>().createPlan(data);
-              Navigator.pop(context);
-            },
-            child: const Text('Create'),
-          ),
-        ],
+                final data = {
+                  'name': nameController.text,
+                  'price': double.parse(priceController.text),
+                  'dataLimitGB': HotspotConfigurationService.isUnlimited(selectedDataLimit!)
+                      ? 999999
+                      : HotspotConfigurationService.extractNumericValue(selectedDataLimit!),
+                  'validityDays': HotspotConfigurationService.extractNumericValue(selectedValidity!),
+                  'speedMbps': HotspotConfigurationService.extractNumericValue(selectedSpeed!),
+                  'deviceAllowed': HotspotConfigurationService.extractNumericValue(selectedDeviceAllowed!),
+                  'userProfile': selectedProfile,
+                };
+
+                context.read<AppState>().createPlan(data);
+                Navigator.pop(context);
+              },
+              child: const Text('Create'),
+            ),
+          ],
+        ),
       ),
     );
   }

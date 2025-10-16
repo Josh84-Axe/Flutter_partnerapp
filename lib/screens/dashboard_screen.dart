@@ -99,28 +99,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 24),
-            MetricCard(
-              title: 'Total Revenue',
-              value: MetricCard.formatCurrency(totalRevenue),
-              icon: Icons.paid,
-              accentColor: AppTheme.primaryGreen,
-              isLoading: appState.isLoading,
+            GestureDetector(
+              onTap: () => _showRevenueDetails(context, appState),
+              child: MetricCard(
+                title: 'Total Revenue',
+                value: MetricCard.formatCurrency(totalRevenue),
+                icon: Icons.paid,
+                accentColor: AppTheme.successGreen,
+                isLoading: appState.isLoading,
+              ),
             ),
             const SizedBox(height: 16),
-            MetricCard(
-              title: 'Active Users',
-              value: MetricCard.formatNumber(activeUsers),
-              icon: Icons.group,
-              accentColor: AppTheme.lightGreen,
-              isLoading: appState.isLoading,
+            GestureDetector(
+              onTap: () => _showActiveUsersDetails(context, appState),
+              child: MetricCard(
+                title: 'Active Users',
+                value: MetricCard.formatNumber(activeUsers),
+                icon: Icons.group,
+                accentColor: Colors.blue,
+                isLoading: appState.isLoading,
+              ),
             ),
             const SizedBox(height: 16),
-            MetricCard(
-              title: 'Data Usage',
-              value: '${totalDataUsage.toStringAsFixed(1)} GB',
-              icon: Icons.wifi,
-              accentColor: AppTheme.softGold,
-              isLoading: appState.isLoading,
+            GestureDetector(
+              onTap: () => _showDataUsageDetails(context, appState),
+              child: MetricCard(
+                title: 'Data Usage',
+                value: '${totalDataUsage.toStringAsFixed(1)} GB',
+                icon: Icons.wifi,
+                accentColor: AppTheme.errorRed,
+                isLoading: appState.isLoading,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
@@ -161,6 +170,167 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               );
             }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRevenueDetails(BuildContext context, AppState appState) {
+    final currentMonth = DateTime.now().month;
+    final revenueTransactions = appState.transactions
+        .where((t) => t.type == 'revenue' && t.createdAt.month == currentMonth)
+        .toList();
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Revenue Details', style: Theme.of(context).textTheme.titleLarge),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: revenueTransactions.length,
+                itemBuilder: (context, index) {
+                  final txn = revenueTransactions[index];
+                  return ListTile(
+                    leading: const Icon(Icons.payment, color: AppTheme.successGreen),
+                    title: Text(txn.description),
+                    subtitle: Text('${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year}'),
+                    trailing: Text(
+                      MetricCard.formatCurrency(txn.amount),
+                      style: const TextStyle(color: AppTheme.successGreen, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showActiveUsersDetails(BuildContext context, AppState appState) {
+    final activeUsers = appState.users.where((u) => u.isActive).toList();
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Active Users', style: Theme.of(context).textTheme.titleLarge),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: activeUsers.length,
+                itemBuilder: (context, index) {
+                  final user = activeUsers[index];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.blue.withOpacity(0.1),
+                      child: Text(user.name[0].toUpperCase()),
+                    ),
+                    title: Text(user.name),
+                    subtitle: Text(user.email),
+                    trailing: TextButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Unassign ${user.name}\'s plan')),
+                        );
+                      },
+                      child: const Text('Unassign'),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDataUsageDetails(BuildContext context, AppState appState) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Data Usage by Router', style: Theme.of(context).textTheme.titleLarge),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: appState.routers.length,
+                itemBuilder: (context, index) {
+                  final router = appState.routers[index];
+                  return ListTile(
+                    leading: const Icon(Icons.router, color: AppTheme.errorRed),
+                    title: Text(router.name),
+                    subtitle: Text('${router.connectedUsers} users connected'),
+                    trailing: Text(
+                      '${router.dataUsageGB.toStringAsFixed(1)} GB',
+                      style: const TextStyle(color: AppTheme.errorRed, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),

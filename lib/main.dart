@@ -25,6 +25,7 @@ import 'screens/support_screen.dart';
 import 'screens/bulk_actions_screen.dart';
 import 'screens/hotspot_user_screen.dart';
 import 'screens/configurations_screen.dart';
+import 'screens/router_registration_screen.dart';
 
 void main() {
   runApp(
@@ -129,6 +130,7 @@ class _HotspotPartnerAppState extends State<HotspotPartnerApp> {
         '/bulk-actions': (context) => const BulkActionsScreen(),
         '/hotspot-user': (context) => const HotspotUserScreen(),
         '/configurations': (context) => const ConfigurationsScreen(),
+        '/router-registration': (context) => const RouterRegistrationScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/router-details') {

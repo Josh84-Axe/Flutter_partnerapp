@@ -78,5 +78,20 @@
   "data_privacy": "Confidentialité des Données",
   "data_export_reporting": "Export et Rapports de Données",
   "support": "Support",
-  "about": "À propos"
+  "about": "À propos",
+  "router_registration": "Enregistrement du routeur",
+  "router_name": "Nom du routeur",
+  "ip_address": "Adresse IP",
+  "api_port": "Port API",
+  "dns_name": "Nom DNS",
+  "radius_secret": "Secret Radius",
+  "coa_port": "Port COA",
+  "activate_router": "Activer le routeur",
+  "register_router": "Enregistrer le routeur",
+  "current_tier": "Niveau actuel",
+  "transaction_fee": "Frais de transaction",
+  "revenue_details": "Détails des revenus",
+  "data_usage_by_router": "Utilisation des données par routeur",
+  "unassign": "Désassigner",
+  "no_options_configured": "Aucune option configurée"
 }
