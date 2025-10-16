@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/app_theme.dart';
 import 'providers/app_state.dart';
 import 'providers/theme_provider.dart';
+import 'localization/app_localizations.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/users_screen.dart';
@@ -35,17 +38,81 @@ void main() {
   );
 }
 
-class HotspotPartnerApp extends StatelessWidget {
+class HotspotPartnerApp extends StatefulWidget {
   const HotspotPartnerApp({super.key});
+
+  @override
+  State<HotspotPartnerApp> createState() => _HotspotPartnerAppState();
+}
+
+class _HotspotPartnerAppState extends State<HotspotPartnerApp> {
+  Locale? _locale;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLocale();
+  }
+
+  Future<void> _loadLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode = prefs.getString('language_code');
+    final countryCode = prefs.getString('country');
+    
+    if (languageCode != null) {
+      setState(() {
+        _locale = Locale(languageCode);
+      });
+    } else if (countryCode != null) {
+      final defaultLang = _getDefaultLanguageForCountry(countryCode);
+      setState(() {
+        _locale = Locale(defaultLang);
+      });
+    }
+  }
+
+  String _getDefaultLanguageForCountry(String country) {
+    const frenchCountries = [
+      'France',
+      'Belgium',
+      'Canada',
+      'Ivory Coast',
+      'Senegal',
+    ];
+    return frenchCountries.contains(country) ? 'fr' : 'en';
+  }
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     
     return MaterialApp(
-      title: 'Hotspot Partner',
+      title: 'Tiknet Partner',
       theme: themeProvider.currentTheme,
       debugShowCheckedModeBanner: false,
+      locale: _locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('fr'),
+      ],
+      localeResolutionCallback: (locale, supportedLocales) {
+        if (_locale != null) return _locale;
+        
+        if (locale != null) {
+          for (var supportedLocale in supportedLocales) {
+            if (supportedLocale.languageCode == locale.languageCode) {
+              return supportedLocale;
+            }
+          }
+        }
+        return supportedLocales.first;
+      },
       home: const AuthWrapper(),
       routes: {
         '/login': (context) => const LoginScreen(),

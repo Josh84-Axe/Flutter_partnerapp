@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
+import '../localization/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,12 +17,38 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLogin = true;
   final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _numberOfRoutersController = TextEditingController();
+  String? _selectedCountry;
+  
+  final List<String> _countries = [
+    'United States',
+    'France',
+    'Belgium',
+    'Canada',
+    'Ivory Coast',
+    'Senegal',
+    'United Kingdom',
+    'Germany',
+    'Spain',
+    'Italy',
+    'Nigeria',
+    'Ghana',
+    'Kenya',
+    'South Africa',
+  ];
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    _cityController.dispose();
+    _numberOfRoutersController.dispose();
     super.dispose();
   }
 
@@ -65,14 +92,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.router,
-                    size: 80,
-                    color: AppTheme.primaryGreen,
+                  Image.asset(
+                    'assets/images/logo_tiknet.png',
+                    height: 80,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Hotspot Partner',
+                    AppLocalizations.of(context)?.appTitle ?? 'Tiknet Partner',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                           color: AppTheme.primaryGreen,
                         ),
@@ -80,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Manage Your Network',
+                    AppLocalizations.of(context)?.manageYourWifiZone ?? 'Manage your Wifi Zone',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: AppTheme.textLight,
                         ),
@@ -90,9 +116,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (!_isLogin) ...[
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Full Name',
-                        prefixIcon: Icon(Icons.person),
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)?.name ?? 'Full Name',
+                        prefixIcon: const Icon(Icons.person),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -103,13 +129,68 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Company Name',
-                        prefixIcon: Icon(Icons.business),
+                      controller: _phoneController,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)?.phone ?? 'Phone',
+                        prefixIcon: const Icon(Icons.phone),
                       ),
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _addressController,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)?.address ?? 'Address',
+                        prefixIcon: const Icon(Icons.location_on),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _cityController,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)?.city ?? 'City',
+                        prefixIcon: const Icon(Icons.location_city),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _selectedCountry,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)?.country ?? 'Country',
+                        prefixIcon: const Icon(Icons.flag),
+                      ),
+                      items: _countries.map((country) {
+                        return DropdownMenuItem(
+                          value: country,
+                          child: Text(country),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCountry = value;
+                        });
+                      },
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your company name';
+                          return 'Please select a country';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _numberOfRoutersController,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)?.numberOfRouters ?? 'Number of Routers',
+                        prefixIcon: const Icon(Icons.router),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          final number = int.tryParse(value);
+                          if (number == null || number < 0) {
+                            return 'Must be 0 or greater';
+                          }
                         }
                         return null;
                       },
@@ -118,9 +199,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                   TextFormField(
                     controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email),
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)?.email ?? 'Email',
+                      prefixIcon: const Icon(Icons.email),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -136,9 +217,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock),
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)?.password ?? 'Password',
+                      prefixIcon: const Icon(Icons.lock),
                     ),
                     obscureText: true,
                     validator: (value) {
@@ -160,8 +241,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.of(context).pushNamed('/forgot-password');
                         },
                         child: Text(
-                          'Forgot password?',
-                          style: TextStyle(color: AppTheme.primaryGreen),
+                          AppLocalizations.of(context)?.forgotPassword ?? 'Forgot password?',
+                          style: const TextStyle(color: AppTheme.primaryGreen),
                         ),
                       ),
                     ),
@@ -190,7 +271,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             )
                           : Text(
-                              _isLogin ? 'Login' : 'Register',
+                              _isLogin 
+                                  ? (AppLocalizations.of(context)?.login ?? 'Login')
+                                  : (AppLocalizations.of(context)?.register ?? 'Register'),
                               style: const TextStyle(fontSize: 16),
                             ),
                     ),
@@ -204,9 +287,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     child: Text(
                       _isLogin
-                          ? 'Don\'t have an account? Register'
-                          : 'Already have an account? Login',
-                      style: TextStyle(color: AppTheme.primaryGreen),
+                          ? (AppLocalizations.of(context)?.dontHaveAccount ?? 'Don\'t have an account? Register')
+                          : (AppLocalizations.of(context)?.alreadyHaveAccount ?? 'Already have an account? Login'),
+                      style: const TextStyle(color: AppTheme.primaryGreen),
                     ),
                   ),
                 ],
