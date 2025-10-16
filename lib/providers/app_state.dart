@@ -3,6 +3,9 @@ import '../models/user_model.dart';
 import '../models/router_model.dart';
 import '../models/plan_model.dart';
 import '../models/transaction_model.dart';
+import '../models/notification_model.dart';
+import '../models/profile_model.dart';
+import '../models/language_model.dart';
 import '../services/auth_service.dart';
 import '../services/payment_service.dart';
 import '../services/connectivity_service.dart';
@@ -22,6 +25,10 @@ class AppState with ChangeNotifier {
   List<TransactionModel> _transactions = [];
   double _walletBalance = 0.0;
   
+  List<NotificationModel> _notifications = [];
+  List<ProfileModel> _profiles = [];
+  LanguageModel _selectedLanguage = LanguageModel.availableLanguages.first;
+  
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -30,6 +37,11 @@ class AppState with ChangeNotifier {
   List<PlanModel> get plans => _plans;
   List<TransactionModel> get transactions => _transactions;
   double get walletBalance => _walletBalance;
+  
+  List<NotificationModel> get notifications => _notifications;
+  List<ProfileModel> get profiles => _profiles;
+  LanguageModel get selectedLanguage => _selectedLanguage;
+  int get unreadNotificationCount => _notifications.where((n) => !n.isRead).length;
   
   Future<bool> login(String email, String password) async {
     _setLoading(true);
@@ -87,7 +99,60 @@ class AppState with ChangeNotifier {
       loadPlans(),
       loadTransactions(),
       loadWalletBalance(),
+      loadNotifications(),
     ]);
+  }
+
+  Future<void> loadNotifications() async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+      notifyListeners();
+    } catch (e) {
+      _setError(e.toString());
+    }
+  }
+
+  void markAllNotificationsAsRead() {
+    for (var notification in _notifications) {
+      notification.isRead = true;
+    }
+    notifyListeners();
+  }
+
+  void markNotificationAsRead(String notificationId) {
+    final notification = _notifications.firstWhere(
+      (n) => n.id == notificationId,
+      orElse: () => _notifications.first,
+    );
+    notification.isRead = true;
+    notifyListeners();
+  }
+
+  void dismissNotification(String notificationId) {
+    _notifications.removeWhere((n) => n.id == notificationId);
+    notifyListeners();
+  }
+
+  Future<void> loadProfiles() async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+      notifyListeners();
+    } catch (e) {
+      _setError(e.toString());
+    }
+  }
+
+  void deleteProfile(String profileId) {
+    _profiles.removeWhere((p) => p.id == profileId);
+    notifyListeners();
+  }
+
+  void setLanguage(String languageCode) {
+    _selectedLanguage = LanguageModel.availableLanguages.firstWhere(
+      (lang) => lang.code == languageCode,
+      orElse: () => LanguageModel.availableLanguages.first,
+    );
+    notifyListeners();
   }
   
   Future<void> loadUsers() async {
