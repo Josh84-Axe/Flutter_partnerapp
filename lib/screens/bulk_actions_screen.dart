@@ -139,7 +139,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: () async {
                           final confirmed = await showDialog<bool>(
                             context: context,
@@ -176,7 +176,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                             });
                           }
                         },
-                        style: ElevatedButton.styleFrom(
+                        style: FilledButton.styleFrom(
                           backgroundColor: AppTheme.errorRed,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),

@@ -95,7 +95,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
             child: SafeArea(
               child: SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: () {
                     final selectedLanguage = languages.firstWhere(
                       (lang) => lang.code == selectedCode,

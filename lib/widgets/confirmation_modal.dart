@@ -90,9 +90,9 @@ class ConfirmationModal extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: onConfirm,
-                  style: ElevatedButton.styleFrom(
+                  style: FilledButton.styleFrom(
                     backgroundColor: isDestructive
                         ? AppTheme.errorRed
                         : AppTheme.primaryGreen,

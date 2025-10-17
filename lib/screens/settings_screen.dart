@@ -152,14 +152,14 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 24),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: () async {
                 await appState.logout();
                 if (context.mounted) {
                   Navigator.of(context).pushReplacementNamed('/login');
                 }
               },
-              style: ElevatedButton.styleFrom(
+              style: FilledButton.styleFrom(
                 backgroundColor: AppTheme.errorRed,
                 foregroundColor: AppTheme.pureWhite,
                 padding: const EdgeInsets.symmetric(vertical: 16),

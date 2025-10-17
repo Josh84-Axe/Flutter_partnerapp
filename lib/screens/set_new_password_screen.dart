@@ -145,7 +145,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                ElevatedButton(
+                FilledButton(
                   onPressed: _submit,
                   child: const Padding(
                     padding: EdgeInsets.all(12.0),

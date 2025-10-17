@@ -85,11 +85,11 @@ class _HotspotPartnerAppState extends State<HotspotPartnerApp> {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = context.watch<ThemeProvider>();
-    
     return MaterialApp(
       title: 'Tiknet Partner',
-      theme: themeProvider.currentTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
       locale: _locale,
       localizationsDelegates: const [
@@ -203,31 +203,31 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(
+        destinations: const [
+          NavigationDestination(
             icon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.people),
             label: 'Users',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.wifi),
             label: 'Plans',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.receipt_long),
             label: 'Transactions',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.router),
             label: 'Router',
           ),

@@ -77,7 +77,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: () {
                 final amount = double.tryParse(amountController.text);
                 if (amount != null && amount > 0) {

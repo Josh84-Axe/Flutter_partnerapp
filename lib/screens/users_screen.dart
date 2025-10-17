@@ -152,7 +152,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () {
               final data = {
                 'name': nameController.text,
@@ -398,12 +398,12 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                         onPressed: () => Navigator.pop(context),
                         child: const Text('Cancel'),
                       ),
-                      ElevatedButton(
+                      FilledButton(
                         onPressed: () {
                           context.read<AppState>().deleteUser(user.id);
                           Navigator.pop(context);
                         },
-                        style: ElevatedButton.styleFrom(
+                        style: FilledButton.styleFrom(
                           backgroundColor: AppTheme.errorRed,
                         ),
                         child: const Text('Delete'),
@@ -455,7 +455,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: selectedRouterId == null
                   ? null
                   : () {

@@ -39,7 +39,7 @@ class ResetEmailSentScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   Navigator.of(context).pushNamed('/set-new-password');
                 },

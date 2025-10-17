@@ -32,7 +32,7 @@ class PasswordSuccessScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     '/login',

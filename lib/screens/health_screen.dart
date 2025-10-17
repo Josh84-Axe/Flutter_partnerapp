@@ -47,7 +47,7 @@ class _HealthScreenState extends State<HealthScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () {
               if (isBlocked) {
                 context.read<AppState>().unblockDevice(routerId);
@@ -63,7 +63,7 @@ class _HealthScreenState extends State<HealthScreen> {
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(
+            style: FilledButton.styleFrom(
               backgroundColor: isBlocked ? AppTheme.primaryGreen : Colors.red,
             ),
             child: Text(isBlocked ? 'Unblock' : 'Block'),

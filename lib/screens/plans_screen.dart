@@ -154,7 +154,7 @@ class _PlansScreenState extends State<PlansScreen> {
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: () {
                 if (nameController.text.isEmpty || priceController.text.isEmpty ||
                     selectedDataLimit == null || selectedValidity == null ||
@@ -224,7 +224,7 @@ class _PlansScreenState extends State<PlansScreen> {
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: selectedUserId == null
                   ? null
                   : () {
@@ -345,11 +345,11 @@ class _PlansScreenState extends State<PlansScreen> {
                                   const SizedBox(height: 16),
                                   SizedBox(
                                     width: double.infinity,
-                                    child: ElevatedButton.icon(
+                                    child: FilledButton.icon(
                                       onPressed: () => _showAssignPlanDialog(plan.id, plan.name),
                                       icon: const Icon(Icons.person_add),
                                       label: const Text('Assign to User'),
-                                      style: ElevatedButton.styleFrom(
+                                      style: FilledButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(vertical: 12),
                                       ),
                                     ),

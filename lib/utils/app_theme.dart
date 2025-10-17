@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color seedGreen = Color(0xFF4CAF50);
+  static const Color seedGreen = Colors.greenAccent;
   static const Color primaryGreen = Color(0xFF95FF39);
   static const Color lightGreen = Color(0xFF4CAF50);
   static const Color softGold = Color(0xFFFFD700);
@@ -92,8 +92,8 @@ class AppTheme {
         filled: true,
         fillColor: Colors.grey[50],
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
           backgroundColor: primaryGreen,
           foregroundColor: textDark,
           textStyle: GoogleFonts.poppins(
@@ -182,8 +182,8 @@ class AppTheme {
         filled: true,
         fillColor: surfaceDark,
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
           backgroundColor: primaryGreen,
           foregroundColor: textDark,
           textStyle: GoogleFonts.poppins(

@@ -111,7 +111,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: () {
                           if (_selectedRouterId == null ||
                               _profileNameController.text.isEmpty) {

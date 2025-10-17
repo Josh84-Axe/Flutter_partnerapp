@@ -257,7 +257,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         textAlign: TextAlign.center,
                       ),
                     ),
-                  ElevatedButton(
+                  FilledButton(
                     onPressed: appState.isLoading ? null : _submit,
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),

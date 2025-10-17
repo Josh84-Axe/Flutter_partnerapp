@@ -213,7 +213,7 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
                 activeColor: AppTheme.primaryGreen,
               ),
               const SizedBox(height: 24),
-              ElevatedButton(
+              FilledButton(
                 onPressed: appState.isLoading ? null : _submitForm,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
