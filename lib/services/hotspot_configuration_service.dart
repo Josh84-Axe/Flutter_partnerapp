@@ -23,6 +23,10 @@ class HotspotConfigurationService {
     return ['1 device', '3 devices', '5 devices'];
   }
 
+  static List<String> getSharedUsers() {
+    return ['1 user (Single)', '5 users (Family)', '10 users (Business)'];
+  }
+
   static List<String> getUserProfiles() {
     return ['Basic', 'Standard', 'Premium', 'Ultra'];
   }

@@ -26,6 +26,12 @@ import 'screens/bulk_actions_screen.dart';
 import 'screens/hotspot_user_screen.dart';
 import 'screens/configurations_screen.dart';
 import 'screens/router_registration_screen.dart';
+import 'screens/config/rate_limit_config_screen.dart';
+import 'screens/config/idle_time_config_screen.dart';
+import 'screens/config/plan_validity_config_screen.dart';
+import 'screens/config/data_limit_config_screen.dart';
+import 'screens/config/shared_user_config_screen.dart';
+import 'screens/config/additional_device_config_screen.dart';
 
 void main() {
   runApp(
@@ -131,6 +137,12 @@ class _HotspotPartnerAppState extends State<HotspotPartnerApp> {
         '/hotspot-user': (context) => const HotspotUserScreen(),
         '/configurations': (context) => const ConfigurationsScreen(),
         '/router-registration': (context) => const RouterRegistrationScreen(),
+        '/config/rate-limit': (context) => const RateLimitConfigScreen(),
+        '/config/idle-time': (context) => const IdleTimeConfigScreen(),
+        '/config/plan-validity': (context) => const PlanValidityConfigScreen(),
+        '/config/data-limit': (context) => const DataLimitConfigScreen(),
+        '/config/shared-users': (context) => const SharedUserConfigScreen(),
+        '/config/additional-devices': (context) => const AdditionalDeviceConfigScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/router-details') {

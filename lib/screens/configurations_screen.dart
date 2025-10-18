@@ -19,7 +19,7 @@ class ConfigurationsScreen extends StatelessWidget {
             title: 'Rate Limit',
             subtitle: 'Configure upload and download speeds',
             onTap: () {
-              _showRateLimitDialog(context);
+              Navigator.of(context).pushNamed('/config/rate-limit');
             },
           ),
           const SizedBox(height: 12),
@@ -29,7 +29,7 @@ class ConfigurationsScreen extends StatelessWidget {
             title: 'Idle Timeout',
             subtitle: 'Duration before automatic disconnect',
             onTap: () {
-              _showIdleTimeoutDialog(context);
+              Navigator.of(context).pushNamed('/config/idle-time');
             },
           ),
           const SizedBox(height: 12),
@@ -39,7 +39,7 @@ class ConfigurationsScreen extends StatelessWidget {
             title: 'Validity',
             subtitle: 'Plan duration settings',
             onTap: () {
-              _showValidityDialog(context);
+              Navigator.of(context).pushNamed('/config/plan-validity');
             },
           ),
           const SizedBox(height: 12),
@@ -49,7 +49,7 @@ class ConfigurationsScreen extends StatelessWidget {
             title: 'Data Limit',
             subtitle: 'GB allowance configuration',
             onTap: () {
-              _showDataLimitDialog(context);
+              Navigator.of(context).pushNamed('/config/data-limit');
             },
           ),
           const SizedBox(height: 12),
@@ -59,7 +59,7 @@ class ConfigurationsScreen extends StatelessWidget {
             title: 'Shared Users',
             subtitle: 'Concurrent users allowed',
             onTap: () {
-              _showSharedUsersDialog(context);
+              Navigator.of(context).pushNamed('/config/shared-users');
             },
           ),
           const SizedBox(height: 12),
@@ -69,7 +69,7 @@ class ConfigurationsScreen extends StatelessWidget {
             title: 'Additional Devices',
             subtitle: 'Extra device slots configuration',
             onTap: () {
-              _showAdditionalDevicesDialog(context);
+              Navigator.of(context).pushNamed('/config/additional-devices');
             },
           ),
         ],
@@ -98,177 +98,4 @@ class ConfigurationsScreen extends StatelessWidget {
     );
   }
 
-  void _showRateLimitDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Rate Limit Configuration', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Basic'),
-              subtitle: const Text('10 Mbps Download / 5 Mbps Upload'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              title: const Text('Standard'),
-              subtitle: const Text('50 Mbps Download / 25 Mbps Upload'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              title: const Text('Premium'),
-              subtitle: const Text('100 Mbps Download / 50 Mbps Upload'),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showIdleTimeoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Idle Timeout Configuration', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Short'),
-              subtitle: const Text('15 minutes'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              title: const Text('Standard'),
-              subtitle: const Text('30 minutes'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              title: const Text('Long'),
-              subtitle: const Text('60 minutes'),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showValidityDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Validity Configuration', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Daily'),
-              subtitle: const Text('1 day'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              title: const Text('Weekly'),
-              subtitle: const Text('7 days'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              title: const Text('Monthly'),
-              subtitle: const Text('30 days'),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showDataLimitDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Data Limit Configuration', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Light'),
-              subtitle: const Text('10 GB'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              title: const Text('Standard'),
-              subtitle: const Text('50 GB'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              title: const Text('Unlimited'),
-              subtitle: const Text('No limit'),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showSharedUsersDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Shared Users Configuration', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Single User'),
-              subtitle: const Text('1 concurrent user'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              title: const Text('Family Plan'),
-              subtitle: const Text('5 concurrent users'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              title: const Text('Small Business'),
-              subtitle: const Text('10 concurrent users'),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showAdditionalDevicesDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Additional Devices Configuration', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Basic'),
-              subtitle: const Text('1 device'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              title: const Text('Standard'),
-              subtitle: const Text('3 devices'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              title: const Text('Premium'),
-              subtitle: const Text('5 devices'),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
