@@ -188,60 +188,6 @@ class _PlansScreenState extends State<PlansScreen> {
     );
   }
 
-  void _showAssignPlanDialog(String planId, String planName) {
-    final appState = context.read<AppState>();
-    String? selectedUserId;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('Assign $planName'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Select a user to assign this plan:'),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: selectedUserId,
-                decoration: const InputDecoration(labelText: 'User'),
-                items: appState.users
-                    .map((user) => DropdownMenuItem(
-                          value: user.id,
-                          child: Text(user.name),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedUserId = value;
-                  });
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: selectedUserId == null
-                  ? null
-                  : () {
-                      appState.assignPlan(selectedUserId!, planId);
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Plan assigned successfully')),
-                      );
-                    },
-              child: const Text('Assign'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
@@ -346,7 +292,12 @@ class _PlansScreenState extends State<PlansScreen> {
                                   SizedBox(
                                     width: double.infinity,
                                     child: FilledButton.icon(
-                                      onPressed: () => _showAssignPlanDialog(plan.id, plan.name),
+                                      onPressed: () {
+                                        Navigator.of(context).pushNamed(
+                                          '/assign-user',
+                                          arguments: {'planId': plan.id, 'planName': plan.name},
+                                        );
+                                      },
                                       icon: const Icon(Icons.person_add),
                                       label: const Text('Assign to User'),
                                       style: FilledButton.styleFrom(

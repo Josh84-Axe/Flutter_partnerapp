@@ -8,6 +8,7 @@ import '../models/profile_model.dart';
 import '../models/language_model.dart';
 import '../models/hotspot_profile_model.dart';
 import '../models/router_configuration_model.dart';
+import '../models/role_model.dart';
 import '../services/auth_service.dart';
 import '../services/payment_service.dart';
 import '../services/connectivity_service.dart';
@@ -28,6 +29,7 @@ class AppState with ChangeNotifier {
   double _walletBalance = 0.0;
   List<HotspotProfileModel> _hotspotProfiles = [];
   List<RouterConfigurationModel> _routerConfigurations = [];
+  List<RoleModel> _roles = [];
   
   List<NotificationModel> _notifications = [];
   List<ProfileModel> _profiles = [];
@@ -43,6 +45,7 @@ class AppState with ChangeNotifier {
   double get walletBalance => _walletBalance;
   List<HotspotProfileModel> get hotspotProfiles => _hotspotProfiles;
   List<RouterConfigurationModel> get routerConfigurations => _routerConfigurations;
+  List<RoleModel> get roles => _roles;
   
   List<NotificationModel> get notifications => _notifications;
   List<ProfileModel> get profiles => _profiles;
@@ -160,6 +163,51 @@ class AppState with ChangeNotifier {
         ipAddress: '192.168.1.3',
         apiPort: 8080,
         username: 'admin',
+      ),
+    ];
+
+    _roles = [
+      RoleModel(
+        id: '1',
+        name: 'Administrator',
+        permissions: {
+          'dashboard_access': true,
+          'user_create': true,
+          'user_read': true,
+          'user_update': true,
+          'user_delete': true,
+          'plan_create': true,
+          'plan_read': true,
+          'plan_update': true,
+          'plan_delete': true,
+          'transaction_viewing': true,
+          'router_management': true,
+          'settings_access': true,
+        },
+      ),
+      RoleModel(
+        id: '2',
+        name: 'Manager',
+        permissions: {
+          'dashboard_access': true,
+          'user_read': true,
+          'plan_read': true,
+          'transaction_viewing': true,
+          'router_management': false,
+          'settings_access': false,
+        },
+      ),
+      RoleModel(
+        id: '3',
+        name: 'Worker',
+        permissions: {
+          'dashboard_access': true,
+          'user_read': true,
+          'plan_read': false,
+          'transaction_viewing': false,
+          'router_management': true,
+          'settings_access': false,
+        },
       ),
     ];
   }
@@ -379,6 +427,25 @@ class AppState with ChangeNotifier {
   
   void clearError() {
     _error = null;
+    notifyListeners();
+  }
+
+  Future<void> createRole(Map<String, dynamic> roleData) async {
+    final newRole = RoleModel.fromJson(roleData);
+    _roles.add(newRole);
+    notifyListeners();
+  }
+
+  Future<void> updateRole(String id, Map<String, dynamic> roleData) async {
+    final index = _roles.indexWhere((r) => r.id == id);
+    if (index != -1) {
+      _roles[index] = RoleModel.fromJson({...roleData, 'id': id});
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteRole(String id) async {
+    _roles.removeWhere((r) => r.id == id);
     notifyListeners();
   }
 }

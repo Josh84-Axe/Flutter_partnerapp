@@ -110,7 +110,9 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.admin_panel_settings_outlined,
                 title: 'User Roles & Permissions',
                 subtitle: 'Manage user access levels',
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).pushNamed('/user-roles');
+                },
               ),
               _buildSettingItem(
                 context,
@@ -135,6 +137,15 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Data Export & Reporting',
                 subtitle: 'Export your data',
                 onTap: () {},
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.receipt_long_outlined,
+                title: 'Transactions',
+                subtitle: 'View revenue breakdown',
+                onTap: () {
+                  Navigator.of(context).pushNamed('/revenue-breakdown');
+                },
               ),
             ],
           ),

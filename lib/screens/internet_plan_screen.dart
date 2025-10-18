@@ -12,98 +12,10 @@ class InternetPlanScreen extends StatefulWidget {
 }
 
 class _InternetPlanScreenState extends State<InternetPlanScreen> {
-  void _showAddEditDialog({PlanModel? plan}) {
-    final nameController = TextEditingController(text: plan?.name ?? '');
-    final priceController = TextEditingController(text: plan?.price.toString() ?? '');
-    final dataController = TextEditingController(text: plan?.dataLimitGB.toString() ?? '');
-    final speedController = TextEditingController(text: plan?.speedMbps.toString() ?? '');
-    final validityController = TextEditingController(text: plan?.validityDays.toString() ?? '');
-    final isEdit = plan != null;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(isEdit ? 'Edit Plan' : 'Add New Plan'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Plan Name',
-                  hintText: 'e.g., Premium Plan',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: priceController,
-                decoration: const InputDecoration(
-                  labelText: 'Price',
-                  hintText: 'e.g., 29.99',
-                  border: OutlineInputBorder(),
-                  prefixText: '\$ ',
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: dataController,
-                decoration: const InputDecoration(
-                  labelText: 'Data Limit (GB)',
-                  hintText: 'e.g., 100',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: speedController,
-                decoration: const InputDecoration(
-                  labelText: 'Speed (Mbps)',
-                  hintText: 'e.g., 50',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: validityController,
-                decoration: const InputDecoration(
-                  labelText: 'Validity (Days)',
-                  hintText: 'e.g., 30',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameController.text.isNotEmpty &&
-                  priceController.text.isNotEmpty &&
-                  dataController.text.isNotEmpty &&
-                  speedController.text.isNotEmpty &&
-                  validityController.text.isNotEmpty) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(isEdit ? 'Plan updated successfully' : 'Plan created successfully'),
-                  ),
-                );
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+  void _navigateToCreateEdit({PlanModel? plan}) {
+    Navigator.of(context).pushNamed(
+      '/create-edit-plan',
+      arguments: plan?.toJson(),
     );
   }
 
@@ -194,7 +106,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            onPressed: () => _showAddEditDialog(plan: plan),
+                            onPressed: () => _navigateToCreateEdit(plan: plan),
                             icon: const Icon(Icons.edit),
                             style: IconButton.styleFrom(
                               foregroundColor: AppTheme.primaryGreen,
@@ -221,7 +133,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddEditDialog(),
+        onPressed: () => _navigateToCreateEdit(),
         backgroundColor: AppTheme.primaryGreen,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),

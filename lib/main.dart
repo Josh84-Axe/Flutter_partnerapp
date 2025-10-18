@@ -36,6 +36,14 @@ import 'screens/internet_plan_screen.dart';
 import 'screens/subscription_management_screen.dart';
 import 'screens/router_settings_screen.dart';
 import 'screens/add_router_screen.dart';
+import 'screens/create_edit_internet_plan_screen.dart';
+import 'screens/assign_user_screen.dart';
+import 'screens/user_role_screen.dart';
+import 'screens/create_role_screen.dart';
+import 'screens/worker_profile_setup_screen.dart';
+import 'screens/worker_activation_screen.dart';
+import 'screens/router_assign_screen.dart';
+import 'screens/revenue_breakdown_screen.dart';
 
 void main() {
   runApp(
@@ -151,6 +159,10 @@ class _HotspotPartnerAppState extends State<HotspotPartnerApp> {
         '/subscription-management': (context) => const SubscriptionManagementScreen(),
         '/router-settings': (context) => const RouterSettingsScreen(),
         '/add-router': (context) => const AddRouterScreen(),
+        '/user-roles': (context) => const UserRoleScreen(),
+        '/worker-profile-setup': (context) => const WorkerProfileSetupScreen(),
+        '/worker-activation': (context) => const WorkerActivationScreen(),
+        '/revenue-breakdown': (context) => const RevenueBreakdownScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/router-details') {
@@ -162,6 +174,36 @@ class _HotspotPartnerAppState extends State<HotspotPartnerApp> {
         if (settings.name == '/profile-editor') {
           return MaterialPageRoute(
             builder: (context) => const ProfilesScreen(),
+          );
+        }
+        if (settings.name == '/create-edit-plan') {
+          final planData = settings.arguments as Map<String, dynamic>?;
+          return MaterialPageRoute(
+            builder: (context) => CreateEditInternetPlanScreen(planData: planData),
+          );
+        }
+        if (settings.name == '/assign-user') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => AssignUserScreen(
+              planId: args['planId'] as String,
+              planName: args['planName'] as String,
+            ),
+          );
+        }
+        if (settings.name == '/create-role') {
+          final roleData = settings.arguments as Map<String, dynamic>?;
+          return MaterialPageRoute(
+            builder: (context) => CreateRoleScreen(roleData: roleData),
+          );
+        }
+        if (settings.name == '/router-assign') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => RouterAssignScreen(
+              userId: args['userId'] as String,
+              userName: args['userName'] as String,
+            ),
           );
         }
         return null;

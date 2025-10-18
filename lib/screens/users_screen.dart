@@ -278,56 +278,86 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
       itemCount: users.length,
       itemBuilder: (context, index) {
         final user = users[index];
+        final isConnected = user.isActive && index % 2 == 0;
+        final connectionType = index % 3 == 0 ? 'Gateway' : 'Assigned';
+        
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
-            leading: Stack(
-              children: [
-                CircleAvatar(
-                  backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
-                  child: Text(
-                    user.name[0].toUpperCase(),
-                    style: const TextStyle(
-                      color: AppTheme.primaryGreen,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+            leading: CircleAvatar(
+              backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+              child: Text(
+                user.name[0].toUpperCase(),
+                style: const TextStyle(
+                  color: AppTheme.primaryGreen,
+                  fontWeight: FontWeight.bold,
                 ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: user.isActive ? AppTheme.successGreen : AppTheme.errorRed,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-            title: Text(user.name),
+            title: Text(
+              user.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(user.email),
                 const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryGreen.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    user.role.toUpperCase(),
-                    style: const TextStyle(
-                      color: AppTheme.primaryGreen,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: user.isActive 
+                            ? AppTheme.successGreen.withOpacity(0.2)
+                            : Colors.grey.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        user.isActive ? 'Active' : 'Inactive',
+                        style: TextStyle(
+                          color: user.isActive ? AppTheme.successGreen : Colors.grey[700],
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    if (isConnected) ...[
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppTheme.successGreen,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Connected — $connectionType',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textLight,
+                        ),
+                      ),
+                    ] else if (user.isActive) ...[
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[400],
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Disconnected',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textLight,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
