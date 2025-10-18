@@ -32,6 +32,10 @@ import 'screens/config/plan_validity_config_screen.dart';
 import 'screens/config/data_limit_config_screen.dart';
 import 'screens/config/shared_user_config_screen.dart';
 import 'screens/config/additional_device_config_screen.dart';
+import 'screens/internet_plan_screen.dart';
+import 'screens/subscription_management_screen.dart';
+import 'screens/router_settings_screen.dart';
+import 'screens/add_router_screen.dart';
 
 void main() {
   runApp(
@@ -143,6 +147,10 @@ class _HotspotPartnerAppState extends State<HotspotPartnerApp> {
         '/config/data-limit': (context) => const DataLimitConfigScreen(),
         '/config/shared-users': (context) => const SharedUserConfigScreen(),
         '/config/additional-devices': (context) => const AdditionalDeviceConfigScreen(),
+        '/internet-plan': (context) => const InternetPlanScreen(),
+        '/subscription-management': (context) => const SubscriptionManagementScreen(),
+        '/router-settings': (context) => const RouterSettingsScreen(),
+        '/add-router': (context) => const AddRouterScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/router-details') {

@@ -37,11 +37,29 @@ class SettingsScreen extends StatelessWidget {
               ),
               _buildSettingItem(
                 context,
+                icon: Icons.wifi,
+                title: 'Internet Plan',
+                subtitle: 'Manage internet plans and pricing',
+                onTap: () {
+                  Navigator.of(context).pushNamed('/internet-plan');
+                },
+              ),
+              _buildSettingItem(
+                context,
                 icon: Icons.card_membership_outlined,
                 title: 'Subscription Management',
                 subtitle: _getSubscriptionTier(appState),
                 onTap: () {
-                  _showSubscriptionDialog(context, appState);
+                  Navigator.of(context).pushNamed('/subscription-management');
+                },
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.settings_input_antenna,
+                title: 'Router Settings',
+                subtitle: 'Configure router connections',
+                onTap: () {
+                  Navigator.of(context).pushNamed('/router-settings');
                 },
               ),
               _buildSettingItem(
@@ -268,52 +286,5 @@ class SettingsScreen extends StatelessWidget {
     if (routerCount >= 2 && routerCount <= 4) return 'Standard (12% fee)';
     if (routerCount >= 5) return 'Premium (10% fee)';
     return 'No subscription';
-  }
-
-  void _showSubscriptionDialog(BuildContext context, AppState appState) {
-    final routerCount = appState.currentUser?.numberOfRouters ?? 0;
-    String tier = 'Basic';
-    double fee = 0.15;
-    
-    if (routerCount == 1) {
-      tier = 'Basic';
-      fee = 0.15;
-    } else if (routerCount >= 2 && routerCount <= 4) {
-      tier = 'Standard';
-      fee = 0.12;
-    } else if (routerCount >= 5) {
-      tier = 'Premium';
-      fee = 0.10;
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Subscription Details'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Current Tier: $tier', style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('Number of Routers: $routerCount'),
-            const SizedBox(height: 8),
-            Text('Transaction Fee: ${(fee * 100).toStringAsFixed(0)}%'),
-            const SizedBox(height: 16),
-            const Text('Tier Breakdown:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text('• Basic: 1 router (15% fee)'),
-            const Text('• Standard: 2-4 routers (12% fee)'),
-            const Text('• Premium: 5+ routers (10% fee)'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
   }
 }

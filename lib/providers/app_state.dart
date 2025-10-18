@@ -6,6 +6,8 @@ import '../models/transaction_model.dart';
 import '../models/notification_model.dart';
 import '../models/profile_model.dart';
 import '../models/language_model.dart';
+import '../models/hotspot_profile_model.dart';
+import '../models/router_configuration_model.dart';
 import '../services/auth_service.dart';
 import '../services/payment_service.dart';
 import '../services/connectivity_service.dart';
@@ -24,6 +26,8 @@ class AppState with ChangeNotifier {
   List<PlanModel> _plans = [];
   List<TransactionModel> _transactions = [];
   double _walletBalance = 0.0;
+  List<HotspotProfileModel> _hotspotProfiles = [];
+  List<RouterConfigurationModel> _routerConfigurations = [];
   
   List<NotificationModel> _notifications = [];
   List<ProfileModel> _profiles = [];
@@ -37,6 +41,8 @@ class AppState with ChangeNotifier {
   List<PlanModel> get plans => _plans;
   List<TransactionModel> get transactions => _transactions;
   double get walletBalance => _walletBalance;
+  List<HotspotProfileModel> get hotspotProfiles => _hotspotProfiles;
+  List<RouterConfigurationModel> get routerConfigurations => _routerConfigurations;
   
   List<NotificationModel> get notifications => _notifications;
   List<ProfileModel> get profiles => _profiles;
@@ -101,6 +107,61 @@ class AppState with ChangeNotifier {
       loadWalletBalance(),
       loadNotifications(),
     ]);
+    
+    _hotspotProfiles = [
+      HotspotProfileModel(
+        id: '1',
+        name: 'Basic',
+        downloadSpeedMbps: 10,
+        uploadSpeedMbps: 5,
+        idleTimeout: '30m',
+      ),
+      HotspotProfileModel(
+        id: '2',
+        name: 'Standard',
+        downloadSpeedMbps: 20,
+        uploadSpeedMbps: 10,
+        idleTimeout: '1h',
+      ),
+      HotspotProfileModel(
+        id: '3',
+        name: 'Premium',
+        downloadSpeedMbps: 50,
+        uploadSpeedMbps: 25,
+        idleTimeout: '2h',
+      ),
+      HotspotProfileModel(
+        id: '4',
+        name: 'Ultra',
+        downloadSpeedMbps: 100,
+        uploadSpeedMbps: 50,
+        idleTimeout: '5h',
+      ),
+    ];
+
+    _routerConfigurations = [
+      RouterConfigurationModel(
+        id: '1',
+        name: 'Router Alpha',
+        ipAddress: '192.168.1.1',
+        apiPort: 8080,
+        username: 'admin',
+      ),
+      RouterConfigurationModel(
+        id: '2',
+        name: 'Router Beta',
+        ipAddress: '192.168.1.2',
+        apiPort: 8080,
+        username: 'admin',
+      ),
+      RouterConfigurationModel(
+        id: '3',
+        name: 'Router Gamma',
+        ipAddress: '192.168.1.3',
+        apiPort: 8080,
+        username: 'admin',
+      ),
+    ];
   }
 
   Future<void> loadNotifications() async {
