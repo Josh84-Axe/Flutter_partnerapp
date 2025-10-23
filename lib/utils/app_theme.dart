@@ -10,7 +10,10 @@ class AppTheme {
 
   static ThemeData get theme {
     return ThemeData(
-      primaryColor: deepGreen,
+      
+          // Enable Material 3
+    useMaterial3: true,
+primaryColor: deepGreen,
       scaffoldBackgroundColor: pureWhite,
       colorScheme: ColorScheme.fromSeed(
         seedColor: deepGreen,
