@@ -44,6 +44,9 @@ import 'screens/worker_profile_setup_screen.dart';
 import 'screens/worker_activation_screen.dart';
 import 'screens/router_assign_screen.dart';
 import 'screens/revenue_breakdown_screen.dart';
+import 'screens/onboarding/onboarding_flow.dart';
+import 'screens/about_app_screen.dart';
+import 'screens/empty_state_screen.dart';
 
 void main() {
   runApp(
@@ -163,6 +166,9 @@ class _HotspotPartnerAppState extends State<HotspotPartnerApp> {
         '/worker-profile-setup': (context) => const WorkerProfileSetupScreen(),
         '/worker-activation': (context) => const WorkerActivationScreen(),
         '/revenue-breakdown': (context) => const RevenueBreakdownScreen(),
+        '/onboarding': (context) => const OnboardingFlow(),
+        '/about': (context) => const AboutAppScreen(),
+        '/empty-state': (context) => const EmptyStateScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/router-details') {
@@ -220,16 +226,43 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
+  bool _isLoading = true;
+  bool _hasSeenOnboarding = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().checkAuthStatus();
+    _checkOnboarding();
+  }
+
+  Future<void> _checkOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+    
+    setState(() {
+      _hasSeenOnboarding = hasSeenOnboarding;
+      _isLoading = false;
     });
+
+    if (hasSeenOnboarding) {
+      if (mounted) {
+        context.read<AppState>().checkAuthStatus();
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (!_hasSeenOnboarding) {
+      return const OnboardingFlow();
+    }
+
     final currentUser = context.watch<AppState>().currentUser;
 
     if (currentUser == null) {

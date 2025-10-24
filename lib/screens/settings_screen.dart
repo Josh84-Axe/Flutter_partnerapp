@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/app_state.dart';
 import '../providers/theme_provider.dart';
 import '../utils/app_theme.dart';
@@ -167,14 +168,31 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.replay_outlined,
                 title: 'Replay Onboarding Tour',
                 subtitle: 'View the app tour again',
-                onTap: () {},
+                onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('hasSeenOnboarding', false);
+                  if (context.mounted) {
+                    Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
+                  }
+                },
               ),
               _buildSettingItem(
                 context,
                 icon: Icons.info_outlined,
                 title: 'About',
                 subtitle: 'App version and information',
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).pushNamed('/about');
+                },
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.inbox_outlined,
+                title: 'Empty State Demo',
+                subtitle: 'Example of empty state UI',
+                onTap: () {
+                  Navigator.of(context).pushNamed('/empty-state');
+                },
               ),
             ],
           ),
