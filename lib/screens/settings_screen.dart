@@ -101,6 +101,15 @@ class SettingsScreen extends StatelessWidget {
             items: [
               _buildSettingItem(
                 context,
+                icon: Icons.person_outline,
+                title: 'Partner Profile',
+                subtitle: 'Manage business info & payment methods',
+                onTap: () {
+                  Navigator.of(context).pushNamed('/partner-profile');
+                },
+              ),
+              _buildSettingItem(
+                context,
                 icon: Icons.security_outlined,
                 title: 'Security Settings',
                 subtitle: '2FA, password management',
@@ -115,6 +124,15 @@ class SettingsScreen extends StatelessWidget {
                 subtitle: 'Manage user access levels',
                 onTap: () {
                   Navigator.of(context).pushNamed('/role-permissions');
+                },
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.file_download_outlined,
+                title: 'Data Export & Reporting',
+                subtitle: 'Generate and export reports',
+                onTap: () {
+                  Navigator.of(context).pushNamed('/reporting');
                 },
               ),
               _buildSettingItem(

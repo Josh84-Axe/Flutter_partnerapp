@@ -49,6 +49,11 @@ import 'screens/payout_submitted_screen.dart';
 import 'screens/security/password_and_2fa_screen.dart';
 import 'screens/security/authenticators_screen.dart';
 import 'screens/security/success_2fa_screen.dart';
+import 'screens/partner_profile_screen.dart';
+import 'screens/otp_validation_screen.dart';
+import 'screens/reporting_screen.dart';
+import 'screens/report_preview_screen.dart';
+import 'screens/export_success_screen.dart';
 import 'screens/role_permission_screen.dart';
 import 'screens/assign_role_screen.dart';
 
@@ -123,6 +128,11 @@ class HotspotPartnerApp extends StatelessWidget {
         '/security/password-2fa': (context) => const PasswordAndTwoFactorScreen(),
         '/security/authenticators': (context) => const AuthenticatorsScreen(),
         '/security/2fa-success': (context) => const TwoFactorSuccessScreen(),
+        '/partner-profile': (context) => const PartnerProfileScreen(),
+        '/otp-validation': (context) => const OtpValidationScreen(),
+        '/reporting': (context) => const ReportingScreen(),
+        '/report-preview': (context) => const ReportPreviewScreen(),
+        '/export-success': (context) => const ExportSuccessScreen(),
         '/onboarding': (context) => const OnboardingFlow(),
         '/about': (context) => const AboutAppScreen(),
         '/empty-state': (context) => const EmptyStateScreen(),
