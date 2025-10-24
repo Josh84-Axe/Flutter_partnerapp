@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 import '../widgets/metric_card.dart';
@@ -35,7 +36,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: Text('dashboard_title'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.menu),
           onPressed: () {
@@ -90,19 +91,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
           padding: const EdgeInsets.all(16.0),
           children: [
             Text(
-              'Welcome back, ${appState.currentUser?.name ?? 'Partner'}!',
+              'welcome_back'.tr(namedArgs: {'name': appState.currentUser?.name ?? 'Partner'}),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'Overview of your hotspot business',
+              'overview_business'.tr(),
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 24),
             GestureDetector(
               onTap: () => _showRevenueDetails(context, appState),
               child: MetricCard(
-                title: 'Total Revenue',
+                title: 'total_revenue'.tr(),
                 value: MetricCard.formatCurrency(totalRevenue),
                 icon: Icons.paid,
                 accentColor: AppTheme.successGreen,
@@ -113,7 +114,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             GestureDetector(
               onTap: () => _showActiveUsersDetails(context, appState),
               child: MetricCard(
-                title: 'Active Users',
+                title: 'active_users'.tr(),
                 value: MetricCard.formatNumber(activeUsers),
                 icon: Icons.group,
                 accentColor: Colors.blue,
@@ -124,7 +125,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             GestureDetector(
               onTap: () => _showDataUsageDetails(context, appState),
               child: MetricCard(
-                title: 'Data Usage',
+                title: 'data_usage'.tr(),
                 value: '${totalDataUsage.toStringAsFixed(1)} GB',
                 icon: Icons.wifi,
                 accentColor: AppTheme.errorRed,
@@ -133,7 +134,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Recent Activity',
+              'recent_activity'.tr(),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 12),
@@ -197,7 +198,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Revenue Details', style: Theme.of(context).textTheme.titleLarge),
+                  Text('revenue_details'.tr(), style: Theme.of(context).textTheme.titleLarge),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
@@ -248,7 +249,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Active Users', style: Theme.of(context).textTheme.titleLarge),
+                  Text('active_users_details'.tr(), style: Theme.of(context).textTheme.titleLarge),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
@@ -276,7 +277,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           SnackBar(content: Text('Unassign ${user.name}\'s plan')),
                         );
                       },
-                      child: const Text('Unassign'),
+                      child: Text('unassign'.tr()),
                     ),
                   );
                 },
@@ -304,7 +305,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Data Usage by Router', style: Theme.of(context).textTheme.titleLarge),
+                  Text('data_usage_by_router'.tr(), style: Theme.of(context).textTheme.titleLarge),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
@@ -322,7 +323,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   return ListTile(
                     leading: const Icon(Icons.router, color: AppTheme.errorRed),
                     title: Text(router.name),
-                    subtitle: Text('${router.connectedUsers} users connected'),
+                    subtitle: Text('users_connected'.tr(namedArgs: {'count': router.connectedUsers.toString()})),
                     trailing: Text(
                       '${router.dataUsageGB.toStringAsFixed(1)} GB',
                       style: const TextStyle(color: AppTheme.errorRed, fontWeight: FontWeight.bold),

@@ -42,6 +42,7 @@ dependencies:
   google_fonts: ^6.1.0
   flutter_animate: ^4.5.0
   url_launcher: ^6.2.5
+  easy_localization: ^3.0.8
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +70,7 @@ flutter:
     - assets/images/logo_tiknet.png
     - lib/localization/en.json
     - lib/localization/fr.json
+    - lib/l10n/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

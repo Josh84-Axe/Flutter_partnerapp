@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'utils/app_theme.dart';
 import 'providers/app_state.dart';
 import 'providers/theme_provider.dart';
-import 'localization/app_localizations.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/users_screen.dart';
@@ -48,93 +48,40 @@ import 'screens/onboarding/onboarding_flow.dart';
 import 'screens/about_app_screen.dart';
 import 'screens/empty_state_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+  
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AppState()),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-      ],
-      child: const HotspotPartnerApp(),
+    EasyLocalization(
+      supportedLocales: const [Locale('en'), Locale('fr')],
+      path: 'lib/l10n',
+      fallbackLocale: const Locale('en'),
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => AppState()),
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ],
+        child: const HotspotPartnerApp(),
+      ),
     ),
   );
 }
 
-class HotspotPartnerApp extends StatefulWidget {
+class HotspotPartnerApp extends StatelessWidget {
   const HotspotPartnerApp({super.key});
-
-  @override
-  State<HotspotPartnerApp> createState() => _HotspotPartnerAppState();
-}
-
-class _HotspotPartnerAppState extends State<HotspotPartnerApp> {
-  Locale? _locale;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLocale();
-  }
-
-  Future<void> _loadLocale() async {
-    final prefs = await SharedPreferences.getInstance();
-    final languageCode = prefs.getString('language_code');
-    final countryCode = prefs.getString('country');
-    
-    if (languageCode != null) {
-      setState(() {
-        _locale = Locale(languageCode);
-      });
-    } else if (countryCode != null) {
-      final defaultLang = _getDefaultLanguageForCountry(countryCode);
-      setState(() {
-        _locale = Locale(defaultLang);
-      });
-    }
-  }
-
-  String _getDefaultLanguageForCountry(String country) {
-    const frenchCountries = [
-      'France',
-      'Belgium',
-      'Canada',
-      'Ivory Coast',
-      'Senegal',
-    ];
-    return frenchCountries.contains(country) ? 'fr' : 'en';
-  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Tiknet Partner',
+      title: 'app_title'.tr(),
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
-      locale: _locale,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('fr'),
-      ],
-      localeResolutionCallback: (locale, supportedLocales) {
-        if (_locale != null) return _locale;
-        
-        if (locale != null) {
-          for (var supportedLocale in supportedLocales) {
-            if (supportedLocale.languageCode == locale.languageCode) {
-              return supportedLocale;
-            }
-          }
-        }
-        return supportedLocales.first;
-      },
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
       home: const AuthWrapper(),
       routes: {
         '/login': (context) => const LoginScreen(),
@@ -305,26 +252,26 @@ class _HomeScreenState extends State<HomeScreen> {
             _currentIndex = index;
           });
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+            icon: const Icon(Icons.dashboard),
+            label: 'dashboard_title'.tr(),
           ),
           NavigationDestination(
-            icon: Icon(Icons.people),
-            label: 'Users',
+            icon: const Icon(Icons.people),
+            label: 'users'.tr(),
           ),
           NavigationDestination(
-            icon: Icon(Icons.wifi),
-            label: 'Plans',
+            icon: const Icon(Icons.wifi),
+            label: 'plans'.tr(),
           ),
           NavigationDestination(
-            icon: Icon(Icons.receipt_long),
-            label: 'Transactions',
+            icon: const Icon(Icons.receipt_long),
+            label: 'transactions'.tr(),
           ),
           NavigationDestination(
-            icon: Icon(Icons.router),
-            label: 'Router',
+            icon: const Icon(Icons.router),
+            label: 'router'.tr(),
           ),
         ],
       ),
@@ -370,14 +317,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
+              title: Text('settings'.tr()),
               onTap: () {
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.help),
-              title: const Text('Help & Support'),
+              title: Text('help_support'.tr()),
               onTap: () {
                 Navigator.pop(context);
               },
@@ -385,9 +332,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text(
-                'Logout',
-                style: TextStyle(color: Colors.red),
+              title: Text(
+                'logout'.tr(),
+                style: const TextStyle(color: Colors.red),
               ),
               onTap: () async {
                 await context.read<AppState>().logout();

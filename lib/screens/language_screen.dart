@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/language_model.dart';
 import '../utils/app_theme.dart';
 
@@ -18,8 +17,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
   @override
   void initState() {
     super.initState();
-    final appState = context.read<AppState>();
-    selectedCode = appState.selectedLanguage.code;
+    selectedCode = context.locale.languageCode;
     languages = LanguageModel.availableLanguages.map((lang) {
       return lang.copyWith(isSelected: lang.code == selectedCode);
     }).toList();
@@ -29,7 +27,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Language'),
+        title: Text('language'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -96,14 +94,16 @@ class _LanguageScreenState extends State<LanguageScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () {
+                  onPressed: () async {
                     final selectedLanguage = languages.firstWhere(
                       (lang) => lang.code == selectedCode,
                     );
-                    context.read<AppState>().setLanguage(selectedLanguage.code);
-                    Navigator.of(context).pop();
+                    await context.setLocale(Locale(selectedLanguage.code));
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                    }
                   },
-                  child: const Text('Apply Changes'),
+                  child: Text('apply_changes'.tr()),
                 ),
               ),
             ),
