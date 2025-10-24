@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -10,7 +9,6 @@ import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/users_screen.dart';
 import 'screens/plans_screen.dart';
-import 'screens/transactions_screen.dart';
 import 'screens/health_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/notifications_screen.dart';
@@ -38,15 +36,21 @@ import 'screens/router_settings_screen.dart';
 import 'screens/add_router_screen.dart';
 import 'screens/create_edit_internet_plan_screen.dart';
 import 'screens/assign_user_screen.dart';
-import 'screens/user_role_screen.dart';
 import 'screens/create_role_screen.dart';
 import 'screens/worker_profile_setup_screen.dart';
 import 'screens/worker_activation_screen.dart';
 import 'screens/router_assign_screen.dart';
-import 'screens/revenue_breakdown_screen.dart';
 import 'screens/onboarding/onboarding_flow.dart';
 import 'screens/about_app_screen.dart';
 import 'screens/empty_state_screen.dart';
+import 'screens/wallet_overview_screen.dart';
+import 'screens/payout_request_screen.dart';
+import 'screens/payout_submitted_screen.dart';
+import 'screens/security/password_and_2fa_screen.dart';
+import 'screens/security/authenticators_screen.dart';
+import 'screens/security/success_2fa_screen.dart';
+import 'screens/role_permission_screen.dart';
+import 'screens/assign_role_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -109,10 +113,16 @@ class HotspotPartnerApp extends StatelessWidget {
         '/subscription-management': (context) => const SubscriptionManagementScreen(),
         '/router-settings': (context) => const RouterSettingsScreen(),
         '/add-router': (context) => const AddRouterScreen(),
-        '/user-roles': (context) => const UserRoleScreen(),
+        '/role-permissions': (context) => const RolePermissionScreen(),
+        '/assign-role': (context) => const AssignRoleScreen(),
         '/worker-profile-setup': (context) => const WorkerProfileSetupScreen(),
         '/worker-activation': (context) => const WorkerActivationScreen(),
-        '/revenue-breakdown': (context) => const RevenueBreakdownScreen(),
+        '/wallet-overview': (context) => const WalletOverviewScreen(),
+        '/payout-request': (context) => const PayoutRequestScreen(),
+        '/payout-submitted': (context) => const PayoutSubmittedScreen(),
+        '/security/password-2fa': (context) => const PasswordAndTwoFactorScreen(),
+        '/security/authenticators': (context) => const AuthenticatorsScreen(),
+        '/security/2fa-success': (context) => const TwoFactorSuccessScreen(),
         '/onboarding': (context) => const OnboardingFlow(),
         '/about': (context) => const AboutAppScreen(),
         '/empty-state': (context) => const EmptyStateScreen(),
@@ -234,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const DashboardScreen(),
     const UsersScreen(),
     const PlansScreen(),
-    const TransactionsScreen(),
+    const WalletOverviewScreen(),
     const HealthScreen(),
   ];
 
@@ -266,8 +276,8 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'plans'.tr(),
           ),
           NavigationDestination(
-            icon: const Icon(Icons.receipt_long),
-            label: 'transactions'.tr(),
+            icon: const Icon(Icons.account_balance_wallet),
+            label: 'wallet_payout'.tr(),
           ),
           NavigationDestination(
             icon: const Icon(Icons.router),

@@ -104,7 +104,9 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.security_outlined,
                 title: 'Security Settings',
                 subtitle: '2FA, password management',
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).pushNamed('/security/password-2fa');
+                },
               ),
               _buildSettingItem(
                 context,
@@ -112,7 +114,7 @@ class SettingsScreen extends StatelessWidget {
                 title: 'User Roles & Permissions',
                 subtitle: 'Manage user access levels',
                 onTap: () {
-                  Navigator.of(context).pushNamed('/user-roles');
+                  Navigator.of(context).pushNamed('/role-permissions');
                 },
               ),
               _buildSettingItem(
@@ -138,15 +140,6 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Data Export & Reporting',
                 subtitle: 'Export your data',
                 onTap: () {},
-              ),
-              _buildSettingItem(
-                context,
-                icon: Icons.receipt_long_outlined,
-                title: 'Transactions',
-                subtitle: 'View revenue breakdown',
-                onTap: () {
-                  Navigator.of(context).pushNamed('/revenue-breakdown');
-                },
               ),
             ],
           ),
