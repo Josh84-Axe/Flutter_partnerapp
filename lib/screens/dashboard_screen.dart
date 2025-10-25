@@ -49,7 +49,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               IconButton(
                 icon: const Icon(Icons.notifications_outlined),
                 onPressed: () {
-                  Navigator.of(context).pushNamed('/notifications');
+                  Navigator.of(context).pushNamed('/notification-router');
                 },
               ),
               if (appState.unreadNotificationCount > 0)

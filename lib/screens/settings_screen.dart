@@ -69,7 +69,7 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Notifications Preferences',
                 subtitle: 'Configure notification settings',
                 onTap: () {
-                  Navigator.of(context).pushNamed('/notifications');
+                  Navigator.of(context).pushNamed('/notification-settings');
                 },
               ),
               _buildSettingItem(
