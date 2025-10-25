@@ -389,11 +389,11 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               },
             ),
             ListTile(
-              leading: const Icon(Icons.router, color: AppTheme.primaryGreen),
-              title: const Text('Assign Router'),
+              leading: const Icon(Icons.person, color: AppTheme.primaryGreen),
+              title: const Text('View Details'),
               onTap: () {
                 Navigator.pop(context);
-                _showAssignRouterDialog(context, user);
+                Navigator.of(context).pushNamed('/user-details', arguments: user);
               },
             ),
             ListTile(
