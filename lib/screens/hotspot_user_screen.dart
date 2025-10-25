@@ -14,91 +14,8 @@ class HotspotUserScreen extends StatefulWidget {
 class _HotspotUserScreenState extends State<HotspotUserScreen> {
   String _searchQuery = '';
 
-  void _showAddEditDialog({HotspotProfileModel? profile}) {
-    final nameController = TextEditingController(text: profile?.name ?? '');
-    final downloadSpeedController = TextEditingController(
-      text: profile?.downloadSpeedMbps.toString() ?? '',
-    );
-    final uploadSpeedController = TextEditingController(
-      text: profile?.uploadSpeedMbps.toString() ?? '',
-    );
-    final idleTimeoutController = TextEditingController(
-      text: profile?.idleTimeout ?? '',
-    );
-    final isEdit = profile != null;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(isEdit ? 'Edit Profile' : 'Add New Profile'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Profile Name',
-                  hintText: 'e.g., Premium',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: downloadSpeedController,
-                decoration: const InputDecoration(
-                  labelText: 'Download Speed (Mbps)',
-                  hintText: 'e.g., 50',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: uploadSpeedController,
-                decoration: const InputDecoration(
-                  labelText: 'Upload Speed (Mbps)',
-                  hintText: 'e.g., 25',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: idleTimeoutController,
-                decoration: const InputDecoration(
-                  labelText: 'Idle Timeout',
-                  hintText: 'e.g., 30m or 2h',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameController.text.isNotEmpty &&
-                  downloadSpeedController.text.isNotEmpty &&
-                  uploadSpeedController.text.isNotEmpty &&
-                  idleTimeoutController.text.isNotEmpty) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(isEdit ? 'Profile updated' : 'Profile added'),
-                  ),
-                );
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
+  void _navigateToCreateEdit({HotspotProfileModel? profile}) {
+    Navigator.of(context).pushNamed('/create-edit-user-profile', arguments: profile);
   }
 
   void _showDeleteDialog(HotspotProfileModel profile) {
@@ -202,7 +119,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              onPressed: () => _showAddEditDialog(profile: profile),
+                              onPressed: () => _navigateToCreateEdit(profile: profile),
                               icon: const Icon(Icons.edit),
                               style: IconButton.styleFrom(
                                 foregroundColor: AppTheme.primaryGreen,
@@ -243,7 +160,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: () => _showAddEditDialog(),
+                  onPressed: () => _navigateToCreateEdit(),
                   icon: const Icon(Icons.add),
                   label: const Text('Add New Profile'),
                   style: FilledButton.styleFrom(
