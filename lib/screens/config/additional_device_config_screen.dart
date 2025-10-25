@@ -10,96 +10,56 @@ class AdditionalDeviceConfigScreen extends StatefulWidget {
 }
 
 class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _deviceCountController = TextEditingController();
+  final _priceController = TextEditingController();
+
   List<ConfigItem> _configs = [
     ConfigItem(
       id: '1',
-      name: 'Single Device',
-      description: '1 device',
+      name: 'No Extra Devices',
+      description: '0 additional devices - \$0.00',
     ),
     ConfigItem(
       id: '2',
-      name: 'Multi Device',
-      description: '3 devices',
+      name: '1 Extra Device',
+      description: '1 additional device - \$5.00',
     ),
     ConfigItem(
       id: '3',
-      name: 'Family Pack',
-      description: '5 devices',
+      name: 'Up to 3 Devices',
+      description: 'Up to 3 devices - \$12.00',
     ),
   ];
 
-  void _showAddEditDialog({ConfigItem? item}) {
-    final nameController = TextEditingController(text: item?.name ?? '');
-    final descController = TextEditingController(text: item?.description ?? '');
-    final isEdit = item != null;
+  ConfigItem? _editingConfig;
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(isEdit ? 'Edit Device Configuration' : 'Add New Device Configuration'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Setting Name',
-                hintText: 'e.g., Multi Device',
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: descController,
-              decoration: const InputDecoration(
-                labelText: 'Number of Devices',
-                hintText: 'e.g., 3 devices',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameController.text.isNotEmpty && descController.text.isNotEmpty) {
-                setState(() {
-                  if (isEdit) {
-                    final index = _configs.indexWhere((c) => c.id == item.id);
-                    _configs[index] = ConfigItem(
-                      id: item.id,
-                      name: nameController.text,
-                      description: descController.text,
-                    );
-                  } else {
-                    _configs.add(ConfigItem(
-                      id: DateTime.now().millisecondsSinceEpoch.toString(),
-                      name: nameController.text,
-                      description: descController.text,
-                    ));
-                  }
-                });
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(isEdit ? 'Configuration updated' : 'Configuration added')),
-                );
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _deviceCountController.dispose();
+    _priceController.dispose();
+    super.dispose();
   }
 
-  void _showDeleteDialog(ConfigItem item) {
+  void _editConfig(ConfigItem config) {
+    setState(() {
+      _editingConfig = config;
+      _nameController.text = config.name;
+      final deviceMatch = RegExp(r'(\d+) additional').firstMatch(config.description);
+      _deviceCountController.text = deviceMatch?.group(1) ?? '0';
+      final priceMatch = RegExp(r'\$(\d+\.?\d*)').firstMatch(config.description);
+      _priceController.text = priceMatch?.group(1) ?? '';
+    });
+  }
+
+  void _deleteConfig(ConfigItem config) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Configuration'),
-        content: Text('Are you sure you want to delete "${item.name}"?'),
+        content: Text('Are you sure you want to delete "${config.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -108,11 +68,14 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
           FilledButton(
             onPressed: () {
               setState(() {
-                _configs.removeWhere((c) => c.id == item.id);
+                _configs.removeWhere((c) => c.id == config.id);
               });
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Configuration deleted')),
+                const SnackBar(
+                  content: Text('Configuration deleted'),
+                  backgroundColor: AppTheme.errorRed,
+                ),
               );
             },
             style: FilledButton.styleFrom(
@@ -125,104 +88,253 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
     );
   }
 
+  void _saveConfiguration() {
+    if (!_formKey.currentState!.validate()) return;
+
+    final deviceCount = _deviceCountController.text;
+    final price = _priceController.text;
+    final description = '$deviceCount additional ${int.parse(deviceCount) == 1 ? "device" : "devices"} - \$$price';
+
+    final newConfig = ConfigItem(
+      id: _editingConfig?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _nameController.text,
+      description: description,
+    );
+
+    setState(() {
+      if (_editingConfig != null) {
+        final index = _configs.indexWhere((c) => c.id == _editingConfig!.id);
+        if (index != -1) {
+          _configs[index] = newConfig;
+        }
+        _editingConfig = null;
+      } else {
+        _configs.add(newConfig);
+      }
+      _nameController.clear();
+      _deviceCountController.clear();
+      _priceController.clear();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_editingConfig != null ? 'Configuration updated' : 'Configuration added'),
+        backgroundColor: AppTheme.successGreen,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Device Configuration'),
+        title: const Text('Device Configurations'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: Column(
+      body: ListView(
         children: [
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _configs.length,
-              itemBuilder: (context, index) {
-                final config = _configs[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                config.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                config.description,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: AppTheme.textLight,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              onPressed: () => _showAddEditDialog(item: config),
-                              icon: const Icon(Icons.edit),
-                              style: IconButton.styleFrom(
-                                foregroundColor: AppTheme.primaryGreen,
-                                backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            IconButton(
-                              onPressed: () => _showDeleteDialog(config),
-                              icon: const Icon(Icons.delete),
-                              style: IconButton.styleFrom(
-                                foregroundColor: AppTheme.errorRed,
-                                backgroundColor: AppTheme.errorRed.withOpacity(0.1),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          Container(
+          ..._configs.map((config) => Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
+              color: AppTheme.pureWhite,
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  offset: const Offset(0, -2),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: SafeArea(
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () => _showAddEditDialog(),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add New Setting'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            config.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            config.description,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppTheme.textLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () => _editConfig(config),
+                      color: AppTheme.textLight,
+                    ),
+                  ],
+                ),
+                const Divider(height: 24),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: () => _deleteConfig(config),
+                    icon: const Icon(Icons.delete, size: 18),
+                    label: const Text('Delete'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppTheme.errorRed,
+                    ),
                   ),
                 ),
+              ],
+            ),
+          )),
+          Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.pureWhite,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Add New Setting',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Configuration Name',
+                      hintText: 'e.g., \'Business Plan\'',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a configuration name';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _deviceCountController,
+                          decoration: InputDecoration(
+                            labelText: 'Number of Devices',
+                            hintText: 'e.g., 5',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                            ),
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Required';
+                            }
+                            if (int.tryParse(value) == null) {
+                              return 'Must be a number';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _priceController,
+                          decoration: InputDecoration(
+                            labelText: 'Price',
+                            hintText: '0.00',
+                            prefixText: '\$ ',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                            ),
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Required';
+                            }
+                            if (double.tryParse(value) == null) {
+                              return 'Invalid';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.pureWhite,
+          border: Border(
+            top: BorderSide(
+              color: AppTheme.textLight.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+        ),
+        child: SafeArea(
+          child: FilledButton(
+            onPressed: _saveConfiguration,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.primaryGreen,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: const Text(
+              'Save Configuration',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
       ),
     );
   }
