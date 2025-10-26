@@ -4,6 +4,9 @@ import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 import '../widgets/metric_card.dart';
+import '../widgets/subscription_plan_card.dart';
+import '../widgets/data_usage_card.dart';
+import '../widgets/quick_action_button.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -90,14 +93,65 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
+            // "Stay Connected" heading
             Text(
-              'welcome_back'.tr(namedArgs: {'name': appState.currentUser?.name ?? 'Partner'}),
-              style: Theme.of(context).textTheme.headlineMedium,
+              'stay_connected'.tr(),
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
-              'overview_business'.tr(),
-              style: Theme.of(context).textTheme.bodyMedium,
+              'welcome_back'.tr(namedArgs: {'name': appState.currentUser?.name ?? 'Joe'}),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 24),
+            
+            // Subscription Plan Card
+            SubscriptionPlanCard(
+              planName: 'Standard',
+              renewalDate: DateTime(2023, 12, 10),
+              isLoading: appState.isLoading,
+            ),
+            const SizedBox(height: 16),
+            
+            // Data Usage Card
+            DataUsageCard(
+              usedGB: 12.0,
+              totalGB: 20.0,
+              isLoading: appState.isLoading,
+            ),
+            const SizedBox(height: 24),
+            
+            // Quick Action Buttons Grid
+            GridView.count(
+              crossAxisCount: 4,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              children: [
+                QuickActionButton(
+                  icon: Icons.wifi,
+                  label: 'internet_plans'.tr(),
+                  onTap: () => Navigator.of(context).pushNamed('/internet-plan'),
+                ),
+                QuickActionButton(
+                  icon: Icons.people,
+                  label: 'hotspot_users'.tr(),
+                  onTap: () => Navigator.of(context).pushNamed('/hotspot-user'),
+                ),
+                QuickActionButton(
+                  icon: Icons.bar_chart,
+                  label: 'reporting'.tr(),
+                  onTap: () => Navigator.of(context).pushNamed('/reporting'),
+                ),
+                QuickActionButton(
+                  icon: Icons.settings,
+                  label: 'settings'.tr(),
+                  onTap: () => Navigator.of(context).pushNamed('/settings'),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             GestureDetector(
