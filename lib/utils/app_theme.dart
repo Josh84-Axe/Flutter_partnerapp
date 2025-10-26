@@ -56,6 +56,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: primaryGreen,
         foregroundColor: textDark,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: textDark),
         titleTextStyle: GoogleFonts.poppins(
@@ -146,6 +147,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: surfaceDark,
         foregroundColor: textDarkMode,
+        surfaceTintColor: primaryGreen,
         elevation: 0,
         iconTheme: const IconThemeData(color: textDarkMode),
         titleTextStyle: GoogleFonts.poppins(

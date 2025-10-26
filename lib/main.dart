@@ -312,76 +312,71 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: AppTheme.primaryGreen,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.white,
-                    child: Icon(
-                      Icons.person,
-                      size: 40,
-                      color: AppTheme.primaryGreen,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    context.watch<AppState>().currentUser?.name ?? 'Partner',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    context.watch<AppState>().currentUser?.email ?? '',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
+      drawer: NavigationDrawer(
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(
+              color: AppTheme.primaryGreen,
             ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: Text('settings'.tr()),
-              onTap: () {
-                Navigator.pop(context);
-              },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.person,
+                    size: 40,
+                    color: AppTheme.primaryGreen,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  context.watch<AppState>().currentUser?.name ?? 'Partner',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  context.watch<AppState>().currentUser?.email ?? '',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.help),
-              title: Text('help_support'.tr()),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: Text(
-                'logout'.tr(),
-                style: const TextStyle(color: Colors.red),
-              ),
-              onTap: () async {
+          ),
+          NavigationDrawerDestination(
+            icon: const Icon(Icons.settings),
+            label: Text('settings'.tr()),
+          ),
+          NavigationDrawerDestination(
+            icon: const Icon(Icons.help),
+            label: Text('help_support'.tr()),
+          ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: FilledButton.icon(
+              onPressed: () async {
                 await context.read<AppState>().logout();
                 if (context.mounted) {
                   Navigator.of(context).pushReplacementNamed('/login');
                 }
               },
+              icon: const Icon(Icons.logout),
+              label: Text('logout'.tr()),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

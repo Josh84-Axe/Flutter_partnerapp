@@ -78,6 +78,7 @@ class TiknetThemes {
       appBarTheme: AppBarTheme(
         backgroundColor: flatGreenPrimary,
         foregroundColor: flatGreenText,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: flatGreenText),
         titleTextStyle: GoogleFonts.poppins(
@@ -186,6 +187,7 @@ class TiknetThemes {
       appBarTheme: AppBarTheme(
         backgroundColor: dynamicBlueDark,
         foregroundColor: Colors.white,
+        surfaceTintColor: dynamicBlueLight,
         elevation: 4,
         shadowColor: dynamicBluePrimary.withValues(alpha: 0.3),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -297,6 +299,7 @@ class TiknetThemes {
       appBarTheme: AppBarTheme(
         backgroundColor: darkSurface,
         foregroundColor: darkText,
+        surfaceTintColor: darkPrimary,
         elevation: 0,
         iconTheme: const IconThemeData(color: darkText),
         titleTextStyle: GoogleFonts.poppins(
