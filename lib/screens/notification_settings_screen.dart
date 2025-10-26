@@ -87,7 +87,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('notification_settings'.tr() + ' ' + 'save_changes'.tr().toLowerCase()),
+                  content: Text('${'notification_settings'.tr()} ${'save_changes'.tr().toLowerCase()}'),
                   backgroundColor: AppTheme.successGreen,
                 ),
               );

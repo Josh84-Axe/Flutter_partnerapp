@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../utils/app_theme.dart';
 
 class PartnerProfileScreen extends StatefulWidget {
@@ -122,7 +121,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                ..._paymentMethods.map((method) => _buildPaymentMethodCard(method)).toList(),
+                ..._paymentMethods.map((method) => _buildPaymentMethodCard(method)),
               ],
             ),
           ),

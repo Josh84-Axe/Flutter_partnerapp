@@ -16,7 +16,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
   final _deviceCountController = TextEditingController();
   final _priceController = TextEditingController();
 
-  List<ConfigItem> _configs = [
+  final List<ConfigItem> _configs = [
     ConfigItem(
       id: '1',
       name: 'no_extra_devices'.tr(),

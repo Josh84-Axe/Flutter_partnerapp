@@ -10,7 +10,7 @@ class DataLimitConfigScreen extends StatefulWidget {
 }
 
 class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
-  List<ConfigItem> _configs = [
+  final List<ConfigItem> _configs = [
     ConfigItem(
       id: '1',
       name: 'Basic',

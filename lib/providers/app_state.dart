@@ -31,8 +31,8 @@ class AppState with ChangeNotifier {
   List<RouterConfigurationModel> _routerConfigurations = [];
   List<RoleModel> _roles = [];
   
-  List<NotificationModel> _notifications = [];
-  List<ProfileModel> _profiles = [];
+  final List<NotificationModel> _notifications = [];
+  final List<ProfileModel> _profiles = [];
   LanguageModel _selectedLanguage = LanguageModel.availableLanguages.first;
   
   UserModel? get currentUser => _currentUser;

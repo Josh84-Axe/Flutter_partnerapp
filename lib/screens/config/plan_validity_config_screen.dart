@@ -10,7 +10,7 @@ class PlanValidityConfigScreen extends StatefulWidget {
 }
 
 class _PlanValidityConfigScreenState extends State<PlanValidityConfigScreen> {
-  List<ConfigItem> _configs = [
+  final List<ConfigItem> _configs = [
     ConfigItem(
       id: '1',
       name: 'Daily',

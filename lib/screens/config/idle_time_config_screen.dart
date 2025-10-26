@@ -10,7 +10,7 @@ class IdleTimeConfigScreen extends StatefulWidget {
 }
 
 class _IdleTimeConfigScreenState extends State<IdleTimeConfigScreen> {
-  List<ConfigItem> _configs = [
+  final List<ConfigItem> _configs = [
     ConfigItem(
       id: '1',
       name: 'Short',

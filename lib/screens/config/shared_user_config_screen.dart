@@ -10,7 +10,7 @@ class SharedUserConfigScreen extends StatefulWidget {
 }
 
 class _SharedUserConfigScreenState extends State<SharedUserConfigScreen> {
-  List<ConfigItem> _configs = [
+  final List<ConfigItem> _configs = [
     ConfigItem(
       id: '1',
       name: 'Single User',

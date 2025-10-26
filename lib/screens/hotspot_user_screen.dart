@@ -34,7 +34,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${'delete_profile'.tr()}')),
+                SnackBar(content: Text('delete_profile'.tr())),
               );
             },
             style: FilledButton.styleFrom(

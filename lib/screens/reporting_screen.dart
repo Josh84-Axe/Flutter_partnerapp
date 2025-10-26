@@ -204,7 +204,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          ..._generatedReports.map((report) => _buildReportCard(report)).toList(),
+          ..._generatedReports.map((report) => _buildReportCard(report)),
         ],
       ),
     );

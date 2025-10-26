@@ -171,7 +171,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                 ),
               ),
             );
-          }).toList(),
+          }),
           const SizedBox(height: 32),
           Text(
             'Financial Summary',

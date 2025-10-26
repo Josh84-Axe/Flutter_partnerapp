@@ -10,7 +10,7 @@ class RateLimitConfigScreen extends StatefulWidget {
 }
 
 class _RateLimitConfigScreenState extends State<RateLimitConfigScreen> {
-  List<ConfigItem> _configs = [
+  final List<ConfigItem> _configs = [
     ConfigItem(
       id: '1',
       name: 'Basic Speed',

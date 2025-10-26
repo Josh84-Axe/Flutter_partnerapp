@@ -18,7 +18,7 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
-  bool _is2FAEnabled = false;
+  final bool _is2FAEnabled = false;
   
   String _passwordStrength = 'weak';
 
@@ -208,12 +208,13 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
           const SizedBox(height: 24),
           FilledButton(
             onPressed: _is2FAEnabled ? null : () async {
+              final navigator = Navigator.of(context);
               final result = await showDialog<bool>(
                 context: context,
                 builder: (context) => const VerifyIdentityDialog(),
               );
               if (result == true && mounted) {
-                Navigator.of(context).pushNamed('/security/authenticators');
+                navigator.pushNamed('/security/authenticators');
               }
             },
             style: FilledButton.styleFrom(
