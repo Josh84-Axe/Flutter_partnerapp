@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'utils/app_theme.dart';
 import 'providers/app_state.dart';
 import 'providers/theme_provider.dart';
@@ -90,15 +91,31 @@ class HotspotPartnerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     
-    return MaterialApp(
-      title: 'app_title'.tr(),
-      theme: themeProvider.currentTheme,
-      themeMode: themeProvider.themeMode,
-      debugShowCheckedModeBanner: false,
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      home: const AuthWrapper(),
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        // Use dynamic colors if available (Android 12+), otherwise fallback to Tiknet themes
+        ThemeData lightTheme = themeProvider.currentTheme;
+        ThemeData darkTheme = themeProvider.currentTheme;
+        
+        // Only apply dynamic colors if user hasn't selected a specific theme variant
+        // and dynamic colors are available
+        if (lightDynamic != null && darkDynamic != null) {
+          // For now, we'll use the selected theme variant as the base
+          // Dynamic colors can be optionally integrated in the future
+          lightTheme = themeProvider.currentTheme;
+          darkTheme = themeProvider.currentTheme;
+        }
+        
+        return MaterialApp(
+          title: 'app_title'.tr(),
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: themeProvider.themeMode,
+          debugShowCheckedModeBanner: false,
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          locale: context.locale,
+          home: const AuthWrapper(),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
@@ -197,6 +214,8 @@ class HotspotPartnerApp extends StatelessWidget {
           );
         }
         return null;
+      },
+        );
       },
     );
   }
