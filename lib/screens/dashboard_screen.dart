@@ -33,9 +33,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .fold(0.0, (sum, t) => sum + t.amount);
     
     final activeUsers = appState.users.where((u) => u.isActive).length;
-    
-    final totalDataUsage = appState.routers
-        .fold(0.0, (sum, r) => sum + r.dataUsageGB);
 
     return Scaffold(
       appBar: AppBar(
@@ -153,78 +150,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            GestureDetector(
-              onTap: () => _showRevenueDetails(context, appState),
-              child: MetricCard(
-                title: 'total_revenue'.tr(),
-                value: MetricCard.formatCurrency(totalRevenue),
-                icon: Icons.paid,
-                accentColor: AppTheme.successGreen,
-                isLoading: appState.isLoading,
-              ),
-            ),
             const SizedBox(height: 16),
-            GestureDetector(
-              onTap: () => _showActiveUsersDetails(context, appState),
-              child: MetricCard(
-                title: 'active_users'.tr(),
-                value: MetricCard.formatNumber(activeUsers),
-                icon: Icons.group,
-                accentColor: Colors.blue,
-                isLoading: appState.isLoading,
-              ),
-            ),
-            const SizedBox(height: 16),
-            GestureDetector(
-              onTap: () => _showDataUsageDetails(context, appState),
-              child: MetricCard(
-                title: 'data_usage'.tr(),
-                value: '${totalDataUsage.toStringAsFixed(1)} GB',
-                icon: Icons.wifi,
-                accentColor: AppTheme.errorRed,
-                isLoading: appState.isLoading,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'recent_activity'.tr(),
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 12),
-            ...appState.transactions.take(5).map((transaction) {
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: transaction.type == 'revenue'
-                        ? AppTheme.primaryGreen.withValues(alpha: 0.1)
-                        : Colors.orange.withValues(alpha: 0.1),
-                    child: Icon(
-                      transaction.type == 'revenue'
-                          ? Icons.trending_up
-                          : Icons.trending_down,
-                      color: transaction.type == 'revenue'
-                          ? AppTheme.primaryGreen
-                          : Colors.orange,
-                    ),
-                  ),
-                  title: Text(transaction.description),
-                  subtitle: Text(
-                    '${transaction.createdAt.day}/${transaction.createdAt.month}/${transaction.createdAt.year}',
-                  ),
-                  trailing: Text(
-                    MetricCard.formatCurrency(transaction.amount),
-                    style: TextStyle(
-                      color: transaction.type == 'revenue'
-                          ? AppTheme.primaryGreen
-                          : Colors.orange,
-                      fontWeight: FontWeight.bold,
+            
+            // Two side-by-side widgets: Total Revenue and Active Users
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _showRevenueDetails(context, appState),
+                    child: _buildMetricWidget(
+                      context,
+                      title: 'total_revenue'.tr(),
+                      value: MetricCard.formatCurrency(totalRevenue),
+                      icon: Icons.paid,
+                      isLoading: appState.isLoading,
                     ),
                   ),
                 ),
-              );
-            }),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _showActiveUsersDetails(context, appState),
+                    child: _buildMetricWidget(
+                      context,
+                      title: 'active_users'.tr(),
+                      value: MetricCard.formatNumber(activeUsers),
+                      icon: Icons.group,
+                      isLoading: appState.isLoading,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -343,47 +300,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  void _showDataUsageDetails(BuildContext context, AppState appState) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) => Column(
+  Widget _buildMetricWidget(
+    BuildContext context, {
+    required String title,
+    required String value,
+    required IconData icon,
+    required bool isLoading,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('data_usage_by_router'.tr(), style: Theme.of(context).textTheme.titleLarge),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(
+                  icon,
+                  size: 32,
+                  color: colorScheme.primary,
+                ),
+                if (isLoading)
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.primary,
+                    ),
                   ),
-                ],
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
-            const Divider(),
-            Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: appState.routers.length,
-                itemBuilder: (context, index) {
-                  final router = appState.routers[index];
-                  return ListTile(
-                    leading: const Icon(Icons.router, color: AppTheme.errorRed),
-                    title: Text(router.name),
-                    subtitle: Text('users_connected'.tr(namedArgs: {'count': router.connectedUsers.toString()})),
-                    trailing: Text(
-                      '${router.dataUsageGB.toStringAsFixed(1)} GB',
-                      style: const TextStyle(color: AppTheme.errorRed, fontWeight: FontWeight.bold),
-                    ),
-                  );
-                },
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
@@ -391,4 +354,5 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
 }

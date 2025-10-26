@@ -15,9 +15,19 @@ class TiknetThemes {
       Typography.material2021(platform: TargetPlatform.android).black,
     );
     
+    // Enhanced color scheme with deeper, more outstanding colors
+    final enhancedScheme = scheme.copyWith(
+      // Make primary colors more vibrant and deep
+      primary: _deepenColor(scheme.primary, 0.15),
+      primaryContainer: _deepenColor(scheme.primaryContainer, 0.1),
+      // Enhance secondary colors
+      secondary: _deepenColor(scheme.secondary, 0.15),
+      secondaryContainer: _deepenColor(scheme.secondaryContainer, 0.1),
+    );
+    
     return ThemeData(
       useMaterial3: true,
-      colorScheme: scheme,
+      colorScheme: enhancedScheme,
       textTheme: textTheme,
       
       // Unified AppBar theme
@@ -103,28 +113,28 @@ class TiknetThemes {
     );
   }
 
-  // Flat Light Green Theme - seed color #2E7D32 (Material 3 green)
+  // Flat Light Green Theme - deeper green with enhanced contrast
   static ThemeData getFlatLightGreenTheme() {
     final scheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF2E7D32),
+      seedColor: const Color(0xFF1B5E20), // Deeper green (was #2E7D32)
       brightness: Brightness.light,
     );
     return _base(scheme);
   }
 
-  // Elevated Dynamic Blue Theme - seed color blue (will use dynamic colors if available)
+  // Elevated Dynamic Blue Theme - deeper blue with richer tones
   static ThemeData getElevatedDynamicBlueTheme() {
     final scheme = ColorScheme.fromSeed(
-      seedColor: Colors.blue,
+      seedColor: const Color(0xFF0D47A1), // Deeper blue (was Colors.blue)
       brightness: Brightness.light,
     );
     return _base(scheme);
   }
 
-  // Pill Rounded Dark Theme - seed color #00BFA6 (teal)
+  // Pill Rounded Dark Theme - deeper dark with richer teal
   static ThemeData getPillRoundedDarkTheme() {
     final scheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF00BFA6),
+      seedColor: const Color(0xFF00897B), // Deeper teal (was #00BFA6)
       brightness: Brightness.dark,
     );
     return _base(scheme);
@@ -139,5 +149,16 @@ class TiknetThemes {
       case TiknetThemeVariant.pillRoundedDark:
         return getPillRoundedDarkTheme();
     }
+  }
+
+  // Helper method to deepen colors for better contrast and depth
+  static Color _deepenColor(Color color, double amount) {
+    assert(amount >= 0 && amount <= 1);
+    final hsl = HSLColor.fromColor(color);
+    // Reduce lightness to deepen the color
+    final deepened = hsl.withLightness((hsl.lightness * (1 - amount)).clamp(0.0, 1.0));
+    // Increase saturation slightly for more vibrant colors
+    final vibrant = deepened.withSaturation((deepened.saturation * 1.1).clamp(0.0, 1.0));
+    return vibrant.toColor();
   }
 }

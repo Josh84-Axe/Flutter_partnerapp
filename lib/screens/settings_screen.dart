@@ -67,6 +67,15 @@ class SettingsScreen extends StatelessWidget {
               ),
               _buildSettingItem(
                 context,
+                icon: Icons.health_and_safety_outlined,
+                title: 'router_health'.tr(),
+                subtitle: 'monitor_router_health_desc'.tr(),
+                onTap: () {
+                  Navigator.of(context).pushNamed('/router-health');
+                },
+              ),
+              _buildSettingItem(
+                context,
                 icon: Icons.notifications_outlined,
                 title: 'notifications_preferences'.tr(),
                 subtitle: 'configure_notifications_desc'.tr(),
