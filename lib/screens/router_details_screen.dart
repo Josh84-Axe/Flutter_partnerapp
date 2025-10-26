@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../models/router_model.dart';
 import '../utils/app_theme.dart';
 
@@ -68,30 +69,30 @@ class RouterDetailsScreen extends StatelessWidget {
           const SizedBox(height: 32),
           _buildSection(
             context,
-            title: 'Status Information',
+            title: 'status_information'.tr(),
             children: [
-              _buildInfoRow(context, 'Uptime', '${router.uptimeHours} hours'),
-              _buildInfoRow(context, 'Firmware Version', '2.1.0'),
+              _buildInfoRow(context, 'uptime'.tr(), '${router.uptimeHours} ${'hours'.tr()}'),
+              _buildInfoRow(context, 'firmware_version'.tr(), '2.1.0'),
               _buildInfoRow(
                 context,
-                'Connected Devices',
+                'connected_devices'.tr(),
                 '${router.connectedUsers}',
               ),
-              _buildInfoRow(context, 'IP Address', '192.168.1.1'),
+              _buildInfoRow(context, 'ip_address'.tr(), '192.168.1.1'),
             ],
           ),
           const SizedBox(height: 24),
           _buildSection(
             context,
-            title: 'Actions',
+            title: 'actions'.tr(),
             children: [
               _buildActionButton(
                 context,
                 icon: Icons.restart_alt,
-                label: 'Restart Router',
+                label: 'restart_router'.tr(),
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Router restart initiated')),
+                    SnackBar(content: Text('router_restart_initiated'.tr())),
                   );
                 },
               ),
@@ -99,17 +100,17 @@ class RouterDetailsScreen extends StatelessWidget {
               _buildActionButton(
                 context,
                 icon: Icons.map_outlined,
-                label: 'View Network Map',
+                label: 'view_network_map'.tr(),
                 onTap: () {},
               ),
               const SizedBox(height: 8),
               _buildActionButton(
                 context,
                 icon: Icons.system_update,
-                label: 'Update Firmware',
+                label: 'update_firmware'.tr(),
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Checking for updates...')),
+                    SnackBar(content: Text('checking_for_updates'.tr())),
                   );
                 },
               ),

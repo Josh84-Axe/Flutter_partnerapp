@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 import '../widgets/metric_card.dart';
@@ -34,14 +35,14 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Request Payout'),
+          title: Text('request_payout'.tr()),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Amount',
+                decoration: InputDecoration(
+                  labelText: 'amount'.tr(),
                   prefixText: '\$ ',
                 ),
                 keyboardType: TextInputType.number,
@@ -49,19 +50,19 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: selectedMethod,
-                decoration: const InputDecoration(labelText: 'Payment Method'),
-                items: const [
+                decoration: InputDecoration(labelText: 'payment_method'.tr()),
+                items: [
                   DropdownMenuItem(
                     value: 'bank_transfer',
-                    child: Text('Bank Transfer'),
+                    child: Text('bank_transfer'.tr()),
                   ),
                   DropdownMenuItem(
                     value: 'paypal',
-                    child: Text('PayPal'),
+                    child: Text('paypal'.tr()),
                   ),
                   DropdownMenuItem(
                     value: 'crypto',
-                    child: Text('Cryptocurrency'),
+                    child: Text('cryptocurrency'.tr()),
                   ),
                 ],
                 onChanged: (value) {
@@ -75,7 +76,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('cancel'.tr()),
             ),
             FilledButton(
               onPressed: () {
@@ -84,11 +85,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   context.read<AppState>().requestPayout(amount, selectedMethod);
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Payout request submitted')),
+                    SnackBar(content: Text('payout_request_submitted'.tr())),
                   );
                 }
               },
-              child: const Text('Request'),
+              child: Text('request'.tr()),
             ),
           ],
         ),
@@ -113,7 +114,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transactions'),
+        title: Text('transactions'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -145,7 +146,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Wallet Balance',
+                          'wallet_balance'.tr(),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: Colors.white70,
                               ),
@@ -177,7 +178,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Earned Income',
+                          'earned_income'.tr(),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: AppTheme.textLight,
                               ),
@@ -222,7 +223,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   TextButton.icon(
                     onPressed: _showPayoutDialog,
                     icon: const Icon(Icons.payments, size: 18),
-                    label: const Text('Withdraw'),
+                    label: Text('withdraw'.tr()),
                     style: TextButton.styleFrom(
                       foregroundColor: AppTheme.primaryGreen,
                     ),
@@ -243,7 +244,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             Icon(Icons.receipt_long, size: 64, color: Colors.grey[400]),
                             const SizedBox(height: 16),
                             Text(
-                              'No transactions found',
+                              'no_transactions_found'.tr(),
                               style: TextStyle(color: Colors.grey[600], fontSize: 16),
                             ),
                           ],
@@ -313,7 +314,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              title: const Text('All Time'),
+              title: Text('all_time'.tr()),
               trailing: _selectedDateRange == 'All Time'
                   ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
@@ -325,7 +326,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               },
             ),
             ListTile(
-              title: const Text('Last 7 Days'),
+              title: Text('last_7_days'.tr()),
               trailing: _selectedDateRange == 'Last 7 Days'
                   ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
@@ -337,7 +338,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               },
             ),
             ListTile(
-              title: const Text('Last 30 Days'),
+              title: Text('last_30_days'.tr()),
               trailing: _selectedDateRange == 'Last 30 Days'
                   ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
@@ -349,7 +350,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               },
             ),
             ListTile(
-              title: const Text('This Month'),
+              title: Text('this_month'.tr()),
               trailing: _selectedDateRange == 'This Month'
                   ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
@@ -374,7 +375,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              title: const Text('All Transactions'),
+              title: Text('all_transactions'.tr()),
               trailing: _selectedType == 'All'
                   ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
@@ -386,7 +387,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               },
             ),
             ListTile(
-              title: const Text('Revenue'),
+              title: Text('revenue'.tr()),
               trailing: _selectedType == 'Revenue'
                   ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,
@@ -398,7 +399,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               },
             ),
             ListTile(
-              title: const Text('Payout'),
+              title: Text('payout'.tr()),
               trailing: _selectedType == 'Payout'
                   ? const Icon(Icons.check, color: AppTheme.primaryGreen)
                   : null,

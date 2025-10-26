@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../utils/app_theme.dart';
 import '../models/hotspot_profile_model.dart';
@@ -44,7 +45,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Edit Profile' : 'Hotspot User Profile'),
+        title: Text(isEdit ? 'edit_profile'.tr() : 'hotspot_user_profile'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -58,8 +59,8 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
             TextFormField(
               controller: _nameController,
               decoration: InputDecoration(
-                labelText: 'Profile Name',
-                hintText: 'e.g., Premium-50Mbps',
+                labelText: 'profile_name'.tr(),
+                hintText: 'enter_profile_name'.tr(),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -70,7 +71,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a profile name';
+                  return 'profile_name'.tr();
                 }
                 return null;
               },
@@ -79,7 +80,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
             DropdownButtonFormField<String>(
               value: _selectedRateLimit,
               decoration: InputDecoration(
-                labelText: 'Rate Limit',
+                labelText: 'rate_limit'.tr(),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -88,18 +89,18 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                   borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
                 ),
               ),
-              hint: const Text('Select a rate limit'),
+              hint: Text('select_rate_limit'.tr()),
               items: HotspotConfigurationService.getRateLimits()
                   .map((limit) => DropdownMenuItem(value: limit, child: Text(limit)))
                   .toList(),
               onChanged: (value) => setState(() => _selectedRateLimit = value),
-              validator: (value) => value == null ? 'Please select a rate limit' : null,
+              validator: (value) => value == null ? 'select_rate_limit'.tr() : null,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _selectedIdleTime,
               decoration: InputDecoration(
-                labelText: 'Idle Time',
+                labelText: 'idle_time'.tr(),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -108,18 +109,18 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                   borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
                 ),
               ),
-              hint: const Text('Select an idle time'),
+              hint: Text('select_idle_time'.tr()),
               items: HotspotConfigurationService.getIdleTimeouts()
                   .map((time) => DropdownMenuItem(value: time, child: Text(time)))
                   .toList(),
               onChanged: (value) => setState(() => _selectedIdleTime = value),
-              validator: (value) => value == null ? 'Please select an idle time' : null,
+              validator: (value) => value == null ? 'select_idle_time'.tr() : null,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _selectedRouter,
               decoration: InputDecoration(
-                labelText: 'Router',
+                labelText: 'router'.tr(),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -128,14 +129,14 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                   borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
                 ),
               ),
-              hint: const Text('Select a router or group'),
+              hint: Text('select_router'.tr()),
               items: [
-                const DropdownMenuItem(value: 'all', child: Text('All Routers')),
+                DropdownMenuItem(value: 'all', child: Text('all_routers'.tr())),
                 ...appState.routers.map((router) =>
                     DropdownMenuItem(value: router.id, child: Text(router.name))),
               ],
               onChanged: (value) => setState(() => _selectedRouter = value),
-              validator: (value) => value == null ? 'Please select a router' : null,
+              validator: (value) => value == null ? 'select_router'.tr() : null,
             ),
             const SizedBox(height: 24),
             Container(
@@ -155,7 +156,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'These settings define the technical parameters for user connections, including speed limits, idle timeouts, and router associations. They are applied directly to the router configuration.',
+                      'profile_settings_info'.tr(),
                       style: TextStyle(
                         fontSize: 14,
                         color: AppTheme.primaryGreen,
@@ -189,12 +190,12 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('Delete Profile'),
-                        content: const Text('Are you sure you want to delete this profile?'),
+                        title: Text('delete_confirm_title'.tr()),
+                        content: Text('delete_confirm_message'.tr()),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancel'),
+                            child: Text('cancel'.tr()),
                           ),
                           FilledButton(
                             onPressed: () {
@@ -205,7 +206,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                             style: FilledButton.styleFrom(
                               backgroundColor: AppTheme.errorRed,
                             ),
-                            child: const Text('Delete'),
+                            child: Text('delete'.tr()),
                           ),
                         ],
                       ),
@@ -216,7 +217,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                     side: const BorderSide(color: AppTheme.errorRed),
                     foregroundColor: AppTheme.errorRed,
                   ),
-                  child: const Text('Delete'),
+                  child: Text('delete'.tr()),
                 ),
               ),
               const SizedBox(width: 12),
@@ -229,7 +230,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                   backgroundColor: AppTheme.primaryGreen,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: Text(isEdit ? 'Save Profile' : 'Create Profile'),
+                child: Text(isEdit ? 'save_profile'.tr() : 'create_profile'.tr()),
               ),
             ),
           ],

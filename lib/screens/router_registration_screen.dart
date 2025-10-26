@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 
@@ -68,7 +69,7 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
     
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Router registered successfully')),
+        SnackBar(content: Text('router_registered_successfully'.tr())),
       );
       Navigator.pop(context);
     }
@@ -80,7 +81,7 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register Router'),
+        title: Text('register_router'.tr()),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -91,13 +92,13 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Router Name',
-                  prefixIcon: Icon(Icons.router),
+                decoration: InputDecoration(
+                  labelText: 'router_name'.tr(),
+                  prefixIcon: const Icon(Icons.router),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Router name is required';
+                    return 'router_name_required'.tr();
                   }
                   return null;
                 },
@@ -105,17 +106,17 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _ipController,
-                decoration: const InputDecoration(
-                  labelText: 'IP Address',
-                  prefixIcon: Icon(Icons.dns),
-                  hintText: 'IPv4 or IPv6',
+                decoration: InputDecoration(
+                  labelText: 'ip_address'.tr(),
+                  prefixIcon: const Icon(Icons.dns),
+                  hintText: 'ipv4_or_ipv6'.tr(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'IP address is required';
+                    return 'ip_address_required'.tr();
                   }
                   if (!_isValidIPv4(value) && !_isValidIPv6(value)) {
-                    return 'Invalid IP address format';
+                    return 'invalid_ip_format'.tr();
                   }
                   return null;
                 },
@@ -123,14 +124,14 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: Icon(Icons.lock),
+                decoration: InputDecoration(
+                  labelText: 'password'.tr(),
+                  prefixIcon: const Icon(Icons.lock),
                 ),
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Password is required';
+                    return 'password_required'.tr();
                   }
                   return null;
                 },
@@ -138,16 +139,16 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _apiPortController,
-                decoration: const InputDecoration(
-                  labelText: 'API Port',
-                  prefixIcon: Icon(Icons.power),
+                decoration: InputDecoration(
+                  labelText: 'api_port'.tr(),
+                  prefixIcon: const Icon(Icons.power),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) return null;
                   final port = int.tryParse(value);
                   if (port == null || port < 1 || port > 65535) {
-                    return 'Port must be between 1-65535';
+                    return 'port_range_error'.tr();
                   }
                   return null;
                 },
@@ -155,21 +156,21 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _dnsController,
-                decoration: const InputDecoration(
-                  labelText: 'DNS Name',
-                  prefixIcon: Icon(Icons.dns),
+                decoration: InputDecoration(
+                  labelText: 'dns_name'.tr(),
+                  prefixIcon: const Icon(Icons.dns),
                 ),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Username',
-                  prefixIcon: Icon(Icons.person),
+                decoration: InputDecoration(
+                  labelText: 'username'.tr(),
+                  prefixIcon: const Icon(Icons.person),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Username is required';
+                    return 'username_required'.tr();
                   }
                   return null;
                 },
@@ -177,33 +178,33 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _radiusSecretController,
-                decoration: const InputDecoration(
-                  labelText: 'Radius Secret',
-                  prefixIcon: Icon(Icons.vpn_key),
+                decoration: InputDecoration(
+                  labelText: 'radius_secret'.tr(),
+                  prefixIcon: const Icon(Icons.vpn_key),
                 ),
                 obscureText: true,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _coaPortController,
-                decoration: const InputDecoration(
-                  labelText: 'COA Port',
-                  prefixIcon: Icon(Icons.power),
+                decoration: InputDecoration(
+                  labelText: 'coa_port'.tr(),
+                  prefixIcon: const Icon(Icons.power),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) return null;
                   final port = int.tryParse(value);
                   if (port == null || port < 1 || port > 65535) {
-                    return 'Port must be between 1-65535';
+                    return 'port_range_error'.tr();
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               SwitchListTile(
-                title: const Text('Activate Router'),
-                subtitle: const Text('Router will be active immediately'),
+                title: Text('activate_router'.tr()),
+                subtitle: Text('router_active_immediately'.tr()),
                 value: _isActive,
                 onChanged: (value) {
                   setState(() {
@@ -223,7 +224,7 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Register Router', style: TextStyle(fontSize: 16)),
+                      : Text('register_router'.tr(), style: const TextStyle(fontSize: 16)),
                 ),
               ),
             ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 
@@ -7,10 +8,10 @@ class SubscriptionManagementScreen extends StatelessWidget {
   const SubscriptionManagementScreen({super.key});
 
   String _getSubscriptionTier(int routerCount) {
-    if (routerCount == 1) return 'Basic';
-    if (routerCount >= 2 && routerCount <= 4) return 'Standard';
-    if (routerCount >= 5) return 'Premium';
-    return 'Basic';
+    if (routerCount == 1) return 'basic_tier';
+    if (routerCount >= 2 && routerCount <= 4) return 'standard_tier';
+    if (routerCount >= 5) return 'premium_tier';
+    return 'basic_tier';
   }
 
   double _getSubscriptionFee(int routerCount) {
@@ -29,7 +30,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Subscription Tiers'),
+        title: Text('subscription_tiers'.tr()),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -70,9 +71,9 @@ class SubscriptionManagementScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Current Plan',
-                            style: TextStyle(
+                          Text(
+                            'current_plan'.tr(),
+                            style: const TextStyle(
                               fontSize: 14,
                               color: Colors.grey,
                             ),
@@ -86,9 +87,9 @@ class SubscriptionManagementScreen extends StatelessWidget {
                               color: AppTheme.primaryGreen,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Text(
-                              'Active',
-                              style: TextStyle(
+                            child: Text(
+                              'active'.tr(),
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -99,7 +100,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        currentTier,
+                        currentTier.tr(),
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -107,7 +108,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '$routerCount ${routerCount == 1 ? 'router' : 'routers'}',
+                        '$routerCount ${routerCount == 1 ? 'router_singular'.tr() : 'router_plural'.tr()}',
                         style: const TextStyle(
                           fontSize: 16,
                           color: Colors.grey,
@@ -115,7 +116,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${(currentFee * 100).toStringAsFixed(0)}% transaction fee',
+                        'transaction_fee_percent'.tr(namedArgs: {'percent': (currentFee * 100).toStringAsFixed(0)}),
                         style: const TextStyle(
                           fontSize: 16,
                           color: Colors.grey,
@@ -127,12 +128,12 @@ class SubscriptionManagementScreen extends StatelessWidget {
                         child: FilledButton(
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Plan change feature coming soon'),
+                              SnackBar(
+                                content: Text('plan_change_coming_soon'.tr()),
                               ),
                             );
                           },
-                          child: const Text('Change Plan'),
+                          child: Text('change_plan'.tr()),
                         ),
                       ),
                     ],
@@ -142,9 +143,9 @@ class SubscriptionManagementScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Available Tiers',
-            style: TextStyle(
+          Text(
+            'available_tiers'.tr(),
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -152,26 +153,26 @@ class SubscriptionManagementScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _buildTierCard(
             context,
-            name: 'Basic',
-            routers: '1 router',
+            name: 'basic_tier',
+            routers: 'tier_1_router',
             fee: '15%',
-            isActive: currentTier == 'Basic',
+            isActive: currentTier == 'basic_tier',
           ),
           const SizedBox(height: 12),
           _buildTierCard(
             context,
-            name: 'Standard',
-            routers: '2-4 routers',
+            name: 'standard_tier',
+            routers: 'tier_2_4_routers',
             fee: '12%',
-            isActive: currentTier == 'Standard',
+            isActive: currentTier == 'standard_tier',
           ),
           const SizedBox(height: 12),
           _buildTierCard(
             context,
-            name: 'Premium',
-            routers: '5+ routers',
+            name: 'premium_tier',
+            routers: 'tier_5_plus_routers',
             fee: '10%',
-            isActive: currentTier == 'Premium',
+            isActive: currentTier == 'premium_tier',
           ),
         ],
       ),
@@ -198,7 +199,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        name,
+                        name.tr(),
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -215,9 +216,9 @@ class SubscriptionManagementScreen extends StatelessWidget {
                             color: AppTheme.primaryGreen,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text(
-                            'Current',
-                            style: TextStyle(
+                          child: Text(
+                            'current'.tr(),
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -229,7 +230,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    routers,
+                    routers.tr(),
                     style: const TextStyle(
                       fontSize: 14,
                       color: Colors.grey,
@@ -237,7 +238,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '$fee transaction fee',
+                    'transaction_fee'.tr(namedArgs: {'fee': fee}),
                     style: const TextStyle(
                       fontSize: 14,
                       color: Colors.grey,
@@ -251,7 +252,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Upgrade to $name tier'),
+                      content: Text('upgrade_to_tier'.tr(namedArgs: {'tier': name.tr()})),
                     ),
                   );
                 },

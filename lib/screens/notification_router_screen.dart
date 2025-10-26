@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../utils/app_theme.dart';
 import '../models/notification_model.dart';
 
@@ -66,8 +67,8 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
       }
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('All notifications marked as read'),
+      SnackBar(
+        content: Text('all_notifications_marked_read'.tr()),
         backgroundColor: AppTheme.successGreen,
       ),
     );
@@ -97,7 +98,7 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text('notifications'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -106,7 +107,7 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
           TextButton(
             onPressed: _markAllAsRead,
             child: Text(
-              'Mark all as read',
+              'mark_all_read'.tr(),
               style: TextStyle(
                 color: AppTheme.primaryGreen,
                 fontSize: 14,
@@ -120,9 +121,9 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           if (_criticalNotifications.isNotEmpty) ...[
-            const Text(
-              'Critical Alerts',
-              style: TextStyle(
+            Text(
+              'critical_alerts'.tr(),
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -133,9 +134,9 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
             const SizedBox(height: 24),
           ],
           if (_todayNotifications.isNotEmpty) ...[
-            const Text(
-              'Today',
-              style: TextStyle(
+            Text(
+              'today'.tr(),
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -146,9 +147,9 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
             const SizedBox(height: 24),
           ],
           if (_yesterdayNotifications.isNotEmpty) ...[
-            const Text(
-              'Yesterday',
-              style: TextStyle(
+            Text(
+              'yesterday'.tr(),
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -170,7 +171,7 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No notifications',
+                      'no_notifications'.tr(),
                       style: TextStyle(
                         fontSize: 16,
                         color: AppTheme.textLight,

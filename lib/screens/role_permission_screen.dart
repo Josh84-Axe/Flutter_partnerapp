@@ -14,7 +14,7 @@ class RolePermissionScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Roles & Permissions'),
+        title: Text('user_roles_permissions'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -85,7 +85,7 @@ class RolePermissionScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  '${_getTeamMemberCount(role.name)} team members',
+                                  'team_members_count'.tr(namedArgs: {'count': _getTeamMemberCount(role.name).toString()}),
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: AppTheme.textLight,
@@ -127,7 +127,7 @@ class RolePermissionScreen extends StatelessWidget {
                           OutlinedButton.icon(
                             onPressed: () {},
                             icon: const Icon(Icons.router, size: 18),
-                            label: const Text('Manage Assigned Routers'),
+                            label: Text('manage_assigned_routers'.tr()),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.primaryGreen,
                               side: const BorderSide(color: AppTheme.primaryGreen),
@@ -167,7 +167,7 @@ class RolePermissionScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'Assign roles to team members. They will receive a verification email for login activation. You can assign specific routers to Workers.',
+              'assign_role_description'.tr(),
               style: TextStyle(
                 fontSize: 12,
                 color: AppTheme.textLight,
@@ -212,11 +212,11 @@ class RolePermissionScreen extends StatelessWidget {
     switch (roleName.toLowerCase()) {
       case 'admin':
       case 'administrator':
-        return 'Full access to Dashboard, Users, Plans, Transactions, and Routers.';
+        return 'role_admin_description'.tr();
       case 'manager':
-        return 'Can view Users, Plans, Transactions. Can manage multiple assigned routers.';
+        return 'role_manager_description'.tr();
       case 'worker':
-        return 'Limited access to view and manage specific assigned routers.';
+        return 'role_worker_description'.tr();
       default:
         return '';
     }
@@ -226,23 +226,23 @@ class RolePermissionScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Role'),
-        content: Text('Are you sure you want to delete "${role.name}"?'),
+        title: Text('delete_role'.tr()),
+        content: Text('delete_role_confirm'.tr(namedArgs: {'name': role.name})),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () {
               context.read<AppState>().deleteRole(role.id);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Role deleted')),
+                SnackBar(content: Text('role_deleted'.tr())),
               );
             },
             style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
-            child: const Text('Delete'),
+            child: Text('delete'.tr()),
           ),
         ],
       ),

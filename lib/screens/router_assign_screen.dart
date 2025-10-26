@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 
@@ -39,7 +40,7 @@ class _RouterAssignScreenState extends State<RouterAssignScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Assign Routers'),
+        title: Text('assign_routers'.tr()),
       ),
       body: Column(
         children: [
@@ -48,7 +49,7 @@ class _RouterAssignScreenState extends State<RouterAssignScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search routers...',
+                hintText: 'search_routers'.tr(),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -75,7 +76,7 @@ class _RouterAssignScreenState extends State<RouterAssignScreen> {
                     child: const Icon(Icons.router, color: Colors.grey),
                   ),
                   title: Text(router.name),
-                  subtitle: Text('Router ID: ${router.id}'),
+                  subtitle: Text('${'router_id'.tr()}: ${router.id}'),
                   trailing: Checkbox(
                     value: isSelected,
                     onChanged: (value) {
@@ -119,7 +120,7 @@ class _RouterAssignScreenState extends State<RouterAssignScreen> {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text('Cancel'),
+                      child: Text('cancel'.tr()),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -129,7 +130,7 @@ class _RouterAssignScreenState extends State<RouterAssignScreen> {
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text('Save Assignment'),
+                      child: Text('save_assignment'.tr()),
                     ),
                   ),
                 ],
@@ -146,7 +147,10 @@ class _RouterAssignScreenState extends State<RouterAssignScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '${_selectedRouterIds.length} router(s) assigned to ${widget.userName}',
+          'routers_assigned_to'.tr(namedArgs: {
+            'count': '${_selectedRouterIds.length}',
+            'name': widget.userName
+          }),
         ),
       ),
     );

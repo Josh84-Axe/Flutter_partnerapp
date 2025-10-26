@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../utils/app_theme.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
@@ -19,7 +20,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notification Settings'),
+        title: Text('notification_settings'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -30,40 +31,40 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         children: [
           _buildNotificationToggle(
             icon: Icons.person_add,
-            title: 'New User Registered',
-            description: 'Receive alerts when a new user joins your network.',
+            title: 'new_user_registered'.tr(),
+            description: 'notification_new_user_desc'.tr(),
             value: _newUserRegistered,
             onChanged: (value) => setState(() => _newUserRegistered = value),
           ),
           const SizedBox(height: 8),
           _buildNotificationToggle(
             icon: Icons.wifi_off,
-            title: 'Router Offline',
-            description: 'Get notified if a router goes offline.',
+            title: 'router_offline'.tr(),
+            description: 'notification_router_offline_desc'.tr(),
             value: _routerOffline,
             onChanged: (value) => setState(() => _routerOffline = value),
           ),
           const SizedBox(height: 8),
           _buildNotificationToggle(
             icon: Icons.attach_money,
-            title: 'Payout Confirmation',
-            description: 'Receive confirmation when a payout is processed.',
+            title: 'payout_confirmation'.tr(),
+            description: 'notification_payout_desc'.tr(),
             value: _payoutConfirmation,
             onChanged: (value) => setState(() => _payoutConfirmation = value),
           ),
           const SizedBox(height: 8),
           _buildNotificationToggle(
             icon: Icons.account_balance_wallet,
-            title: 'Low Balance Alert',
-            description: 'Get an alert when your account balance is low.',
+            title: 'low_balance_alert'.tr(),
+            description: 'notification_low_balance_desc'.tr(),
             value: _lowBalanceAlert,
             onChanged: (value) => setState(() => _lowBalanceAlert = value),
           ),
           const SizedBox(height: 8),
           _buildNotificationToggle(
             icon: Icons.build,
-            title: 'System Maintenance',
-            description: 'Stay informed about system updates.',
+            title: 'system_maintenance'.tr(),
+            description: 'notification_maintenance_desc'.tr(),
             value: _systemMaintenance,
             onChanged: (value) => setState(() => _systemMaintenance = value),
           ),
@@ -85,8 +86,8 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           child: FilledButton(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Notification settings saved'),
+                SnackBar(
+                  content: Text('notification_settings'.tr() + ' ' + 'save_changes'.tr().toLowerCase()),
                   backgroundColor: AppTheme.successGreen,
                 ),
               );
@@ -96,9 +97,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               backgroundColor: AppTheme.primaryGreen,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Text(
-              'Save Changes',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            child: Text(
+              'save_changes'.tr(),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         ),

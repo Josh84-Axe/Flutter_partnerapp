@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../utils/app_theme.dart';
 
 class EmptyStateScreen extends StatelessWidget {
@@ -8,7 +9,7 @@ class EmptyStateScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Empty State Example'),
+        title: Text('empty_state_example'.tr()),
       ),
       body: Center(
         child: Padding(
@@ -30,16 +31,16 @@ class EmptyStateScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'No Users Added',
-                style: TextStyle(
+              Text(
+                'no_users_added'.tr(),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Get started by adding a new user to your account.',
+                'no_users_added_message'.tr(),
                 style: TextStyle(
                   fontSize: 14,
                   color: AppTheme.textLight,
@@ -53,13 +54,13 @@ class EmptyStateScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('This is a demo empty state')),
+                      SnackBar(content: Text('demo_empty_state'.tr())),
                     );
                   },
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('Add New User'),
+                  child: Text('add_new_user'.tr()),
                 ),
               ),
             ],

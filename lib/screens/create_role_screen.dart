@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 
@@ -57,7 +58,7 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Edit Role' : 'Create New Role'),
+        title: Text(isEdit ? 'edit_role'.tr() : 'create_new_role'.tr()),
       ),
       body: Column(
         children: [
@@ -69,56 +70,56 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
                 children: [
                   TextField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Role Name',
-                      hintText: 'e.g., Support Agent',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: 'role_name'.tr(),
+                      hintText: 'role_name_hint'.tr(),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Permissions',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Text(
+                    'permissions'.tr(),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
                   _buildPermissionSection(
-                    'Dashboard Access',
-                    {'dashboard_access': 'Dashboard Access'},
+                    'dashboard_access'.tr(),
+                    {'dashboard_access': 'dashboard_access'.tr()},
                   ),
                   const SizedBox(height: 16),
                   _buildPermissionSection(
-                    'User Management',
+                    'user_management'.tr(),
                     {
-                      'user_create': 'Create Users',
-                      'user_read': 'Read Users',
-                      'user_update': 'Update Users',
-                      'user_delete': 'Delete Users',
+                      'user_create': 'create_users'.tr(),
+                      'user_read': 'read_users'.tr(),
+                      'user_update': 'update_users'.tr(),
+                      'user_delete': 'delete_users'.tr(),
                     },
                   ),
                   const SizedBox(height: 16),
                   _buildPermissionSection(
-                    'Plan Management',
+                    'plan_management'.tr(),
                     {
-                      'plan_create': 'Create Plans',
-                      'plan_read': 'Read Plans',
-                      'plan_update': 'Update Plans',
-                      'plan_delete': 'Delete Plans',
+                      'plan_create': 'create_plans'.tr(),
+                      'plan_read': 'read_plans'.tr(),
+                      'plan_update': 'update_plans'.tr(),
+                      'plan_delete': 'delete_plans'.tr(),
                     },
                   ),
                   const SizedBox(height: 16),
                   _buildPermissionSection(
-                    'Transaction Viewing',
-                    {'transaction_viewing': 'Transaction Viewing'},
+                    'transaction_viewing'.tr(),
+                    {'transaction_viewing': 'transaction_viewing'.tr()},
                   ),
                   const SizedBox(height: 16),
                   _buildPermissionSection(
-                    'Router Management',
-                    {'router_management': 'Router Management'},
+                    'router_management'.tr(),
+                    {'router_management': 'router_management'.tr()},
                   ),
                   const SizedBox(height: 16),
                   _buildPermissionSection(
-                    'Settings Access',
-                    {'settings_access': 'Settings Access'},
+                    'settings_access'.tr(),
+                    {'settings_access': 'settings_access'.tr()},
                   ),
                 ],
               ),
@@ -145,7 +146,7 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text('Cancel'),
+                      child: Text('cancel'.tr()),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -155,7 +156,7 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text('Save Role'),
+                      child: Text('save_role'.tr()),
                     ),
                   ),
                 ],
@@ -200,7 +201,7 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
   void _saveRole() {
     if (_nameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a role name')),
+        SnackBar(content: Text('enter_role_name'.tr())),
       );
       return;
     }
@@ -219,7 +220,7 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
 
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(widget.roleData != null ? 'Role updated' : 'Role created')),
+      SnackBar(content: Text(widget.roleData != null ? 'role_updated'.tr() : 'role_created'.tr())),
     );
   }
 }

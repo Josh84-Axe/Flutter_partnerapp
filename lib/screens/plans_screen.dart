@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 import '../utils/currency_helper.dart';
@@ -45,20 +46,20 @@ class _PlansScreenState extends State<PlansScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Create Internet Plan'),
+          title: Text('create_internet_plan'.tr()),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Plan Name'),
+                  decoration: InputDecoration(labelText: 'plan_name'.tr()),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: priceController,
                   decoration: InputDecoration(
-                    labelText: 'Price',
+                    labelText: 'price'.tr(),
                     prefixText: '${CurrencyHelper.getCurrencySymbol(
                       CurrencyHelper.getCurrencyCode(context.read<AppState>().currentUser?.country)
                     )} ',
@@ -68,9 +69,9 @@ class _PlansScreenState extends State<PlansScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedDataLimit,
-                  decoration: const InputDecoration(labelText: 'Data Limit'),
+                  decoration: InputDecoration(labelText: 'data_limit'.tr()),
                   items: HotspotConfigurationService.getDataLimits().isEmpty
-                      ? [const DropdownMenuItem(value: null, child: Text('No options configured'))]
+                      ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
                       : HotspotConfigurationService.getDataLimits()
                           .map((limit) => DropdownMenuItem(value: limit, child: Text(limit)))
                           .toList(),
@@ -85,9 +86,9 @@ class _PlansScreenState extends State<PlansScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedValidity,
-                  decoration: const InputDecoration(labelText: 'Validity'),
+                  decoration: InputDecoration(labelText: 'validity'.tr()),
                   items: HotspotConfigurationService.getValidityOptions().isEmpty
-                      ? [const DropdownMenuItem(value: null, child: Text('No options configured'))]
+                      ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
                       : HotspotConfigurationService.getValidityOptions()
                           .map((validity) => DropdownMenuItem(value: validity, child: Text(validity)))
                           .toList(),
@@ -102,9 +103,9 @@ class _PlansScreenState extends State<PlansScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedSpeed,
-                  decoration: const InputDecoration(labelText: 'Speed'),
+                  decoration: InputDecoration(labelText: 'speed'.tr()),
                   items: HotspotConfigurationService.getSpeedOptions().isEmpty
-                      ? [const DropdownMenuItem(value: null, child: Text('No options configured'))]
+                      ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
                       : HotspotConfigurationService.getSpeedOptions()
                           .map((speed) => DropdownMenuItem(value: speed, child: Text(speed)))
                           .toList(),
@@ -119,9 +120,9 @@ class _PlansScreenState extends State<PlansScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedDeviceAllowed,
-                  decoration: const InputDecoration(labelText: 'Device Allowed'),
+                  decoration: InputDecoration(labelText: 'device_allowed'.tr()),
                   items: HotspotConfigurationService.getDeviceAllowed().isEmpty
-                      ? [const DropdownMenuItem(value: null, child: Text('No options configured'))]
+                      ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
                       : HotspotConfigurationService.getDeviceAllowed()
                           .map((device) => DropdownMenuItem(value: device, child: Text(device)))
                           .toList(),
@@ -136,7 +137,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedProfile,
-                  decoration: const InputDecoration(labelText: 'User Profile'),
+                  decoration: InputDecoration(labelText: 'user_profile'.tr()),
                   items: HotspotConfigurationService.getUserProfiles()
                       .map((profile) => DropdownMenuItem(value: profile, child: Text(profile)))
                       .toList(),
@@ -152,7 +153,7 @@ class _PlansScreenState extends State<PlansScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('cancel'.tr()),
             ),
             FilledButton(
               onPressed: () {
@@ -160,7 +161,7 @@ class _PlansScreenState extends State<PlansScreen> {
                     selectedDataLimit == null || selectedValidity == null ||
                     selectedSpeed == null || selectedDeviceAllowed == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill all fields')),
+                    SnackBar(content: Text('fill_all_fields'.tr())),
                   );
                   return;
                 }
@@ -180,7 +181,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 context.read<AppState>().createPlan(data);
                 Navigator.pop(context);
               },
-              child: const Text('Create'),
+              child: Text('create'.tr()),
             ),
           ],
         ),
@@ -198,7 +199,7 @@ class _PlansScreenState extends State<PlansScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Internet Plans'),
+        title: Text('internet_plans'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -211,7 +212,7 @@ class _PlansScreenState extends State<PlansScreen> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: SearchBarWidget(
-              hintText: 'Search plans...',
+              hintText: 'search_plans'.tr(),
               controller: _searchController,
               onChanged: (value) {
                 setState(() {
@@ -231,7 +232,7 @@ class _PlansScreenState extends State<PlansScreen> {
                             Icon(Icons.wifi_off, size: 64, color: Colors.grey[400]),
                             const SizedBox(height: 16),
                             Text(
-                              'No plans found',
+                              'no_plans_found'.tr(),
                               style: TextStyle(color: Colors.grey[600], fontSize: 16),
                             ),
                           ],
@@ -273,20 +274,20 @@ class _PlansScreenState extends State<PlansScreen> {
                                   const SizedBox(height: 16),
                                   _buildPlanFeature(
                                     Icons.cloud_download,
-                                    'Data Limit',
+                                    'data_limit'.tr(),
                                     '${plan.dataLimitGB} GB',
                                   ),
                                   const SizedBox(height: 12),
                                   _buildPlanFeature(
                                     Icons.speed,
-                                    'Speed',
+                                    'speed'.tr(),
                                     '${plan.speedMbps} Mbps',
                                   ),
                                   const SizedBox(height: 12),
                                   _buildPlanFeature(
                                     Icons.calendar_month,
-                                    'Validity',
-                                    '${plan.validityDays} days',
+                                    'validity'.tr(),
+                                    '${plan.validityDays} ${'days'.tr()}',
                                   ),
                                   const SizedBox(height: 16),
                                   SizedBox(
@@ -299,7 +300,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                         );
                                       },
                                       icon: const Icon(Icons.person_add),
-                                      label: const Text('Assign to User'),
+                                      label: Text('assign_to_user'.tr()),
                                       style: FilledButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(vertical: 12),
                                       ),

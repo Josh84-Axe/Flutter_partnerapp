@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../utils/app_theme.dart';
 
 class WorkerActivationScreen extends StatelessWidget {
@@ -35,9 +36,9 @@ class WorkerActivationScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 32),
-                const Text(
-                  'Account Activated!',
-                  style: TextStyle(
+                Text(
+                  'account_activated'.tr(),
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
@@ -45,7 +46,7 @@ class WorkerActivationScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Welcome to the team! Your account is now active and ready to use.',
+                  'account_activated_message'.tr(),
                   style: TextStyle(
                     fontSize: 16,
                     color: AppTheme.textLight,
@@ -62,7 +63,7 @@ class WorkerActivationScreen extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('Go to Login'),
+                    child: Text('go_to_login'.tr()),
                   ),
                 ),
               ],

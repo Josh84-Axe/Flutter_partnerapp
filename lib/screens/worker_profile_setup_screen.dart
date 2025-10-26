@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../utils/app_theme.dart';
 
 class WorkerProfileSetupScreen extends StatefulWidget {
@@ -23,10 +24,10 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
 
   String _getPasswordStrength() {
     final password = _newPasswordController.text;
-    if (password.isEmpty) return 'Weak';
-    if (password.length < 6) return 'Weak';
-    if (password.length < 10) return 'Medium';
-    return 'Strong';
+    if (password.isEmpty) return 'weak'.tr();
+    if (password.length < 6) return 'weak'.tr();
+    if (password.length < 10) return 'medium'.tr();
+    return 'strong'.tr();
   }
 
   double _getPasswordStrengthValue() {
@@ -38,8 +39,8 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
 
   Color _getPasswordStrengthColor() {
     final strength = _getPasswordStrength();
-    if (strength == 'Weak') return Colors.red;
-    if (strength == 'Medium') return Colors.orange;
+    if (strength == 'weak'.tr()) return Colors.red;
+    if (strength == 'medium'.tr()) return Colors.orange;
     return Colors.green;
   }
 
@@ -60,9 +61,9 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
                   color: AppTheme.primaryGreen,
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'Welcome to the Team!',
-                  style: TextStyle(
+                Text(
+                  'welcome_to_team'.tr(),
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
@@ -70,7 +71,7 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  "You've been assigned the role of 'Field Technician' by 'Tech Solutions Inc.'",
+                  'worker_role_assigned_message'.tr(),
                   style: TextStyle(
                     fontSize: 14,
                     color: AppTheme.textLight,
@@ -84,9 +85,9 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Set Your Password',
-                          style: TextStyle(
+                        Text(
+                          'set_your_password'.tr(),
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
@@ -96,8 +97,8 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
                           controller: _newPasswordController,
                           obscureText: _obscureNewPassword,
                           decoration: InputDecoration(
-                            labelText: 'New Password',
-                            hintText: 'Enter a secure password',
+                            labelText: 'new_password'.tr(),
+                            hintText: 'enter_secure_password'.tr(),
                             border: const OutlineInputBorder(),
                             suffixIcon: IconButton(
                               icon: Icon(_obscureNewPassword ? Icons.visibility : Icons.visibility_off),
@@ -111,8 +112,8 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirmPassword,
                           decoration: InputDecoration(
-                            labelText: 'Confirm New Password',
-                            hintText: 'Confirm your password',
+                            labelText: 'confirm_new_password'.tr(),
+                            hintText: 'confirm_your_password'.tr(),
                             border: const OutlineInputBorder(),
                             suffixIcon: IconButton(
                               icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
@@ -124,9 +125,9 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Password Strength',
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                            Text(
+                              'password_strength'.tr(),
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                             ),
                             Text(
                               _getPasswordStrength(),
@@ -154,7 +155,7 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
                             style: FilledButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
-                            child: const Text('Activate Account & Set Password'),
+                            child: Text('activate_account_set_password'.tr()),
                           ),
                         ),
                       ],
@@ -164,7 +165,7 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
                 const SizedBox(height: 24),
                 TextButton(
                   onPressed: () {},
-                  child: const Text('Need help? Visit our support page'),
+                  child: Text('need_help_visit_support'.tr()),
                 ),
               ],
             ),
@@ -177,14 +178,14 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
   void _activateAccount() {
     if (_newPasswordController.text.isEmpty || _confirmPasswordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
+        SnackBar(content: Text('please_fill_all_fields'.tr())),
       );
       return;
     }
 
     if (_newPasswordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
+        SnackBar(content: Text('passwords_do_not_match'.tr())),
       );
       return;
     }

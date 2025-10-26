@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../utils/app_theme.dart';
 import '../models/user_model.dart';
 
@@ -11,7 +12,7 @@ class UserDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Information Details'),
+        title: Text('user_information_details'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -57,7 +58,7 @@ class UserDetailsScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      user.isActive ? 'Connected - Gateway' : 'Offline',
+                      user.isActive ? 'connected_gateway'.tr() : 'offline'.tr(),
                       style: TextStyle(
                         fontSize: 14,
                         color: AppTheme.textLight,
@@ -71,43 +72,43 @@ class UserDetailsScreen extends StatelessWidget {
           const SizedBox(height: 32),
           _buildSection(
             context,
-            title: 'Personal Information',
+            title: 'personal_information'.tr(),
             action: TextButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Edit user information')),
+                  SnackBar(content: Text('edit'.tr())),
                 );
               },
-              child: const Text('Edit'),
+              child: Text('edit'.tr()),
             ),
             children: [
-              _buildInfoRow('Full Name', user.name),
-              _buildInfoRow('Phone Number', user.phone ?? 'N/A'),
-              _buildInfoRow('Email Address', user.email),
-              _buildInfoRow('Registration Date', _formatDate(user.createdAt)),
+              _buildInfoRow('full_name'.tr(), user.name),
+              _buildInfoRow('phone_number'.tr(), user.phone ?? 'N/A'),
+              _buildInfoRow('email_address'.tr(), user.email),
+              _buildInfoRow('registration_date'.tr(), _formatDate(user.createdAt)),
             ],
           ),
           const SizedBox(height: 24),
           _buildSection(
             context,
-            title: 'Plan Information',
+            title: 'plan_information'.tr(),
             action: TextButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Change plan')),
+                  SnackBar(content: Text('change_plan'.tr())),
                 );
               },
-              child: const Text('Change Plan'),
+              child: Text('change_plan'.tr()),
             ),
             children: [
-              _buildInfoRow('Active Plan', 'No active plan'),
-              _buildInfoRow('Plan Validity', 'Expires on ${_formatDate(DateTime.now().add(const Duration(days: 30)))}'),
+              _buildInfoRow('active_plan'.tr(), 'no_active_plan'.tr()),
+              _buildInfoRow('plan_validity'.tr(), 'expires_on'.tr(namedArgs: {'date': _formatDate(DateTime.now().add(const Duration(days: 30)))})),
             ],
           ),
           const SizedBox(height: 24),
-          const Text(
-            'More',
-            style: TextStyle(
+          Text(
+            'more'.tr(),
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -126,9 +127,9 @@ class UserDetailsScreen extends StatelessWidget {
               ],
             ),
             child: ListTile(
-              title: const Text(
-                'User Data Usage',
-                style: TextStyle(
+              title: Text(
+                'user_data_usage'.tr(),
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -136,7 +137,7 @@ class UserDetailsScreen extends StatelessWidget {
               trailing: const Icon(Icons.chevron_right, color: AppTheme.textLight),
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('View user data usage')),
+                  SnackBar(content: Text('user_data_usage'.tr())),
                 );
               },
             ),

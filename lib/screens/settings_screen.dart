@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../providers/theme_provider.dart';
 import '../utils/app_theme.dart';
@@ -15,7 +16,7 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings & Preferences'),
+        title: Text('settings_preferences'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -25,13 +26,13 @@ class SettingsScreen extends StatelessWidget {
         children: [
           _buildSection(
             context,
-            title: 'Account',
+            title: 'account'.tr(),
             items: [
               _buildSettingItem(
                 context,
                 icon: Icons.router_outlined,
-                title: 'Hotspot Management',
-                subtitle: 'Manage hotspot users and configurations',
+                title: 'hotspot_management'.tr(),
+                subtitle: 'manage_hotspot_desc'.tr(),
                 onTap: () {
                   _showHotspotManagementDialog(context);
                 },
@@ -39,8 +40,8 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.wifi,
-                title: 'Internet Plan',
-                subtitle: 'Manage internet plans and pricing',
+                title: 'internet_plan'.tr(),
+                subtitle: 'manage_plans_desc'.tr(),
                 onTap: () {
                   Navigator.of(context).pushNamed('/internet-plan');
                 },
@@ -48,7 +49,7 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.card_membership_outlined,
-                title: 'Subscription Management',
+                title: 'subscription_management'.tr(),
                 subtitle: _getSubscriptionTier(appState),
                 onTap: () {
                   Navigator.of(context).pushNamed('/subscription-management');
@@ -57,8 +58,8 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.settings_input_antenna,
-                title: 'Router Settings',
-                subtitle: 'Configure router connections',
+                title: 'router_settings'.tr(),
+                subtitle: 'configure_router_desc'.tr(),
                 onTap: () {
                   Navigator.of(context).pushNamed('/router-settings');
                 },
@@ -66,8 +67,8 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.notifications_outlined,
-                title: 'Notifications Preferences',
-                subtitle: 'Configure notification settings',
+                title: 'notifications_preferences'.tr(),
+                subtitle: 'configure_notifications_desc'.tr(),
                 onTap: () {
                   Navigator.of(context).pushNamed('/notification-settings');
                 },
@@ -75,7 +76,7 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.language_outlined,
-                title: 'Language',
+                title: 'language'.tr(),
                 subtitle: appState.selectedLanguage.nativeName,
                 onTap: () {
                   Navigator.of(context).pushNamed('/language');
@@ -84,8 +85,8 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.dark_mode_outlined,
-                title: 'Theme',
-                subtitle: themeProvider.isDarkMode ? 'Dark Mode' : 'Light Mode',
+                title: 'theme'.tr(),
+                subtitle: themeProvider.isDarkMode ? 'dark_mode'.tr() : 'light_mode'.tr(),
                 trailing: Switch(
                   value: themeProvider.isDarkMode,
                   onChanged: (value) => themeProvider.toggleTheme(),
@@ -97,13 +98,13 @@ class SettingsScreen extends StatelessWidget {
           ),
           _buildSection(
             context,
-            title: 'Security',
+            title: 'security'.tr(),
             items: [
               _buildSettingItem(
                 context,
                 icon: Icons.person_outline,
-                title: 'Partner Profile',
-                subtitle: 'Manage business info & payment methods',
+                title: 'partner_profile'.tr(),
+                subtitle: 'manage_business_desc'.tr(),
                 onTap: () {
                   Navigator.of(context).pushNamed('/partner-profile');
                 },
@@ -111,8 +112,8 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.security_outlined,
-                title: 'Security Settings',
-                subtitle: '2FA, password management',
+                title: 'security_settings'.tr(),
+                subtitle: 'security_settings_desc'.tr(),
                 onTap: () {
                   Navigator.of(context).pushNamed('/security/password-2fa');
                 },
@@ -120,8 +121,8 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.admin_panel_settings_outlined,
-                title: 'User Roles & Permissions',
-                subtitle: 'Manage user access levels',
+                title: 'user_roles_permissions'.tr(),
+                subtitle: 'manage_access_desc'.tr(),
                 onTap: () {
                   Navigator.of(context).pushNamed('/role-permissions');
                 },
@@ -129,8 +130,8 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.file_download_outlined,
-                title: 'Data Export & Reporting',
-                subtitle: 'Generate and export reports',
+                title: 'data_export_reporting'.tr(),
+                subtitle: 'generate_new_report'.tr(),
                 onTap: () {
                   Navigator.of(context).pushNamed('/reporting');
                 },
@@ -138,11 +139,11 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.privacy_tip_outlined,
-                title: 'Data Privacy',
-                subtitle: 'Privacy policy and settings',
+                title: 'data_privacy'.tr(),
+                subtitle: 'privacy_policy_desc'.tr(),
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Opening https://tiknet.africa.com/privacy')),
+                    SnackBar(content: Text('Opening https://tiknet.africa.com/privacy')),
                   );
                 },
               ),
@@ -150,26 +151,26 @@ class SettingsScreen extends StatelessWidget {
           ),
           _buildSection(
             context,
-            title: 'Data & Tools',
+            title: 'data_tools'.tr(),
             items: [
               _buildSettingItem(
                 context,
                 icon: Icons.download_outlined,
-                title: 'Data Export & Reporting',
-                subtitle: 'Export your data',
+                title: 'data_export_reporting'.tr(),
+                subtitle: 'export_data_desc'.tr(),
                 onTap: () {},
               ),
             ],
           ),
           _buildSection(
             context,
-            title: 'Help & Information',
+            title: 'help_information'.tr(),
             items: [
               _buildSettingItem(
                 context,
                 icon: Icons.help_outline,
-                title: 'Support & Help',
-                subtitle: 'Get help and contact support',
+                title: 'support_help'.tr(),
+                subtitle: 'get_help_desc'.tr(),
                 onTap: () {
                   Navigator.of(context).pushNamed('/support');
                 },
@@ -177,8 +178,8 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.replay_outlined,
-                title: 'Replay Onboarding Tour',
-                subtitle: 'View the app tour again',
+                title: 'replay_onboarding'.tr(),
+                subtitle: 'view_tour_desc'.tr(),
                 onTap: () async {
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.setBool('hasSeenOnboarding', false);
@@ -190,8 +191,8 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.info_outlined,
-                title: 'About',
-                subtitle: 'App version and information',
+                title: 'about'.tr(),
+                subtitle: 'about_version_desc'.tr(),
                 onTap: () {
                   Navigator.of(context).pushNamed('/about');
                 },
@@ -199,8 +200,8 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingItem(
                 context,
                 icon: Icons.inbox_outlined,
-                title: 'Empty State Demo',
-                subtitle: 'Example of empty state UI',
+                title: 'empty_state_demo'.tr(),
+                subtitle: 'empty_state_desc'.tr(),
                 onTap: () {
                   Navigator.of(context).pushNamed('/empty-state');
                 },
@@ -222,9 +223,9 @@ class SettingsScreen extends StatelessWidget {
                 foregroundColor: AppTheme.pureWhite,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: const Text(
-                'Logout',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              child: Text(
+                'logout'.tr(),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -282,17 +283,17 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          'Hotspot Management',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          'hotspot_management'.tr(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.person),
-              title: const Text('Hotspot User'),
-              subtitle: const Text('Manage router profiles and settings'),
+              title: Text('hotspot_user_profile'.tr()),
+              subtitle: Text('manage_hotspot_desc'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).pushNamed('/hotspot-user');
@@ -301,8 +302,8 @@ class SettingsScreen extends StatelessWidget {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Configurations'),
-              subtitle: const Text('Rate limits, timeouts, and limits'),
+              title: Text('configurations'.tr()),
+              subtitle: Text('configure_speeds_desc'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).pushNamed('/configurations');
@@ -313,7 +314,7 @@ class SettingsScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('close'.tr()),
           ),
         ],
       ),

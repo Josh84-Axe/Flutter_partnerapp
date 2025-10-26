@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 
@@ -13,14 +14,14 @@ class UserRoleScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Roles & Permissions'),
+        title: Text('user_roles_permissions'.tr()),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
-            'Manage Roles',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Text(
+            'manage_roles'.tr(),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           ...roles.map((role) => Card(
@@ -31,7 +32,7 @@ class UserRoleScreen extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: Text(
-                '${role.permissions.values.where((v) => v).length} permissions enabled',
+                'permissions_enabled'.tr(namedArgs: {'count': '${role.permissions.values.where((v) => v).length}'}),
                 style: TextStyle(color: AppTheme.textLight),
               ),
               trailing: Row(
@@ -66,7 +67,7 @@ class UserRoleScreen extends StatelessWidget {
               Navigator.of(context).pushNamed('/create-role');
             },
             icon: const Icon(Icons.add),
-            label: const Text('Create New Role'),
+            label: Text('create_new_role'.tr()),
           ),
         ],
       ),
@@ -77,23 +78,23 @@ class UserRoleScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Role'),
-        content: Text('Are you sure you want to delete "${role.name}"?'),
+        title: Text('delete_role'.tr()),
+        content: Text('delete_role_confirm'.tr(namedArgs: {'name': role.name})),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () {
               context.read<AppState>().deleteRole(role.id);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Role deleted')),
+                SnackBar(content: Text('role_deleted'.tr())),
               );
             },
             style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
-            child: const Text('Delete'),
+            child: Text('delete'.tr()),
           ),
         ],
       ),

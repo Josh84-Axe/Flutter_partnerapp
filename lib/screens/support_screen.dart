@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../widgets/search_bar_widget.dart';
 import '../utils/app_theme.dart';
 
@@ -29,7 +30,7 @@ class _SupportScreenState extends State<SupportScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Support & Help'),
+        title: Text('support_help'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -39,42 +40,42 @@ class _SupportScreenState extends State<SupportScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           SearchBarWidget(
-            hintText: 'Search FAQs...',
+            hintText: 'search_faqs'.tr(),
             controller: _searchController,
           ),
           const SizedBox(height: 24),
           Text(
-            'Frequently Asked Questions',
+            'frequently_asked_questions'.tr(),
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
           _buildFAQCard(
             context,
             icon: Icons.person_add,
-            title: 'How do I add new users?',
-            description: 'Learn how to add and manage users in your hotspot network.',
+            title: 'faq_add_users'.tr(),
+            description: 'faq_add_users_desc'.tr(),
           ),
           _buildFAQCard(
             context,
             icon: Icons.router,
-            title: 'Router troubleshooting',
-            description: 'Common issues and solutions for router connectivity.',
+            title: 'faq_router_troubleshooting'.tr(),
+            description: 'faq_router_troubleshooting_desc'.tr(),
           ),
           _buildFAQCard(
             context,
             icon: Icons.receipt_long,
-            title: 'Understanding transactions',
-            description: 'Learn about transaction types and payment processing.',
+            title: 'faq_understanding_transactions'.tr(),
+            description: 'faq_understanding_transactions_desc'.tr(),
           ),
           _buildFAQCard(
             context,
             icon: Icons.wifi,
-            title: 'Managing internet plans',
-            description: 'Create, edit, and assign internet plans to users.',
+            title: 'faq_managing_plans'.tr(),
+            description: 'faq_managing_plans_desc'.tr(),
           ),
           const SizedBox(height: 32),
           Text(
-            'Contact Support',
+            'contact_support'.tr(),
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
@@ -84,17 +85,17 @@ class _SupportScreenState extends State<SupportScreen> {
               children: [
                 TextFormField(
                   controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email),
+                  decoration: InputDecoration(
+                    labelText: 'email'.tr(),
+                    prefixIcon: const Icon(Icons.email),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
+                      return 'please_enter_your_email'.tr();
                     }
                     if (!value.contains('@')) {
-                      return 'Please enter a valid email';
+                      return 'please_enter_valid_email'.tr();
                     }
                     return null;
                   },
@@ -102,13 +103,13 @@ class _SupportScreenState extends State<SupportScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _subjectController,
-                  decoration: const InputDecoration(
-                    labelText: 'Subject',
-                    prefixIcon: Icon(Icons.subject),
+                  decoration: InputDecoration(
+                    labelText: 'subject'.tr(),
+                    prefixIcon: const Icon(Icons.subject),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a subject';
+                      return 'please_enter_subject'.tr();
                     }
                     return null;
                   },
@@ -116,15 +117,15 @@ class _SupportScreenState extends State<SupportScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _messageController,
-                  decoration: const InputDecoration(
-                    labelText: 'Message',
-                    prefixIcon: Icon(Icons.message),
+                  decoration: InputDecoration(
+                    labelText: 'message'.tr(),
+                    prefixIcon: const Icon(Icons.message),
                     alignLabelWithHint: true,
                   ),
                   maxLines: 5,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your message';
+                      return 'please_enter_message'.tr();
                     }
                     return null;
                   },
@@ -136,8 +137,8 @@ class _SupportScreenState extends State<SupportScreen> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Support request submitted!'),
+                          SnackBar(
+                            content: Text('support_request_submitted'.tr()),
                           ),
                         );
                         _emailController.clear();
@@ -145,9 +146,9 @@ class _SupportScreenState extends State<SupportScreen> {
                         _messageController.clear();
                       }
                     },
-                    child: const Padding(
-                      padding: EdgeInsets.all(12.0),
-                      child: Text('Submit Request'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Text('submit_request'.tr()),
                     ),
                   ),
                 ),
@@ -156,12 +157,12 @@ class _SupportScreenState extends State<SupportScreen> {
           ),
           const SizedBox(height: 32),
           Text(
-            'Additional Resources',
+            'additional_resources'.tr(),
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
-          _buildResourceLink(context, Icons.description, 'Documentation'),
-          _buildResourceLink(context, Icons.play_circle_outline, 'Video Tutorials'),
+          _buildResourceLink(context, Icons.description, 'documentation'.tr()),
+          _buildResourceLink(context, Icons.play_circle_outline, 'video_tutorials'.tr()),
           const SizedBox(height: 32),
           Container(
             padding: const EdgeInsets.all(16),
@@ -172,16 +173,16 @@ class _SupportScreenState extends State<SupportScreen> {
             child: Column(
               children: [
                 Text(
-                  'Support Hours',
+                  'support_hours'.tr(),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Monday - Friday: 9:00 AM - 6:00 PM',
+                  'support_hours_schedule'.tr(),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 Text(
-                  'Expected response time: 24-48 hours',
+                  'expected_response_time'.tr(),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],

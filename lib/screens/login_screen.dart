@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
-import '../localization/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -98,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    AppLocalizations.of(context)?.appTitle ?? 'Tiknet Partner',
+                    'app_title'.tr(),
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                           color: AppTheme.primaryGreen,
                         ),
@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    AppLocalizations.of(context)?.manageYourWifiZone ?? 'Manage your Wifi Zone',
+                    'manage_wifi_zone'.tr(),
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: AppTheme.textLight,
                         ),
@@ -117,12 +117,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _nameController,
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)?.name ?? 'Full Name',
+                        labelText: 'name'.tr(),
                         prefixIcon: const Icon(Icons.person),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
+                          return 'enter_name'.tr();
                         }
                         return null;
                       },
@@ -131,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _phoneController,
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)?.phone ?? 'Phone',
+                        labelText: 'phone'.tr(),
                         prefixIcon: const Icon(Icons.phone),
                       ),
                       keyboardType: TextInputType.phone,
@@ -140,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _addressController,
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)?.address ?? 'Address',
+                        labelText: 'address'.tr(),
                         prefixIcon: const Icon(Icons.location_on),
                       ),
                     ),
@@ -148,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _cityController,
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)?.city ?? 'City',
+                        labelText: 'city'.tr(),
                         prefixIcon: const Icon(Icons.location_city),
                       ),
                     ),
@@ -156,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     DropdownButtonFormField<String>(
                       value: _selectedCountry,
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)?.country ?? 'Country',
+                        labelText: 'country'.tr(),
                         prefixIcon: const Icon(Icons.flag),
                       ),
                       items: _countries.map((country) {
@@ -172,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please select a country';
+                          return 'select_country'.tr();
                         }
                         return null;
                       },
@@ -181,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _numberOfRoutersController,
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)?.numberOfRouters ?? 'Number of Routers',
+                        labelText: 'number_of_routers'.tr(),
                         prefixIcon: const Icon(Icons.router),
                       ),
                       keyboardType: TextInputType.number,
@@ -189,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value != null && value.isNotEmpty) {
                           final number = int.tryParse(value);
                           if (number == null || number < 0) {
-                            return 'Must be 0 or greater';
+                            return 'must_be_zero_or_greater'.tr();
                           }
                         }
                         return null;
@@ -200,16 +200,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextFormField(
                     controller: _emailController,
                     decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)?.email ?? 'Email',
+                      labelText: 'email'.tr(),
                       prefixIcon: const Icon(Icons.email),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
+                        return 'enter_email'.tr();
                       }
                       if (!value.contains('@')) {
-                        return 'Please enter a valid email';
+                        return 'enter_valid_email'.tr();
                       }
                       return null;
                     },
@@ -218,16 +218,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextFormField(
                     controller: _passwordController,
                     decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)?.password ?? 'Password',
+                      labelText: 'password'.tr(),
                       prefixIcon: const Icon(Icons.lock),
                     ),
                     obscureText: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
+                        return 'enter_password'.tr();
                       }
                       if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                        return 'password_min_length'.tr();
                       }
                       return null;
                     },
@@ -241,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.of(context).pushNamed('/forgot-password');
                         },
                         child: Text(
-                          AppLocalizations.of(context)?.forgotPassword ?? 'Forgot password?',
+                          'forgot_password'.tr(),
                           style: const TextStyle(color: AppTheme.primaryGreen),
                         ),
                       ),
@@ -271,9 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             )
                           : Text(
-                              _isLogin 
-                                  ? (AppLocalizations.of(context)?.login ?? 'Login')
-                                  : (AppLocalizations.of(context)?.register ?? 'Register'),
+                              _isLogin ? 'login'.tr() : 'register'.tr(),
                               style: const TextStyle(fontSize: 16),
                             ),
                     ),
@@ -286,9 +284,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     },
                     child: Text(
-                      _isLogin
-                          ? (AppLocalizations.of(context)?.dontHaveAccount ?? 'Don\'t have an account? Register')
-                          : (AppLocalizations.of(context)?.alreadyHaveAccount ?? 'Already have an account? Login'),
+                      _isLogin ? 'dont_have_account'.tr() : 'already_have_account'.tr(),
                       style: const TextStyle(color: AppTheme.primaryGreen),
                     ),
                   ),

@@ -22,7 +22,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Assign/Change Role'),
+        title: Text('assign_change_role'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -34,7 +34,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
             padding: const EdgeInsets.all(16),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Search users...',
+                hintText: 'search_users'.tr(),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -185,7 +185,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Role updated to ${_selectedRole ?? user.role}'),
+                          content: Text('role_updated_to'.tr(namedArgs: {'role': _selectedRole ?? user.role})),
                         ),
                       );
                     },
@@ -201,7 +201,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                   width: double.infinity,
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
+                    child: Text('cancel'.tr()),
                   ),
                 ),
               ],

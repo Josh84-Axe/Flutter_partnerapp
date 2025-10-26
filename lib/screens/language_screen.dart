@@ -13,14 +13,18 @@ class LanguageScreen extends StatefulWidget {
 class _LanguageScreenState extends State<LanguageScreen> {
   late List<LanguageModel> languages;
   late String selectedCode;
+  bool _initialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    selectedCode = context.locale.languageCode;
-    languages = LanguageModel.availableLanguages.map((lang) {
-      return lang.copyWith(isSelected: lang.code == selectedCode);
-    }).toList();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      selectedCode = context.locale.languageCode;
+      languages = LanguageModel.availableLanguages.map((lang) {
+        return lang.copyWith(isSelected: lang.code == selectedCode);
+      }).toList();
+      _initialized = true;
+    }
   }
 
   @override

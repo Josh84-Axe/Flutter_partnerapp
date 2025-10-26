@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 
@@ -39,7 +40,7 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Assign to User'),
+        title: Text('assign_to_user'.tr()),
       ),
       body: Column(
         children: [
@@ -49,7 +50,7 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Selected Plan',
+                  'selected_plan'.tr(),
                   style: TextStyle(
                     fontSize: 14,
                     color: AppTheme.textLight,
@@ -67,7 +68,7 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Search users...',
+                    hintText: 'search_users'.tr(),
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -130,7 +131,7 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('Assign Plan'),
+                  child: Text('assign_plan'.tr()),
                 ),
               ),
             ),
@@ -147,12 +148,12 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Plan Assignment'),
+        title: Text('confirm_plan_assignment'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Are you sure you want to assign this plan?'),
+            Text('confirm_assign_plan_question'.tr()),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
@@ -164,11 +165,11 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Plan: ${widget.planName}',
+                    '${'plan'.tr()}: ${widget.planName}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text('User: ${user.name}'),
+                  Text('${'user'.tr()}: ${user.name}'),
                 ],
               ),
             ),
@@ -177,7 +178,7 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () {
@@ -185,10 +186,10 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
               Navigator.pop(context);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Plan assigned to ${user.name}')),
+                SnackBar(content: Text('plan_assigned_to'.tr(namedArgs: {'name': user.name}))),
               );
             },
-            child: const Text('Confirm Assignment'),
+            child: Text('confirm_assignment'.tr()),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../utils/app_theme.dart';
 import '../../models/config_item_model.dart';
 
@@ -18,17 +19,17 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
   List<ConfigItem> _configs = [
     ConfigItem(
       id: '1',
-      name: 'No Extra Devices',
+      name: 'no_extra_devices'.tr(),
       description: '0 additional devices - \$0.00',
     ),
     ConfigItem(
       id: '2',
-      name: '1 Extra Device',
+      name: 'extra_device'.tr(namedArgs: {'count': '1'}),
       description: '1 additional device - \$5.00',
     ),
     ConfigItem(
       id: '3',
-      name: 'Up to 3 Devices',
+      name: 'extra_devices'.tr(namedArgs: {'count': '3'}),
       description: 'Up to 3 devices - \$12.00',
     ),
   ];
@@ -58,12 +59,12 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Configuration'),
-        content: Text('Are you sure you want to delete "${config.name}"?'),
+        title: Text('delete_confirm_title'.tr()),
+        content: Text('delete_confirm_message'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () {
@@ -72,8 +73,8 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
               });
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Configuration deleted'),
+                SnackBar(
+                  content: Text('save_configuration'.tr()),
                   backgroundColor: AppTheme.errorRed,
                 ),
               );
@@ -81,7 +82,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.errorRed,
             ),
-            child: const Text('Delete'),
+            child: Text('delete'.tr()),
           ),
         ],
       ),
@@ -118,7 +119,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_editingConfig != null ? 'Configuration updated' : 'Configuration added'),
+        content: Text('save_configuration'.tr()),
         backgroundColor: AppTheme.successGreen,
       ),
     );
@@ -128,7 +129,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Device Configurations'),
+        title: Text('device_configurations'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -190,7 +191,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                   child: TextButton.icon(
                     onPressed: () => _deleteConfig(config),
                     icon: const Icon(Icons.delete, size: 18),
-                    label: const Text('Delete'),
+                    label: Text('delete'.tr()),
                     style: TextButton.styleFrom(
                       foregroundColor: AppTheme.errorRed,
                     ),
@@ -218,9 +219,9 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Add New Setting',
-                    style: TextStyle(
+                  Text(
+                    'add_new_setting'.tr(),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -229,8 +230,8 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
-                      labelText: 'Configuration Name',
-                      hintText: 'e.g., \'Business Plan\'',
+                      labelText: 'configuration_name'.tr(),
+                      hintText: 'enter_config_name'.tr(),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -241,7 +242,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a configuration name';
+                        return 'configuration_name'.tr();
                       }
                       return null;
                     },
@@ -253,7 +254,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                         child: TextFormField(
                           controller: _deviceCountController,
                           decoration: InputDecoration(
-                            labelText: 'Number of Devices',
+                            labelText: 'number_of_devices'.tr(),
                             hintText: 'e.g., 5',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -266,10 +267,10 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                           keyboardType: TextInputType.number,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Required';
+                              return 'number_of_devices'.tr();
                             }
                             if (int.tryParse(value) == null) {
-                              return 'Must be a number';
+                              return 'number_of_devices'.tr();
                             }
                             return null;
                           },
@@ -280,7 +281,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                         child: TextFormField(
                           controller: _priceController,
                           decoration: InputDecoration(
-                            labelText: 'Price',
+                            labelText: 'price'.tr(),
                             hintText: '0.00',
                             prefixText: '\$ ',
                             border: OutlineInputBorder(
@@ -294,10 +295,10 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Required';
+                              return 'price'.tr();
                             }
                             if (double.tryParse(value) == null) {
-                              return 'Invalid';
+                              return 'price'.tr();
                             }
                             return null;
                           },
@@ -329,9 +330,9 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
               backgroundColor: AppTheme.primaryGreen,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Text(
-              'Save Configuration',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            child: Text(
+              'save_configuration'.tr(),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         ),

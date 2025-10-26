@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../models/router_model.dart';
 import '../utils/app_theme.dart';
@@ -21,11 +22,11 @@ class _HealthScreenState extends State<HealthScreen> {
   }
 
   String _getSignalStrength(RouterModel router) {
-    if (router.status == 'offline') return 'Offline';
+    if (router.status == 'offline') return 'offline'.tr();
     final uptime = router.uptimeHours;
-    if (uptime > 100) return 'Strong';
-    if (uptime > 50) return 'Good';
-    return 'Weak';
+    if (uptime > 100) return 'strong'.tr();
+    if (uptime > 50) return 'good'.tr();
+    return 'weak'.tr();
   }
 
   bool _hasIssues(RouterModel router) {
@@ -36,16 +37,16 @@ class _HealthScreenState extends State<HealthScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isBlocked ? 'Unblock Device' : 'Block Device'),
+        title: Text(isBlocked ? 'unblock_device'.tr() : 'block_device'.tr()),
         content: Text(
           isBlocked
-              ? 'Unblock $routerName and restore connectivity?'
-              : 'Block $routerName and prevent connections?',
+              ? 'unblock_device_confirm'.tr(namedArgs: {'name': routerName})
+              : 'block_device_confirm'.tr(namedArgs: {'name': routerName}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () {
@@ -58,7 +59,7 @@ class _HealthScreenState extends State<HealthScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    isBlocked ? 'Device unblocked' : 'Device blocked',
+                    isBlocked ? 'device_unblocked'.tr() : 'device_blocked'.tr(),
                   ),
                 ),
               );
@@ -66,7 +67,7 @@ class _HealthScreenState extends State<HealthScreen> {
             style: FilledButton.styleFrom(
               backgroundColor: isBlocked ? AppTheme.primaryGreen : Colors.red,
             ),
-            child: Text(isBlocked ? 'Unblock' : 'Block'),
+            child: Text(isBlocked ? 'unblock'.tr() : 'block'.tr()),
           ),
         ],
       ),
@@ -79,7 +80,7 @@ class _HealthScreenState extends State<HealthScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Routers'),
+        title: Text('routers'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -97,7 +98,7 @@ class _HealthScreenState extends State<HealthScreen> {
                       Icon(Icons.router, size: 64, color: Colors.grey[400]),
                       const SizedBox(height: 16),
                       Text(
-                        'No routers found',
+                        'no_routers_found'.tr(),
                         style: TextStyle(color: Colors.grey[600], fontSize: 16),
                       ),
                     ],
@@ -177,7 +178,7 @@ class _HealthScreenState extends State<HealthScreen> {
                                             Icon(Icons.people, size: 14, color: AppTheme.textLight),
                                             const SizedBox(width: 4),
                                             Text(
-                                              '${router.connectedUsers} devices',
+                                              '${router.connectedUsers} ${'devices'.tr()}',
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color: AppTheme.textLight,
@@ -217,7 +218,7 @@ class _HealthScreenState extends State<HealthScreen> {
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
-                                          'Issues Detected',
+                                          'issues_detected'.tr(),
                                           style: TextStyle(
                                             color: AppTheme.warningAmber,
                                             fontWeight: FontWeight.w600,
@@ -232,7 +233,7 @@ class _HealthScreenState extends State<HealthScreen> {
                                             arguments: router.id,
                                           );
                                         },
-                                        child: const Text('View'),
+                                        child: Text('view'.tr()),
                                       ),
                                     ],
                                   ),
@@ -245,17 +246,17 @@ class _HealthScreenState extends State<HealthScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   _buildQuickStat(
-                                    'Data',
+                                    'data'.tr(),
                                     '${router.dataUsageGB.toStringAsFixed(1)} GB',
                                     Icons.cloud_download,
                                   ),
                                   _buildQuickStat(
-                                    'Uptime',
+                                    'uptime'.tr(),
                                     '${router.uptimeHours}h',
                                     Icons.access_time,
                                   ),
                                   _buildQuickStat(
-                                    'Status',
+                                    'status'.tr(),
                                     router.status.toUpperCase(),
                                     isOnline ? Icons.check_circle : Icons.cancel,
                                   ),
@@ -303,7 +304,7 @@ class _HealthScreenState extends State<HealthScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.info),
-              title: const Text('View Details'),
+              title: Text('view_details'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).pushNamed(
@@ -314,11 +315,11 @@ class _HealthScreenState extends State<HealthScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.restart_alt, color: AppTheme.warningAmber),
-              title: const Text('Restart Router'),
+              title: Text('restart_router'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Router restart initiated')),
+                  SnackBar(content: Text('router_restart_initiated'.tr())),
                 );
               },
             ),
@@ -327,7 +328,7 @@ class _HealthScreenState extends State<HealthScreen> {
                 router.status == 'online' ? Icons.block : Icons.check_circle,
                 color: router.status == 'online' ? AppTheme.errorRed : AppTheme.successGreen,
               ),
-              title: Text(router.status == 'online' ? 'Block Router' : 'Unblock Router'),
+              title: Text(router.status == 'online' ? 'block_router'.tr() : 'unblock_router'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 _showBlockDialog(
@@ -339,11 +340,11 @@ class _HealthScreenState extends State<HealthScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.settings, color: AppTheme.primaryGreen),
-              title: const Text('Configure'),
+              title: Text('configure'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Configuration coming soon')),
+                  SnackBar(content: Text('configuration_coming_soon'.tr())),
                 );
               },
             ),

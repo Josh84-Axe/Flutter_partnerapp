@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../utils/app_theme.dart';
 
 class SetNewPasswordScreen extends StatefulWidget {
@@ -51,7 +52,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Set New Password'),
+        title: Text('set_new_password'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -73,30 +74,30 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Create New Password',
+                  'create_new_password'.tr(),
                   style: Theme.of(context).textTheme.headlineMedium,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Your new password must be different from previously used passwords.',
+                  'new_password_different_message'.tr(),
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'New Password',
-                    prefixIcon: Icon(Icons.lock),
+                  decoration: InputDecoration(
+                    labelText: 'new_password'.tr(),
+                    prefixIcon: const Icon(Icons.lock),
                   ),
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
+                      return 'please_enter_password'.tr();
                     }
                     if (!_hasMinLength || !_hasUppercase || !_hasNumber || !_hasSpecialChar) {
-                      return 'Password does not meet requirements';
+                      return 'password_not_meet_requirements'.tr();
                     }
                     return null;
                   },
@@ -104,17 +105,17 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _confirmPasswordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Confirm Password',
-                    prefixIcon: Icon(Icons.lock),
+                  decoration: InputDecoration(
+                    labelText: 'confirm_password'.tr(),
+                    prefixIcon: const Icon(Icons.lock),
                   ),
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please confirm your password';
+                      return 'please_confirm_password'.tr();
                     }
                     if (value != _passwordController.text) {
-                      return 'Passwords do not match';
+                      return 'passwords_do_not_match'.tr();
                     }
                     return null;
                   },
@@ -133,25 +134,25 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Password Requirements:',
+                        'password_requirements'.tr(),
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       const SizedBox(height: 12),
-                      _buildRequirement('At least 8 characters', _hasMinLength),
-                      _buildRequirement('One uppercase letter', _hasUppercase),
-                      _buildRequirement('One number', _hasNumber),
-                      _buildRequirement('One special character', _hasSpecialChar),
+                      _buildRequirement('at_least_8_characters'.tr(), _hasMinLength),
+                      _buildRequirement('one_uppercase_letter'.tr(), _hasUppercase),
+                      _buildRequirement('one_number'.tr(), _hasNumber),
+                      _buildRequirement('one_special_character'.tr(), _hasSpecialChar),
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
                 FilledButton(
                   onPressed: _submit,
-                  child: const Padding(
-                    padding: EdgeInsets.all(12.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
                     child: Text(
-                      'Reset Password',
-                      style: TextStyle(fontSize: 16),
+                      'reset_password'.tr(),
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ),
                 ),

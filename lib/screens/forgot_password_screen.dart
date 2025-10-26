@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../utils/app_theme.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -28,7 +29,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Forgot Password'),
+        title: Text('forgot_password'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -50,30 +51,30 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Reset Your Password',
+                  'reset_your_password'.tr(),
                   style: Theme.of(context).textTheme.headlineMedium,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Enter your email address and we\'ll send you a link to reset your password.',
+                  'enter_email_reset_message'.tr(),
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email),
+                  decoration: InputDecoration(
+                    labelText: 'email'.tr(),
+                    prefixIcon: const Icon(Icons.email),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
+                      return 'please_enter_your_email'.tr();
                     }
                     if (!value.contains('@')) {
-                      return 'Please enter a valid email';
+                      return 'please_enter_valid_email'.tr();
                     }
                     return null;
                   },
@@ -81,11 +82,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 const SizedBox(height: 24),
                 FilledButton(
                   onPressed: _submit,
-                  child: const Padding(
-                    padding: EdgeInsets.all(12.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
                     child: Text(
-                      'Send Reset Link',
-                      style: TextStyle(fontSize: 16),
+                      'send_reset_link'.tr(),
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ),
                 ),

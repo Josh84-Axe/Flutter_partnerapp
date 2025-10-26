@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../models/hotspot_profile_model.dart';
 import '../utils/app_theme.dart';
@@ -22,24 +23,24 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Profile'),
-        content: Text('Are you sure you want to delete "${profile.name}"?'),
+        title: Text('delete_confirm_title'.tr()),
+        content: Text('delete_confirm_message'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile deleted')),
+                SnackBar(content: Text('${'delete_profile'.tr()}')),
               );
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.errorRed,
             ),
-            child: const Text('Delete'),
+            child: Text('delete'.tr()),
           ),
         ],
       ),
@@ -56,7 +57,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hotspot User Profiles'),
+        title: Text('hotspot_user_profiles'.tr()),
       ),
       body: Column(
         children: [
@@ -64,7 +65,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
             padding: const EdgeInsets.all(16),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Search profiles...',
+                hintText: 'search_profiles'.tr(),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -162,7 +163,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
                 child: FilledButton.icon(
                   onPressed: () => _navigateToCreateEdit(),
                   icon: const Icon(Icons.add),
-                  label: const Text('Add New Profile'),
+                  label: Text('add_new_profile'.tr()),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../utils/app_theme.dart';
 
 class ConfigurationsScreen extends StatelessWidget {
@@ -8,7 +9,7 @@ class ConfigurationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Configurations'),
+        title: Text('configurations'.tr()),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -16,8 +17,8 @@ class ConfigurationsScreen extends StatelessWidget {
           _buildConfigCard(
             context,
             icon: Icons.speed,
-            title: 'Rate Limit',
-            subtitle: 'Configure upload and download speeds',
+            title: 'rate_limit'.tr(),
+            subtitle: 'configure_speeds_desc'.tr(),
             onTap: () {
               Navigator.of(context).pushNamed('/config/rate-limit');
             },
@@ -26,8 +27,8 @@ class ConfigurationsScreen extends StatelessWidget {
           _buildConfigCard(
             context,
             icon: Icons.timer,
-            title: 'Idle Timeout',
-            subtitle: 'Duration before automatic disconnect',
+            title: 'idle_timeout'.tr(),
+            subtitle: 'duration_disconnect_desc'.tr(),
             onTap: () {
               Navigator.of(context).pushNamed('/config/idle-time');
             },
@@ -36,8 +37,8 @@ class ConfigurationsScreen extends StatelessWidget {
           _buildConfigCard(
             context,
             icon: Icons.calendar_today,
-            title: 'Validity',
-            subtitle: 'Plan duration settings',
+            title: 'validity'.tr(),
+            subtitle: 'plan_duration_desc'.tr(),
             onTap: () {
               Navigator.of(context).pushNamed('/config/plan-validity');
             },
@@ -46,8 +47,8 @@ class ConfigurationsScreen extends StatelessWidget {
           _buildConfigCard(
             context,
             icon: Icons.data_usage,
-            title: 'Data Limit',
-            subtitle: 'GB allowance configuration',
+            title: 'data_limit'.tr(),
+            subtitle: 'gb_allowance_desc'.tr(),
             onTap: () {
               Navigator.of(context).pushNamed('/config/data-limit');
             },
@@ -56,8 +57,8 @@ class ConfigurationsScreen extends StatelessWidget {
           _buildConfigCard(
             context,
             icon: Icons.group,
-            title: 'Shared Users',
-            subtitle: 'Concurrent users allowed',
+            title: 'shared_users'.tr(),
+            subtitle: 'concurrent_users_desc'.tr(),
             onTap: () {
               Navigator.of(context).pushNamed('/config/shared-users');
             },
@@ -66,8 +67,8 @@ class ConfigurationsScreen extends StatelessWidget {
           _buildConfigCard(
             context,
             icon: Icons.devices,
-            title: 'Additional Devices',
-            subtitle: 'Extra device slots configuration',
+            title: 'additional_devices'.tr(),
+            subtitle: 'extra_device_desc'.tr(),
             onTap: () {
               Navigator.of(context).pushNamed('/config/additional-devices');
             },

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 import '../widgets/search_bar_widget.dart';
@@ -45,35 +46,35 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(userData == null ? 'Add User' : 'Edit User'),
+          title: Text(userData == null ? 'add_user'.tr() : 'edit_user'.tr()),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
+                decoration: InputDecoration(labelText: 'name'.tr()),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(labelText: 'email'.tr()),
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: phoneController,
-                decoration: const InputDecoration(labelText: 'Phone'),
+                decoration: InputDecoration(labelText: 'phone'.tr()),
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: selectedRole,
-                decoration: const InputDecoration(labelText: 'Role'),
+                decoration: InputDecoration(labelText: 'role'.tr()),
                 items: ['user', 'worker', 'owner', 'admin']
                     .map((role) => DropdownMenuItem(
                           value: role,
-                          child: Text(role.toUpperCase()),
+                          child: Text(role.tr()),
                         ))
                     .toList(),
                 onChanged: (value) {
@@ -87,12 +88,12 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               ),
               if (selectedRole == 'worker') ...[
                 const SizedBox(height: 12),
-                const Text(
-                  'Worker Permissions:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  'worker_permissions'.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 CheckboxListTile(
-                  title: const Text('Create Plans'),
+                  title: Text('create_plans'.tr()),
                   value: selectedPermissions.contains('create_plans'),
                   onChanged: (value) {
                     setState(() {
@@ -105,7 +106,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                   },
                 ),
                 CheckboxListTile(
-                  title: const Text('View Users'),
+                  title: Text('manage_users'.tr()),
                   value: selectedPermissions.contains('view_users'),
                   onChanged: (value) {
                     setState(() {
@@ -118,7 +119,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                   },
                 ),
                 CheckboxListTile(
-                  title: const Text('View Transactions'),
+                  title: Text('view_reports'.tr()),
                   value: selectedPermissions.contains('view_transactions'),
                   onChanged: (value) {
                     setState(() {
@@ -131,7 +132,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                   },
                 ),
                 CheckboxListTile(
-                  title: const Text('View Routers'),
+                  title: Text('configure_routers'.tr()),
                   value: selectedPermissions.contains('view_routers'),
                   onChanged: (value) {
                     setState(() {
@@ -150,7 +151,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () {
@@ -174,7 +175,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
 
               Navigator.pop(context);
             },
-            child: Text(userData == null ? 'Add' : 'Update'),
+            child: Text(userData == null ? 'add_user'.tr() : 'edit_user'.tr()),
           ),
         ],
       ),
@@ -198,7 +199,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Users & Workers'),
+        title: Text('users'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.checklist),
@@ -215,9 +216,9 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppTheme.pureWhite,
-          tabs: const [
-            Tab(text: 'Users'),
-            Tab(text: 'Workers'),
+          tabs: [
+            Tab(text: 'users'.tr()),
+            Tab(text: 'workers'.tr()),
           ],
         ),
       ),
@@ -226,7 +227,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           Padding(
             padding: const EdgeInsets.all(16),
             child: SearchBarWidget(
-              hintText: 'Search by name, email, or phone...',
+              hintText: 'search_users'.tr(),
               controller: _searchController,
               onChanged: (value) {
                 setState(() {
@@ -265,7 +266,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             Icon(Icons.person_off, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
-              'No users found',
+              'no_users_found'.tr(),
               style: TextStyle(color: Colors.grey[600], fontSize: 16),
             ),
           ],
@@ -382,7 +383,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           children: [
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('Edit User'),
+              title: Text('edit_user'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 _showUserDialog(userData: user.toJson());
@@ -390,7 +391,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             ),
             ListTile(
               leading: const Icon(Icons.person, color: AppTheme.primaryGreen),
-              title: const Text('View Details'),
+              title: Text('view_details'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).pushNamed('/user-details', arguments: user);
@@ -401,13 +402,13 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 user.isActive ? Icons.block : Icons.check_circle,
                 color: user.isActive ? AppTheme.errorRed : AppTheme.successGreen,
               ),
-              title: Text(user.isActive ? 'Block User' : 'Unblock User'),
+              title: Text(user.isActive ? 'block_device'.tr() : 'unblock_device'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      user.isActive ? 'User blocked' : 'User unblocked',
+                      user.isActive ? 'device_blocked'.tr() : 'device_unblocked'.tr(),
                     ),
                   ),
                 );
@@ -415,18 +416,18 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: AppTheme.errorRed),
-              title: const Text('Delete User'),
+              title: Text('remove_user'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('Delete User'),
-                    content: Text('Delete ${user.name}?'),
+                    title: Text('remove_user'.tr()),
+                    content: Text('remove_user_confirm'.tr()),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: Text('cancel'.tr()),
                       ),
                       FilledButton(
                         onPressed: () {
@@ -436,7 +437,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                         style: FilledButton.styleFrom(
                           backgroundColor: AppTheme.errorRed,
                         ),
-                        child: const Text('Delete'),
+                        child: Text('remove'.tr()),
                       ),
                     ],
                   ),
@@ -457,15 +458,15 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text('Assign Router to ${user.name}'),
+          title: Text('assign_router'.tr()),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Select a router to assign:'),
+              Text('assign_router'.tr()),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: selectedRouterId,
-                decoration: const InputDecoration(labelText: 'Router'),
+                decoration: InputDecoration(labelText: 'router'.tr()),
                 items: appState.routers
                     .map((router) => DropdownMenuItem(
                           value: router.id,
@@ -483,7 +484,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('cancel'.tr()),
             ),
             FilledButton(
               onPressed: selectedRouterId == null
@@ -491,10 +492,10 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                   : () {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Router assigned to ${user.name}')),
+                        SnackBar(content: Text('assign_router'.tr())),
                       );
                     },
-              child: const Text('Assign'),
+              child: Text('assign_router'.tr()),
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 import '../services/hotspot_configuration_service.dart';
@@ -50,7 +51,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Edit Internet Plan' : 'Create Internet Plan'),
+        title: Text(isEdit ? 'edit_internet_plan'.tr() : 'create_internet_plan'.tr()),
       ),
       body: Column(
         children: [
@@ -62,19 +63,19 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                 children: [
                   TextField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Plan Name',
-                      hintText: 'e.g., Premium Unlimited',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: 'plan_name'.tr(),
+                      hintText: 'plan_name_hint'.tr(),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _priceController,
-                    decoration: const InputDecoration(
-                      labelText: 'Price',
-                      hintText: 'e.g., 29.99',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: 'price'.tr(),
+                      hintText: 'price_hint'.tr(),
+                      border: const OutlineInputBorder(),
                       prefixText: '\$ ',
                     ),
                     keyboardType: TextInputType.number,
@@ -82,12 +83,12 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _selectedValidity,
-                    decoration: const InputDecoration(
-                      labelText: 'Validity',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: 'validity'.tr(),
+                      border: const OutlineInputBorder(),
                     ),
                     items: HotspotConfigurationService.getValidityOptions().isEmpty
-                        ? [const DropdownMenuItem(value: null, child: Text('No options configured'))]
+                        ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
                         : HotspotConfigurationService.getValidityOptions()
                             .map((v) => DropdownMenuItem(value: v, child: Text(v)))
                             .toList(),
@@ -98,12 +99,12 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _selectedDataLimit,
-                    decoration: const InputDecoration(
-                      labelText: 'Data Limit',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: 'data_limit'.tr(),
+                      border: const OutlineInputBorder(),
                     ),
                     items: HotspotConfigurationService.getDataLimits().isEmpty
-                        ? [const DropdownMenuItem(value: null, child: Text('No options configured'))]
+                        ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
                         : HotspotConfigurationService.getDataLimits()
                             .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                             .toList(),
@@ -114,12 +115,12 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _selectedAdditionalDevices,
-                    decoration: const InputDecoration(
-                      labelText: 'Additional Devices Allowed',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: 'additional_devices_allowed'.tr(),
+                      border: const OutlineInputBorder(),
                     ),
                     items: HotspotConfigurationService.getDeviceAllowed().isEmpty
-                        ? [const DropdownMenuItem(value: null, child: Text('No options configured'))]
+                        ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
                         : HotspotConfigurationService.getDeviceAllowed()
                             .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                             .toList(),
@@ -130,12 +131,12 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _selectedRouter,
-                    decoration: const InputDecoration(
-                      labelText: 'Router',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: 'router'.tr(),
+                      border: const OutlineInputBorder(),
                     ),
                     items: appState.routerConfigurations.isEmpty
-                        ? [const DropdownMenuItem(value: null, child: Text('No routers configured'))]
+                        ? [DropdownMenuItem(value: null, child: Text('no_routers_configured'.tr()))]
                         : appState.routerConfigurations
                             .map((r) => DropdownMenuItem(value: r.id, child: Text(r.name)))
                             .toList(),
@@ -146,12 +147,12 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _selectedHotspotProfile,
-                    decoration: const InputDecoration(
-                      labelText: 'Hotspot User Profile',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: 'hotspot_user_profile'.tr(),
+                      border: const OutlineInputBorder(),
                     ),
                     items: appState.hotspotProfiles.isEmpty
-                        ? [const DropdownMenuItem(value: null, child: Text('No profiles configured'))]
+                        ? [DropdownMenuItem(value: null, child: Text('no_profiles_configured'.tr()))]
                         : appState.hotspotProfiles
                             .map((p) => DropdownMenuItem(value: p.id, child: Text(p.name)))
                             .toList(),
@@ -183,7 +184,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: Text(isEdit ? 'Update Plan' : 'Create Plan'),
+                  child: Text(isEdit ? 'update_plan'.tr() : 'create_plan'.tr()),
                 ),
               ),
             ),
@@ -196,7 +197,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
   void _savePlan() {
     if (_nameController.text.isEmpty || _priceController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill required fields')),
+        SnackBar(content: Text('fill_required_fields'.tr())),
       );
       return;
     }
@@ -221,7 +222,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
     context.read<AppState>().createPlan(data);
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(widget.planData != null ? 'Plan updated' : 'Plan created')),
+      SnackBar(content: Text(widget.planData != null ? 'plan_updated'.tr() : 'plan_created'.tr())),
     );
   }
 }

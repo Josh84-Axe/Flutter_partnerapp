@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../utils/app_theme.dart';
 
 class PasswordSuccessScreen extends StatelessWidget {
@@ -21,13 +22,13 @@ class PasswordSuccessScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Password Reset Successful',
+                'password_reset_successful'.tr(),
                 style: Theme.of(context).textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
-                'Your password has been successfully reset. You can now log in with your new password.',
+                'password_reset_success_message'.tr(),
                 style: Theme.of(context).textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -39,11 +40,11 @@ class PasswordSuccessScreen extends StatelessWidget {
                     (route) => false,
                   );
                 },
-                child: const Padding(
-                  padding: EdgeInsets.all(12.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
                   child: Text(
-                    'Go to Login',
-                    style: TextStyle(fontSize: 16),
+                    'go_to_login'.tr(),
+                    style: const TextStyle(fontSize: 16),
                   ),
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../utils/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -9,7 +10,7 @@ class AboutAppScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('About App'),
+        title: Text('about_app'.tr()),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -37,11 +38,11 @@ class AboutAppScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _buildInfoRow('App Version', 'v1.0.0'),
+                  _buildInfoRow('app_version'.tr(), 'v1.0.0'),
                   const Divider(),
-                  _buildInfoRow('Build Number', '#1234'),
+                  _buildInfoRow('build_number'.tr(), '#1234'),
                   const Divider(),
-                  _buildInfoRow('Developer Credits', 'Tiknet Inc.'),
+                  _buildInfoRow('developer_credits'.tr(), 'Tiknet Inc.'),
                 ],
               ),
             ),
@@ -63,7 +64,7 @@ class AboutAppScreen extends StatelessWidget {
                       color: AppTheme.primaryGreen,
                     ),
                   ),
-                  title: const Text('Privacy Policy'),
+                  title: Text('privacy_policy'.tr()),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     _launchURL('https://tiknet.africa/privacy');
@@ -83,7 +84,7 @@ class AboutAppScreen extends StatelessWidget {
                       color: AppTheme.primaryGreen,
                     ),
                   ),
-                  title: const Text('Terms of Service'),
+                  title: Text('terms_of_service'.tr()),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     _launchURL('https://tiknet.africa/terms');
@@ -97,7 +98,7 @@ class AboutAppScreen extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  'Developed by Tiknet Inc.',
+                  'developed_by_tiknet'.tr(),
                   style: TextStyle(
                     fontSize: 14,
                     color: AppTheme.textLight,
@@ -105,7 +106,7 @@ class AboutAppScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '© 2024 Tiknet Inc. All rights reserved.',
+                  'copyright_tiknet'.tr(),
                   style: TextStyle(
                     fontSize: 12,
                     color: AppTheme.textLight.withOpacity(0.7),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../models/router_configuration_model.dart';
 import '../utils/app_theme.dart';
 
@@ -64,8 +65,8 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
         SnackBar(
           content: Text(
             _existingConfig != null
-                ? 'Router configuration updated successfully'
-                : 'Router configuration saved successfully',
+                ? 'router_config_updated'.tr()
+                : 'router_config_saved'.tr(),
           ),
         ),
       );
@@ -79,7 +80,7 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Edit Router' : 'Add New Router'),
+        title: Text(isEdit ? 'edit_router'.tr() : 'add_new_router'.tr()),
       ),
       body: Form(
         key: _formKey,
@@ -93,14 +94,14 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                   children: [
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Router Name',
-                        hintText: 'e.g., Router Alpha',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'router_name'.tr(),
+                        hintText: 'router_name_hint'.tr(),
+                        border: const OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter router name';
+                          return 'enter_router_name'.tr();
                         }
                         return null;
                       },
@@ -108,15 +109,15 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _ipAddressController,
-                      decoration: const InputDecoration(
-                        labelText: 'IP Address',
-                        hintText: 'e.g., 192.168.1.1',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'ip_address'.tr(),
+                        hintText: 'ip_address_hint'.tr(),
+                        border: const OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter IP address';
+                          return 'enter_ip_address'.tr();
                         }
                         return null;
                       },
@@ -125,8 +126,8 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                     TextFormField(
                       controller: _passwordController,
                       decoration: InputDecoration(
-                        labelText: 'Password',
-                        hintText: 'Router password',
+                        labelText: 'password'.tr(),
+                        hintText: 'router_password'.tr(),
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -146,37 +147,37 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _apiPortController,
-                      decoration: const InputDecoration(
-                        labelText: 'API Port',
-                        hintText: 'e.g., 8080',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'api_port'.tr(),
+                        hintText: 'api_port_hint'.tr(),
+                        border: const OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _dnsNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'DNS Name',
-                        hintText: 'e.g., router.local',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'dns_name'.tr(),
+                        hintText: 'dns_name_hint'.tr(),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _usernameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Username',
-                        hintText: 'e.g., admin',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'username'.tr(),
+                        hintText: 'username_hint'.tr(),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _radiusSecretController,
                       decoration: InputDecoration(
-                        labelText: 'Radius Secret',
-                        hintText: 'Radius secret key',
+                        labelText: 'radius_secret'.tr(),
+                        hintText: 'radius_secret_hint'.tr(),
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -196,10 +197,10 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _coaPortController,
-                      decoration: const InputDecoration(
-                        labelText: 'COA Port',
-                        hintText: 'e.g., 3799',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'coa_port'.tr(),
+                        hintText: 'coa_port_hint'.tr(),
+                        border: const OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
                     ),
@@ -228,7 +229,7 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: const Text('Cancel'),
+                        child: Text('cancel'.tr()),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -238,7 +239,7 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: const Text('Save Configuration'),
+                        child: Text('save_configuration'.tr()),
                       ),
                     ),
                   ],
