@@ -38,7 +38,7 @@ dependencies:
   provider: ^6.1.1
   shared_preferences: ^2.2.2
   intl: ^0.20.2
-  fl_chart: ^0.68.0
+  fl_chart: ^1.1.1
   google_fonts: ^6.1.0
   flutter_animate: ^4.5.0
   url_launcher: ^6.2.5
@@ -53,7 +53,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
