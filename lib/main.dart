@@ -12,6 +12,9 @@ import 'screens/users_screen.dart';
 import 'screens/plans_screen.dart';
 import 'screens/health_screen.dart';
 import 'screens/settings_screen.dart';
+import 'feature/launch/splash_screen.dart';
+import 'feature/launch/onboarding_screen.dart';
+import 'feature/auth/login_screen_m3.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/language_screen.dart';
 import 'screens/forgot_password_screen.dart';
@@ -120,9 +123,13 @@ class HotspotPartnerApp extends StatelessWidget {
           localizationsDelegates: localizationDelegates,
           supportedLocales: supportedLocales,
           locale: locale,
-          home: const AuthWrapper(),
+          home: const SplashScreen(),
       routes: {
-        '/login': (context) => const LoginScreen(),
+        '/splash': (context) => const SplashScreen(),
+        '/onboarding': (context) => const OnboardingScreen(),
+        '/auth-wrapper': (context) => const AuthWrapper(),
+        '/login': (context) => const LoginScreenM3(),
+        '/login-old': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/notifications': (context) => const NotificationsScreen(),
@@ -172,7 +179,7 @@ class HotspotPartnerApp extends StatelessWidget {
           final user = ModalRoute.of(context)?.settings.arguments as UserModel;
           return UserDetailsScreen(user: user);
         },
-        '/onboarding': (context) => const OnboardingFlow(),
+        '/onboarding-old': (context) => const OnboardingFlow(),
         '/about': (context) => const AboutAppScreen(),
         '/empty-state': (context) => const EmptyStateScreen(),
       },
@@ -245,14 +252,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   Future<void> _checkOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
+    // Check for new onboarding_completed flag (used by new launch flow)
+    final hasCompletedOnboarding = prefs.getBool('onboarding_completed') ?? false;
+    // Also check old flag for backward compatibility
     final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
     
     setState(() {
-      _hasSeenOnboarding = hasSeenOnboarding;
+      _hasSeenOnboarding = hasCompletedOnboarding || hasSeenOnboarding;
       _isLoading = false;
     });
 
-    if (hasSeenOnboarding) {
+    if (_hasSeenOnboarding) {
       if (mounted) {
         context.read<AppState>().checkAuthStatus();
       }
@@ -268,13 +278,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
     }
 
     if (!_hasSeenOnboarding) {
-      return const OnboardingFlow();
+      // Show new M3 onboarding
+      return const OnboardingScreen();
     }
 
     final currentUser = context.watch<AppState>().currentUser;
 
     if (currentUser == null) {
-      return const LoginScreen();
+      // Show new M3 login screen
+      return const LoginScreenM3();
     } else {
       return const HomeScreen();
     }

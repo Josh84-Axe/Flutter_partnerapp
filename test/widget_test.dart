@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hotspot_partner_app/main.dart';
 import 'package:hotspot_partner_app/providers/app_state.dart';
 import 'package:hotspot_partner_app/providers/theme_provider.dart';
@@ -12,8 +13,14 @@ void main() {
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     
+    // Mock Google Fonts to use default fonts in tests
+    GoogleFonts.config.allowRuntimeFetching = false;
+    
     // Mock SharedPreferences to avoid platform channel calls
-    SharedPreferences.setMockInitialValues({});
+    // Set onboarding_completed to true to skip splash/onboarding flow in tests
+    SharedPreferences.setMockInitialValues({
+      'onboarding_completed': true,
+    });
     
     // Mock dynamic_color plugin to return null (no dynamic colors in tests)
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -31,25 +38,32 @@ void main() {
   testWidgets('App builds successfully', (WidgetTester tester) async {
     await EasyLocalization.ensureInitialized();
     
-    await tester.pumpWidget(
-      EasyLocalization(
-        supportedLocales: const [Locale('en'), Locale('fr')],
-        path: 'lib/l10n',
-        fallbackLocale: const Locale('en'),
-        child: MultiProvider(
-          providers: [
-            ChangeNotifierProvider(create: (_) => AppState()),
-            ChangeNotifierProvider(create: (_) => ThemeProvider()),
-          ],
-          child: const HotspotPartnerApp(),
+    await tester.runAsync(() async {
+      await tester.pumpWidget(
+        EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('fr')],
+          path: 'lib/l10n',
+          fallbackLocale: const Locale('en'),
+          child: MultiProvider(
+            providers: [
+              ChangeNotifierProvider(create: (_) => AppState()),
+              ChangeNotifierProvider(create: (_) => ThemeProvider()),
+            ],
+            child: const HotspotPartnerApp(),
+          ),
         ),
-      ),
-    );
-    
-    // Use pump() instead of pumpAndSettle() to avoid infinite wait
-    await tester.pump();
-    
-    // Verify MaterialApp is present
-    expect(find.byType(MaterialApp), findsOneWidget);
+      );
+      
+      // Use pump() instead of pumpAndSettle() to avoid infinite wait
+      // The app will show SplashScreen initially
+      await tester.pump();
+      
+      // Verify MaterialApp is present
+      expect(find.byType(MaterialApp), findsOneWidget);
+      
+      // Wait for the splash screen timer to complete (1.6s)
+      await Future.delayed(const Duration(milliseconds: 1700));
+      await tester.pump();
+    });
   });
 }
