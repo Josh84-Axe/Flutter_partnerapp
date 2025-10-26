@@ -124,7 +124,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
                               icon: const Icon(Icons.edit),
                               style: IconButton.styleFrom(
                                 foregroundColor: AppTheme.primaryGreen,
-                                backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+                                backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -133,7 +133,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
                               icon: const Icon(Icons.delete),
                               style: IconButton.styleFrom(
                                 foregroundColor: AppTheme.errorRed,
-                                backgroundColor: AppTheme.errorRed.withOpacity(0.1),
+                                backgroundColor: AppTheme.errorRed.withValues(alpha: 0.1),
                               ),
                             ),
                           ],
@@ -151,7 +151,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
               color: Theme.of(context).scaffoldBackgroundColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   offset: const Offset(0, -2),
                   blurRadius: 4,
                 ),

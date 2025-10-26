@@ -62,10 +62,10 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.successGreen.withOpacity(0.1),
+                    color: AppTheme.successGreen.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppTheme.successGreen.withOpacity(0.3),
+                      color: AppTheme.successGreen.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
@@ -210,7 +210,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                 ),
                 const SizedBox(height: 16),
                 Card(
-                  color: AppTheme.primaryGreen.withOpacity(0.05),
+                  color: AppTheme.primaryGreen.withValues(alpha: 0.05),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -261,7 +261,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
               color: Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -305,11 +305,11 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.primaryGreen.withOpacity(0.1)
+              ? AppTheme.primaryGreen.withValues(alpha: 0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight.withOpacity(0.3),
+            color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
         ),

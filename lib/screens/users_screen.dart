@@ -69,7 +69,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: selectedRole,
+                initialValue: selectedRole,
                 decoration: InputDecoration(labelText: 'role'.tr()),
                 items: ['user', 'worker', 'owner', 'admin']
                     .map((role) => DropdownMenuItem(
@@ -286,7 +286,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+              backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
               child: Text(
                 user.name[0].toUpperCase(),
                 style: const TextStyle(
@@ -309,8 +309,8 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: user.isActive 
-                            ? AppTheme.successGreen.withOpacity(0.2)
-                            : Colors.grey.withOpacity(0.2),
+                            ? AppTheme.successGreen.withValues(alpha: 0.2)
+                            : Colors.grey.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -450,56 +450,4 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     );
   }
 
-  void _showAssignRouterDialog(BuildContext context, user) {
-    final appState = context.read<AppState>();
-    String? selectedRouterId;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('assign_router'.tr()),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('assign_router'.tr()),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: selectedRouterId,
-                decoration: InputDecoration(labelText: 'router'.tr()),
-                items: appState.routers
-                    .map((router) => DropdownMenuItem(
-                          value: router.id,
-                          child: Text(router.name),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedRouterId = value;
-                  });
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('cancel'.tr()),
-            ),
-            FilledButton(
-              onPressed: selectedRouterId == null
-                  ? null
-                  : () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('assign_router'.tr())),
-                      );
-                    },
-              child: Text('assign_router'.tr()),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

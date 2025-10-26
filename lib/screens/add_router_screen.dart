@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../models/router_configuration_model.dart';
-import '../utils/app_theme.dart';
 
 class AddRouterScreen extends StatefulWidget {
   const AddRouterScreen({super.key});
@@ -214,7 +213,7 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                 color: Theme.of(context).scaffoldBackgroundColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     offset: const Offset(0, -2),
                     blurRadius: 4,
                   ),

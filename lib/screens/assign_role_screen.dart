@@ -12,7 +12,6 @@ class AssignRoleScreen extends StatefulWidget {
 }
 
 class _AssignRoleScreenState extends State<AssignRoleScreen> {
-  String? _selectedUserId;
   String? _selectedRole;
 
   @override
@@ -56,7 +55,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+                      backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
                       child: Text(
                         user.name[0].toUpperCase(),
                         style: const TextStyle(
@@ -73,7 +72,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                     trailing: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: _getRoleBadgeColor(user.role).withOpacity(0.1),
+                        color: _getRoleBadgeColor(user.role).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -86,7 +85,6 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                       ),
                     ),
                     onTap: () {
-                      setState(() => _selectedUserId = user.id);
                       _showRoleSelector(context, user);
                     },
                   ),
@@ -133,7 +131,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: AppTheme.textLight.withOpacity(0.3),
+                    color: AppTheme.textLight.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -230,10 +228,10 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryGreen.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? AppTheme.primaryGreen.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight.withOpacity(0.3),
+            color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
         ),

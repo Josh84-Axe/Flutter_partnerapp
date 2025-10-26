@@ -78,7 +78,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _selectedRateLimit,
+              initialValue: _selectedRateLimit,
               decoration: InputDecoration(
                 labelText: 'rate_limit'.tr(),
                 border: OutlineInputBorder(
@@ -98,7 +98,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _selectedIdleTime,
+              initialValue: _selectedIdleTime,
               decoration: InputDecoration(
                 labelText: 'idle_time'.tr(),
                 border: OutlineInputBorder(
@@ -118,7 +118,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _selectedRouter,
+              initialValue: _selectedRouter,
               decoration: InputDecoration(
                 labelText: 'router'.tr(),
                 border: OutlineInputBorder(

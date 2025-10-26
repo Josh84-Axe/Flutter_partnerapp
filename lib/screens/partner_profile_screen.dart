@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:easy_localization/easy_localization.dart';
 import '../utils/app_theme.dart';
-import '../widgets/alerts/success_alert.dart';
-import 'security/verify_identity_dialog.dart';
 
 class PartnerProfileScreen extends StatefulWidget {
   const PartnerProfileScreen({super.key});
@@ -135,7 +132,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
               color: Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -206,7 +203,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+              backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
               child: Icon(iconData, color: AppTheme.primaryGreen),
             ),
             const SizedBox(width: 16),

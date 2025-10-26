@@ -21,7 +21,7 @@ class EmptyStateScreen extends StatelessWidget {
                 width: 128,
                 height: 128,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen.withOpacity(0.1),
+                  color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

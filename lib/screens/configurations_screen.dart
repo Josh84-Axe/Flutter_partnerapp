@@ -88,7 +88,7 @@ class ConfigurationsScreen extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+          backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
           child: Icon(icon, color: AppTheme.primaryGreen),
         ),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),

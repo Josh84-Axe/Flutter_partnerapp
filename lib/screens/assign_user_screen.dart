@@ -80,35 +80,37 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: users.length,
-              itemBuilder: (context, index) {
-                final user = users[index];
-                final isSelected = _selectedUserId == user.id;
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  color: isSelected ? AppTheme.primaryGreen.withOpacity(0.1) : null,
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
-                      child: Text(
-                        user.name[0].toUpperCase(),
-                        style: const TextStyle(color: AppTheme.primaryGreen),
+            child: RadioGroup<String>(
+              groupValue: _selectedUserId,
+              onChanged: (value) => setState(() => _selectedUserId = value),
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: users.length,
+                itemBuilder: (context, index) {
+                  final user = users[index];
+                  final isSelected = _selectedUserId == user.id;
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    color: isSelected ? AppTheme.primaryGreen.withValues(alpha: 0.1) : null,
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                        child: Text(
+                          user.name[0].toUpperCase(),
+                          style: const TextStyle(color: AppTheme.primaryGreen),
+                        ),
                       ),
+                      title: Text(user.name),
+                      subtitle: Text(user.email),
+                      trailing: Radio<String>(
+                        value: user.id,
+                        activeColor: AppTheme.primaryGreen,
+                      ),
+                      onTap: () => setState(() => _selectedUserId = user.id),
                     ),
-                    title: Text(user.name),
-                    subtitle: Text(user.email),
-                    trailing: Radio<String>(
-                      value: user.id,
-                      groupValue: _selectedUserId,
-                      onChanged: (value) => setState(() => _selectedUserId = value),
-                      activeColor: AppTheme.primaryGreen,
-                    ),
-                    onTap: () => setState(() => _selectedUserId = user.id),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
           Container(
@@ -117,7 +119,7 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
               color: Theme.of(context).scaffoldBackgroundColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, -2),
                 ),
@@ -158,7 +160,7 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withOpacity(0.1),
+                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(

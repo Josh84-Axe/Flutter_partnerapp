@@ -23,7 +23,7 @@ class ActionFailedAlert {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: AppTheme.errorRed.withOpacity(0.2),
+                  color: AppTheme.errorRed.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

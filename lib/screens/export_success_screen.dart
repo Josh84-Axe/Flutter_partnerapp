@@ -28,7 +28,7 @@ class ExportSuccessScreen extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundColor: AppTheme.successGreen.withOpacity(0.1),
+              backgroundColor: AppTheme.successGreen.withValues(alpha: 0.1),
               child: const Icon(
                 Icons.check_circle,
                 size: 80,

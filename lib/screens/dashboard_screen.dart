@@ -144,8 +144,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: transaction.type == 'revenue'
-                        ? AppTheme.primaryGreen.withOpacity(0.1)
-                        : Colors.orange.withOpacity(0.1),
+                        ? AppTheme.primaryGreen.withValues(alpha: 0.1)
+                        : Colors.orange.withValues(alpha: 0.1),
                     child: Icon(
                       transaction.type == 'revenue'
                           ? Icons.trending_up
@@ -266,7 +266,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   final user = activeUsers[index];
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.blue.withOpacity(0.1),
+                      backgroundColor: Colors.blue.withValues(alpha: 0.1),
                       child: Text(user.name[0].toUpperCase()),
                     ),
                     title: Text(user.name),

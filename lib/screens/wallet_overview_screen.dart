@@ -67,7 +67,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryGreen.withOpacity(0.3),
+                  color: AppTheme.primaryGreen.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -148,8 +148,8 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundColor: isRevenue
-                      ? AppTheme.successGreen.withOpacity(0.1)
-                      : AppTheme.errorRed.withOpacity(0.1),
+                      ? AppTheme.successGreen.withValues(alpha: 0.1)
+                      : AppTheme.errorRed.withValues(alpha: 0.1),
                   child: Icon(
                     isRevenue ? Icons.arrow_downward : Icons.arrow_upward,
                     color: isRevenue ? AppTheme.successGreen : AppTheme.errorRed,
@@ -253,10 +253,10 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: AppTheme.primaryGreen.withOpacity(0.1),
+          color: AppTheme.primaryGreen.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppTheme.primaryGreen.withOpacity(0.3),
+            color: AppTheme.primaryGreen.withValues(alpha: 0.3),
           ),
         ),
         child: Column(
@@ -308,7 +308,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryGreen.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? AppTheme.primaryGreen.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(

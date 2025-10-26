@@ -56,7 +56,7 @@ class AboutAppScreen extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withOpacity(0.2),
+                      color: AppTheme.primaryGreen.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -76,7 +76,7 @@ class AboutAppScreen extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withOpacity(0.2),
+                      color: AppTheme.primaryGreen.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -109,7 +109,7 @@ class AboutAppScreen extends StatelessWidget {
                   'copyright_tiknet'.tr(),
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppTheme.textLight.withOpacity(0.7),
+                    color: AppTheme.textLight.withValues(alpha: 0.7),
                   ),
                 ),
               ],

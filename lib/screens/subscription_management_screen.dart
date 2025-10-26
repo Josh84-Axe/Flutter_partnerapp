@@ -44,7 +44,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
                   width: 150,
                   height: 150,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryGreen.withOpacity(0.1),
+                    color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -56,7 +56,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: AppTheme.lightGreen.withOpacity(0.1),
+                    color: AppTheme.lightGreen.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -187,7 +187,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
     required bool isActive,
   }) {
     return Card(
-      color: isActive ? AppTheme.primaryGreen.withOpacity(0.1) : null,
+      color: isActive ? AppTheme.primaryGreen.withValues(alpha: 0.1) : null,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(

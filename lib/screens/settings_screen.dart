@@ -90,7 +90,7 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: themeProvider.isDarkMode,
                   onChanged: (value) => themeProvider.toggleTheme(),
-                  activeColor: AppTheme.primaryGreen,
+                  activeTrackColor: AppTheme.primaryGreen,
                 ),
                 onTap: () => themeProvider.toggleTheme(),
               ),
@@ -267,7 +267,7 @@ class SettingsScreen extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppTheme.primaryGreen.withOpacity(0.1),
+          color: AppTheme.primaryGreen.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: AppTheme.primaryGreen, size: 24),

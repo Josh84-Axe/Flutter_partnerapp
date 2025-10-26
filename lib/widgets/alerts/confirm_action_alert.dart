@@ -25,8 +25,8 @@ class ConfirmActionAlert {
               height: 4,
               decoration: BoxDecoration(
                 color: isDestructive
-                    ? AppTheme.errorRed.withOpacity(0.3)
-                    : AppTheme.primaryGreen.withOpacity(0.3),
+                    ? AppTheme.errorRed.withValues(alpha: 0.3)
+                    : AppTheme.primaryGreen.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -36,8 +36,8 @@ class ConfirmActionAlert {
               height: 64,
               decoration: BoxDecoration(
                 color: isDestructive
-                    ? AppTheme.errorRed.withOpacity(0.1)
-                    : AppTheme.primaryGreen.withOpacity(0.1),
+                    ? AppTheme.errorRed.withValues(alpha: 0.1)
+                    : AppTheme.primaryGreen.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(

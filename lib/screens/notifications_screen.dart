@@ -123,13 +123,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         decoration: BoxDecoration(
           color: notification.isRead
               ? Colors.transparent
-              : AppTheme.primaryGreen.withOpacity(0.05),
+              : AppTheme.primaryGreen.withValues(alpha: 0.05),
         ),
         child: ListTile(
           leading: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _getNotificationColor(notification.type).withOpacity(0.1),
+              color: _getNotificationColor(notification.type).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(

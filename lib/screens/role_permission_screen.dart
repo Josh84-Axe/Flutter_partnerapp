@@ -56,7 +56,7 @@ class RolePermissionScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withOpacity(0.1),
+                      color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -159,7 +159,7 @@ class RolePermissionScreen extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: AppTheme.textDark,
-              side: BorderSide(color: AppTheme.textLight.withOpacity(0.3)),
+              side: BorderSide(color: AppTheme.textLight.withValues(alpha: 0.3)),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
           ),

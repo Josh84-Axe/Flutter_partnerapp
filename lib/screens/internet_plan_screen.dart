@@ -111,7 +111,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                             icon: const Icon(Icons.edit),
                             style: IconButton.styleFrom(
                               foregroundColor: AppTheme.primaryGreen,
-                              backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+                              backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -120,7 +120,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                             icon: const Icon(Icons.delete),
                             style: IconButton.styleFrom(
                               foregroundColor: AppTheme.errorRed,
-                              backgroundColor: AppTheme.errorRed.withOpacity(0.1),
+                              backgroundColor: AppTheme.errorRed.withValues(alpha: 0.1),
                             ),
                           ),
                         ],

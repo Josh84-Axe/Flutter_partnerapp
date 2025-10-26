@@ -49,7 +49,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: selectedMethod,
+                initialValue: selectedMethod,
                 decoration: InputDecoration(labelText: 'payment_method'.tr()),
                 items: [
                   DropdownMenuItem(
@@ -168,10 +168,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.successGreen.withOpacity(0.1),
+                      color: AppTheme.successGreen.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppTheme.successGreen.withOpacity(0.3),
+                        color: AppTheme.successGreen.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Column(
@@ -262,8 +262,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: isRevenue
-                                    ? AppTheme.successGreen.withOpacity(0.1)
-                                    : AppTheme.errorRed.withOpacity(0.1),
+                                    ? AppTheme.successGreen.withValues(alpha: 0.1)
+                                    : AppTheme.errorRed.withValues(alpha: 0.1),
                                 child: Icon(
                                   isRevenue ? Icons.arrow_downward : Icons.arrow_upward,
                                   color: isRevenue ? AppTheme.successGreen : AppTheme.errorRed,

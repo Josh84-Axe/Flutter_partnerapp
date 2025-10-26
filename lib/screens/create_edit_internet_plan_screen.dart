@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
-import '../utils/app_theme.dart';
 import '../services/hotspot_configuration_service.dart';
 
 class CreateEditInternetPlanScreen extends StatefulWidget {
@@ -82,7 +81,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _selectedValidity,
+                    initialValue: _selectedValidity,
                     decoration: InputDecoration(
                       labelText: 'validity'.tr(),
                       border: const OutlineInputBorder(),
@@ -98,7 +97,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _selectedDataLimit,
+                    initialValue: _selectedDataLimit,
                     decoration: InputDecoration(
                       labelText: 'data_limit'.tr(),
                       border: const OutlineInputBorder(),
@@ -114,7 +113,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _selectedAdditionalDevices,
+                    initialValue: _selectedAdditionalDevices,
                     decoration: InputDecoration(
                       labelText: 'additional_devices_allowed'.tr(),
                       border: const OutlineInputBorder(),
@@ -130,7 +129,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _selectedRouter,
+                    initialValue: _selectedRouter,
                     decoration: InputDecoration(
                       labelText: 'router'.tr(),
                       border: const OutlineInputBorder(),
@@ -146,7 +145,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _selectedHotspotProfile,
+                    initialValue: _selectedHotspotProfile,
                     decoration: InputDecoration(
                       labelText: 'hotspot_user_profile'.tr(),
                       border: const OutlineInputBorder(),
@@ -170,7 +169,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
               color: Theme.of(context).scaffoldBackgroundColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, -2),
                 ),

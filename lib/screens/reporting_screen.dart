@@ -106,20 +106,24 @@ class _ReportingScreenState extends State<ReportingScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          ..._reportTypes.map((type) {
-            return RadioListTile<String>(
-              value: type,
-              groupValue: _selectedReportType,
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedReportType = value);
-                }
-              },
-              title: Text(type),
-              activeColor: AppTheme.primaryGreen,
-              contentPadding: EdgeInsets.zero,
-            );
-          }).toList(),
+          RadioGroup<String>(
+            groupValue: _selectedReportType,
+            onChanged: (value) {
+              if (value != null) {
+                setState(() => _selectedReportType = value);
+              }
+            },
+            child: Column(
+              children: _reportTypes.map((type) {
+                return RadioListTile<String>(
+                  value: type,
+                  title: Text(type),
+                  activeColor: AppTheme.primaryGreen,
+                  contentPadding: EdgeInsets.zero,
+                );
+              }).toList(),
+            ),
+          ),
           const SizedBox(height: 20),
           const Text(
             'Date Range',
@@ -134,7 +138,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border.all(color: AppTheme.textLight.withOpacity(0.3)),
+                border: Border.all(color: AppTheme.textLight.withValues(alpha: 0.3)),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -213,9 +217,9 @@ class _ReportingScreenState extends State<ReportingScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryGreen.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? AppTheme.primaryGreen.withValues(alpha: 0.1) : Colors.transparent,
           border: Border.all(
-            color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight.withOpacity(0.3),
+            color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -251,7 +255,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+              backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
               child: Icon(
                 report['format'] == 'PDF' ? Icons.picture_as_pdf : Icons.table_chart,
                 color: AppTheme.primaryGreen,
@@ -284,7 +288,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withOpacity(0.1),
+                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(

@@ -131,7 +131,7 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
               color: Theme.of(context).scaffoldBackgroundColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, -2),
                 ),
@@ -189,7 +189,7 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
                   _permissions[entry.key] = value;
                 });
               },
-              activeColor: AppTheme.primaryGreen,
+              activeTrackColor: AppTheme.primaryGreen,
               contentPadding: permissions.length == 1 ? EdgeInsets.zero : null,
             )),
           ],

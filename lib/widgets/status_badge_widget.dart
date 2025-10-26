@@ -22,15 +22,15 @@ class StatusBadgeWidget extends StatelessWidget {
   Color _getBackgroundColor() {
     switch (type) {
       case BadgeType.success:
-        return AppTheme.successGreen.withOpacity(0.1);
+        return AppTheme.successGreen.withValues(alpha: 0.1);
       case BadgeType.warning:
-        return AppTheme.warningAmber.withOpacity(0.1);
+        return AppTheme.warningAmber.withValues(alpha: 0.1);
       case BadgeType.error:
-        return AppTheme.errorRed.withOpacity(0.1);
+        return AppTheme.errorRed.withValues(alpha: 0.1);
       case BadgeType.info:
-        return AppTheme.primaryGreen.withOpacity(0.1);
+        return AppTheme.primaryGreen.withValues(alpha: 0.1);
       case BadgeType.pending:
-        return AppTheme.warningAmber.withOpacity(0.1);
+        return AppTheme.warningAmber.withValues(alpha: 0.1);
     }
   }
 

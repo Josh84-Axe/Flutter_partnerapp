@@ -68,7 +68,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedDataLimit,
+                  initialValue: selectedDataLimit,
                   decoration: InputDecoration(labelText: 'data_limit'.tr()),
                   items: HotspotConfigurationService.getDataLimits().isEmpty
                       ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
@@ -85,7 +85,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedValidity,
+                  initialValue: selectedValidity,
                   decoration: InputDecoration(labelText: 'validity'.tr()),
                   items: HotspotConfigurationService.getValidityOptions().isEmpty
                       ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
@@ -102,7 +102,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedSpeed,
+                  initialValue: selectedSpeed,
                   decoration: InputDecoration(labelText: 'speed'.tr()),
                   items: HotspotConfigurationService.getSpeedOptions().isEmpty
                       ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
@@ -119,7 +119,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedDeviceAllowed,
+                  initialValue: selectedDeviceAllowed,
                   decoration: InputDecoration(labelText: 'device_allowed'.tr()),
                   items: HotspotConfigurationService.getDeviceAllowed().isEmpty
                       ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
@@ -136,7 +136,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedProfile,
+                  initialValue: selectedProfile,
                   decoration: InputDecoration(labelText: 'user_profile'.tr()),
                   items: HotspotConfigurationService.getUserProfiles()
                       .map((profile) => DropdownMenuItem(value: profile, child: Text(profile)))
@@ -329,7 +329,7 @@ class _PlansScreenState extends State<PlansScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppTheme.primaryGreen.withOpacity(0.1),
+            color: AppTheme.primaryGreen.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, size: 20, color: AppTheme.primaryGreen),

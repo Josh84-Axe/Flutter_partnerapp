@@ -21,7 +21,7 @@ class SuccessAlert {
                 width: 96,
                 height: 96,
                 decoration: BoxDecoration(
-                  color: AppTheme.successGreen.withOpacity(0.2),
+                  color: AppTheme.successGreen.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

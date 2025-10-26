@@ -78,8 +78,8 @@ class ReportPreviewScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: DataTable(
-                    headingRowColor: MaterialStateProperty.all(
-                      AppTheme.primaryGreen.withOpacity(0.1),
+                    headingRowColor: WidgetStateProperty.all(
+                      AppTheme.primaryGreen.withValues(alpha: 0.1),
                     ),
                     columns: const [
                       DataColumn(label: Text('User ID', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -100,8 +100,8 @@ class ReportPreviewScreen extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: data['status'] == 'Active'
-                                    ? AppTheme.successGreen.withOpacity(0.1)
-                                    : AppTheme.textLight.withOpacity(0.1),
+                                    ? AppTheme.successGreen.withValues(alpha: 0.1)
+                                    : AppTheme.textLight.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -128,7 +128,7 @@ class ReportPreviewScreen extends StatelessWidget {
               color: Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),

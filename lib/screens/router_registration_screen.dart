@@ -211,7 +211,7 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
                     _isActive = value;
                   });
                 },
-                activeColor: AppTheme.primaryGreen,
+                activeTrackColor: AppTheme.primaryGreen,
               ),
               const SizedBox(height: 24),
               FilledButton(

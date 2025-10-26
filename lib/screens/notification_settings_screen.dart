@@ -162,7 +162,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppTheme.primaryGreen,
+            activeTrackColor: AppTheme.primaryGreen,
           ),
         ],
       ),

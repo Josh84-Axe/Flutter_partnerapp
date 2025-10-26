@@ -59,7 +59,7 @@ class _AuthenticatorsScreenState extends State<AuthenticatorsScreen> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 10,
                           offset: const Offset(0, 2),
                         ),
@@ -69,7 +69,7 @@ class _AuthenticatorsScreenState extends State<AuthenticatorsScreen> {
                       width: 200,
                       height: 200,
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppTheme.textLight.withOpacity(0.3)),
+                        border: Border.all(color: AppTheme.textLight.withValues(alpha: 0.3)),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Center(
@@ -171,7 +171,7 @@ class _AuthenticatorsScreenState extends State<AuthenticatorsScreen> {
               color: Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),

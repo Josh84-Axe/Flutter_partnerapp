@@ -26,8 +26,8 @@ class RouterDetailsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: router.status == 'ONLINE'
-                    ? AppTheme.successGreen.withOpacity(0.1)
-                    : AppTheme.errorRed.withOpacity(0.1),
+                    ? AppTheme.successGreen.withValues(alpha: 0.1)
+                    : AppTheme.errorRed.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -51,8 +51,8 @@ class RouterDetailsScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: router.status == 'ONLINE'
-                    ? AppTheme.successGreen.withOpacity(0.1)
-                    : AppTheme.errorRed.withOpacity(0.1),
+                    ? AppTheme.successGreen.withValues(alpha: 0.1)
+                    : AppTheme.errorRed.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -194,7 +194,7 @@ class RouterDetailsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withOpacity(0.1),
+                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: AppTheme.primaryGreen),

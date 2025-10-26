@@ -133,8 +133,8 @@ class _HealthScreenState extends State<HealthScreen> {
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
                                       color: isOnline
-                                          ? AppTheme.primaryGreen.withOpacity(0.1)
-                                          : AppTheme.errorRed.withOpacity(0.1),
+                                          ? AppTheme.primaryGreen.withValues(alpha: 0.1)
+                                          : AppTheme.errorRed.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Icon(
@@ -202,10 +202,10 @@ class _HealthScreenState extends State<HealthScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.warningAmber.withOpacity(0.1),
+                                    color: AppTheme.warningAmber.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                      color: AppTheme.warningAmber.withOpacity(0.3),
+                                      color: AppTheme.warningAmber.withValues(alpha: 0.3),
                                     ),
                                   ),
                                   child: Row(

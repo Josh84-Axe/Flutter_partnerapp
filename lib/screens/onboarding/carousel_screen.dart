@@ -66,7 +66,7 @@ class _CarouselScreenState extends State<CarouselScreen> {
                           width: 120,
                           height: 120,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryGreen.withOpacity(0.1),
+                            color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -110,7 +110,7 @@ class _CarouselScreenState extends State<CarouselScreen> {
                   decoration: BoxDecoration(
                     color: _currentPage == index
                         ? AppTheme.primaryGreen
-                        : AppTheme.primaryGreen.withOpacity(0.3),
+                        : AppTheme.primaryGreen.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
