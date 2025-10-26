@@ -313,6 +313,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       drawer: NavigationDrawer(
+        onDestinationSelected: (index) {
+          Navigator.pop(context);
+          if (index == 0) {
+            Navigator.of(context).pushNamed('/settings');
+          } else if (index == 1) {
+            Navigator.of(context).pushNamed('/support');
+          }
+        },
         children: [
           DrawerHeader(
             decoration: const BoxDecoration(
