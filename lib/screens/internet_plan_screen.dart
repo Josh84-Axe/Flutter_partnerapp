@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../models/plan_model.dart';
 import '../utils/app_theme.dart';
@@ -23,24 +24,24 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Plan'),
-        content: Text('Are you sure you want to delete "${plan.name}"?'),
+        title: Text('delete_plan'.tr()),
+        content: Text('delete_plan_confirm'.tr(namedArgs: {'name': plan.name})),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Plan deleted successfully')),
+                SnackBar(content: Text('plan_deleted_successfully'.tr())),
               );
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.errorRed,
             ),
-            child: const Text('Delete'),
+            child: Text('delete'.tr()),
           ),
         ],
       ),
@@ -54,7 +55,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Internet Plans'),
+        title: Text('internet_plans'.tr()),
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
@@ -137,7 +138,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
         backgroundColor: AppTheme.primaryGreen,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('New Plan'),
+        label: Text('new_plan'.tr()),
       ),
     );
   }
