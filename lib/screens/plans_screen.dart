@@ -279,9 +279,9 @@ class _PlansScreenState extends State<PlansScreen> {
                                   ),
                                   const SizedBox(height: 12),
                                   _buildPlanFeature(
-                                    Icons.speed,
-                                    'speed'.tr(),
-                                    '${plan.speedMbps} Mbps',
+                                    Icons.devices,
+                                    'device_allowed'.tr(),
+                                    '${plan.deviceAllowed} ${'devices'.tr()}',
                                   ),
                                   const SizedBox(height: 12),
                                   _buildPlanFeature(

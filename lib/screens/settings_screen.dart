@@ -125,39 +125,6 @@ class SettingsScreen extends StatelessWidget {
                   Navigator.of(context).pushNamed('/role-permissions');
                 },
               ),
-              _buildSettingItem(
-                context,
-                icon: Icons.file_download_outlined,
-                title: 'data_export_reporting'.tr(),
-                subtitle: 'generate_new_report'.tr(),
-                onTap: () {
-                  Navigator.of(context).pushNamed('/reporting');
-                },
-              ),
-              _buildSettingItem(
-                context,
-                icon: Icons.privacy_tip_outlined,
-                title: 'data_privacy'.tr(),
-                subtitle: 'privacy_policy_desc'.tr(),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Opening https://tiknet.africa.com/privacy')),
-                  );
-                },
-              ),
-            ],
-          ),
-          _buildSection(
-            context,
-            title: 'data_tools'.tr(),
-            items: [
-              _buildSettingItem(
-                context,
-                icon: Icons.download_outlined,
-                title: 'data_export_reporting'.tr(),
-                subtitle: 'export_data_desc'.tr(),
-                onTap: () {},
-              ),
             ],
           ),
           _buildSection(
@@ -193,15 +160,6 @@ class SettingsScreen extends StatelessWidget {
                 subtitle: 'about_version_desc'.tr(),
                 onTap: () {
                   Navigator.of(context).pushNamed('/about');
-                },
-              ),
-              _buildSettingItem(
-                context,
-                icon: Icons.inbox_outlined,
-                title: 'empty_state_demo'.tr(),
-                subtitle: 'empty_state_desc'.tr(),
-                onTap: () {
-                  Navigator.of(context).pushNamed('/empty-state');
                 },
               ),
             ],

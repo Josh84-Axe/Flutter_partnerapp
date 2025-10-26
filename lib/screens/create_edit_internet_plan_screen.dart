@@ -19,7 +19,6 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
   String? _selectedValidity;
   String? _selectedDataLimit;
   String? _selectedAdditionalDevices;
-  String? _selectedRouter;
   String? _selectedHotspotProfile;
 
   @override
@@ -31,7 +30,6 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
       _selectedValidity = widget.planData!['validity'];
       _selectedDataLimit = widget.planData!['dataLimit'];
       _selectedAdditionalDevices = widget.planData!['additionalDevices'];
-      _selectedRouter = widget.planData!['router'];
       _selectedHotspotProfile = widget.planData!['hotspotProfile'];
     }
   }
@@ -126,22 +124,6 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                     onChanged: HotspotConfigurationService.getDeviceAllowed().isEmpty
                         ? null
                         : (value) => setState(() => _selectedAdditionalDevices = value),
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedRouter,
-                    decoration: InputDecoration(
-                      labelText: 'router'.tr(),
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: appState.routerConfigurations.isEmpty
-                        ? [DropdownMenuItem(value: null, child: Text('no_routers_configured'.tr()))]
-                        : appState.routerConfigurations
-                            .map((r) => DropdownMenuItem(value: r.id, child: Text(r.name)))
-                            .toList(),
-                    onChanged: appState.routerConfigurations.isEmpty
-                        ? null
-                        : (value) => setState(() => _selectedRouter = value),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(

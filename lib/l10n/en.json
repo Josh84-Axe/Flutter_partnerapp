@@ -24,6 +24,7 @@
   "unassign": "Unassign",
   "users_connected": "{count} users connected",
   "apply_changes": "Apply Changes",
+  "wallet": "Wallet",
   "wallet_payout": "Wallet & Payout",
   "current_balance": "Current Wallet Balance",
   "full_history": "Full History",

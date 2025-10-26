@@ -103,10 +103,10 @@ class TiknetThemes {
     );
   }
 
-  // Flat Light Green Theme - seed color #3DDC84 (Material 3 green)
+  // Flat Light Green Theme - seed color #2E7D32 (Material 3 green)
   static ThemeData getFlatLightGreenTheme() {
     final scheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF3DDC84),
+      seedColor: const Color(0xFF2E7D32),
       brightness: Brightness.light,
     );
     return _base(scheme);

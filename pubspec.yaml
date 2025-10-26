@@ -47,6 +47,7 @@ dependencies:
   animations: ^2.0.11
   flutter_svg: ^2.0.10
   adaptive_theme: ^3.3.0
+  webview_flutter: ^4.4.2
 
 dev_dependencies:
   flutter_test:
@@ -74,6 +75,7 @@ flutter:
   assets:
     - assets/images/logo_tiknet.png
     - assets/branding/
+    - assets/html/
     - lib/localization/en.json
     - lib/localization/fr.json
     - lib/l10n/

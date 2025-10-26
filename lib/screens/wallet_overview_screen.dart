@@ -121,7 +121,9 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                   context,
                   icon: Icons.trending_up,
                   label: 'Revenue',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).pushNamed('/revenue-breakdown');
+                  },
                 ),
               ),
             ],

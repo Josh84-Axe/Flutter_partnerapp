@@ -10,7 +10,6 @@ import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/users_screen.dart';
 import 'screens/plans_screen.dart';
-import 'screens/health_screen.dart';
 import 'screens/settings_screen.dart';
 import 'feature/launch/splash_screen.dart';
 import 'feature/launch/onboarding_screen.dart';
@@ -50,6 +49,7 @@ import 'screens/empty_state_screen.dart';
 import 'screens/wallet_overview_screen.dart';
 import 'screens/payout_request_screen.dart';
 import 'screens/payout_submitted_screen.dart';
+import 'screens/revenue_breakdown_screen.dart';
 import 'screens/security/password_and_2fa_screen.dart';
 import 'screens/security/authenticators_screen.dart';
 import 'screens/security/success_2fa_screen.dart';
@@ -161,6 +161,7 @@ class HotspotPartnerApp extends StatelessWidget {
         '/wallet-overview': (context) => const WalletOverviewScreen(),
         '/payout-request': (context) => const PayoutRequestScreen(),
         '/payout-submitted': (context) => const PayoutSubmittedScreen(),
+        '/revenue-breakdown': (context) => const RevenueBreakdownScreen(),
         '/security/password-2fa': (context) => const PasswordAndTwoFactorScreen(),
         '/security/authenticators': (context) => const AuthenticatorsScreen(),
         '/security/2fa-success': (context) => const TwoFactorSuccessScreen(),
@@ -308,7 +309,6 @@ class _HomeScreenState extends State<HomeScreen> {
     const UsersScreen(),
     const PlansScreen(),
     const WalletOverviewScreen(),
-    const HealthScreen(),
   ];
 
   @override
@@ -342,11 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 NavigationRailDestination(
                   icon: const Icon(Icons.account_balance_wallet),
-                  label: Text('wallet_payout'.tr()),
-                ),
-                NavigationRailDestination(
-                  icon: const Icon(Icons.router),
-                  label: Text('router'.tr()),
+                  label: Text('wallet'.tr()),
                 ),
               ],
             ),
@@ -382,11 +378,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 NavigationDestination(
                   icon: const Icon(Icons.account_balance_wallet),
-                  label: 'wallet_payout'.tr(),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.router),
-                  label: 'router'.tr(),
+                  label: 'wallet'.tr(),
                 ),
               ],
             ),
