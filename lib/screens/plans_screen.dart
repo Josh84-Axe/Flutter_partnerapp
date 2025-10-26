@@ -199,7 +199,13 @@ class _PlansScreenState extends State<PlansScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('internet_plans'.tr()),
+        title: Text(
+          'internet_plans'.tr(),
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

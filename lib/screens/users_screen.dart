@@ -199,7 +199,13 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('users'.tr()),
+        title: Text(
+          'users'.tr(),
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.checklist),

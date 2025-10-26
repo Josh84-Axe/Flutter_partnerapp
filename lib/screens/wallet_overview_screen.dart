@@ -42,7 +42,13 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('wallet_payout'.tr()),
+        title: Text(
+          'wallet_payout'.tr(),
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -134,7 +140,10 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
             children: [
               Text(
                 'recent_transactions'.tr(),
-                style: Theme.of(context).textTheme.titleLarge,
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
               TextButton(
                 onPressed: () {},
@@ -177,7 +186,10 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
           const SizedBox(height: 32),
           Text(
             'Financial Summary',
-            style: Theme.of(context).textTheme.titleLarge,
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
           const SizedBox(height: 16),
           Row(
