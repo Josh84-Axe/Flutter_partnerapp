@@ -91,6 +91,11 @@ class HotspotPartnerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     
+    // Capture localization data before entering DynamicColorBuilder
+    final localizationDelegates = context.localizationDelegates;
+    final supportedLocales = context.supportedLocales;
+    final locale = context.locale;
+    
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
         // Use dynamic colors if available (Android 12+), otherwise fallback to Tiknet themes
@@ -107,14 +112,14 @@ class HotspotPartnerApp extends StatelessWidget {
         }
         
         return MaterialApp(
-          title: 'app_title'.tr(),
+          title: 'Tiknet Partner App',
           theme: lightTheme,
           darkTheme: darkTheme,
           themeMode: themeProvider.themeMode,
           debugShowCheckedModeBanner: false,
-          localizationsDelegates: context.localizationDelegates,
-          supportedLocales: context.supportedLocales,
-          locale: context.locale,
+          localizationsDelegates: localizationDelegates,
+          supportedLocales: supportedLocales,
+          locale: locale,
           home: const AuthWrapper(),
       routes: {
         '/login': (context) => const LoginScreen(),
