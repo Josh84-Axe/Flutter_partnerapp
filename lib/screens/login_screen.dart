@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final appState = context.watch<AppState>();
 
     return Scaffold(
-      backgroundColor: AppTheme.pureWhite,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

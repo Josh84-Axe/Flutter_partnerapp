@@ -277,41 +277,83 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.width >= 600;
+
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.dashboard),
-            label: 'dashboard_title'.tr(),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.people),
-            label: 'users'.tr(),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.wifi),
-            label: 'plans'.tr(),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.account_balance_wallet),
-            label: 'wallet_payout'.tr(),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.router),
-            label: 'router'.tr(),
+      body: Row(
+        children: [
+          if (isTablet)
+            NavigationRail(
+              selectedIndex: _currentIndex,
+              onDestinationSelected: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              labelType: NavigationRailLabelType.all,
+              destinations: [
+                NavigationRailDestination(
+                  icon: const Icon(Icons.dashboard),
+                  label: Text('dashboard_title'.tr()),
+                ),
+                NavigationRailDestination(
+                  icon: const Icon(Icons.people),
+                  label: Text('users'.tr()),
+                ),
+                NavigationRailDestination(
+                  icon: const Icon(Icons.wifi),
+                  label: Text('plans'.tr()),
+                ),
+                NavigationRailDestination(
+                  icon: const Icon(Icons.account_balance_wallet),
+                  label: Text('wallet_payout'.tr()),
+                ),
+                NavigationRailDestination(
+                  icon: const Icon(Icons.router),
+                  label: Text('router'.tr()),
+                ),
+              ],
+            ),
+          Expanded(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: _screens,
+            ),
           ),
         ],
       ),
+      bottomNavigationBar: isTablet
+          ? null
+          : NavigationBar(
+              selectedIndex: _currentIndex,
+              onDestinationSelected: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              destinations: [
+                NavigationDestination(
+                  icon: const Icon(Icons.dashboard),
+                  label: 'dashboard_title'.tr(),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.people),
+                  label: 'users'.tr(),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.wifi),
+                  label: 'plans'.tr(),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.account_balance_wallet),
+                  label: 'wallet_payout'.tr(),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.router),
+                  label: 'router'.tr(),
+                ),
+              ],
+            ),
       drawer: NavigationDrawer(
         onDestinationSelected: (index) {
           Navigator.pop(context);
