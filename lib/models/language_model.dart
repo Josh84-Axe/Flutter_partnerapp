@@ -45,10 +45,6 @@ class LanguageModel {
 
   static List<LanguageModel> get availableLanguages => [
         LanguageModel(code: 'en', name: 'English', nativeName: 'English', isSelected: true),
-        LanguageModel(code: 'es', name: 'Spanish', nativeName: 'Español'),
         LanguageModel(code: 'fr', name: 'French', nativeName: 'Français'),
-        LanguageModel(code: 'de', name: 'German', nativeName: 'Deutsch'),
-        LanguageModel(code: 'zh', name: 'Chinese', nativeName: '中文'),
-        LanguageModel(code: 'ja', name: 'Japanese', nativeName: '日本語'),
       ];
 }
