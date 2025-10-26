@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../providers/theme_provider.dart';
+import '../theme/tiknet_themes.dart';
 import '../utils/app_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -84,15 +85,12 @@ class SettingsScreen extends StatelessWidget {
               ),
               _buildSettingItem(
                 context,
-                icon: Icons.dark_mode_outlined,
+                icon: Icons.palette_outlined,
                 title: 'theme'.tr(),
-                subtitle: themeProvider.isDarkMode ? 'dark_mode'.tr() : 'light_mode'.tr(),
-                trailing: Switch(
-                  value: themeProvider.isDarkMode,
-                  onChanged: (value) => themeProvider.toggleTheme(),
-                  activeTrackColor: AppTheme.primaryGreen,
-                ),
-                onTap: () => themeProvider.toggleTheme(),
+                subtitle: themeProvider.getVariantName(themeProvider.currentVariant),
+                onTap: () {
+                  _showThemeSelectionDialog(context, themeProvider);
+                },
               ),
             ],
           ),
@@ -327,5 +325,42 @@ class SettingsScreen extends StatelessWidget {
     if (routerCount >= 2 && routerCount <= 4) return 'Standard (12% fee)';
     if (routerCount >= 5) return 'Premium (10% fee)';
     return 'No subscription';
+  }
+
+  void _showThemeSelectionDialog(BuildContext context, ThemeProvider themeProvider) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'theme'.tr(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: RadioGroup<TiknetThemeVariant>(
+          groupValue: themeProvider.currentVariant,
+          onChanged: (value) {
+            if (value != null) {
+              themeProvider.setThemeVariant(value);
+              Navigator.pop(context);
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: TiknetThemeVariant.values.map((variant) {
+              return RadioListTile<TiknetThemeVariant>(
+                title: Text(themeProvider.getVariantName(variant)),
+                value: variant,
+                activeColor: AppTheme.primaryGreen,
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('close'.tr()),
+          ),
+        ],
+      ),
+    );
   }
 }

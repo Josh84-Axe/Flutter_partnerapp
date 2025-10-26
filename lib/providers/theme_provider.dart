@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/app_theme.dart';
+import '../theme/tiknet_themes.dart';
 
 class ThemeProvider with ChangeNotifier {
-  bool _isDarkMode = false;
-  static const String _themeKey = 'isDarkMode';
+  TiknetThemeVariant _currentVariant = TiknetThemeVariant.flatLightGreen;
+  static const String _themeKey = 'themeVariant';
 
-  bool get isDarkMode => _isDarkMode;
+  TiknetThemeVariant get currentVariant => _currentVariant;
 
-  ThemeData get currentTheme => _isDarkMode ? AppTheme.darkTheme : AppTheme.lightTheme;
+  ThemeData get currentTheme => TiknetThemes.getThemeForVariant(_currentVariant);
+
+  ThemeMode get themeMode {
+    return _currentVariant == TiknetThemeVariant.pillRoundedDark
+        ? ThemeMode.dark
+        : ThemeMode.light;
+  }
 
   ThemeProvider() {
     _loadThemePreference();
@@ -16,22 +22,27 @@ class ThemeProvider with ChangeNotifier {
 
   Future<void> _loadThemePreference() async {
     final prefs = await SharedPreferences.getInstance();
-    _isDarkMode = prefs.getBool(_themeKey) ?? false;
+    final variantIndex = prefs.getInt(_themeKey) ?? 0;
+    _currentVariant = TiknetThemeVariant.values[variantIndex];
     notifyListeners();
   }
 
-  Future<void> toggleTheme() async {
-    _isDarkMode = !_isDarkMode;
+  Future<void> setThemeVariant(TiknetThemeVariant variant) async {
+    if (_currentVariant == variant) return;
+    _currentVariant = variant;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_themeKey, _isDarkMode);
+    await prefs.setInt(_themeKey, variant.index);
     notifyListeners();
   }
 
-  Future<void> setTheme(bool isDark) async {
-    if (_isDarkMode == isDark) return;
-    _isDarkMode = isDark;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_themeKey, _isDarkMode);
-    notifyListeners();
+  String getVariantName(TiknetThemeVariant variant) {
+    switch (variant) {
+      case TiknetThemeVariant.flatLightGreen:
+        return 'Flat Light Green';
+      case TiknetThemeVariant.elevatedDynamicBlue:
+        return 'Elevated Dynamic Blue';
+      case TiknetThemeVariant.pillRoundedDark:
+        return 'Pill Rounded Dark';
+    }
   }
 }
