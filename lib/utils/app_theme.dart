@@ -48,7 +48,7 @@ class AppTheme {
       ),
 
       // Card with tonal elevation
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 1,
         color: scheme.surfaceContainerLow,
         surfaceTintColor: scheme.primary.withValues(alpha: 0.05),
