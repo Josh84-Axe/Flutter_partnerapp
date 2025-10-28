@@ -114,39 +114,47 @@ class AppTheme {
   }
 
   static ThemeData get darkTheme {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: seedGreen,
+      brightness: Brightness.dark,
+      primary: primaryGreen,
+      surface: surfaceDark,
+    );
+    
+    // Build textTheme with explicit colors for dark mode
+    final textTheme = GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme).copyWith(
+      headlineLarge: GoogleFonts.poppins(
+        fontSize: 32,
+        fontWeight: FontWeight.bold,
+        color: textDarkMode,
+      ),
+      headlineMedium: GoogleFonts.poppins(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        color: textDarkMode,
+      ),
+      titleLarge: GoogleFonts.poppins(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: textDarkMode,
+      ),
+      bodyLarge: GoogleFonts.poppins(
+        fontSize: 16,
+        color: textDarkMode,
+      ),
+      bodyMedium: GoogleFonts.poppins(
+        fontSize: 14,
+        color: scheme.onSurfaceVariant,
+      ),
+    ).apply(
+      bodyColor: scheme.onSurface,
+      displayColor: scheme.onSurface,
+    );
+    
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: seedGreen,
-        brightness: Brightness.dark,
-        primary: primaryGreen,
-        surface: surfaceDark,
-      ),
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme).copyWith(
-        headlineLarge: GoogleFonts.poppins(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: textDarkMode,
-        ),
-        headlineMedium: GoogleFonts.poppins(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: textDarkMode,
-        ),
-        titleLarge: GoogleFonts.poppins(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: textDarkMode,
-        ),
-        bodyLarge: GoogleFonts.poppins(
-          fontSize: 16,
-          color: textDarkMode,
-        ),
-        bodyMedium: GoogleFonts.poppins(
-          fontSize: 14,
-          color: textLight,
-        ),
-      ),
+      colorScheme: scheme,
+      textTheme: textTheme,
       appBarTheme: AppBarTheme(
         backgroundColor: surfaceDark,
         foregroundColor: textDarkMode,
