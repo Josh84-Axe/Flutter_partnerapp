@@ -10,6 +10,9 @@ class AppTheme {
   static const Color textDark = Color(0xFF212121);
   static const Color textLight = Color(0xFF757575);
   
+  // Legacy colors for backward compatibility with Phase 1 screens
+  static const Color deepGreen = Color(0xFF006B3F);
+  
   static const Color backgroundLight = Color(0xFFF6F7F8);
   static const Color backgroundDark = Color(0xFF101922);
   static const Color surfaceDark = Color(0xFF1A2634);
