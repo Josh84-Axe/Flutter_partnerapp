@@ -8,7 +8,7 @@ class AuthService {
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     await Future.delayed(const Duration(seconds: 1));
-    
+
     if (email.isNotEmpty && password.isNotEmpty) {
       final token = 'mock_jwt_token_${DateTime.now().millisecondsSinceEpoch}';
       final user = UserModel(
@@ -20,23 +20,23 @@ class AuthService {
         isActive: true,
         createdAt: DateTime.now(),
       );
-      
+
       await _saveToken(token);
       await _saveUser(user);
-      
-      return {
-        'success': true,
-        'token': token,
-        'user': user.toJson(),
-      };
+
+      return {'success': true, 'token': token, 'user': user.toJson()};
     }
-    
+
     throw Exception('Invalid credentials');
   }
 
-  Future<Map<String, dynamic>> register(String name, String email, String password) async {
+  Future<Map<String, dynamic>> register(
+    String name,
+    String email,
+    String password,
+  ) async {
     await Future.delayed(const Duration(seconds: 1));
-    
+
     final token = 'mock_jwt_token_${DateTime.now().millisecondsSinceEpoch}';
     final user = UserModel(
       id: 'partner_${DateTime.now().millisecondsSinceEpoch}',
@@ -46,15 +46,11 @@ class AuthService {
       isActive: true,
       createdAt: DateTime.now(),
     );
-    
+
     await _saveToken(token);
     await _saveUser(user);
-    
-    return {
-      'success': true,
-      'token': token,
-      'user': user.toJson(),
-    };
+
+    return {'success': true, 'token': token, 'user': user.toJson()};
   }
 
   Future<void> logout() async {
@@ -94,7 +90,7 @@ class AuthService {
 
   Future<List<UserModel>> getUsers() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     return [
       UserModel(
         id: 'user_001',
@@ -128,7 +124,7 @@ class AuthService {
 
   Future<UserModel> createUser(Map<String, dynamic> userData) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     return UserModel(
       id: 'user_${DateTime.now().millisecondsSinceEpoch}',
       name: userData['name'],
@@ -142,7 +138,7 @@ class AuthService {
 
   Future<UserModel> updateUser(String id, Map<String, dynamic> userData) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     return UserModel(
       id: id,
       name: userData['name'],

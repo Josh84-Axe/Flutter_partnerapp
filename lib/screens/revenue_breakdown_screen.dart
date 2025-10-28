@@ -71,25 +71,26 @@ class RevenueBreakdownScreen extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: color,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: color,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           amount,
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: color,
-                          ),
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: color,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           description,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: color.withValues(alpha: 0.8),
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: color.withValues(alpha: 0.8)),
                         ),
                       ],
                     ),
@@ -100,11 +101,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
                       color: color.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
-                      icon,
-                      color: color,
-                      size: 24,
-                    ),
+                    child: Icon(icon, color: color, size: 24),
                   ),
                 ],
               ),
@@ -114,17 +111,10 @@ class RevenueBreakdownScreen extends StatelessWidget {
                 children: [
                   Text(
                     'View Details',
-                    style: TextStyle(
-                      color: color,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyle(color: color, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(width: 4),
-                  Icon(
-                    Icons.arrow_forward,
-                    color: color,
-                    size: 16,
-                  ),
+                  Icon(Icons.arrow_forward, color: color, size: 16),
                 ],
               ),
             ],
@@ -168,9 +158,8 @@ class RevenueBreakdownScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Transaction History',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(context),
@@ -268,11 +257,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 20,
-            ),
+            child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -281,15 +266,15 @@ class RevenueBreakdownScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                 ),
                 Text(
                   subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                 ),
               ],
             ),

@@ -54,10 +54,12 @@ class _UsersScreenState extends State<UsersScreen> {
                 value: selectedRole,
                 decoration: const InputDecoration(labelText: 'Role'),
                 items: ['user', 'worker', 'admin']
-                    .map((role) => DropdownMenuItem(
-                          value: role,
-                          child: Text(role.toUpperCase()),
-                        ))
+                    .map(
+                      (role) => DropdownMenuItem(
+                        value: role,
+                        child: Text(role.toUpperCase()),
+                      ),
+                    )
                     .toList(),
                 onChanged: (value) {
                   selectedRole = value!;
@@ -146,10 +148,7 @@ class _UsersScreenState extends State<UsersScreen> {
                     ),
                     trailing: PopupMenuButton(
                       itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'edit',
-                          child: Text('Edit'),
-                        ),
+                        const PopupMenuItem(value: 'edit', child: Text('Edit')),
                         const PopupMenuItem(
                           value: 'delete',
                           child: Text('Delete'),
@@ -171,7 +170,9 @@ class _UsersScreenState extends State<UsersScreen> {
                                 ),
                                 ElevatedButton(
                                   onPressed: () {
-                                    context.read<AppState>().deleteUser(user.id);
+                                    context.read<AppState>().deleteUser(
+                                      user.id,
+                                    );
                                     Navigator.pop(context);
                                   },
                                   style: ElevatedButton.styleFrom(

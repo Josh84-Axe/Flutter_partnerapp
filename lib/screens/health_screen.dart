@@ -162,12 +162,15 @@ class _HealthScreenState extends State<HealthScreen> {
                                       !isOnline,
                                     ),
                                     icon: Icon(
-                                      isOnline ? Icons.block : Icons.check_circle,
+                                      isOnline
+                                          ? Icons.block
+                                          : Icons.check_circle,
                                     ),
                                     label: Text(isOnline ? 'Block' : 'Unblock'),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          isOnline ? Colors.red : AppTheme.deepGreen,
+                                      backgroundColor: isOnline
+                                          ? Colors.red
+                                          : AppTheme.deepGreen,
                                     ),
                                   ),
                                 ),
@@ -190,10 +193,7 @@ class _HealthScreenState extends State<HealthScreen> {
         Icon(icon, size: 20, color: AppTheme.textLight),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(color: AppTheme.textLight),
-          ),
+          child: Text(label, style: const TextStyle(color: AppTheme.textLight)),
         ),
         Text(
           value,

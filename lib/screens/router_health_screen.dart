@@ -15,10 +15,7 @@ class RouterHealthScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Router Health Check'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
         ],
       ),
       body: ListView(
@@ -28,11 +25,11 @@ class RouterHealthScreen extends StatelessWidget {
             final isOnline = router.status == 'online';
             final hasIssues = router.status == 'issues';
             final isOffline = router.status == 'offline';
-            
+
             Color statusColor = AppTheme.deepGreen;
             Color containerColor = AppTheme.lightGreen.withValues(alpha: 0.2);
             String statusText = 'Online';
-            
+
             if (hasIssues) {
               statusColor = Colors.orange;
               containerColor = Colors.orange.withValues(alpha: 0.2);
@@ -42,13 +39,15 @@ class RouterHealthScreen extends StatelessWidget {
               containerColor = Colors.red.withValues(alpha: 0.2);
               statusText = 'Offline';
             }
-            
+
             return Card(
               margin: const EdgeInsets.only(bottom: 16),
               elevation: 2,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: hasIssues ? BorderSide(color: Colors.orange, width: 1) : BorderSide.none,
+                side: hasIssues
+                    ? BorderSide(color: Colors.orange, width: 1)
+                    : BorderSide.none,
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -76,9 +75,8 @@ class RouterHealthScreen extends StatelessWidget {
                             children: [
                               Text(
                                 router.name,
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w600),
                               ),
                               const SizedBox(height: 4),
                               Row(
@@ -94,10 +92,13 @@ class RouterHealthScreen extends StatelessWidget {
                                   const SizedBox(width: 8),
                                   Text(
                                     statusText,
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: statusColor,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: statusColor,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -111,7 +112,9 @@ class RouterHealthScreen extends StatelessWidget {
                       Row(
                         children: [
                           Icon(
-                            hasIssues ? Icons.signal_cellular_alt_1_bar : Icons.signal_cellular_alt,
+                            hasIssues
+                                ? Icons.signal_cellular_alt_1_bar
+                                : Icons.signal_cellular_alt,
                             size: 20,
                             color: hasIssues ? Colors.orange : Colors.grey[600],
                           ),
@@ -119,7 +122,9 @@ class RouterHealthScreen extends StatelessWidget {
                           Text(
                             hasIssues ? 'Weak' : 'Strong',
                             style: TextStyle(
-                              color: hasIssues ? Colors.orange : Colors.grey[600],
+                              color: hasIssues
+                                  ? Colors.orange
+                                  : Colors.grey[600],
                             ),
                           ),
                           const SizedBox(width: 24),
@@ -142,7 +147,9 @@ class RouterHealthScreen extends StatelessWidget {
                             child: ElevatedButton(
                               onPressed: () {},
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.lightGreen.withValues(alpha: 0.3),
+                                backgroundColor: AppTheme.lightGreen.withValues(
+                                  alpha: 0.3,
+                                ),
                                 foregroundColor: AppTheme.deepGreen,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(

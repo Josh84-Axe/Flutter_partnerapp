@@ -47,9 +47,9 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
               children: [
                 Text(
                   'Select the routers you want to assign to the worker. They will only be able to view and manage the routers you select.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -104,16 +104,11 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
                     },
                     title: Text(
                       router.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(
                       'ID: ${router.id}',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
                     ),
                     secondary: Container(
                       padding: const EdgeInsets.all(8),
@@ -145,9 +140,7 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Colors.grey[200]!),
-          ),
+          border: Border(top: BorderSide(color: Colors.grey[200]!)),
         ),
         child: Row(
           children: [

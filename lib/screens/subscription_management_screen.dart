@@ -12,15 +12,15 @@ class SubscriptionManagementScreen extends StatelessWidget {
     final subscription = appState.subscription;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Subscription Management'),
-      ),
+      appBar: AppBar(title: const Text('Subscription Management')),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
           Card(
             elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -38,13 +38,17 @@ class SubscriptionManagementScreen extends StatelessWidget {
                     children: [
                       Text(
                         subscription?.tier ?? 'Standard',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.deepGreen,
-                        ),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.deepGreen,
+                            ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.lightGreen.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
@@ -60,16 +64,32 @@ class SubscriptionManagementScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildFeatureRow(context, 'Monthly Fee', '\$${subscription?.monthlyFee.toStringAsFixed(2) ?? '29.99'}'),
-                  _buildFeatureRow(context, 'Max Routers', '${subscription?.features['maxRouters'] ?? 5}'),
-                  _buildFeatureRow(context, 'Max Users', '${subscription?.features['maxUsers'] ?? 100}'),
-                  _buildFeatureRow(context, 'Support', subscription?.features['support'] ?? '24/7'),
+                  _buildFeatureRow(
+                    context,
+                    'Monthly Fee',
+                    '\$${subscription?.monthlyFee.toStringAsFixed(2) ?? '29.99'}',
+                  ),
+                  _buildFeatureRow(
+                    context,
+                    'Max Routers',
+                    '${subscription?.features['maxRouters'] ?? 5}',
+                  ),
+                  _buildFeatureRow(
+                    context,
+                    'Max Users',
+                    '${subscription?.features['maxUsers'] ?? 100}',
+                  ),
+                  _buildFeatureRow(
+                    context,
+                    'Support',
+                    subscription?.features['support'] ?? '24/7',
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Renewal Date: ${subscription?.renewalDate.month}/${subscription?.renewalDate.day}/${subscription?.renewalDate.year}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -78,18 +98,47 @@ class SubscriptionManagementScreen extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             'Available Plans',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          _buildPlanCard(context, 'Basic', 19.99, 'Up to 3 routers', 'Up to 50 users', 'Email support'),
+          _buildPlanCard(
+            context,
+            'Basic',
+            19.99,
+            'Up to 3 routers',
+            'Up to 50 users',
+            'Email support',
+          ),
           const SizedBox(height: 16),
-          _buildPlanCard(context, 'Standard', 29.99, 'Up to 5 routers', 'Up to 100 users', '24/7 support', isCurrentPlan: true),
+          _buildPlanCard(
+            context,
+            'Standard',
+            29.99,
+            'Up to 5 routers',
+            'Up to 100 users',
+            '24/7 support',
+            isCurrentPlan: true,
+          ),
           const SizedBox(height: 16),
-          _buildPlanCard(context, 'Premium', 49.99, 'Up to 10 routers', 'Up to 250 users', 'Priority 24/7 support'),
+          _buildPlanCard(
+            context,
+            'Premium',
+            49.99,
+            'Up to 10 routers',
+            'Up to 250 users',
+            'Priority 24/7 support',
+          ),
           const SizedBox(height: 16),
-          _buildPlanCard(context, 'Enterprise', 99.99, 'Unlimited routers', 'Unlimited users', 'Dedicated support'),
+          _buildPlanCard(
+            context,
+            'Enterprise',
+            99.99,
+            'Unlimited routers',
+            'Unlimited users',
+            'Dedicated support',
+          ),
         ],
       ),
     );
@@ -101,27 +150,34 @@ class SubscriptionManagementScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          Text(label, style: Theme.of(context).textTheme.bodyMedium),
           Text(
             value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPlanCard(BuildContext context, String name, double price, String feature1, String feature2, String feature3, {bool isCurrentPlan = false}) {
+  Widget _buildPlanCard(
+    BuildContext context,
+    String name,
+    double price,
+    String feature1,
+    String feature2,
+    String feature3, {
+    bool isCurrentPlan = false,
+  }) {
     return Card(
       elevation: isCurrentPlan ? 4 : 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: isCurrentPlan ? BorderSide(color: AppTheme.deepGreen, width: 2) : BorderSide.none,
+        side: isCurrentPlan
+            ? BorderSide(color: AppTheme.deepGreen, width: 2)
+            : BorderSide.none,
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -133,13 +189,16 @@ class SubscriptionManagementScreen extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 if (isCurrentPlan)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppTheme.lightGreen.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
@@ -197,10 +256,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
         children: [
           Icon(Icons.check_circle, color: AppTheme.deepGreen, size: 20),
           const SizedBox(width: 8),
-          Text(
-            feature,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          Text(feature, style: Theme.of(context).textTheme.bodyMedium),
         ],
       ),
     );

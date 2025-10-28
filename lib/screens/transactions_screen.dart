@@ -50,10 +50,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     value: 'bank_transfer',
                     child: Text('Bank Transfer'),
                   ),
-                  DropdownMenuItem(
-                    value: 'paypal',
-                    child: Text('PayPal'),
-                  ),
+                  DropdownMenuItem(value: 'paypal', child: Text('PayPal')),
                   DropdownMenuItem(
                     value: 'crypto',
                     child: Text('Cryptocurrency'),
@@ -76,7 +73,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               onPressed: () {
                 final amount = double.tryParse(amountController.text);
                 if (amount != null && amount > 0) {
-                  context.read<AppState>().requestPayout(amount, selectedMethod);
+                  context.read<AppState>().requestPayout(
+                    amount,
+                    selectedMethod,
+                  );
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Payout request submitted')),
@@ -129,14 +129,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   children: [
                     Text(
                       'Wallet Balance',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white70,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.copyWith(color: Colors.white70),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       MetricCard.formatCurrency(appState.walletBalance),
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                      style: Theme.of(context).textTheme.headlineLarge
+                          ?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
@@ -172,8 +173,12 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                 ? AppTheme.deepGreen.withOpacity(0.1)
                                 : Colors.orange.withOpacity(0.1),
                             child: Icon(
-                              isRevenue ? Icons.arrow_downward : Icons.arrow_upward,
-                              color: isRevenue ? AppTheme.deepGreen : Colors.orange,
+                              isRevenue
+                                  ? Icons.arrow_downward
+                                  : Icons.arrow_upward,
+                              color: isRevenue
+                                  ? AppTheme.deepGreen
+                                  : Colors.orange,
                             ),
                           ),
                           title: Text(transaction.description),
@@ -210,7 +215,9 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                           trailing: Text(
                             MetricCard.formatCurrency(transaction.amount.abs()),
                             style: TextStyle(
-                              color: isRevenue ? AppTheme.deepGreen : Colors.orange,
+                              color: isRevenue
+                                  ? AppTheme.deepGreen
+                                  : Colors.orange,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),

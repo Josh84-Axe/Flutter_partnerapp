@@ -121,10 +121,12 @@ class _PlansScreenState extends State<PlansScreen> {
                 value: selectedUserId,
                 decoration: const InputDecoration(labelText: 'User'),
                 items: appState.users
-                    .map((user) => DropdownMenuItem(
-                          value: user.id,
-                          child: Text(user.name),
-                        ))
+                    .map(
+                      (user) => DropdownMenuItem(
+                        value: user.id,
+                        child: Text(user.name),
+                      ),
+                    )
                     .toList(),
                 onChanged: (value) {
                   setState(() {
@@ -146,7 +148,9 @@ class _PlansScreenState extends State<PlansScreen> {
                       appState.assignPlan(selectedUserId!, planId);
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Plan assigned successfully')),
+                        const SnackBar(
+                          content: Text('Plan assigned successfully'),
+                        ),
                       );
                     },
               child: const Text('Assign'),
@@ -194,7 +198,8 @@ class _PlansScreenState extends State<PlansScreen> {
                             ),
                             Text(
                               MetricCard.formatCurrency(plan.price),
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
                                     color: AppTheme.deepGreen,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -204,11 +209,19 @@ class _PlansScreenState extends State<PlansScreen> {
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            Icon(Icons.data_usage, size: 16, color: AppTheme.textLight),
+                            Icon(
+                              Icons.data_usage,
+                              size: 16,
+                              color: AppTheme.textLight,
+                            ),
                             const SizedBox(width: 8),
                             Text('${plan.dataLimitGB} GB'),
                             const SizedBox(width: 24),
-                            Icon(Icons.speed, size: 16, color: AppTheme.textLight),
+                            Icon(
+                              Icons.speed,
+                              size: 16,
+                              color: AppTheme.textLight,
+                            ),
                             const SizedBox(width: 8),
                             Text('${plan.speedMbps} Mbps'),
                           ],
@@ -216,14 +229,19 @@ class _PlansScreenState extends State<PlansScreen> {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(Icons.calendar_today, size: 16, color: AppTheme.textLight),
+                            Icon(
+                              Icons.calendar_today,
+                              size: 16,
+                              color: AppTheme.textLight,
+                            ),
                             const SizedBox(width: 8),
                             Text('${plan.validityDays} days'),
                           ],
                         ),
                         const SizedBox(height: 12),
                         ElevatedButton.icon(
-                          onPressed: () => _showAssignPlanDialog(plan.id, plan.name),
+                          onPressed: () =>
+                              _showAssignPlanDialog(plan.id, plan.name),
                           icon: const Icon(Icons.person_add),
                           label: const Text('Assign to User'),
                           style: ElevatedButton.styleFrom(
