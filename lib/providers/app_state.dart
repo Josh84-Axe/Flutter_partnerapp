@@ -3,6 +3,7 @@ import '../models/user_model.dart';
 import '../models/router_model.dart';
 import '../models/plan_model.dart';
 import '../models/transaction_model.dart';
+import '../models/subscription_model.dart';
 import '../services/auth_service.dart';
 import '../services/payment_service.dart';
 import '../services/connectivity_service.dart';
@@ -21,6 +22,7 @@ class AppState with ChangeNotifier {
   List<PlanModel> _plans = [];
   List<TransactionModel> _transactions = [];
   double _walletBalance = 0.0;
+  SubscriptionModel? _subscription;
   
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
@@ -30,6 +32,7 @@ class AppState with ChangeNotifier {
   List<PlanModel> get plans => _plans;
   List<TransactionModel> get transactions => _transactions;
   double get walletBalance => _walletBalance;
+  SubscriptionModel? get subscription => _subscription;
   
   Future<bool> login(String email, String password) async {
     _setLoading(true);
@@ -87,7 +90,28 @@ class AppState with ChangeNotifier {
       loadPlans(),
       loadTransactions(),
       loadWalletBalance(),
+      loadSubscription(),
     ]);
+  }
+  
+  Future<void> loadSubscription() async {
+    try {
+      _subscription = SubscriptionModel(
+        id: '1',
+        tier: 'Standard',
+        renewalDate: DateTime(2023, 12, 10),
+        isActive: true,
+        monthlyFee: 29.99,
+        features: {
+          'maxRouters': 5,
+          'maxUsers': 100,
+          'support': '24/7',
+        },
+      );
+      notifyListeners();
+    } catch (e) {
+      _setError(e.toString());
+    }
   }
   
   Future<void> loadUsers() async {
