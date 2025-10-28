@@ -1,89 +1,306 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:easy_localization/easy_localization.dart';
+import '../utils/app_theme.dart';
 
-class RevenueBreakdownScreen extends StatefulWidget {
+class RevenueBreakdownScreen extends StatelessWidget {
   const RevenueBreakdownScreen({super.key});
 
   @override
-  State<RevenueBreakdownScreen> createState() => _RevenueBreakdownScreenState();
-}
-
-class _RevenueBreakdownScreenState extends State<RevenueBreakdownScreen> {
-  late final WebViewController _controller;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeWebView();
-  }
-
-  Future<void> _initializeWebView() async {
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) {
-            setState(() {
-              _isLoading = true;
-            });
-          },
-          onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
-            });
-          },
-        ),
-      );
-
-    // Load HTML from assets
-    final String htmlContent = await rootBundle.loadString('assets/html/revenuebreakdown.html');
-    await _controller.loadHtmlString(htmlContent);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'revenue_breakdown'.tr(),
-          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
+        title: const Text('Revenue Breakdown'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colorScheme.primary),
-          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
         ),
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
       ),
-      body: Stack(
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
         children: [
-          WebViewWidget(controller: _controller),
-          if (_isLoading)
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+          _buildRevenueCard(
+            context,
+            'Assigned Revenue',
+            '\$1,234.56',
+            'Total accrued from assigned plans',
+            Icons.assignment_ind,
+            AppTheme.deepGreen,
+            () => _showTransactionModal(context),
+          ),
+          const SizedBox(height: 16),
+          _buildRevenueCard(
+            context,
+            'Online Revenue',
+            '\$789.01',
+            'Total accrued from online payments',
+            Icons.credit_card,
+            AppTheme.lightGreen,
+            () => _showTransactionModal(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRevenueCard(
+    BuildContext context,
+    String title,
+    String amount,
+    String description,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: color.withValues(alpha: 0.1),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  CircularProgressIndicator(
-                    color: colorScheme.primary,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: color,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          amount,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: color,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          description,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: color.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'loading'.tr(),
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: color,
+                      size: 24,
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    'View Details',
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_forward,
+                    color: color,
+                    size: 16,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showTransactionModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        maxChildSize: 0.9,
+        minChildSize: 0.5,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Transaction History',
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search transactions...',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  children: [
+                    _buildTransactionItem(
+                      context,
+                      'Plan Purchase - Pro',
+                      'Oct 26, 2023 - John Doe',
+                      '+\$25.00',
+                      Colors.green,
+                      Icons.add,
+                    ),
+                    _buildTransactionItem(
+                      context,
+                      'Plan Assignment - Basic',
+                      'Oct 25, 2023 - Jane Smith',
+                      '+\$10.00',
+                      Colors.green,
+                      Icons.add,
+                    ),
+                    _buildTransactionItem(
+                      context,
+                      'Refund - Pro Plan',
+                      'Oct 24, 2023 - Mike Johnson',
+                      '-\$25.00',
+                      Colors.red,
+                      Icons.remove,
+                    ),
+                    _buildTransactionItem(
+                      context,
+                      'Plan Assignment - Business',
+                      'Oct 23, 2023 - Sarah Chen',
+                      '+\$50.00',
+                      Colors.green,
+                      Icons.add,
+                    ),
+                    _buildTransactionItem(
+                      context,
+                      'Plan Purchase - Basic',
+                      'Oct 22, 2023 - Alex Wilson',
+                      '+\$15.00',
+                      Colors.green,
+                      Icons.add,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransactionItem(
+    BuildContext context,
+    String title,
+    String subtitle,
+    String amount,
+    Color color,
+    IconData icon,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(8),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            amount,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
         ],
       ),
     );

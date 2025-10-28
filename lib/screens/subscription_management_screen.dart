@@ -1,268 +1,207 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 
 class SubscriptionManagementScreen extends StatelessWidget {
   const SubscriptionManagementScreen({super.key});
 
-  String _getSubscriptionTier(int routerCount) {
-    if (routerCount == 1) return 'basic_tier';
-    if (routerCount >= 2 && routerCount <= 4) return 'standard_tier';
-    if (routerCount >= 5) return 'premium_tier';
-    return 'basic_tier';
-  }
-
-  double _getSubscriptionFee(int routerCount) {
-    if (routerCount == 1) return 0.15;
-    if (routerCount >= 2 && routerCount <= 4) return 0.12;
-    if (routerCount >= 5) return 0.10;
-    return 0.15;
-  }
-
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
-    final routerCount = appState.currentUser?.numberOfRouters ?? 1;
-    final currentTier = _getSubscriptionTier(routerCount);
-    final currentFee = _getSubscriptionFee(routerCount);
+    final subscription = appState.subscription;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('subscription_tiers'.tr()),
+        title: const Text('Subscription Management'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         children: [
-          Stack(
-            children: [
-              Positioned(
-                top: -30,
-                right: -30,
-                child: Container(
-                  width: 150,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryGreen.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Current Plan',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ),
-              Positioned(
-                bottom: -40,
-                left: -40,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: AppTheme.lightGreen.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              Card(
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'current_plan'.tr(),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryGreen,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              'active'.tr(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
                       Text(
-                        currentTier.tr(),
-                        style: const TextStyle(
-                          fontSize: 28,
+                        subscription?.tier ?? 'Standard',
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
+                          color: AppTheme.deepGreen,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '$routerCount ${routerCount == 1 ? 'router_singular'.tr() : 'router_plural'.tr()}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.lightGreen.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'transaction_fee_percent'.tr(namedArgs: {'percent': (currentFee * 100).toStringAsFixed(0)}),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('plan_change_coming_soon'.tr()),
-                              ),
-                            );
-                          },
-                          child: Text('change_plan'.tr()),
+                        child: Text(
+                          'Active',
+                          style: TextStyle(
+                            color: AppTheme.deepGreen,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  _buildFeatureRow(context, 'Monthly Fee', '\$${subscription?.monthlyFee.toStringAsFixed(2) ?? '29.99'}'),
+                  _buildFeatureRow(context, 'Max Routers', '${subscription?.features['maxRouters'] ?? 5}'),
+                  _buildFeatureRow(context, 'Max Users', '${subscription?.features['maxUsers'] ?? 100}'),
+                  _buildFeatureRow(context, 'Support', subscription?.features['support'] ?? '24/7'),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Renewal Date: ${subscription?.renewalDate.month}/${subscription?.renewalDate.day}/${subscription?.renewalDate.year}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           const SizedBox(height: 24),
           Text(
-            'available_tiers'.tr(),
-            style: const TextStyle(
-              fontSize: 18,
+            'Available Plans',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
-          _buildTierCard(
-            context,
-            name: 'basic_tier',
-            routers: 'tier_1_router',
-            fee: '15%',
-            isActive: currentTier == 'basic_tier',
+          _buildPlanCard(context, 'Basic', 19.99, 'Up to 3 routers', 'Up to 50 users', 'Email support'),
+          const SizedBox(height: 16),
+          _buildPlanCard(context, 'Standard', 29.99, 'Up to 5 routers', 'Up to 100 users', '24/7 support', isCurrentPlan: true),
+          const SizedBox(height: 16),
+          _buildPlanCard(context, 'Premium', 49.99, 'Up to 10 routers', 'Up to 250 users', 'Priority 24/7 support'),
+          const SizedBox(height: 16),
+          _buildPlanCard(context, 'Enterprise', 99.99, 'Unlimited routers', 'Unlimited users', 'Dedicated support'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureRow(BuildContext context, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
-          const SizedBox(height: 12),
-          _buildTierCard(
-            context,
-            name: 'standard_tier',
-            routers: 'tier_2_4_routers',
-            fee: '12%',
-            isActive: currentTier == 'standard_tier',
-          ),
-          const SizedBox(height: 12),
-          _buildTierCard(
-            context,
-            name: 'premium_tier',
-            routers: 'tier_5_plus_routers',
-            fee: '10%',
-            isActive: currentTier == 'premium_tier',
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTierCard(
-    BuildContext context, {
-    required String name,
-    required String routers,
-    required String fee,
-    required bool isActive,
-  }) {
+  Widget _buildPlanCard(BuildContext context, String name, double price, String feature1, String feature2, String feature3, {bool isCurrentPlan = false}) {
     return Card(
-      color: isActive ? AppTheme.primaryGreen.withValues(alpha: 0.1) : null,
+      elevation: isCurrentPlan ? 4 : 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: isCurrentPlan ? BorderSide(color: AppTheme.deepGreen, width: 2) : BorderSide.none,
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        name.tr(),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  name,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (isCurrentPlan)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.lightGreen.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Current',
+                      style: TextStyle(
+                        color: AppTheme.deepGreen,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
                       ),
-                      if (isActive) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryGreen,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            'current'.tr(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    routers.tr(),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'transaction_fee'.tr(namedArgs: {'fee': fee}),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '\$${price.toStringAsFixed(2)}/month',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.deepGreen,
               ),
             ),
-            if (!isActive)
-              IconButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('upgrade_to_tier'.tr(namedArgs: {'tier': name.tr()})),
+            const SizedBox(height: 16),
+            _buildPlanFeature(context, feature1),
+            _buildPlanFeature(context, feature2),
+            _buildPlanFeature(context, feature3),
+            const SizedBox(height: 16),
+            if (!isCurrentPlan)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.deepGreen,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.arrow_forward),
-                style: IconButton.styleFrom(
-                  foregroundColor: AppTheme.primaryGreen,
+                  ),
+                  child: const Text('Upgrade'),
                 ),
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPlanFeature(BuildContext context, String feature) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle, color: AppTheme.deepGreen, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            feature,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
       ),
     );
   }
