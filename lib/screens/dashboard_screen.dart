@@ -112,11 +112,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 16),
             
-            // Data Usage Card
-            DataUsageCard(
-              usedGB: 12.0,
-              totalGB: 20.0,
-              isLoading: appState.isLoading,
+            // Task 1: Total Revenue and Active Users moved below Subscription Plan
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _showRevenueDetails(context, appState),
+                    child: _buildMetricWidget(
+                      context,
+                      title: 'total_revenue'.tr(),
+                      value: MetricCard.formatCurrency(totalRevenue),
+                      icon: Icons.paid,
+                      isLoading: appState.isLoading,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _showActiveUsersDetails(context, appState),
+                    child: _buildMetricWidget(
+                      context,
+                      title: 'active_users'.tr(),
+                      value: MetricCard.formatNumber(activeUsers),
+                      icon: Icons.group,
+                      isLoading: appState.isLoading,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             
@@ -152,35 +176,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 16),
             
-            // Two side-by-side widgets: Total Revenue and Active Users
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _showRevenueDetails(context, appState),
-                    child: _buildMetricWidget(
-                      context,
-                      title: 'total_revenue'.tr(),
-                      value: MetricCard.formatCurrency(totalRevenue),
-                      icon: Icons.paid,
-                      isLoading: appState.isLoading,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _showActiveUsersDetails(context, appState),
-                    child: _buildMetricWidget(
-                      context,
-                      title: 'active_users'.tr(),
-                      value: MetricCard.formatNumber(activeUsers),
-                      icon: Icons.group,
-                      isLoading: appState.isLoading,
-                    ),
-                  ),
-                ),
-              ],
+            // Task 2: Data Usage Card moved below Quick Action Buttons
+            DataUsageCard(
+              usedGB: 12.0,
+              totalGB: 20.0,
+              isLoading: appState.isLoading,
             ),
           ],
         ),
