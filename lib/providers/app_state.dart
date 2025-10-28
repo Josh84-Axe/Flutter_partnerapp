@@ -9,6 +9,7 @@ import '../models/language_model.dart';
 import '../models/hotspot_profile_model.dart';
 import '../models/router_configuration_model.dart';
 import '../models/role_model.dart';
+import '../models/subscription_model.dart';
 import '../services/auth_service.dart';
 import '../services/payment_service.dart';
 import '../services/connectivity_service.dart';
@@ -34,6 +35,7 @@ class AppState with ChangeNotifier {
   final List<NotificationModel> _notifications = [];
   final List<ProfileModel> _profiles = [];
   LanguageModel _selectedLanguage = LanguageModel.availableLanguages.first;
+  SubscriptionModel? _subscription;
   
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
@@ -51,6 +53,7 @@ class AppState with ChangeNotifier {
   List<ProfileModel> get profiles => _profiles;
   LanguageModel get selectedLanguage => _selectedLanguage;
   int get unreadNotificationCount => _notifications.where((n) => !n.isRead).length;
+  SubscriptionModel? get subscription => _subscription;
   
   Future<bool> login(String email, String password) async {
     _setLoading(true);
@@ -109,6 +112,7 @@ class AppState with ChangeNotifier {
       loadTransactions(),
       loadWalletBalance(),
       loadNotifications(),
+      loadSubscription(),
     ]);
     
     _hotspotProfiles = [
@@ -215,6 +219,26 @@ class AppState with ChangeNotifier {
   Future<void> loadNotifications() async {
     try {
       await Future.delayed(const Duration(milliseconds: 500));
+      notifyListeners();
+    } catch (e) {
+      _setError(e.toString());
+    }
+  }
+
+  Future<void> loadSubscription() async {
+    try {
+      _subscription = SubscriptionModel(
+        id: '1',
+        tier: 'Standard',
+        renewalDate: DateTime(2023, 12, 10),
+        isActive: true,
+        monthlyFee: 29.99,
+        features: {
+          'maxRouters': 5,
+          'maxUsers': 100,
+          'support': '24/7',
+        },
+      );
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
