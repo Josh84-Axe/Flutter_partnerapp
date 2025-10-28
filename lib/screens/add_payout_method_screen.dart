@@ -71,9 +71,9 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
         children: [
           Text(
             'Please select a payout method to add.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
           ),
           const SizedBox(height: 24),
           _buildMethodCard(
@@ -104,7 +104,12 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
     );
   }
 
-  Widget _buildMethodCard(String title, String description, IconData icon, VoidCallback onTap) {
+  Widget _buildMethodCard(
+    String title,
+    String description,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(
@@ -124,11 +129,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
                   color: AppTheme.deepGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  color: AppTheme.deepGreen,
-                  size: 24,
-                ),
+                child: Icon(icon, color: AppTheme.deepGreen, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -144,9 +145,9 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
                     const SizedBox(height: 4),
                     Text(
                       description,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -219,7 +220,11 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
             label: 'Mobile Money Provider',
             controller: _mobileProviderController,
             isDropdown: true,
-            dropdownItems: ['MTN Mobile Money', 'Airtel Money', 'Vodafone Cash'],
+            dropdownItems: [
+              'MTN Mobile Money',
+              'Airtel Money',
+              'Vodafone Cash',
+            ],
           ),
           const SizedBox(height: 20),
           _buildTextField(
@@ -242,10 +247,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
       key: _bankTransferFormKey,
       child: Column(
         children: [
-          _buildTextField(
-            label: 'Bank Name',
-            controller: _bankNameController,
-          ),
+          _buildTextField(label: 'Bank Name', controller: _bankNameController),
           const SizedBox(height: 20),
           _buildTextField(
             label: 'Bank Account Number',
@@ -278,17 +280,12 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
       return DropdownButtonFormField<String>(
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           filled: true,
           fillColor: Colors.grey[100],
         ),
         items: dropdownItems.map((item) {
-          return DropdownMenuItem(
-            value: item,
-            child: Text(item),
-          );
+          return DropdownMenuItem(value: item, child: Text(item));
         }).toList(),
         onChanged: (value) {
           controller.text = value ?? '';
@@ -307,9 +304,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         filled: true,
         fillColor: Colors.grey[100],
       ),

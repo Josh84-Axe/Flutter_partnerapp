@@ -12,18 +12,18 @@ class AppState with ChangeNotifier {
   final AuthService _authService = AuthService();
   final PaymentService _paymentService = PaymentService();
   final ConnectivityService _connectivityService = ConnectivityService();
-  
+
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _error;
-  
+
   List<UserModel> _users = [];
   List<RouterModel> _routers = [];
   List<PlanModel> _plans = [];
   List<TransactionModel> _transactions = [];
   double _walletBalance = 0.0;
   SubscriptionModel? _subscription;
-  
+
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -33,7 +33,7 @@ class AppState with ChangeNotifier {
   List<TransactionModel> get transactions => _transactions;
   double get walletBalance => _walletBalance;
   SubscriptionModel? get subscription => _subscription;
-  
+
   Future<bool> login(String email, String password) async {
     _setLoading(true);
     try {
@@ -48,7 +48,7 @@ class AppState with ChangeNotifier {
       return false;
     }
   }
-  
+
   Future<bool> register(String name, String email, String password) async {
     _setLoading(true);
     try {
@@ -63,7 +63,7 @@ class AppState with ChangeNotifier {
       return false;
     }
   }
-  
+
   Future<void> logout() async {
     await _authService.logout();
     _currentUser = null;
@@ -74,7 +74,7 @@ class AppState with ChangeNotifier {
     _walletBalance = 0.0;
     notifyListeners();
   }
-  
+
   Future<void> checkAuthStatus() async {
     _currentUser = await _authService.getCurrentUser();
     if (_currentUser != null) {
@@ -82,7 +82,7 @@ class AppState with ChangeNotifier {
     }
     notifyListeners();
   }
-  
+
   Future<void> loadDashboardData() async {
     await Future.wait([
       loadUsers(),
@@ -93,7 +93,7 @@ class AppState with ChangeNotifier {
       loadSubscription(),
     ]);
   }
-  
+
   Future<void> loadSubscription() async {
     try {
       _subscription = SubscriptionModel(
@@ -102,18 +102,14 @@ class AppState with ChangeNotifier {
         renewalDate: DateTime(2023, 12, 10),
         isActive: true,
         monthlyFee: 29.99,
-        features: {
-          'maxRouters': 5,
-          'maxUsers': 100,
-          'support': '24/7',
-        },
+        features: {'maxRouters': 5, 'maxUsers': 100, 'support': '24/7'},
       );
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
     }
   }
-  
+
   Future<void> loadUsers() async {
     try {
       _users = await _authService.getUsers();
@@ -122,7 +118,7 @@ class AppState with ChangeNotifier {
       _setError(e.toString());
     }
   }
-  
+
   Future<void> loadRouters() async {
     try {
       _routers = await _connectivityService.getRouters();
@@ -131,7 +127,7 @@ class AppState with ChangeNotifier {
       _setError(e.toString());
     }
   }
-  
+
   Future<void> loadPlans() async {
     try {
       _plans = await _paymentService.getPlans();
@@ -140,7 +136,7 @@ class AppState with ChangeNotifier {
       _setError(e.toString());
     }
   }
-  
+
   Future<void> loadTransactions() async {
     try {
       _transactions = await _paymentService.getTransactions();
@@ -149,7 +145,7 @@ class AppState with ChangeNotifier {
       _setError(e.toString());
     }
   }
-  
+
   Future<void> loadWalletBalance() async {
     try {
       _walletBalance = await _paymentService.getWalletBalance();
@@ -158,7 +154,7 @@ class AppState with ChangeNotifier {
       _setError(e.toString());
     }
   }
-  
+
   Future<void> createUser(Map<String, dynamic> userData) async {
     _setLoading(true);
     try {
@@ -170,7 +166,7 @@ class AppState with ChangeNotifier {
       _setLoading(false);
     }
   }
-  
+
   Future<void> updateUser(String id, Map<String, dynamic> userData) async {
     _setLoading(true);
     try {
@@ -182,7 +178,7 @@ class AppState with ChangeNotifier {
       _setLoading(false);
     }
   }
-  
+
   Future<void> deleteUser(String id) async {
     _setLoading(true);
     try {
@@ -194,7 +190,7 @@ class AppState with ChangeNotifier {
       _setLoading(false);
     }
   }
-  
+
   Future<void> createPlan(Map<String, dynamic> planData) async {
     _setLoading(true);
     try {
@@ -206,7 +202,7 @@ class AppState with ChangeNotifier {
       _setLoading(false);
     }
   }
-  
+
   Future<void> assignPlan(String userId, String planId) async {
     _setLoading(true);
     try {
@@ -217,7 +213,7 @@ class AppState with ChangeNotifier {
       _setLoading(false);
     }
   }
-  
+
   Future<void> requestPayout(double amount, String method) async {
     _setLoading(true);
     try {
@@ -230,7 +226,7 @@ class AppState with ChangeNotifier {
       _setLoading(false);
     }
   }
-  
+
   Future<void> createRouter(Map<String, dynamic> routerData) async {
     _setLoading(true);
     try {
@@ -242,7 +238,7 @@ class AppState with ChangeNotifier {
       _setLoading(false);
     }
   }
-  
+
   Future<void> blockDevice(String deviceId) async {
     _setLoading(true);
     try {
@@ -253,7 +249,7 @@ class AppState with ChangeNotifier {
       _setLoading(false);
     }
   }
-  
+
   Future<void> unblockDevice(String deviceId) async {
     _setLoading(true);
     try {
@@ -264,17 +260,17 @@ class AppState with ChangeNotifier {
       _setLoading(false);
     }
   }
-  
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
-  
+
   void _setError(String? value) {
     _error = value;
     notifyListeners();
   }
-  
+
   void clearError() {
     _error = null;
     notifyListeners();

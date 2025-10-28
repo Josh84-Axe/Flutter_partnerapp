@@ -5,10 +5,12 @@ class TransactionPaymentHistoryScreen extends StatefulWidget {
   const TransactionPaymentHistoryScreen({super.key});
 
   @override
-  State<TransactionPaymentHistoryScreen> createState() => _TransactionPaymentHistoryScreenState();
+  State<TransactionPaymentHistoryScreen> createState() =>
+      _TransactionPaymentHistoryScreenState();
 }
 
-class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHistoryScreen> {
+class _TransactionPaymentHistoryScreenState
+    extends State<TransactionPaymentHistoryScreen> {
   String selectedFilter = 'Date';
 
   @override
@@ -123,9 +125,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Colors.grey[200]!),
-          ),
+          border: Border(top: BorderSide(color: Colors.grey[200]!)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -167,7 +167,11 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                 _buildNavItem(Icons.grid_view, 'Dashboard', false),
                 _buildNavItem(Icons.group, 'Users', false),
                 _buildNavItem(Icons.description, 'Plans', false),
-                _buildNavItem(Icons.account_balance_wallet, 'Transactions', true),
+                _buildNavItem(
+                  Icons.account_balance_wallet,
+                  'Transactions',
+                  true,
+                ),
                 _buildNavItem(Icons.router, 'Routers', false),
               ],
             ),
@@ -177,7 +181,12 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
     );
   }
 
-  Widget _buildSummaryCard(BuildContext context, String title, String amount, Color color) {
+  Widget _buildSummaryCard(
+    BuildContext context,
+    String title,
+    String amount,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -260,11 +269,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 20,
-            ),
+            child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -273,15 +278,15 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                 ),
                 Text(
                   date,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -305,7 +310,9 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: isSelected ? AppTheme.deepGreen.withValues(alpha: 0.2) : Colors.transparent,
+            color: isSelected
+                ? AppTheme.deepGreen.withValues(alpha: 0.2)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Icon(

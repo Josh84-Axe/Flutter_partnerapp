@@ -65,25 +65,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.router,
-                    size: 80,
-                    color: AppTheme.deepGreen,
-                  ),
+                  Icon(Icons.router, size: 80, color: AppTheme.deepGreen),
                   const SizedBox(height: 16),
                   Text(
                     'Hotspot Partner',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: AppTheme.deepGreen,
-                        ),
+                      color: AppTheme.deepGreen,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Manage Your Network',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppTheme.textLight,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(color: AppTheme.textLight),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 48),

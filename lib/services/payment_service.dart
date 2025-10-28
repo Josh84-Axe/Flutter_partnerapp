@@ -4,7 +4,7 @@ import '../models/transaction_model.dart';
 class PaymentService {
   Future<List<PlanModel>> getPlans() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     return [
       PlanModel(
         id: 'plan_001',
@@ -38,7 +38,7 @@ class PaymentService {
 
   Future<PlanModel> createPlan(Map<String, dynamic> planData) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     return PlanModel(
       id: 'plan_${DateTime.now().millisecondsSinceEpoch}',
       name: planData['name'],
@@ -56,7 +56,7 @@ class PaymentService {
 
   Future<List<TransactionModel>> getTransactions() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     return [
       TransactionModel(
         id: 'txn_001',

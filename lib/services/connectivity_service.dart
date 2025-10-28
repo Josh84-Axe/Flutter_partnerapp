@@ -3,7 +3,7 @@ import '../models/router_model.dart';
 class ConnectivityService {
   Future<List<RouterModel>> getRouters() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     return [
       RouterModel(
         id: 'router_001',
@@ -40,7 +40,7 @@ class ConnectivityService {
 
   Future<RouterModel> createRouter(Map<String, dynamic> routerData) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     return RouterModel(
       id: 'router_${DateTime.now().millisecondsSinceEpoch}',
       name: routerData['name'],
@@ -63,7 +63,7 @@ class ConnectivityService {
 
   Future<Map<String, dynamic>> getRouterHealth(String routerId) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     return {
       'routerId': routerId,
       'status': 'online',
@@ -71,10 +71,7 @@ class ConnectivityService {
       'cpuUsage': 45.2,
       'memoryUsage': 62.8,
       'temperature': 52.5,
-      'bandwidth': {
-        'download': 245.6,
-        'upload': 128.3,
-      },
+      'bandwidth': {'download': 245.6, 'upload': 128.3},
     };
   }
 }

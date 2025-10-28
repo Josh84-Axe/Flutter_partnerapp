@@ -24,17 +24,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
-    
+
     final totalRevenue = appState.transactions
         .where((t) => t.type == 'revenue')
         .fold(0.0, (sum, t) => sum + t.amount);
-    
+
     final activeUsers = appState.users.where((u) => u.isActive).length;
-    
-    final totalDataUsage = appState.routers
-        .fold(0.0, (sum, r) => sum + r.dataUsageGB);
-    
-    final dataUsagePercentage = totalDataUsage > 0 ? (totalDataUsage / 20.0 * 100).clamp(0.0, 100.0).toDouble() : 60.0;
+
+    final totalDataUsage = appState.routers.fold(
+      0.0,
+      (sum, r) => sum + r.dataUsageGB,
+    );
+
+    final dataUsagePercentage = totalDataUsage > 0
+        ? (totalDataUsage / 20.0 * 100).clamp(0.0, 100.0).toDouble()
+        : 60.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -57,15 +61,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Text(
               'Welcome back, ${appState.currentUser?.name ?? 'John Partner'}!',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 24),
-            
+
             _buildSubscriptionPlanCard(context, appState),
             const SizedBox(height: 16),
-            
+
             Row(
               children: [
                 Expanded(
@@ -90,13 +94,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             const SizedBox(height: 24),
-            
+
             _buildQuickActions(context),
             const SizedBox(height: 24),
-            
+
             _buildDataUsageCard(context, totalDataUsage, dataUsagePercentage),
             const SizedBox(height: 24),
-            
+
             Text(
               'Recent Activity',
               style: Theme.of(context).textTheme.titleLarge,
@@ -140,13 +144,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-  
+
   Widget _buildSubscriptionPlanCard(BuildContext context, AppState appState) {
     final subscription = appState.subscription;
     final tier = subscription?.tier ?? 'Standard';
     final renewalDate = subscription?.renewalDate ?? DateTime(2023, 12, 10);
-    final formattedDate = '${renewalDate.month}/${renewalDate.day}/${renewalDate.year}';
-    
+    final formattedDate =
+        '${renewalDate.month}/${renewalDate.day}/${renewalDate.year}';
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -170,23 +175,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Text(
                       'Subscription Plan',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       tier,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Renews $formattedDate',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -197,11 +201,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: AppTheme.lightGreen.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.wifi,
-                  size: 32,
-                  color: AppTheme.deepGreen,
-                ),
+                child: Icon(Icons.wifi, size: 32, color: AppTheme.deepGreen),
               ),
             ],
           ),
@@ -209,7 +209,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-  
+
   Widget _buildQuickActions(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -221,8 +221,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ],
     );
   }
-  
-  Widget _buildQuickActionButton(BuildContext context, IconData icon, String label) {
+
+  Widget _buildQuickActionButton(
+    BuildContext context,
+    IconData icon,
+    String label,
+  ) {
     return Column(
       children: [
         Container(
@@ -243,8 +247,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ],
     );
   }
-  
-  Widget _buildDataUsageCard(BuildContext context, double totalDataUsage, double percentage) {
+
+  Widget _buildDataUsageCard(
+    BuildContext context,
+    double totalDataUsage,
+    double percentage,
+  ) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -290,7 +298,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           value: percentage / 100,
                           strokeWidth: 12,
                           backgroundColor: Colors.grey[300],
-                          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.deepGreen),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppTheme.deepGreen,
+                          ),
                         ),
                       ),
                       Column(
@@ -298,9 +308,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         children: [
                           Text(
                             '${percentage.toInt()}%',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           Text(
                             'Data Usage',

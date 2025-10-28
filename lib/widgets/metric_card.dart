@@ -52,16 +52,14 @@ class MetricCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             if (isLoading)
-              const Center(
-                child: CircularProgressIndicator(),
-              )
+              const Center(child: CircularProgressIndicator())
             else
               Text(
                 value,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: accentColor ?? AppTheme.deepGreen,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  color: accentColor ?? AppTheme.deepGreen,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
           ],
         ),

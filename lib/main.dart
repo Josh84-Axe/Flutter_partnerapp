@@ -85,10 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -101,22 +98,13 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Users',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.wifi),
-            label: 'Plans',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
+          BottomNavigationBarItem(icon: Icon(Icons.wifi), label: 'Plans'),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt_long),
             label: 'Transactions',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.router),
-            label: 'Health',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.router), label: 'Health'),
         ],
       ),
       drawer: Drawer(
@@ -124,9 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(
-                color: AppTheme.deepGreen,
-              ),
+              decoration: const BoxDecoration(color: AppTheme.deepGreen),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -151,10 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   Text(
                     context.watch<AppState>().currentUser?.email ?? '',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
               ),
@@ -176,10 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text(
-                'Logout',
-                style: TextStyle(color: Colors.red),
-              ),
+              title: const Text('Logout', style: TextStyle(color: Colors.red)),
               onTap: () async {
                 await context.read<AppState>().logout();
                 if (context.mounted) {
