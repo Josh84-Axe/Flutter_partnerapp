@@ -49,6 +49,8 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
     final allProfiles = appState.hotspotProfiles;
     final filteredProfiles = allProfiles.where((profile) {
@@ -123,8 +125,8 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
                               onPressed: () => _navigateToCreateEdit(profile: profile),
                               icon: const Icon(Icons.edit),
                               style: IconButton.styleFrom(
-                                foregroundColor: AppTheme.primaryGreen,
-                                backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                                foregroundColor: colorScheme.primary,
+                                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                               ),
                             ),
                             const SizedBox(width: 8),

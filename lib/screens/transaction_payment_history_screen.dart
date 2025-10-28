@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../utils/app_theme.dart';
 
 class TransactionPaymentHistoryScreen extends StatefulWidget {
   const TransactionPaymentHistoryScreen({super.key});
@@ -13,6 +12,8 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transaction & Payout History'),
@@ -34,7 +35,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                         context,
                         'Wallet Balance',
                         '\$1,250.00',
-                        AppTheme.deepGreen,
+                        colorScheme.primary,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -43,7 +44,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                         context,
                         'Earned Income',
                         '\$5,750.00',
-                        AppTheme.lightGreen,
+                        colorScheme.primary,
                       ),
                     ),
                   ],
@@ -137,8 +138,8 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                   _showRequestPayoutDialog(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.deepGreen,
-                  foregroundColor: Colors.white,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
@@ -223,6 +224,8 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
   }
 
   Widget _buildFilterChip(String label, bool isSelected) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return FilterChip(
       label: Text(label),
       selected: isSelected,
@@ -231,8 +234,8 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
           selectedFilter = label;
         });
       },
-      selectedColor: AppTheme.deepGreen.withValues(alpha: 0.2),
-      checkmarkColor: AppTheme.deepGreen,
+      selectedColor: colorScheme.primaryContainer,
+      checkmarkColor: colorScheme.primary,
       backgroundColor: Colors.grey[200],
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -299,18 +302,20 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
   }
 
   Widget _buildNavItem(IconData icon, String label, bool isSelected) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: isSelected ? AppTheme.deepGreen.withValues(alpha: 0.2) : Colors.transparent,
+            color: isSelected ? colorScheme.primaryContainer : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Icon(
             icon,
-            color: isSelected ? AppTheme.deepGreen : Colors.grey[600],
+            color: isSelected ? colorScheme.primary : Colors.grey[600],
             size: 24,
           ),
         ),
@@ -320,7 +325,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
           style: TextStyle(
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            color: isSelected ? AppTheme.deepGreen : Colors.grey[600],
+            color: isSelected ? colorScheme.primary : Colors.grey[600],
           ),
         ),
       ],
@@ -370,8 +375,8 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.deepGreen,
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
             ),
             child: const Text('Request'),
           ),

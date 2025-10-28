@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
-import '../utils/app_theme.dart';
 
 class RouterRegistrationScreen extends StatefulWidget {
   const RouterRegistrationScreen({super.key});
@@ -77,6 +76,8 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
 
     return Scaffold(
@@ -211,7 +212,7 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
                     _isActive = value;
                   });
                 },
-                activeTrackColor: AppTheme.primaryGreen,
+                activeTrackColor: colorScheme.primary,
               ),
               const SizedBox(height: 24),
               FilledButton(

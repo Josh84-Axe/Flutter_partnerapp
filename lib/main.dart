@@ -402,20 +402,20 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(
-              color: AppTheme.primaryGreen,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 30,
                   backgroundColor: Colors.white,
                   child: Icon(
                     Icons.person,
                     size: 40,
-                    color: AppTheme.primaryGreen,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 const SizedBox(height: 12),

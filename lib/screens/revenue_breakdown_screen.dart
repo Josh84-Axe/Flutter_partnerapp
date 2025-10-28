@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import '../utils/app_theme.dart';
 
 class RevenueBreakdownScreen extends StatelessWidget {
   const RevenueBreakdownScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Revenue Breakdown'),
@@ -23,7 +24,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
             '\$1,234.56',
             'Total accrued from assigned plans',
             Icons.assignment_ind,
-            AppTheme.deepGreen,
+            colorScheme.primary,
             () => _showTransactionModal(context),
           ),
           const SizedBox(height: 16),
@@ -33,7 +34,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
             '\$789.01',
             'Total accrued from online payments',
             Icons.credit_card,
-            AppTheme.lightGreen,
+            colorScheme.primaryContainer,
             () => _showTransactionModal(context),
           ),
         ],

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../widgets/search_bar_widget.dart';
-import '../utils/app_theme.dart';
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
@@ -28,6 +27,8 @@ class _SupportScreenState extends State<SupportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text('support_help'.tr()),
@@ -167,7 +168,7 @@ class _SupportScreenState extends State<SupportScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+              color: colorScheme.primaryContainer,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -199,16 +200,18 @@ class _SupportScreenState extends State<SupportScreen> {
     required String title,
     required String description,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+            color: colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: AppTheme.primaryGreen),
+          child: Icon(icon, color: colorScheme.primary),
         ),
         title: Text(title),
         subtitle: Text(description),
@@ -219,8 +222,10 @@ class _SupportScreenState extends State<SupportScreen> {
   }
 
   Widget _buildResourceLink(BuildContext context, IconData icon, String title) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryGreen),
+      leading: Icon(icon, color: colorScheme.primary),
       title: Text(title),
       trailing: const Icon(Icons.open_in_new),
       onTap: () {},

@@ -69,7 +69,6 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('all_notifications_marked_read'.tr()),
-        backgroundColor: AppTheme.successGreen,
       ),
     );
   }
@@ -96,6 +95,8 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text('notifications'.tr()),
@@ -109,7 +110,7 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
             child: Text(
               'mark_all_read'.tr(),
               style: TextStyle(
-                color: AppTheme.primaryGreen,
+                color: colorScheme.primary,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -187,12 +188,13 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
   }
 
   Widget _buildNotificationCard(NotificationModel notification, {bool isCritical = false}) {
+    final colorScheme = Theme.of(context).colorScheme;
     final iconData = _getNotificationIcon(notification.type);
-    final iconColor = isCritical ? AppTheme.errorRed : AppTheme.primaryGreen;
+    final iconColor = isCritical ? colorScheme.error : colorScheme.primary;
     final backgroundColor = isCritical 
-        ? AppTheme.errorRed.withValues(alpha: 0.1)
-        : AppTheme.pureWhite;
-    final borderColor = isCritical ? AppTheme.errorRed : Colors.transparent;
+        ? colorScheme.errorContainer
+        : colorScheme.surface;
+    final borderColor = isCritical ? colorScheme.error : Colors.transparent;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

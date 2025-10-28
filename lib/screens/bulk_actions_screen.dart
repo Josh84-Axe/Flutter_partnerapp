@@ -24,6 +24,8 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
     final users = appState.users.where((user) {
       if (_searchQuery.isEmpty) return true;
@@ -81,7 +83,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   color: isSelected
-                      ? AppTheme.primaryGreen.withValues(alpha: 0.1)
+                      ? colorScheme.primaryContainer
                       : Theme.of(context).cardTheme.color,
                   child: CheckboxListTile(
                     value: isSelected,
@@ -95,16 +97,16 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                       });
                     },
                     secondary: CircleAvatar(
-                      backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                      backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                       child: Text(
                         user.name[0].toUpperCase(),
-                        style: const TextStyle(color: AppTheme.primaryGreen),
+                        style: TextStyle(color: colorScheme.primary),
                       ),
                     ),
                     title: Text(user.name),
                     subtitle: Text(user.email),
                     controlAffinity: ListTileControlAffinity.leading,
-                    activeColor: AppTheme.primaryGreen,
+                    activeColor: colorScheme.primary,
                   ),
                 );
               },

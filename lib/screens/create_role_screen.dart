@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
-import '../utils/app_theme.dart';
 
 class CreateRoleScreen extends StatefulWidget {
   final Map<String, dynamic>? roleData;
@@ -54,6 +53,8 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final isEdit = widget.roleData != null;
 
     return Scaffold(
@@ -169,6 +170,7 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
   }
 
   Widget _buildPermissionSection(String title, Map<String, String> permissions) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -189,7 +191,7 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
                   _permissions[entry.key] = value;
                 });
               },
-              activeTrackColor: AppTheme.primaryGreen,
+              activeTrackColor: colorScheme.primary,
               contentPadding: permissions.length == 1 ? EdgeInsets.zero : null,
             )),
           ],

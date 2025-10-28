@@ -23,14 +23,16 @@ class AppTheme {
   static const Color errorRed = Color(0xFFEF4444);
 
   static ThemeData get lightTheme {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: seedGreen,
+      brightness: Brightness.light,
+      primary: primaryGreen,
+      surface: pureWhite,
+    );
+    
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: seedGreen,
-        brightness: Brightness.light,
-        primary: primaryGreen,
-        surface: pureWhite,
-      ),
+      colorScheme: scheme,
       textTheme: GoogleFonts.poppinsTextTheme().copyWith(
         headlineLarge: GoogleFonts.poppins(
           fontSize: 32,
@@ -57,49 +59,54 @@ class AppTheme {
         ),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: primaryGreen,
-        foregroundColor: textDark,
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: textDark),
+        iconTheme: IconThemeData(color: scheme.onPrimary),
         titleTextStyle: GoogleFonts.poppins(
           fontSize: 20,
           fontWeight: FontWeight.bold,
-          color: textDark,
+          color: scheme.onPrimary,
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: pureWhite,
-        selectedItemColor: primaryGreen,
-        unselectedItemColor: textLight,
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: scheme.surface,
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: scheme.onSurfaceVariant,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: scheme.primaryContainer,
+        foregroundColor: scheme.onPrimaryContainer,
+        elevation: 3,
       ),
       cardTheme: CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        color: pureWhite,
+        color: scheme.surface,
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: textLight),
+          borderSide: BorderSide(color: scheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryGreen, width: 2),
+          borderSide: BorderSide(color: scheme.primary, width: 2),
         ),
         labelStyle: GoogleFonts.poppins(),
-        hintStyle: GoogleFonts.poppins(color: textLight),
+        hintStyle: GoogleFonts.poppins(color: scheme.onSurfaceVariant),
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: scheme.surfaceContainerHighest,
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: primaryGreen,
-          foregroundColor: textDark,
+          backgroundColor: scheme.primary,
+          foregroundColor: scheme.onPrimary,
           textStyle: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -167,12 +174,17 @@ class AppTheme {
           color: textDarkMode,
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: surfaceDark,
-        selectedItemColor: primaryGreen,
-        unselectedItemColor: textLight,
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: scheme.surface,
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: scheme.onSurfaceVariant,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: scheme.primaryContainer,
+        foregroundColor: scheme.onPrimaryContainer,
+        elevation: 3,
       ),
       cardTheme: CardThemeData(
         elevation: 2,
@@ -184,21 +196,21 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: textLight.withValues(alpha: 0.3)),
+          borderSide: BorderSide(color: scheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryGreen, width: 2),
+          borderSide: BorderSide(color: scheme.primary, width: 2),
         ),
         labelStyle: GoogleFonts.poppins(),
-        hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400),
+        hintStyle: GoogleFonts.poppins(color: scheme.onSurfaceVariant),
         filled: true,
-        fillColor: surfaceDark,
+        fillColor: scheme.surfaceContainerHighest,
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: primaryGreen,
-          foregroundColor: textDark,
+          backgroundColor: scheme.primary,
+          foregroundColor: scheme.onPrimary,
           textStyle: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,

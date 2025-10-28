@@ -54,6 +54,8 @@ class _OtpValidationDialogState extends State<OtpValidationDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -126,8 +128,8 @@ class _OtpValidationDialogState extends State<OtpValidationDialog> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(
-                          color: AppTheme.primaryGreen,
+                        borderSide: BorderSide(
+                          color: colorScheme.primary,
                           width: 2,
                         ),
                       ),
@@ -149,7 +151,6 @@ class _OtpValidationDialogState extends State<OtpValidationDialog> {
               child: FilledButton(
                 onPressed: _verifyCode,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.primaryGreen,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: const Text(

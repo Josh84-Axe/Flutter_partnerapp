@@ -50,6 +50,8 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('set_new_password'.tr()),
@@ -70,7 +72,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
                 Icon(
                   Icons.lock_outline,
                   size: 80,
-                  color: AppTheme.primaryGreen,
+                  color: colorScheme.primary,
                 ),
                 const SizedBox(height: 24),
                 Text(

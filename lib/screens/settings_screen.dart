@@ -5,7 +5,6 @@ import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../providers/theme_provider.dart';
 import '../theme/tiknet_themes.dart';
-import '../utils/app_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -190,8 +189,8 @@ class SettingsScreen extends StatelessWidget {
                 }
               },
               style: FilledButton.styleFrom(
-                backgroundColor: AppTheme.errorRed,
-                foregroundColor: AppTheme.pureWhite,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: Text(
@@ -234,14 +233,16 @@ class SettingsScreen extends StatelessWidget {
     Widget? trailing,
     VoidCallback? onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+          color: colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: AppTheme.primaryGreen, size: 24),
+        child: Icon(icon, color: colorScheme.primary, size: 24),
       ),
       title: Text(title),
       subtitle: Text(subtitle),
@@ -322,7 +323,7 @@ class SettingsScreen extends StatelessWidget {
               return RadioListTile<TiknetThemeVariant>(
                 title: Text(themeProvider.getVariantName(variant)),
                 value: variant,
-                activeColor: AppTheme.primaryGreen,
+                activeColor: Theme.of(context).colorScheme.primary,
               );
             }).toList(),
           ),

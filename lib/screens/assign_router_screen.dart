@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
-import '../utils/app_theme.dart';
 
 class AssignRouterScreen extends StatefulWidget {
   const AssignRouterScreen({super.key});
@@ -23,6 +22,8 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
     final routers = appState.routers.where((router) {
       if (_searchQuery.isEmpty) return true;
@@ -118,16 +119,16 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
                     secondary: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppTheme.lightGreen.withValues(alpha: 0.2),
+                        color: colorScheme.primaryContainer.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
                         Icons.router,
-                        color: AppTheme.deepGreen,
+                        color: colorScheme.primary,
                         size: 24,
                       ),
                     ),
-                    activeColor: AppTheme.deepGreen,
+                    activeColor: colorScheme.primary,
                     checkColor: Colors.white,
                     controlAffinity: ListTileControlAffinity.trailing,
                     contentPadding: const EdgeInsets.symmetric(
@@ -156,7 +157,7 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
                 onPressed: () => Navigator.pop(context),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: AppTheme.deepGreen),
+                  side: BorderSide(color: colorScheme.primary),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
@@ -164,7 +165,7 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
                 child: Text(
                   'Cancel',
                   style: TextStyle(
-                    color: AppTheme.deepGreen,
+                    color: colorScheme.primary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -175,7 +176,7 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
               child: ElevatedButton(
                 onPressed: _selectedRouters.isEmpty ? null : _saveAssignment,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.deepGreen,
+                  backgroundColor: colorScheme.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(

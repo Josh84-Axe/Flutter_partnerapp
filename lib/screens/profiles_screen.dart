@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
 import '../widgets/search_bar_widget.dart';
-import '../utils/app_theme.dart';
 
 class ProfilesScreen extends StatefulWidget {
   const ProfilesScreen({super.key});
@@ -32,6 +31,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
+    final colorScheme = Theme.of(context).colorScheme;
     final profiles = appState.profiles.where((profile) {
       if (_searchQuery.isEmpty) return true;
       return profile.name.toLowerCase().contains(_searchQuery.toLowerCase());
@@ -70,12 +70,12 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                        color: colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.person,
-                        color: AppTheme.primaryGreen,
+                        color: colorScheme.primary,
                       ),
                     ),
                     title: Text(profile.name),
@@ -96,7 +96,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete),
-                          color: AppTheme.errorRed,
+                          color: colorScheme.error,
                           onPressed: () async {
                             final confirmed = await showDialog<bool>(
                               context: context,
@@ -112,9 +112,9 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                                   ),
                                   TextButton(
                                     onPressed: () => Navigator.of(context).pop(true),
-                                    child: const Text(
+                                    child: Text(
                                       'Delete',
-                                      style: TextStyle(color: AppTheme.errorRed),
+                                      style: TextStyle(color: colorScheme.error),
                                     ),
                                   ),
                                 ],
@@ -138,7 +138,6 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
         onPressed: () {
           Navigator.of(context).pushNamed('/profile-editor');
         },
-        backgroundColor: AppTheme.primaryGreen,
         icon: const Icon(Icons.add),
         label: const Text('Add New Profile'),
       ),

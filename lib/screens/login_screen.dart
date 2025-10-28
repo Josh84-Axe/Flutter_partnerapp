@@ -78,6 +78,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
 
     return Scaffold(
@@ -100,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     'app_title'.tr(),
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: AppTheme.primaryGreen,
+                          color: colorScheme.primary,
                         ),
                     textAlign: TextAlign.center,
                   ),
@@ -118,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _nameController,
                       decoration: InputDecoration(
                         labelText: 'name'.tr(),
-                        prefixIcon: const Icon(Icons.person),
+                        prefixIcon: Icon(Icons.person),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -132,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _phoneController,
                       decoration: InputDecoration(
                         labelText: 'phone'.tr(),
-                        prefixIcon: const Icon(Icons.phone),
+                        prefixIcon: Icon(Icons.phone),
                       ),
                       keyboardType: TextInputType.phone,
                     ),
@@ -141,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _addressController,
                       decoration: InputDecoration(
                         labelText: 'address'.tr(),
-                        prefixIcon: const Icon(Icons.location_on),
+                        prefixIcon: Icon(Icons.location_on),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -149,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _cityController,
                       decoration: InputDecoration(
                         labelText: 'city'.tr(),
-                        prefixIcon: const Icon(Icons.location_city),
+                        prefixIcon: Icon(Icons.location_city),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -157,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       initialValue: _selectedCountry,
                       decoration: InputDecoration(
                         labelText: 'country'.tr(),
-                        prefixIcon: const Icon(Icons.flag),
+                        prefixIcon: Icon(Icons.flag),
                       ),
                       items: _countries.map((country) {
                         return DropdownMenuItem(
@@ -182,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _numberOfRoutersController,
                       decoration: InputDecoration(
                         labelText: 'number_of_routers'.tr(),
-                        prefixIcon: const Icon(Icons.router),
+                        prefixIcon: Icon(Icons.router),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
@@ -201,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'email'.tr(),
-                      prefixIcon: const Icon(Icons.email),
+                      prefixIcon: Icon(Icons.email),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -219,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _passwordController,
                     decoration: InputDecoration(
                       labelText: 'password'.tr(),
-                      prefixIcon: const Icon(Icons.lock),
+                      prefixIcon: Icon(Icons.lock),
                     ),
                     obscureText: true,
                     validator: (value) {
@@ -242,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: Text(
                           'forgot_password'.tr(),
-                          style: const TextStyle(color: AppTheme.primaryGreen),
+                          style: TextStyle(color: colorScheme.primary),
                         ),
                       ),
                     ),
@@ -285,7 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     child: Text(
                       _isLogin ? 'dont_have_account'.tr() : 'already_have_account'.tr(),
-                      style: const TextStyle(color: AppTheme.primaryGreen),
+                      style: TextStyle(color: colorScheme.primary),
                     ),
                   ),
                 ],

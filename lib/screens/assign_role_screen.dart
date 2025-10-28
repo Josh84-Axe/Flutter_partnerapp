@@ -16,6 +16,8 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
     final users = appState.users;
 
@@ -40,7 +42,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
                 ),
               ),
             ),
@@ -55,11 +57,11 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                      backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                       child: Text(
                         user.name[0].toUpperCase(),
-                        style: const TextStyle(
-                          color: AppTheme.primaryGreen,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -188,7 +190,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                       );
                     },
                     style: FilledButton.styleFrom(
-                      backgroundColor: AppTheme.primaryGreen,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: Text('update_role'.tr()),
@@ -217,6 +219,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
     String value,
     bool isCurrentRole,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isSelected = _selectedRole == value || (isCurrentRole && _selectedRole == null);
     
     return GestureDetector(
@@ -228,10 +231,10 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryGreen.withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected ? colorScheme.primaryContainer : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight.withValues(alpha: 0.3),
+            color: isSelected ? colorScheme.primary : AppTheme.textLight.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -243,13 +246,13 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? AppTheme.primaryGreen : AppTheme.textDark,
+                color: isSelected ? colorScheme.primary : AppTheme.textDark,
               ),
             ),
             if (isSelected)
-              const Icon(
+              Icon(
                 Icons.check_circle,
-                color: AppTheme.primaryGreen,
+                color: colorScheme.primary,
               ),
           ],
         ),

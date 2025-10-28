@@ -8,6 +8,8 @@ class AboutAppScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text('about_app'.tr()),
@@ -22,13 +24,13 @@ class AboutAppScreen extends StatelessWidget {
                 width: 96,
                 height: 96,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen,
+                  color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.widgets,
                   size: 64,
-                  color: AppTheme.pureWhite,
+                  color: colorScheme.onPrimary,
                 ),
               ),
             ),
@@ -56,12 +58,12 @@ class AboutAppScreen extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withValues(alpha: 0.2),
+                      color: colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.description,
-                      color: AppTheme.primaryGreen,
+                      color: colorScheme.primary,
                     ),
                   ),
                   title: Text('privacy_policy'.tr()),
@@ -76,12 +78,12 @@ class AboutAppScreen extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withValues(alpha: 0.2),
+                      color: colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.shield,
-                      color: AppTheme.primaryGreen,
+                      color: colorScheme.primary,
                     ),
                   ),
                   title: Text('terms_of_service'.tr()),

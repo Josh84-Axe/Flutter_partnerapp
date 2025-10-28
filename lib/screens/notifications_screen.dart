@@ -23,6 +23,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
     final notifications = appState.notifications;
 
@@ -109,6 +111,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     NotificationModel notification,
     AppState appState,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Dismissible(
       key: Key(notification.id),
       direction: DismissDirection.endToStart,
@@ -123,7 +126,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         decoration: BoxDecoration(
           color: notification.isRead
               ? Colors.transparent
-              : AppTheme.primaryGreen.withValues(alpha: 0.05),
+              : colorScheme.primaryContainer,
         ),
         child: ListTile(
           leading: Container(
@@ -190,9 +193,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Color _getNotificationColor(String type) {
+    final colorScheme = Theme.of(context).colorScheme;
     switch (type) {
       case 'user':
-        return AppTheme.primaryGreen;
+        return colorScheme.primary;
       case 'payment':
         return AppTheme.successGreen;
       case 'router':
@@ -200,9 +204,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'system':
         return AppTheme.warningAmber;
       case 'report':
-        return AppTheme.primaryGreen;
+        return colorScheme.primary;
       default:
-        return AppTheme.primaryGreen;
+        return colorScheme.primary;
     }
   }
 

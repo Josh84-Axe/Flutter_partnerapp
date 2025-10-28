@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../utils/app_theme.dart';
 
 class ConfigurationsScreen extends StatelessWidget {
   const ConfigurationsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('configurations'.tr()),
@@ -85,11 +86,12 @@ class ConfigurationsScreen extends StatelessWidget {
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
-          child: Icon(icon, color: AppTheme.primaryGreen),
+          backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+          child: Icon(icon, color: colorScheme.primary),
         ),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle),

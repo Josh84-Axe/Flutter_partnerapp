@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
-import '../utils/app_theme.dart';
 
 class RouterHealthScreen extends StatelessWidget {
   const RouterHealthScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
     final routers = appState.routers;
 
@@ -29,8 +30,8 @@ class RouterHealthScreen extends StatelessWidget {
             final hasIssues = router.status == 'issues';
             final isOffline = router.status == 'offline';
             
-            Color statusColor = AppTheme.deepGreen;
-            Color containerColor = AppTheme.lightGreen.withValues(alpha: 0.2);
+            Color statusColor = colorScheme.primary;
+            Color containerColor = colorScheme.primaryContainer;
             String statusText = 'Online';
             
             if (hasIssues) {
@@ -142,8 +143,8 @@ class RouterHealthScreen extends StatelessWidget {
                             child: ElevatedButton(
                               onPressed: () {},
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.lightGreen.withValues(alpha: 0.3),
-                                foregroundColor: AppTheme.deepGreen,
+                                backgroundColor: colorScheme.primaryContainer,
+                                foregroundColor: colorScheme.primary,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(24),
@@ -157,7 +158,7 @@ class RouterHealthScreen extends StatelessWidget {
                             child: OutlinedButton(
                               onPressed: () {},
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: AppTheme.deepGreen,
+                                foregroundColor: colorScheme.primary,
                                 side: BorderSide(color: Colors.grey[400]!),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(24),

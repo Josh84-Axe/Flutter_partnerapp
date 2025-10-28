@@ -7,6 +7,8 @@ class ReportPreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final reportType = args?['reportType'] as String? ?? 'User Data Usage';
     final dateRange = args?['dateRange'] as DateTimeRange?;
@@ -40,7 +42,7 @@ class ReportPreviewScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Report Preview'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -79,7 +81,7 @@ class ReportPreviewScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: DataTable(
                     headingRowColor: WidgetStateProperty.all(
-                      AppTheme.primaryGreen.withValues(alpha: 0.1),
+                      colorScheme.primaryContainer,
                     ),
                     columns: const [
                       DataColumn(label: Text('User ID', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -142,7 +144,7 @@ class ReportPreviewScreen extends StatelessWidget {
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: AppTheme.primaryGreen),
+                        side: BorderSide(color: colorScheme.primary),
                       ),
                       child: const Text(
                         'Revise Criteria',
@@ -160,7 +162,7 @@ class ReportPreviewScreen extends StatelessWidget {
                         });
                       },
                       style: FilledButton.styleFrom(
-                        backgroundColor: AppTheme.primaryGreen,
+                        backgroundColor: colorScheme.primary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: const Text(

@@ -21,11 +21,13 @@ class _AuthenticatorsScreenState extends State<AuthenticatorsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Enable Two-Factor Auth'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -113,7 +115,7 @@ class _AuthenticatorsScreenState extends State<AuthenticatorsScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.copy, size: 20),
+                        icon: Icon(Icons.copy, size: 20),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: _setupKey));
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -123,7 +125,7 @@ class _AuthenticatorsScreenState extends State<AuthenticatorsScreen> {
                             ),
                           );
                         },
-                        color: AppTheme.primaryGreen,
+                        color: colorScheme.primary,
                       ),
                     ],
                   ),
@@ -158,7 +160,7 @@ class _AuthenticatorsScreenState extends State<AuthenticatorsScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                      borderSide: BorderSide(color: colorScheme.primary, width: 2),
                     ),
                   ),
                 ),
@@ -189,7 +191,7 @@ class _AuthenticatorsScreenState extends State<AuthenticatorsScreen> {
                         }
                       },
                       style: FilledButton.styleFrom(
-                        backgroundColor: AppTheme.primaryGreen,
+                        backgroundColor: colorScheme.primary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: const Text(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../utils/app_theme.dart';
 
 class AddPayoutMethodScreen extends StatefulWidget {
   const AddPayoutMethodScreen({super.key});
@@ -38,6 +37,8 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add New Payout Method'),
@@ -105,6 +106,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
   }
 
   Widget _buildMethodCard(String title, String description, IconData icon, VoidCallback onTap) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(
@@ -121,12 +123,12 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.deepGreen.withValues(alpha: 0.1),
+                  color: colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   icon,
-                  color: AppTheme.deepGreen,
+                  color: colorScheme.primary,
                   size: 24,
                 ),
               ),
@@ -159,6 +161,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
   }
 
   Widget _buildFormScreen() {
+    final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -177,14 +180,14 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
                   },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: BorderSide(color: AppTheme.deepGreen),
+                    side: BorderSide(color: colorScheme.primary),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24),
                     ),
                   ),
                   child: Text(
                     'Cancel',
-                    style: TextStyle(color: AppTheme.deepGreen),
+                    style: TextStyle(color: colorScheme.primary),
                   ),
                 ),
               ),
@@ -193,7 +196,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
                 child: ElevatedButton(
                   onPressed: _saveDetails,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.deepGreen,
+                    backgroundColor: colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(

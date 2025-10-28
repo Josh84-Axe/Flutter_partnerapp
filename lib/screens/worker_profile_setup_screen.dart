@@ -46,6 +46,8 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -58,7 +60,7 @@ class _WorkerProfileSetupScreenState extends State<WorkerProfileSetupScreen> {
                 Icon(
                   Icons.verified_user,
                   size: 64,
-                  color: AppTheme.primaryGreen,
+                  color: colorScheme.primary,
                 ),
                 const SizedBox(height: 24),
                 Text(

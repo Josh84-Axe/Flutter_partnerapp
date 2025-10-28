@@ -7,6 +7,8 @@ class ExportSuccessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final reportType = args?['reportType'] as String? ?? 'Report';
     final format = args?['format'] as String? ?? 'CSV';
@@ -15,7 +17,7 @@ class ExportSuccessScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).popUntil((route) => route.isFirst);
           },
@@ -29,7 +31,7 @@ class ExportSuccessScreen extends StatelessWidget {
             CircleAvatar(
               radius: 50,
               backgroundColor: AppTheme.successGreen.withValues(alpha: 0.1),
-              child: const Icon(
+              child: Icon(
                 Icons.check_circle,
                 size: 80,
                 color: AppTheme.successGreen,
@@ -108,10 +110,10 @@ class ExportSuccessScreen extends StatelessWidget {
                                         ),
                                       );
                                     },
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.copy,
                                       size: 16,
-                                      color: AppTheme.primaryGreen,
+                                      color: colorScheme.primary,
                                     ),
                                   ),
                                 ],
@@ -133,7 +135,7 @@ class ExportSuccessScreen extends StatelessWidget {
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.primaryGreen,
+                  backgroundColor: colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: const Text(

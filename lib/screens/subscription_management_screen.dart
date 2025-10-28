@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
-import '../utils/app_theme.dart';
 
 class SubscriptionManagementScreen extends StatelessWidget {
   const SubscriptionManagementScreen({super.key});
@@ -10,6 +9,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final subscription = appState.subscription;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -40,19 +40,19 @@ class SubscriptionManagementScreen extends StatelessWidget {
                         subscription?.tier ?? 'Standard',
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.deepGreen,
+                          color: colorScheme.primary,
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppTheme.lightGreen.withValues(alpha: 0.2),
+                          color: colorScheme.primaryContainer,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           'Active',
                           style: TextStyle(
-                            color: AppTheme.deepGreen,
+                            color: colorScheme.primary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -117,11 +117,13 @@ class SubscriptionManagementScreen extends StatelessWidget {
   }
 
   Widget _buildPlanCard(BuildContext context, String name, double price, String feature1, String feature2, String feature3, {bool isCurrentPlan = false}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Card(
       elevation: isCurrentPlan ? 4 : 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: isCurrentPlan ? BorderSide(color: AppTheme.deepGreen, width: 2) : BorderSide.none,
+        side: isCurrentPlan ? BorderSide(color: colorScheme.primary, width: 2) : BorderSide.none,
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -141,13 +143,13 @@ class SubscriptionManagementScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppTheme.lightGreen.withValues(alpha: 0.2),
+                      color: colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       'Current',
                       style: TextStyle(
-                        color: AppTheme.deepGreen,
+                        color: colorScheme.primary,
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
                       ),
@@ -160,7 +162,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
               '\$${price.toStringAsFixed(2)}/month',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppTheme.deepGreen,
+                color: colorScheme.primary,
               ),
             ),
             const SizedBox(height: 16),
@@ -174,8 +176,8 @@ class SubscriptionManagementScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.deepGreen,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -191,11 +193,13 @@ class SubscriptionManagementScreen extends StatelessWidget {
   }
 
   Widget _buildPlanFeature(BuildContext context, String feature) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
-          Icon(Icons.check_circle, color: AppTheme.deepGreen, size: 20),
+          Icon(Icons.check_circle, color: colorScheme.primary, size: 20),
           const SizedBox(width: 8),
           Text(
             feature,

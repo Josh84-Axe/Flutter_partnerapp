@@ -127,11 +127,13 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('device_configurations'.tr()),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -179,7 +181,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.edit),
+                      icon: Icon(Icons.edit),
                       onPressed: () => _editConfig(config),
                       color: AppTheme.textLight,
                     ),
@@ -190,7 +192,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                   alignment: Alignment.centerRight,
                   child: TextButton.icon(
                     onPressed: () => _deleteConfig(config),
-                    icon: const Icon(Icons.delete, size: 18),
+                    icon: Icon(Icons.delete, size: 18),
                     label: Text('delete'.tr()),
                     style: TextButton.styleFrom(
                       foregroundColor: AppTheme.errorRed,
@@ -237,7 +239,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                        borderSide: BorderSide(color: colorScheme.primary, width: 2),
                       ),
                     ),
                     validator: (value) {
@@ -261,7 +263,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                              borderSide: BorderSide(color: colorScheme.primary, width: 2),
                             ),
                           ),
                           keyboardType: TextInputType.number,
@@ -289,7 +291,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                              borderSide: BorderSide(color: colorScheme.primary, width: 2),
                             ),
                           ),
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -327,7 +329,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
           child: FilledButton(
             onPressed: _saveConfiguration,
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.primaryGreen,
+              backgroundColor: colorScheme.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
             child: Text(

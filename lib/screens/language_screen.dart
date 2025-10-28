@@ -29,6 +29,8 @@ class _LanguageScreenState extends State<LanguageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('language'.tr()),
@@ -51,13 +53,13 @@ class _LanguageScreenState extends State<LanguageScreen> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppTheme.primaryGreen.withValues(alpha: 0.1)
+                          ? colorScheme.primaryContainer
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.language,
-                      color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight,
+                      color: isSelected ? colorScheme.primary : AppTheme.textLight,
                     ),
                   ),
                   title: Text(
@@ -68,7 +70,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                   ),
                   subtitle: Text(language.name),
                   trailing: isSelected
-                      ? const Icon(Icons.check_circle, color: AppTheme.primaryGreen)
+                      ? Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary)
                       : null,
                   onTap: () {
                     setState(() {

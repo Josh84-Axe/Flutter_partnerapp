@@ -40,6 +40,8 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
     final isEdit = widget.profile != null;
 
@@ -66,7 +68,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
                 ),
               ),
               validator: (value) {
@@ -86,7 +88,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
                 ),
               ),
               hint: Text('select_rate_limit'.tr()),
@@ -106,7 +108,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
                 ),
               ),
               hint: Text('select_idle_time'.tr()),
@@ -126,7 +128,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
                 ),
               ),
               hint: Text('select_router'.tr()),
@@ -142,7 +144,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -150,7 +152,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                 children: [
                   Icon(
                     Icons.settings_applications,
-                    color: AppTheme.primaryGreen,
+                    color: colorScheme.primary,
                     size: 24,
                   ),
                   const SizedBox(width: 12),
@@ -159,7 +161,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                       'profile_settings_info'.tr(),
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppTheme.primaryGreen,
+                        color: colorScheme.primary,
                       ),
                     ),
                   ),
@@ -214,7 +216,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                   },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: AppTheme.errorRed),
+                    side: BorderSide(color: AppTheme.errorRed),
                     foregroundColor: AppTheme.errorRed,
                   ),
                   child: Text('delete'.tr()),
@@ -227,7 +229,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
               child: FilledButton(
                 onPressed: _saveProfile,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.primaryGreen,
+                  backgroundColor: colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: Text(isEdit ? 'save_profile'.tr() : 'create_profile'.tr()),

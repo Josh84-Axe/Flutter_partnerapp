@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../utils/app_theme.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -27,6 +26,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text('forgot_password'.tr()),
@@ -47,7 +48,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 Icon(
                   Icons.lock_reset,
                   size: 80,
-                  color: AppTheme.primaryGreen,
+                  color: colorScheme.primary,
                 ),
                 const SizedBox(height: 24),
                 Text(

@@ -9,6 +9,7 @@ class PayoutSubmittedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final trackingRef = 'TXN${DateTime.now().millisecondsSinceEpoch}';
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -93,7 +94,7 @@ class PayoutSubmittedScreen extends StatelessWidget {
                                           ),
                                         );
                                       },
-                                      color: AppTheme.primaryGreen,
+                                      color: colorScheme.primary,
                                     ),
                                   ],
                                 ),
@@ -148,7 +149,8 @@ class PayoutSubmittedScreen extends StatelessWidget {
                     Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.primaryGreen,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: const Text(

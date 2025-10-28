@@ -15,6 +15,8 @@ class GetStartedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
@@ -27,13 +29,13 @@ class GetStartedScreen extends StatelessWidget {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                  color: colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
                   Icons.hexagon,
                   size: 40,
-                  color: AppTheme.primaryGreen,
+                  color: colorScheme.primary,
                 ),
               ),
               const SizedBox(height: 32),
@@ -84,7 +86,7 @@ class GetStartedScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: AppTheme.primaryGreen,
+                    color: colorScheme.primary,
                     decoration: TextDecoration.underline,
                   ),
                 ),

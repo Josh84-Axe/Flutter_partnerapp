@@ -7,6 +7,8 @@ class VerifyIdentityDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -36,7 +38,7 @@ class VerifyIdentityDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -44,12 +46,12 @@ class VerifyIdentityDialog extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withValues(alpha: 0.2),
+                      color: colorScheme.primary.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.mail_outline,
-                      color: AppTheme.primaryGreen,
+                      color: colorScheme.primary,
                       size: 24,
                     ),
                   ),
@@ -74,7 +76,7 @@ class VerifyIdentityDialog extends StatelessWidget {
                   Navigator.of(context).pop(true);
                 },
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.primaryGreen,
+                  backgroundColor: colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: Text('send_otp'.tr()),
