@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
+import '../widgets/search_bar_widget.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -10,13 +12,25 @@ class UsersScreen extends StatefulWidget {
   State<UsersScreen> createState() => _UsersScreenState();
 }
 
-class _UsersScreenState extends State<UsersScreen> {
+class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStateMixin {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppState>().loadUsers();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _tabController.dispose();
+    super.dispose();
   }
 
   void _showUserDialog({Map<String, dynamic>? userData}) {
@@ -24,60 +38,131 @@ class _UsersScreenState extends State<UsersScreen> {
     final emailController = TextEditingController(text: userData?['email']);
     final phoneController = TextEditingController(text: userData?['phone']);
     String selectedRole = userData?['role'] ?? 'user';
+    final Set<String> selectedPermissions = userData?['permissions'] != null 
+        ? Set<String>.from(userData!['permissions']) 
+        : {};
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(userData == null ? 'Add User' : 'Edit User'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(userData == null ? 'add_user'.tr() : 'edit_user'.tr()),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
+                decoration: InputDecoration(labelText: 'name'.tr()),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(labelText: 'email'.tr()),
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: phoneController,
-                decoration: const InputDecoration(labelText: 'Phone'),
+                decoration: InputDecoration(labelText: 'phone'.tr()),
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: selectedRole,
-                decoration: const InputDecoration(labelText: 'Role'),
-                items: ['user', 'worker', 'admin']
+                initialValue: selectedRole,
+                decoration: InputDecoration(labelText: 'role'.tr()),
+                items: ['user', 'worker', 'owner', 'admin']
                     .map((role) => DropdownMenuItem(
                           value: role,
-                          child: Text(role.toUpperCase()),
+                          child: Text(role.tr()),
                         ))
                     .toList(),
                 onChanged: (value) {
-                  selectedRole = value!;
+                  setState(() {
+                    selectedRole = value!;
+                    if (selectedRole != 'worker') {
+                      selectedPermissions.clear();
+                    }
+                  });
                 },
               ),
+              if (selectedRole == 'worker') ...[
+                const SizedBox(height: 12),
+                Text(
+                  'worker_permissions'.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                CheckboxListTile(
+                  title: Text('create_plans'.tr()),
+                  value: selectedPermissions.contains('create_plans'),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value == true) {
+                        selectedPermissions.add('create_plans');
+                      } else {
+                        selectedPermissions.remove('create_plans');
+                      }
+                    });
+                  },
+                ),
+                CheckboxListTile(
+                  title: Text('manage_users'.tr()),
+                  value: selectedPermissions.contains('view_users'),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value == true) {
+                        selectedPermissions.add('view_users');
+                      } else {
+                        selectedPermissions.remove('view_users');
+                      }
+                    });
+                  },
+                ),
+                CheckboxListTile(
+                  title: Text('view_reports'.tr()),
+                  value: selectedPermissions.contains('view_transactions'),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value == true) {
+                        selectedPermissions.add('view_transactions');
+                      } else {
+                        selectedPermissions.remove('view_transactions');
+                      }
+                    });
+                  },
+                ),
+                CheckboxListTile(
+                  title: Text('configure_routers'.tr()),
+                  value: selectedPermissions.contains('view_routers'),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value == true) {
+                        selectedPermissions.add('view_routers');
+                      } else {
+                        selectedPermissions.remove('view_routers');
+                      }
+                    });
+                  },
+                ),
+              ],
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () {
               final data = {
                 'name': nameController.text,
                 'email': emailController.text,
                 'phone': phoneController.text,
                 'role': selectedRole,
+                'permissions': selectedRole == 'worker' 
+                    ? selectedPermissions.toList() 
+                    : null,
                 if (userData != null) 'createdAt': userData['createdAt'],
                 if (userData != null) 'isActive': userData['isActive'],
               };
@@ -90,110 +175,285 @@ class _UsersScreenState extends State<UsersScreen> {
 
               Navigator.pop(context);
             },
-            child: Text(userData == null ? 'Add' : 'Update'),
+            child: Text(userData == null ? 'add_user'.tr() : 'edit_user'.tr()),
           ),
         ],
       ),
+    ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
+    final allUsers = appState.users.where((user) {
+      if (_searchQuery.isEmpty) return true;
+      final query = _searchQuery.toLowerCase();
+      return user.name.toLowerCase().contains(query) ||
+          user.email.toLowerCase().contains(query) ||
+          (user.phone?.toLowerCase().contains(query) ?? false);
+    }).toList();
+
+    final users = allUsers.where((u) => u.role == 'user').toList();
+    final workers = allUsers.where((u) => u.role == 'worker' || u.role == 'admin').toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Users & Workers'),
+        title: Text(
+          'users'.tr(),
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.checklist),
+            tooltip: 'Bulk Actions',
+            onPressed: () {
+              Navigator.of(context).pushNamed('/bulk-actions');
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => appState.loadUsers(),
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppTheme.pureWhite,
+          tabs: [
+            Tab(text: 'users'.tr()),
+            Tab(text: 'workers'.tr()),
+          ],
+        ),
       ),
-      body: appState.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: appState.users.length,
-              itemBuilder: (context, index) {
-                final user = appState.users[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: user.isActive
-                          ? AppTheme.deepGreen.withOpacity(0.1)
-                          : Colors.grey.withOpacity(0.1),
-                      child: Icon(
-                        Icons.person,
-                        color: user.isActive ? AppTheme.deepGreen : Colors.grey,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SearchBarWidget(
+              hintText: 'search_users'.tr(),
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: appState.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildUserList(users),
+                      _buildUserList(workers),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showUserDialog(),
+        backgroundColor: AppTheme.primaryGreen,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildUserList(List users) {
+    if (users.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.person_off, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'no_users_found'.tr(),
+              style: TextStyle(color: Colors.grey[600], fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: users.length,
+      itemBuilder: (context, index) {
+        final user = users[index];
+        final isConnected = user.isActive && index % 2 == 0;
+        final connectionType = index % 3 == 0 ? 'Gateway' : 'Assigned';
+        
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+              child: Text(
+                user.name[0].toUpperCase(),
+                style: const TextStyle(
+                  color: AppTheme.primaryGreen,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            title: Text(
+              user.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: user.isActive 
+                            ? AppTheme.successGreen.withValues(alpha: 0.2)
+                            : Colors.grey.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        user.isActive ? 'Active' : 'Inactive',
+                        style: TextStyle(
+                          color: user.isActive ? AppTheme.successGreen : Colors.grey[700],
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    title: Text(user.name),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(user.email),
-                        Text(
-                          user.role.toUpperCase(),
-                          style: TextStyle(
-                            color: AppTheme.deepGreen,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    const SizedBox(width: 8),
+                    if (isConnected) ...[
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppTheme.successGreen,
+                          shape: BoxShape.circle,
                         ),
-                      ],
-                    ),
-                    trailing: PopupMenuButton(
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'edit',
-                          child: Text('Edit'),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Connected — $connectionType',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textLight,
                         ),
-                        const PopupMenuItem(
-                          value: 'delete',
-                          child: Text('Delete'),
+                      ),
+                    ] else if (user.isActive) ...[
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[400],
+                          shape: BoxShape.circle,
                         ),
-                      ],
-                      onSelected: (value) {
-                        if (value == 'edit') {
-                          _showUserDialog(userData: user.toJson());
-                        } else if (value == 'delete') {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Delete User'),
-                              content: Text('Delete ${user.name}?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text('Cancel'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    context.read<AppState>().deleteUser(user.id);
-                                    Navigator.pop(context);
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                  ),
-                                  child: const Text('Delete'),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                      },
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Disconnected',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textLight,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {
+                _showUserMenu(context, user);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showUserMenu(BuildContext context, user) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: Text('edit_user'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                _showUserDialog(userData: user.toJson());
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person, color: AppTheme.primaryGreen),
+              title: Text('view_details'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).pushNamed('/user-details', arguments: user);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                user.isActive ? Icons.block : Icons.check_circle,
+                color: user.isActive ? AppTheme.errorRed : AppTheme.successGreen,
+              ),
+              title: Text(user.isActive ? 'block_device'.tr() : 'unblock_device'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      user.isActive ? 'device_blocked'.tr() : 'device_unblocked'.tr(),
                     ),
                   ),
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showUserDialog(),
-        backgroundColor: AppTheme.deepGreen,
-        child: const Icon(Icons.add),
+            ListTile(
+              leading: const Icon(Icons.delete, color: AppTheme.errorRed),
+              title: Text('remove_user'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('remove_user'.tr()),
+                    content: Text('remove_user_confirm'.tr()),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text('cancel'.tr()),
+                      ),
+                      FilledButton(
+                        onPressed: () {
+                          context.read<AppState>().deleteUser(user.id);
+                          Navigator.pop(context);
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppTheme.errorRed,
+                        ),
+                        child: Text('remove'.tr()),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
+
 }

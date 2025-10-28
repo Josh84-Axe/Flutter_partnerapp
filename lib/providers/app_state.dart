@@ -3,6 +3,12 @@ import '../models/user_model.dart';
 import '../models/router_model.dart';
 import '../models/plan_model.dart';
 import '../models/transaction_model.dart';
+import '../models/notification_model.dart';
+import '../models/profile_model.dart';
+import '../models/language_model.dart';
+import '../models/hotspot_profile_model.dart';
+import '../models/router_configuration_model.dart';
+import '../models/role_model.dart';
 import '../services/auth_service.dart';
 import '../services/payment_service.dart';
 import '../services/connectivity_service.dart';
@@ -21,6 +27,13 @@ class AppState with ChangeNotifier {
   List<PlanModel> _plans = [];
   List<TransactionModel> _transactions = [];
   double _walletBalance = 0.0;
+  List<HotspotProfileModel> _hotspotProfiles = [];
+  List<RouterConfigurationModel> _routerConfigurations = [];
+  List<RoleModel> _roles = [];
+  
+  final List<NotificationModel> _notifications = [];
+  final List<ProfileModel> _profiles = [];
+  LanguageModel _selectedLanguage = LanguageModel.availableLanguages.first;
   
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
@@ -30,6 +43,14 @@ class AppState with ChangeNotifier {
   List<PlanModel> get plans => _plans;
   List<TransactionModel> get transactions => _transactions;
   double get walletBalance => _walletBalance;
+  List<HotspotProfileModel> get hotspotProfiles => _hotspotProfiles;
+  List<RouterConfigurationModel> get routerConfigurations => _routerConfigurations;
+  List<RoleModel> get roles => _roles;
+  
+  List<NotificationModel> get notifications => _notifications;
+  List<ProfileModel> get profiles => _profiles;
+  LanguageModel get selectedLanguage => _selectedLanguage;
+  int get unreadNotificationCount => _notifications.where((n) => !n.isRead).length;
   
   Future<bool> login(String email, String password) async {
     _setLoading(true);
@@ -87,7 +108,160 @@ class AppState with ChangeNotifier {
       loadPlans(),
       loadTransactions(),
       loadWalletBalance(),
+      loadNotifications(),
     ]);
+    
+    _hotspotProfiles = [
+      HotspotProfileModel(
+        id: '1',
+        name: 'Basic',
+        downloadSpeedMbps: 10,
+        uploadSpeedMbps: 5,
+        idleTimeout: '30m',
+      ),
+      HotspotProfileModel(
+        id: '2',
+        name: 'Standard',
+        downloadSpeedMbps: 20,
+        uploadSpeedMbps: 10,
+        idleTimeout: '1h',
+      ),
+      HotspotProfileModel(
+        id: '3',
+        name: 'Premium',
+        downloadSpeedMbps: 50,
+        uploadSpeedMbps: 25,
+        idleTimeout: '2h',
+      ),
+      HotspotProfileModel(
+        id: '4',
+        name: 'Ultra',
+        downloadSpeedMbps: 100,
+        uploadSpeedMbps: 50,
+        idleTimeout: '5h',
+      ),
+    ];
+
+    _routerConfigurations = [
+      RouterConfigurationModel(
+        id: '1',
+        name: 'Router Alpha',
+        ipAddress: '192.168.1.1',
+        apiPort: 8080,
+        username: 'admin',
+      ),
+      RouterConfigurationModel(
+        id: '2',
+        name: 'Router Beta',
+        ipAddress: '192.168.1.2',
+        apiPort: 8080,
+        username: 'admin',
+      ),
+      RouterConfigurationModel(
+        id: '3',
+        name: 'Router Gamma',
+        ipAddress: '192.168.1.3',
+        apiPort: 8080,
+        username: 'admin',
+      ),
+    ];
+
+    _roles = [
+      RoleModel(
+        id: '1',
+        name: 'Administrator',
+        permissions: {
+          'dashboard_access': true,
+          'user_create': true,
+          'user_read': true,
+          'user_update': true,
+          'user_delete': true,
+          'plan_create': true,
+          'plan_read': true,
+          'plan_update': true,
+          'plan_delete': true,
+          'transaction_viewing': true,
+          'router_management': true,
+          'settings_access': true,
+        },
+      ),
+      RoleModel(
+        id: '2',
+        name: 'Manager',
+        permissions: {
+          'dashboard_access': true,
+          'user_read': true,
+          'plan_read': true,
+          'transaction_viewing': true,
+          'router_management': false,
+          'settings_access': false,
+        },
+      ),
+      RoleModel(
+        id: '3',
+        name: 'Worker',
+        permissions: {
+          'dashboard_access': true,
+          'user_read': true,
+          'plan_read': false,
+          'transaction_viewing': false,
+          'router_management': true,
+          'settings_access': false,
+        },
+      ),
+    ];
+  }
+
+  Future<void> loadNotifications() async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+      notifyListeners();
+    } catch (e) {
+      _setError(e.toString());
+    }
+  }
+
+  void markAllNotificationsAsRead() {
+    for (var notification in _notifications) {
+      notification.isRead = true;
+    }
+    notifyListeners();
+  }
+
+  void markNotificationAsRead(String notificationId) {
+    final notification = _notifications.firstWhere(
+      (n) => n.id == notificationId,
+      orElse: () => _notifications.first,
+    );
+    notification.isRead = true;
+    notifyListeners();
+  }
+
+  void dismissNotification(String notificationId) {
+    _notifications.removeWhere((n) => n.id == notificationId);
+    notifyListeners();
+  }
+
+  Future<void> loadProfiles() async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+      notifyListeners();
+    } catch (e) {
+      _setError(e.toString());
+    }
+  }
+
+  void deleteProfile(String profileId) {
+    _profiles.removeWhere((p) => p.id == profileId);
+    notifyListeners();
+  }
+
+  void setLanguage(String languageCode) {
+    _selectedLanguage = LanguageModel.availableLanguages.firstWhere(
+      (lang) => lang.code == languageCode,
+      orElse: () => LanguageModel.availableLanguages.first,
+    );
+    notifyListeners();
   }
   
   Future<void> loadUsers() async {
@@ -253,6 +427,25 @@ class AppState with ChangeNotifier {
   
   void clearError() {
     _error = null;
+    notifyListeners();
+  }
+
+  Future<void> createRole(Map<String, dynamic> roleData) async {
+    final newRole = RoleModel.fromJson(roleData);
+    _roles.add(newRole);
+    notifyListeners();
+  }
+
+  Future<void> updateRole(String id, Map<String, dynamic> roleData) async {
+    final index = _roles.indexWhere((r) => r.id == id);
+    if (index != -1) {
+      _roles[index] = RoleModel.fromJson({...roleData, 'id': id});
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteRole(String id) async {
+    _roles.removeWhere((r) => r.id == id);
     notifyListeners();
   }
 }

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 import '../widgets/metric_card.dart';
+import '../widgets/subscription_plan_card.dart';
+import '../widgets/data_usage_card.dart';
+import '../widgets/quick_action_button.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -29,14 +33,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .fold(0.0, (sum, t) => sum + t.amount);
     
     final activeUsers = appState.users.where((u) => u.isActive).length;
-    
-    final totalDataUsage = appState.routers
-        .fold(0.0, (sum, r) => sum + r.dataUsageGB);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: Text('dashboard_title'.tr()),
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {
+            Navigator.of(context).pushNamed('/settings');
+          },
+        ),
         actions: [
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/notification-router');
+                },
+              ),
+              if (appState.unreadNotificationCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppTheme.errorRed,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '${appState.unreadNotificationCount}',
+                      style: const TextStyle(
+                        color: AppTheme.pureWhite,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => appState.loadDashboardData(),
@@ -48,81 +90,269 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
+            // "Stay Connected" heading
             Text(
-              'Welcome, ${appState.currentUser?.name ?? 'Partner'}!',
-              style: Theme.of(context).textTheme.headlineMedium,
+              'stay_connected'.tr(),
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Overview of your hotspot business',
-              style: Theme.of(context).textTheme.bodyMedium,
+              'welcome_back'.tr(namedArgs: {'name': appState.currentUser?.name ?? 'Joe'}),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 24),
-            MetricCard(
-              title: 'Total Revenue',
-              value: MetricCard.formatCurrency(totalRevenue),
-              icon: Icons.attach_money,
-              accentColor: AppTheme.deepGreen,
+            
+            // Subscription Plan Card
+            SubscriptionPlanCard(
+              planName: 'Standard',
+              renewalDate: DateTime(2023, 12, 10),
               isLoading: appState.isLoading,
             ),
             const SizedBox(height: 16),
-            MetricCard(
-              title: 'Active Users',
-              value: MetricCard.formatNumber(activeUsers),
-              icon: Icons.people,
-              accentColor: AppTheme.lightGreen,
-              isLoading: appState.isLoading,
-            ),
-            const SizedBox(height: 16),
-            MetricCard(
-              title: 'Data Usage',
-              value: '${totalDataUsage.toStringAsFixed(1)} GB',
-              icon: Icons.data_usage,
-              accentColor: AppTheme.softGold,
+            
+            // Data Usage Card
+            DataUsageCard(
+              usedGB: 12.0,
+              totalGB: 20.0,
               isLoading: appState.isLoading,
             ),
             const SizedBox(height: 24),
-            Text(
-              'Recent Activity',
-              style: Theme.of(context).textTheme.titleLarge,
+            
+            // Quick Action Buttons Grid
+            GridView.count(
+              crossAxisCount: 4,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              children: [
+                QuickActionButton(
+                  icon: Icons.wifi,
+                  label: 'internet_plans'.tr(),
+                  onTap: () => Navigator.of(context).pushNamed('/internet-plan'),
+                ),
+                QuickActionButton(
+                  icon: Icons.people,
+                  label: 'hotspot_users'.tr(),
+                  onTap: () => Navigator.of(context).pushNamed('/hotspot-user'),
+                ),
+                QuickActionButton(
+                  icon: Icons.bar_chart,
+                  label: 'reporting'.tr(),
+                  onTap: () => Navigator.of(context).pushNamed('/reporting'),
+                ),
+                QuickActionButton(
+                  icon: Icons.settings,
+                  label: 'settings'.tr(),
+                  onTap: () => Navigator.of(context).pushNamed('/settings'),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            ...appState.transactions.take(5).map((transaction) {
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: transaction.type == 'revenue'
-                        ? AppTheme.deepGreen.withOpacity(0.1)
-                        : Colors.orange.withOpacity(0.1),
-                    child: Icon(
-                      transaction.type == 'revenue'
-                          ? Icons.trending_up
-                          : Icons.trending_down,
-                      color: transaction.type == 'revenue'
-                          ? AppTheme.deepGreen
-                          : Colors.orange,
-                    ),
-                  ),
-                  title: Text(transaction.description),
-                  subtitle: Text(
-                    '${transaction.createdAt.day}/${transaction.createdAt.month}/${transaction.createdAt.year}',
-                  ),
-                  trailing: Text(
-                    MetricCard.formatCurrency(transaction.amount),
-                    style: TextStyle(
-                      color: transaction.type == 'revenue'
-                          ? AppTheme.deepGreen
-                          : Colors.orange,
-                      fontWeight: FontWeight.bold,
+            const SizedBox(height: 16),
+            
+            // Two side-by-side widgets: Total Revenue and Active Users
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _showRevenueDetails(context, appState),
+                    child: _buildMetricWidget(
+                      context,
+                      title: 'total_revenue'.tr(),
+                      value: MetricCard.formatCurrency(totalRevenue),
+                      icon: Icons.paid,
+                      isLoading: appState.isLoading,
                     ),
                   ),
                 ),
-              );
-            }).toList(),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _showActiveUsersDetails(context, appState),
+                    child: _buildMetricWidget(
+                      context,
+                      title: 'active_users'.tr(),
+                      value: MetricCard.formatNumber(activeUsers),
+                      icon: Icons.group,
+                      isLoading: appState.isLoading,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
+
+  void _showRevenueDetails(BuildContext context, AppState appState) {
+    final currentMonth = DateTime.now().month;
+    final revenueTransactions = appState.transactions
+        .where((t) => t.type == 'revenue' && t.createdAt.month == currentMonth)
+        .toList();
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('revenue_details'.tr(), style: Theme.of(context).textTheme.titleLarge),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: revenueTransactions.length,
+                itemBuilder: (context, index) {
+                  final txn = revenueTransactions[index];
+                  return ListTile(
+                    leading: const Icon(Icons.payment, color: AppTheme.successGreen),
+                    title: Text(txn.description),
+                    subtitle: Text('${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year}'),
+                    trailing: Text(
+                      MetricCard.formatCurrency(txn.amount),
+                      style: const TextStyle(color: AppTheme.successGreen, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showActiveUsersDetails(BuildContext context, AppState appState) {
+    final activeUsers = appState.users.where((u) => u.isActive).toList();
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('active_users_details'.tr(), style: Theme.of(context).textTheme.titleLarge),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: activeUsers.length,
+                itemBuilder: (context, index) {
+                  final user = activeUsers[index];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                      child: Text(user.name[0].toUpperCase()),
+                    ),
+                    title: Text(user.name),
+                    subtitle: Text(user.email),
+                    trailing: TextButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Unassign ${user.name}\'s plan')),
+                        );
+                      },
+                      child: Text('unassign'.tr()),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetricWidget(
+    BuildContext context, {
+    required String title,
+    required String value,
+    required IconData icon,
+    required bool isLoading,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(
+                  icon,
+                  size: 32,
+                  color: colorScheme.primary,
+                ),
+                if (isLoading)
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 }

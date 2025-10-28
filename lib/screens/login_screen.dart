@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 
@@ -16,12 +17,38 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLogin = true;
   final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _numberOfRoutersController = TextEditingController();
+  String? _selectedCountry;
+  
+  final List<String> _countries = [
+    'United States',
+    'France',
+    'Belgium',
+    'Canada',
+    'Ivory Coast',
+    'Senegal',
+    'United Kingdom',
+    'Germany',
+    'Spain',
+    'Italy',
+    'Nigeria',
+    'Ghana',
+    'Kenya',
+    'South Africa',
+  ];
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    _cityController.dispose();
+    _numberOfRoutersController.dispose();
     super.dispose();
   }
 
@@ -54,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final appState = context.watch<AppState>();
 
     return Scaffold(
-      backgroundColor: AppTheme.pureWhite,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -65,22 +92,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.router,
-                    size: 80,
-                    color: AppTheme.deepGreen,
+                  Image.asset(
+                    'assets/images/logo_tiknet.png',
+                    height: 80,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Hotspot Partner',
+                    'app_title'.tr(),
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: AppTheme.deepGreen,
+                          color: AppTheme.primaryGreen,
                         ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Manage Your Network',
+                    'manage_wifi_zone'.tr(),
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: AppTheme.textLight,
                         ),
@@ -90,13 +116,81 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (!_isLogin) ...[
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Full Name',
-                        prefixIcon: Icon(Icons.person),
+                      decoration: InputDecoration(
+                        labelText: 'name'.tr(),
+                        prefixIcon: const Icon(Icons.person),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
+                          return 'enter_name'.tr();
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _phoneController,
+                      decoration: InputDecoration(
+                        labelText: 'phone'.tr(),
+                        prefixIcon: const Icon(Icons.phone),
+                      ),
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _addressController,
+                      decoration: InputDecoration(
+                        labelText: 'address'.tr(),
+                        prefixIcon: const Icon(Icons.location_on),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _cityController,
+                      decoration: InputDecoration(
+                        labelText: 'city'.tr(),
+                        prefixIcon: const Icon(Icons.location_city),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedCountry,
+                      decoration: InputDecoration(
+                        labelText: 'country'.tr(),
+                        prefixIcon: const Icon(Icons.flag),
+                      ),
+                      items: _countries.map((country) {
+                        return DropdownMenuItem(
+                          value: country,
+                          child: Text(country),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCountry = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'select_country'.tr();
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _numberOfRoutersController,
+                      decoration: InputDecoration(
+                        labelText: 'number_of_routers'.tr(),
+                        prefixIcon: const Icon(Icons.router),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          final number = int.tryParse(value);
+                          if (number == null || number < 0) {
+                            return 'must_be_zero_or_greater'.tr();
+                          }
                         }
                         return null;
                       },
@@ -105,17 +199,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                   TextFormField(
                     controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email),
+                    decoration: InputDecoration(
+                      labelText: 'email'.tr(),
+                      prefixIcon: const Icon(Icons.email),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
+                        return 'enter_email'.tr();
                       }
                       if (!value.contains('@')) {
-                        return 'Please enter a valid email';
+                        return 'enter_valid_email'.tr();
                       }
                       return null;
                     },
@@ -123,22 +217,37 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock),
+                    decoration: InputDecoration(
+                      labelText: 'password'.tr(),
+                      prefixIcon: const Icon(Icons.lock),
                     ),
                     obscureText: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
+                        return 'enter_password'.tr();
                       }
                       if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                        return 'password_min_length'.tr();
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
+                  if (_isLogin) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed('/forgot-password');
+                        },
+                        child: Text(
+                          'forgot_password'.tr(),
+                          style: const TextStyle(color: AppTheme.primaryGreen),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
                   if (appState.error != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
@@ -148,7 +257,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         textAlign: TextAlign.center,
                       ),
                     ),
-                  ElevatedButton(
+                  FilledButton(
                     onPressed: appState.isLoading ? null : _submit,
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
@@ -162,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             )
                           : Text(
-                              _isLogin ? 'Login' : 'Register',
+                              _isLogin ? 'login'.tr() : 'register'.tr(),
                               style: const TextStyle(fontSize: 16),
                             ),
                     ),
@@ -175,10 +284,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     },
                     child: Text(
-                      _isLogin
-                          ? 'Don\'t have an account? Register'
-                          : 'Already have an account? Login',
-                      style: TextStyle(color: AppTheme.deepGreen),
+                      _isLogin ? 'dont_have_account'.tr() : 'already_have_account'.tr(),
+                      style: const TextStyle(color: AppTheme.primaryGreen),
                     ),
                   ),
                 ],

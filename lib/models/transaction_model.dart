@@ -5,6 +5,10 @@ class TransactionModel {
   final String status;
   final String description;
   final DateTime createdAt;
+  final String? paymentMethod;
+  final String? gateway;
+  final String? workerId;
+  final String? accountId;
 
   TransactionModel({
     required this.id,
@@ -13,6 +17,10 @@ class TransactionModel {
     required this.status,
     required this.description,
     required this.createdAt,
+    this.paymentMethod,
+    this.gateway,
+    this.workerId,
+    this.accountId,
   });
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
@@ -23,6 +31,10 @@ class TransactionModel {
       status: json['status'],
       description: json['description'],
       createdAt: DateTime.parse(json['createdAt']),
+      paymentMethod: json['paymentMethod'],
+      gateway: json['gateway'],
+      workerId: json['workerId'],
+      accountId: json['accountId'],
     );
   }
 
@@ -34,6 +46,10 @@ class TransactionModel {
       'status': status,
       'description': description,
       'createdAt': createdAt.toIso8601String(),
+      'paymentMethod': paymentMethod,
+      'gateway': gateway,
+      'workerId': workerId,
+      'accountId': accountId,
     };
   }
 }
