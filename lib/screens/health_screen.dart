@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
+import '../models/router_model.dart';
 import '../utils/app_theme.dart';
 
 class HealthScreen extends StatefulWidget {
@@ -19,22 +21,34 @@ class _HealthScreenState extends State<HealthScreen> {
     });
   }
 
+  String _getSignalStrength(RouterModel router) {
+    if (router.status == 'offline') return 'offline'.tr();
+    final uptime = router.uptimeHours;
+    if (uptime > 100) return 'strong'.tr();
+    if (uptime > 50) return 'good'.tr();
+    return 'weak'.tr();
+  }
+
+  bool _hasIssues(RouterModel router) {
+    return router.status == 'offline' || router.uptimeHours < 24;
+  }
+
   void _showBlockDialog(String routerId, String routerName, bool isBlocked) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isBlocked ? 'Unblock Device' : 'Block Device'),
+        title: Text(isBlocked ? 'unblock_device'.tr() : 'block_device'.tr()),
         content: Text(
           isBlocked
-              ? 'Unblock $routerName and restore connectivity?'
-              : 'Block $routerName and prevent connections?',
+              ? 'unblock_device_confirm'.tr(namedArgs: {'name': routerName})
+              : 'block_device_confirm'.tr(namedArgs: {'name': routerName}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () {
               if (isBlocked) {
                 context.read<AppState>().unblockDevice(routerId);
@@ -45,15 +59,15 @@ class _HealthScreenState extends State<HealthScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    isBlocked ? 'Device unblocked' : 'Device blocked',
+                    isBlocked ? 'device_unblocked'.tr() : 'device_blocked'.tr(),
                   ),
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isBlocked ? AppTheme.deepGreen : Colors.red,
+            style: FilledButton.styleFrom(
+              backgroundColor: isBlocked ? AppTheme.primaryGreen : Colors.red,
             ),
-            child: Text(isBlocked ? 'Unblock' : 'Block'),
+            child: Text(isBlocked ? 'unblock'.tr() : 'block'.tr()),
           ),
         ],
       ),
@@ -66,7 +80,7 @@ class _HealthScreenState extends State<HealthScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Network Health'),
+        title: Text('routers'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -76,148 +90,267 @@ class _HealthScreenState extends State<HealthScreen> {
       ),
       body: appState.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: appState.routers.length,
-              itemBuilder: (context, index) {
-                final router = appState.routers[index];
-                final isOnline = router.status == 'online';
-
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: ExpansionTile(
-                    leading: CircleAvatar(
-                      backgroundColor: isOnline
-                          ? AppTheme.deepGreen.withOpacity(0.1)
-                          : Colors.red.withOpacity(0.1),
-                      child: Icon(
-                        Icons.router,
-                        color: isOnline ? AppTheme.deepGreen : Colors.red,
-                      ),
-                    ),
-                    title: Text(router.name),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(router.macAddress),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isOnline
-                                ? AppTheme.deepGreen.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            router.status.toUpperCase(),
-                            style: TextStyle(
-                              color: isOnline ? AppTheme.deepGreen : Colors.red,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+          : appState.routers.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            _buildInfoRow(
-                              'Connected Users',
-                              '${router.connectedUsers}',
-                              Icons.people,
-                            ),
-                            const SizedBox(height: 12),
-                            _buildInfoRow(
-                              'Data Usage',
-                              '${router.dataUsageGB.toStringAsFixed(1)} GB',
-                              Icons.data_usage,
-                            ),
-                            const SizedBox(height: 12),
-                            _buildInfoRow(
-                              'Uptime',
-                              '${router.uptimeHours} hours',
-                              Icons.access_time,
-                            ),
-                            const SizedBox(height: 12),
-                            _buildInfoRow(
-                              'Last Seen',
-                              _formatDateTime(router.lastSeen),
-                              Icons.visibility,
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton.icon(
-                                    onPressed: () => _showBlockDialog(
-                                      router.id,
-                                      router.name,
-                                      !isOnline,
-                                    ),
-                                    icon: Icon(
-                                      isOnline ? Icons.block : Icons.check_circle,
-                                    ),
-                                    label: Text(isOnline ? 'Block' : 'Unblock'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          isOnline ? Colors.red : AppTheme.deepGreen,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                      Icon(Icons.router, size: 64, color: Colors.grey[400]),
+                      const SizedBox(height: 16),
+                      Text(
+                        'no_routers_found'.tr(),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 16),
                       ),
                     ],
                   ),
-                );
-              },
-            ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: appState.routers.length,
+                  itemBuilder: (context, index) {
+                    final router = appState.routers[index];
+                    final isOnline = router.status == 'online';
+                    final signalStrength = _getSignalStrength(router);
+                    final hasIssues = _hasIssues(router);
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).pushNamed(
+                            '/router-details',
+                            arguments: router.id,
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: isOnline
+                                          ? AppTheme.primaryGreen.withOpacity(0.1)
+                                          : AppTheme.errorRed.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      isOnline ? Icons.wifi : Icons.wifi_off,
+                                      color: isOnline ? AppTheme.primaryGreen : AppTheme.errorRed,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          router.name,
+                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.signal_cellular_alt,
+                                              size: 14,
+                                              color: signalStrength == 'Strong'
+                                                  ? AppTheme.successGreen
+                                                  : signalStrength == 'Good'
+                                                      ? AppTheme.warningAmber
+                                                      : AppTheme.errorRed,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              signalStrength,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: AppTheme.textLight,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Icon(Icons.people, size: 14, color: AppTheme.textLight),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              '${router.connectedUsers} ${'devices'.tr()}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: AppTheme.textLight,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.more_vert),
+                                    onPressed: () {
+                                      _showRouterMenu(context, router);
+                                    },
+                                  ),
+                                ],
+                              ),
+                              if (hasIssues) ...[
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.warningAmber.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: AppTheme.warningAmber.withOpacity(0.3),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.warning_amber_rounded,
+                                        color: AppTheme.warningAmber,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'issues_detected'.tr(),
+                                          style: TextStyle(
+                                            color: AppTheme.warningAmber,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pushNamed(
+                                            '/router-details',
+                                            arguments: router.id,
+                                          );
+                                        },
+                                        child: Text('view'.tr()),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 12),
+                              Divider(height: 1, color: Colors.grey[300]),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  _buildQuickStat(
+                                    'data'.tr(),
+                                    '${router.dataUsageGB.toStringAsFixed(1)} GB',
+                                    Icons.cloud_download,
+                                  ),
+                                  _buildQuickStat(
+                                    'uptime'.tr(),
+                                    '${router.uptimeHours}h',
+                                    Icons.access_time,
+                                  ),
+                                  _buildQuickStat(
+                                    'status'.tr(),
+                                    router.status.toUpperCase(),
+                                    isOnline ? Icons.check_circle : Icons.cancel,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value, IconData icon) {
-    return Row(
+  Widget _buildQuickStat(String label, String value, IconData icon) {
+    return Column(
       children: [
-        Icon(icon, size: 20, color: AppTheme.textLight),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(color: AppTheme.textLight),
-          ),
-        ),
+        Icon(icon, size: 16, color: AppTheme.textLight),
+        const SizedBox(height: 4),
         Text(
           value,
           style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textDark,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: AppTheme.textLight,
           ),
         ),
       ],
     );
   }
 
-  String _formatDateTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final diff = now.difference(dateTime);
-
-    if (diff.inMinutes < 1) {
-      return 'Just now';
-    } else if (diff.inMinutes < 60) {
-      return '${diff.inMinutes}m ago';
-    } else if (diff.inHours < 24) {
-      return '${diff.inHours}h ago';
-    } else {
-      return '${diff.inDays}d ago';
-    }
+  void _showRouterMenu(BuildContext context, router) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.info),
+              title: Text('view_details'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).pushNamed(
+                  '/router-details',
+                  arguments: router.id,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.restart_alt, color: AppTheme.warningAmber),
+              title: Text('restart_router'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('router_restart_initiated'.tr())),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                router.status == 'online' ? Icons.block : Icons.check_circle,
+                color: router.status == 'online' ? AppTheme.errorRed : AppTheme.successGreen,
+              ),
+              title: Text(router.status == 'online' ? 'block_router'.tr() : 'unblock_router'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                _showBlockDialog(
+                  router.id,
+                  router.name,
+                  router.status != 'online',
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings, color: AppTheme.primaryGreen),
+              title: Text('configure'.tr()),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('configuration_coming_soon'.tr())),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

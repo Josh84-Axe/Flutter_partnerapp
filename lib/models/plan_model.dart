@@ -6,6 +6,8 @@ class PlanModel {
   final int validityDays;
   final int speedMbps;
   final bool isActive;
+  final int deviceAllowed;
+  final String userProfile;
 
   PlanModel({
     required this.id,
@@ -15,6 +17,8 @@ class PlanModel {
     required this.validityDays,
     required this.speedMbps,
     required this.isActive,
+    this.deviceAllowed = 1,
+    this.userProfile = 'Basic',
   });
 
   factory PlanModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class PlanModel {
       validityDays: json['validityDays'],
       speedMbps: json['speedMbps'],
       isActive: json['isActive'] ?? true,
+      deviceAllowed: json['deviceAllowed'] ?? 1,
+      userProfile: json['userProfile'] ?? 'Basic',
     );
   }
 
@@ -38,6 +44,8 @@ class PlanModel {
       'validityDays': validityDays,
       'speedMbps': speedMbps,
       'isActive': isActive,
+      'deviceAllowed': deviceAllowed,
+      'userProfile': userProfile,
     };
   }
 }
