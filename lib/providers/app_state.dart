@@ -13,11 +13,56 @@ import '../models/subscription_model.dart';
 import '../services/auth_service.dart';
 import '../services/payment_service.dart';
 import '../services/connectivity_service.dart';
+import '../services/api/api_config.dart';
+import '../services/api/token_storage.dart';
+import '../services/api/api_client_factory.dart';
+import '../repositories/auth_repository.dart';
+import '../repositories/partner_repository.dart';
+import '../repositories/wallet_repository.dart';
+import '../repositories/router_repository.dart';
 
 class AppState with ChangeNotifier {
+  // Legacy mock services
   final AuthService _authService = AuthService();
   final PaymentService _paymentService = PaymentService();
   final ConnectivityService _connectivityService = ConnectivityService();
+  
+  // New API repositories (lazy initialized)
+  AuthRepository? _authRepository;
+  PartnerRepository? _partnerRepository;
+  WalletRepository? _walletRepository;
+  RouterRepository? _routerRepository;
+  
+  // Feature flag to toggle between mock and real API
+  bool _useRemoteApi = ApiConfig.useRemoteApi;
+  
+  bool get useRemoteApi => _useRemoteApi;
+  
+  /// Toggle between mock data and real API (for testing)
+  void setUseRemoteApi(bool value) {
+    _useRemoteApi = value;
+    notifyListeners();
+  }
+  
+  /// Initialize API repositories
+  void _initializeRepositories() {
+    if (_authRepository == null) {
+      final tokenStorage = TokenStorage();
+      final apiFactory = ApiClientFactory(
+        tokenStorage: tokenStorage,
+        baseUrl: ApiConfig.baseUrl,
+      );
+      final dio = apiFactory.createDio();
+      
+      _authRepository = AuthRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+      _partnerRepository = PartnerRepository(dio: dio);
+      _walletRepository = WalletRepository(dio: dio);
+      _routerRepository = RouterRepository(dio: dio);
+    }
+  }
   
   UserModel? _currentUser;
   bool _isLoading = false;
@@ -58,11 +103,38 @@ class AppState with ChangeNotifier {
   Future<bool> login(String email, String password) async {
     _setLoading(true);
     try {
-      final result = await _authService.login(email, password);
-      _currentUser = UserModel.fromJson(result['user']);
-      await loadDashboardData();
-      _setLoading(false);
-      return true;
+      if (_useRemoteApi) {
+        // Use real API
+        _initializeRepositories();
+        final success = await _authRepository!.login(
+          email: email,
+          password: password,
+        );
+        if (success) {
+          // Load profile to get user data
+          final profileData = await _partnerRepository!.fetchProfile();
+          if (profileData != null) {
+            _currentUser = UserModel(
+              id: profileData['id']?.toString() ?? '1',
+              name: profileData['first_name']?.toString() ?? 'Partner',
+              email: profileData['email']?.toString() ?? email,
+              role: 'Partner',
+              isActive: true,
+              createdAt: DateTime.now(),
+            );
+          }
+          await loadDashboardData();
+        }
+        _setLoading(false);
+        return success;
+      } else {
+        // Use mock service
+        final result = await _authService.login(email, password);
+        _currentUser = UserModel.fromJson(result['user']);
+        await loadDashboardData();
+        _setLoading(false);
+        return true;
+      }
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
@@ -86,7 +158,11 @@ class AppState with ChangeNotifier {
   }
   
   Future<void> logout() async {
-    await _authService.logout();
+    if (_useRemoteApi && _authRepository != null) {
+      await _authRepository!.logout();
+    } else {
+      await _authService.logout();
+    }
     _currentUser = null;
     _users = [];
     _routers = [];
@@ -299,7 +375,25 @@ class AppState with ChangeNotifier {
   
   Future<void> loadRouters() async {
     try {
-      _routers = await _connectivityService.getRouters();
+      if (_useRemoteApi && _routerRepository != null) {
+        final routersData = await _routerRepository!.fetchRouters();
+        _routers = routersData.map((data) {
+          return RouterModel(
+            id: data['id']?.toString() ?? '',
+            name: data['name']?.toString() ?? 'Router',
+            macAddress: data['mac_address']?.toString() ?? '00:00:00:00:00:00',
+            status: data['is_active'] == true ? 'online' : 'offline',
+            connectedUsers: (data['connected_users'] as num?)?.toInt() ?? 0,
+            dataUsageGB: (data['data_usage_gb'] as num?)?.toDouble() ?? 0.0,
+            uptimeHours: (data['uptime_hours'] as num?)?.toInt() ?? 0,
+            lastSeen: data['last_seen'] != null 
+                ? DateTime.tryParse(data['last_seen'].toString()) ?? DateTime.now()
+                : DateTime.now(),
+          );
+        }).toList();
+      } else {
+        _routers = await _connectivityService.getRouters();
+      }
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -326,7 +420,14 @@ class AppState with ChangeNotifier {
   
   Future<void> loadWalletBalance() async {
     try {
-      _walletBalance = await _paymentService.getWalletBalance();
+      if (_useRemoteApi && _walletRepository != null) {
+        final balanceData = await _walletRepository!.fetchBalance();
+        if (balanceData != null) {
+          _walletBalance = (balanceData['balance'] as num?)?.toDouble() ?? 0.0;
+        }
+      } else {
+        _walletBalance = await _paymentService.getWalletBalance();
+      }
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
