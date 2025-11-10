@@ -105,19 +105,30 @@ class HotspotPartnerApp extends StatelessWidget {
     
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        // Use distinct light and dark themes from AppTheme
-        // This ensures proper text colors in both light and dark modes
-        ThemeData lightTheme = AppTheme.lightTheme;
-        ThemeData darkTheme = AppTheme.darkTheme;
+        // Use dynamic colors from Material You if available (Android 12+)
+        // Otherwise fall back to our professional blue brand colors
+        ColorScheme lightScheme;
+        ColorScheme darkScheme;
         
-        // Only apply dynamic colors if user hasn't selected a specific theme variant
-        // and dynamic colors are available
         if (lightDynamic != null && darkDynamic != null) {
-          // For now, we'll use AppTheme as the base
-          // Dynamic colors can be optionally integrated in the future
-          lightTheme = AppTheme.lightTheme;
-          darkTheme = AppTheme.darkTheme;
+          // Use harmonized dynamic colors from the system
+          lightScheme = lightDynamic.harmonized();
+          darkScheme = darkDynamic.harmonized();
+        } else {
+          // Fall back to brand blue seed color
+          lightScheme = ColorScheme.fromSeed(
+            seedColor: AppTheme.brandBlue,
+            brightness: Brightness.light,
+          );
+          darkScheme = ColorScheme.fromSeed(
+            seedColor: AppTheme.brandBlue,
+            brightness: Brightness.dark,
+          );
         }
+        
+        // Build themes with consistent component styling
+        final lightTheme = AppTheme.fromScheme(lightScheme);
+        final darkTheme = AppTheme.fromScheme(darkScheme);
         
         return MaterialApp(
           title: 'Tiknet Partner App',

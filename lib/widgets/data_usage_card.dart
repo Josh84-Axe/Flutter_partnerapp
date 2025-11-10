@@ -21,7 +21,7 @@ class DataUsageCard extends StatelessWidget {
     return Card(
       elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             // Left side - Text info
@@ -49,21 +49,21 @@ class DataUsageCard extends StatelessWidget {
             ),
             // Right side - Circular progress
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: SizedBox(
-                width: 100,
-                height: 100,
+                width: 88,
+                height: 88,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     // Background circle
                     SizedBox(
-                      width: 100,
-                      height: 100,
+                      width: 88,
+                      height: 88,
                       child: CircularProgressIndicator(
                         value: 1.0,
                         strokeWidth: 8,
@@ -75,8 +75,8 @@ class DataUsageCard extends StatelessWidget {
                     ),
                     // Progress circle
                     SizedBox(
-                      width: 100,
-                      height: 100,
+                      width: 88,
+                      height: 88,
                       child: CircularProgressIndicator(
                         value: percentage / 100,
                         strokeWidth: 8,
