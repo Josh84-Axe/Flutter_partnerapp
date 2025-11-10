@@ -145,11 +145,53 @@ class AppState with ChangeNotifier {
   Future<bool> register(String name, String email, String password) async {
     _setLoading(true);
     try {
-      final result = await _authService.register(name, email, password);
-      _currentUser = UserModel.fromJson(result['user']);
-      await loadDashboardData();
-      _setLoading(false);
-      return true;
+      if (_useRemoteApi) {
+        // Use real API
+        _initializeRepositories();
+        final success = await _authRepository!.register(
+          firstName: name,
+          email: email,
+          password: password,
+        );
+        if (success) {
+          // Try to load profile to get user data
+          // If registration requires email verification, this might fail
+          try {
+            final profileData = await _partnerRepository!.fetchProfile();
+            if (profileData != null) {
+              _currentUser = UserModel(
+                id: profileData['id']?.toString() ?? '1',
+                name: profileData['first_name']?.toString() ?? name,
+                email: profileData['email']?.toString() ?? email,
+                role: 'Partner',
+                isActive: true,
+                createdAt: DateTime.now(),
+              );
+              await loadDashboardData();
+            }
+          } catch (e) {
+            // If profile fetch fails (e.g., email verification required),
+            // create a temporary user model
+            _currentUser = UserModel(
+              id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
+              name: name,
+              email: email,
+              role: 'Partner',
+              isActive: false,
+              createdAt: DateTime.now(),
+            );
+          }
+        }
+        _setLoading(false);
+        return success;
+      } else {
+        // Use mock service
+        final result = await _authService.register(name, email, password);
+        _currentUser = UserModel.fromJson(result['user']);
+        await loadDashboardData();
+        _setLoading(false);
+        return true;
+      }
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);

@@ -61,4 +61,56 @@ class AuthRepository {
   Future<bool> isAuthenticated() async {
     return await _tokenStorage.hasTokens();
   }
+
+  /// Register a new partner account
+  /// Returns true if registration successful, false otherwise
+  Future<bool> register({
+    required String firstName,
+    required String email,
+    required String password,
+    String? phone,
+    String? address,
+    String? city,
+    String? country,
+    int? numberOfRouters,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/partner/register-init/',
+        data: {
+          'first_name': firstName,
+          'email': email,
+          'password': password,
+          'password2': password, // Confirm password with same value
+          if (phone != null) 'phone': phone,
+          if (address != null) 'addresse': address, // Note: API uses 'addresse' (with 'e')
+          if (city != null) 'city': city,
+          if (country != null) 'country': country,
+          if (numberOfRouters != null) 'number_of_router': numberOfRouters,
+        },
+      );
+
+      // Registration may return tokens immediately or require email verification
+      final data = response.data as Map<String, dynamic>?;
+      if (data == null) {
+        return false;
+      }
+
+      // If tokens are provided, save them
+      final accessToken = data['access']?.toString();
+      final refreshToken = data['refresh']?.toString();
+
+      if (accessToken != null && refreshToken != null) {
+        await _tokenStorage.saveTokens(
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+        );
+      }
+
+      return true;
+    } catch (e) {
+      print('Registration error: $e');
+      return false;
+    }
+  }
 }
