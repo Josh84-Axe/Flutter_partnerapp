@@ -14,6 +14,6 @@ class ApiConfig {
   /// Set to false to use mock data during development/testing
   static const bool useRemoteApi = bool.fromEnvironment(
     'USE_REMOTE_API',
-    defaultValue: false, // Start with false for safety, enable when ready to test
+    defaultValue: true, // Enabled for API integration testing
   );
 }
