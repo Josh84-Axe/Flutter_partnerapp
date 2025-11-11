@@ -10,7 +10,14 @@ class WalletRepository {
   Future<Map<String, dynamic>?> fetchBalance() async {
     try {
       final response = await _dio.get('/partner/wallet/balance/');
-      return response.data as Map<String, dynamic>?;
+      final responseData = response.data;
+      
+      // API wraps data in {statusCode, error, message, data: {...}}
+      if (responseData is Map && responseData['data'] is Map) {
+        return responseData['data'] as Map<String, dynamic>;
+      }
+      
+      return responseData as Map<String, dynamic>?;
     } catch (e) {
       print('Fetch balance error: $e');
       rethrow;
@@ -21,10 +28,15 @@ class WalletRepository {
   Future<List<dynamic>> fetchPlans() async {
     try {
       final response = await _dio.get('/partner/plans/');
-      final data = response.data;
+      final responseData = response.data;
       
-      if (data is List) {
-        return data;
+      // API wraps data in {statusCode, error, message, data: [...]}
+      if (responseData is Map && responseData['data'] is List) {
+        return responseData['data'] as List;
+      }
+      
+      if (responseData is List) {
+        return responseData;
       }
       
       return [];
@@ -74,10 +86,20 @@ class WalletRepository {
         queryParameters: queryParams,
       );
       
-      final data = response.data;
+      final responseData = response.data;
       
-      if (data is List) {
-        return data;
+      // API wraps data in {statusCode, error, message, data: {paginate_data: [...]}}
+      if (responseData is Map) {
+        if (responseData['data'] is Map && responseData['data']['paginate_data'] is List) {
+          return responseData['data']['paginate_data'] as List;
+        }
+        if (responseData['data'] is List) {
+          return responseData['data'] as List;
+        }
+      }
+      
+      if (responseData is List) {
+        return responseData;
       }
       
       return [];

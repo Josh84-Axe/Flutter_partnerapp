@@ -7,13 +7,35 @@ class RouterRepository {
   RouterRepository({required Dio dio}) : _dio = dio;
 
   /// Fetch list of routers
+  /// Note: Backend doesn't have /partner/routers/ endpoint
+  /// Routers are extracted from /partner/plans/ response
   Future<List<dynamic>> fetchRouters() async {
     try {
-      final response = await _dio.get('/partner/routers/list/');
-      final data = response.data;
+      // Fetch plans which contain router data
+      final response = await _dio.get('/partner/plans/');
+      final responseData = response.data;
       
-      if (data is List) {
-        return data;
+      // Extract routers from plans response
+      if (responseData is Map && responseData['data'] is List) {
+        final plans = responseData['data'] as List;
+        final routersMap = <int, Map<String, dynamic>>{};
+        
+        // Collect unique routers from all plans
+        for (final plan in plans) {
+          if (plan is Map && plan['routers'] is List) {
+            final routers = plan['routers'] as List;
+            for (final router in routers) {
+              if (router is Map) {
+                final routerId = router['id'];
+                if (routerId != null && !routersMap.containsKey(routerId)) {
+                  routersMap[routerId] = router as Map<String, dynamic>;
+                }
+              }
+            }
+          }
+        }
+        
+        return routersMap.values.toList();
       }
       
       return [];

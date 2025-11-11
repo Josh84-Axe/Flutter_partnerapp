@@ -397,16 +397,20 @@ class AppState with ChangeNotifier {
         // Fetch plans from API
         final plansData = await _walletRepository!.fetchPlans();
         _plans = plansData.map<PlanModel>((data) {
+          // API returns 'validity' in minutes, convert to days
+          final validityMinutes = (data['validity'] as num?)?.toInt() ?? 0;
+          final validityDays = validityMinutes > 0 ? (validityMinutes / 1440).ceil() : 1;
+          
           return PlanModel(
             id: data['id']?.toString() ?? '',
             name: data['name']?.toString() ?? 'Plan',
-            price: (data['price'] as num?)?.toDouble() ?? 0.0,
+            price: double.tryParse(data['price']?.toString() ?? '0') ?? 0.0,
             dataLimitGB: (data['data_limit'] as num?)?.toInt() ?? 0,
-            validityDays: (data['validity_days'] as num?)?.toInt() ?? 30,
-            speedMbps: (data['speed_mbps'] as num?)?.toInt() ?? 10,
+            validityDays: validityDays,
+            speedMbps: 10, // API doesn't provide speed, use default
             isActive: data['is_active'] == true,
-            deviceAllowed: (data['device_allowed'] as num?)?.toInt() ?? 1,
-            userProfile: data['user_profile']?.toString() ?? 'Basic',
+            deviceAllowed: (data['shared_users'] as num?)?.toInt() ?? 1,
+            userProfile: data['profile_name']?.toString() ?? 'Basic',
           );
         }).toList();
       } else {
@@ -427,15 +431,18 @@ class AppState with ChangeNotifier {
         // Fetch transactions from API
         final transactionsData = await _walletRepository!.fetchTransactions();
         _transactions = transactionsData.map<TransactionModel>((data) {
+          // API uses 'amount_paid' not 'amount'
+          final amount = double.tryParse(data['amount_paid']?.toString() ?? '0') ?? 0.0;
+          
           return TransactionModel(
             id: data['id']?.toString() ?? '',
-            amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
+            amount: amount,
             type: data['type']?.toString() ?? 'unknown',
             status: data['status']?.toString() ?? 'pending',
             createdAt: data['created_at'] != null 
                 ? DateTime.tryParse(data['created_at'].toString()) ?? DateTime.now()
                 : DateTime.now(),
-            description: data['description']?.toString() ?? '',
+            description: data['payment_reference']?.toString() ?? '', // Use payment_reference as description
             paymentMethod: data['payment_method']?.toString(),
             gateway: data['gateway']?.toString(),
             workerId: data['worker_id']?.toString(),
