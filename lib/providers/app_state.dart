@@ -396,13 +396,17 @@ class AppState with ChangeNotifier {
         
         // Fetch plans from API
         final plansData = await _walletRepository!.fetchPlans();
-        _plans = plansData.map((data) {
+        _plans = plansData.map<PlanModel>((data) {
           return PlanModel(
             id: data['id']?.toString() ?? '',
             name: data['name']?.toString() ?? 'Plan',
             price: (data['price'] as num?)?.toDouble() ?? 0.0,
-            duration: data['duration']?.toString() ?? '30 days',
-            features: (data['features'] as List?)?.cast<String>() ?? [],
+            dataLimitGB: (data['data_limit'] as num?)?.toInt() ?? 0,
+            validityDays: (data['validity_days'] as num?)?.toInt() ?? 30,
+            speedMbps: (data['speed_mbps'] as num?)?.toInt() ?? 10,
+            isActive: data['is_active'] == true,
+            deviceAllowed: (data['device_allowed'] as num?)?.toInt() ?? 1,
+            userProfile: data['user_profile']?.toString() ?? 'Basic',
           );
         }).toList();
       } else {
@@ -422,16 +426,20 @@ class AppState with ChangeNotifier {
         
         // Fetch transactions from API
         final transactionsData = await _walletRepository!.fetchTransactions();
-        _transactions = transactionsData.map((data) {
+        _transactions = transactionsData.map<TransactionModel>((data) {
           return TransactionModel(
             id: data['id']?.toString() ?? '',
             amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
             type: data['type']?.toString() ?? 'unknown',
             status: data['status']?.toString() ?? 'pending',
-            date: data['created_at'] != null 
+            createdAt: data['created_at'] != null 
                 ? DateTime.tryParse(data['created_at'].toString()) ?? DateTime.now()
                 : DateTime.now(),
             description: data['description']?.toString() ?? '',
+            paymentMethod: data['payment_method']?.toString(),
+            gateway: data['gateway']?.toString(),
+            workerId: data['worker_id']?.toString(),
+            accountId: data['account_id']?.toString(),
           );
         }).toList();
       } else {
