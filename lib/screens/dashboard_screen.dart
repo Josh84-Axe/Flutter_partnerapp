@@ -5,7 +5,6 @@ import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 import '../widgets/metric_card.dart';
 import '../widgets/subscription_plan_card.dart';
-import '../widgets/data_usage_card.dart';
 import '../widgets/quick_action_button.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -104,13 +103,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 24),
             
-            // Subscription Plan Card
-            SubscriptionPlanCard(
-              planName: 'Standard',
-              renewalDate: DateTime(2023, 12, 10),
-              isLoading: appState.isLoading,
-            ),
-            const SizedBox(height: 16),
+            // Subscription Plan Card - load from API
+            if (appState.subscription != null)
+              SubscriptionPlanCard(
+                planName: appState.subscription!.tier,
+                renewalDate: appState.subscription!.renewalDate,
+                isLoading: appState.isLoading,
+              ),
+            if (appState.subscription != null)
+              const SizedBox(height: 16),
             
             // Task 1: Total Revenue and Active Users moved below Subscription Plan
             Row(
@@ -176,12 +177,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 16),
             
-            // Task 2: Data Usage Card moved below Quick Action Buttons
-            DataUsageCard(
-              usedGB: 12.0,
-              totalGB: 20.0,
-              isLoading: appState.isLoading,
-            ),
+            // Task 2: Data Usage Card moved below Quick Action Buttons - load from API
+            // TODO: Add API endpoint for data usage statistics
+            // DataUsageCard(
+            //   usedGB: 0.0,
+            //   totalGB: 0.0,
+            //   isLoading: appState.isLoading,
+            // ),
           ],
         ),
       ),
