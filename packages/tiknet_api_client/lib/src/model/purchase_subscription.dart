@@ -22,7 +22,7 @@ class PurchaseSubscription {
 
     required  this.paymentReference,
 
-     this.paymentProvider = const PurchaseSubscriptionPaymentProviderEnum._('paystack'),
+     this.paymentProvider,
   });
 
   @JsonKey(
