@@ -17,6 +17,23 @@ class WalletRepository {
     }
   }
 
+  /// Fetch available plans
+  Future<List<dynamic>> fetchPlans() async {
+    try {
+      final response = await _dio.get('/partner/plans/');
+      final data = response.data;
+      
+      if (data is List) {
+        return data;
+      }
+      
+      return [];
+    } catch (e) {
+      print('Fetch plans error: $e');
+      rethrow;
+    }
+  }
+
   /// Fetch all transactions (no filters)
   Future<List<dynamic>> fetchAllTransactions() async {
     try {

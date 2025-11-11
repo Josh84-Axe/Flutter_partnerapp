@@ -215,9 +215,38 @@ class AppState with ChangeNotifier {
   }
   
   Future<void> checkAuthStatus() async {
-    _currentUser = await _authService.getCurrentUser();
-    if (_currentUser != null) {
-      await loadDashboardData();
+    if (_useRemoteApi) {
+      // Check if we have a saved token and initialize repositories
+      _initializeRepositories();
+      final tokenStorage = TokenStorage();
+      final accessToken = await tokenStorage.getAccessToken();
+      
+      if (accessToken != null) {
+        // Try to fetch profile to verify token is still valid
+        try {
+          final profileData = await _partnerRepository!.fetchProfile();
+          if (profileData != null) {
+            _currentUser = UserModel(
+              id: profileData['id']?.toString() ?? '1',
+              name: '${profileData['first_name'] ?? ''} ${profileData['last_name'] ?? ''}'.trim(),
+              email: profileData['email']?.toString() ?? '',
+              role: 'Partner',
+              isActive: true,
+              createdAt: DateTime.now(),
+            );
+            await loadDashboardData();
+          }
+        } catch (e) {
+          // Token is invalid, clear it
+          await tokenStorage.clearTokens();
+          _currentUser = null;
+        }
+      }
+    } else {
+      _currentUser = await _authService.getCurrentUser();
+      if (_currentUser != null) {
+        await loadDashboardData();
+      }
     }
     notifyListeners();
   }
@@ -313,7 +342,16 @@ class AppState with ChangeNotifier {
   
   Future<void> loadUsers() async {
     try {
-      _users = await _authService.getUsers();
+      if (_useRemoteApi) {
+        // Ensure repositories are initialized
+        if (_partnerRepository == null) _initializeRepositories();
+        
+        // Note: Customer list endpoint needs to be verified with backend
+        // For now, return empty list as the endpoint returns 404
+        _users = [];
+      } else {
+        _users = await _authService.getUsers();
+      }
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -322,7 +360,10 @@ class AppState with ChangeNotifier {
   
   Future<void> loadRouters() async {
     try {
-      if (_useRemoteApi && _routerRepository != null) {
+      if (_useRemoteApi) {
+        // Ensure repositories are initialized
+        if (_routerRepository == null) _initializeRepositories();
+        
         final routersData = await _routerRepository!.fetchRouters();
         _routers = routersData.map((data) {
           return RouterModel(
@@ -349,7 +390,24 @@ class AppState with ChangeNotifier {
   
   Future<void> loadPlans() async {
     try {
-      _plans = await _paymentService.getPlans();
+      if (_useRemoteApi) {
+        // Ensure repositories are initialized
+        if (_walletRepository == null) _initializeRepositories();
+        
+        // Fetch plans from API
+        final plansData = await _walletRepository!.fetchPlans();
+        _plans = plansData.map((data) {
+          return PlanModel(
+            id: data['id']?.toString() ?? '',
+            name: data['name']?.toString() ?? 'Plan',
+            price: (data['price'] as num?)?.toDouble() ?? 0.0,
+            duration: data['duration']?.toString() ?? '30 days',
+            features: (data['features'] as List?)?.cast<String>() ?? [],
+          );
+        }).toList();
+      } else {
+        _plans = await _paymentService.getPlans();
+      }
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -358,7 +416,27 @@ class AppState with ChangeNotifier {
   
   Future<void> loadTransactions() async {
     try {
-      _transactions = await _paymentService.getTransactions();
+      if (_useRemoteApi) {
+        // Ensure repositories are initialized
+        if (_walletRepository == null) _initializeRepositories();
+        
+        // Fetch transactions from API
+        final transactionsData = await _walletRepository!.fetchTransactions();
+        _transactions = transactionsData.map((data) {
+          return TransactionModel(
+            id: data['id']?.toString() ?? '',
+            amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
+            type: data['type']?.toString() ?? 'unknown',
+            status: data['status']?.toString() ?? 'pending',
+            date: data['created_at'] != null 
+                ? DateTime.tryParse(data['created_at'].toString()) ?? DateTime.now()
+                : DateTime.now(),
+            description: data['description']?.toString() ?? '',
+          );
+        }).toList();
+      } else {
+        _transactions = await _paymentService.getTransactions();
+      }
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -367,10 +445,15 @@ class AppState with ChangeNotifier {
   
   Future<void> loadWalletBalance() async {
     try {
-      if (_useRemoteApi && _walletRepository != null) {
+      if (_useRemoteApi) {
+        // Ensure repositories are initialized
+        if (_walletRepository == null) _initializeRepositories();
+        
         final balanceData = await _walletRepository!.fetchBalance();
         if (balanceData != null) {
-          _walletBalance = (balanceData['balance'] as num?)?.toDouble() ?? 0.0;
+          // API returns 'wallet_balance', not 'balance'
+          final balanceStr = balanceData['wallet_balance']?.toString() ?? '0.0';
+          _walletBalance = double.tryParse(balanceStr) ?? 0.0;
         }
       } else {
         _walletBalance = await _paymentService.getWalletBalance();
