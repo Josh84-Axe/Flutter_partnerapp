@@ -29,8 +29,17 @@ class AuthRepository {
       );
 
       // Extract tokens from response
-      final data = response.data as Map<String, dynamic>?;
+      // API wraps tokens in: {statusCode, error, message, data: {access, refresh}}
+      final responseData = response.data as Map<String, dynamic>?;
+      if (responseData == null) {
+        print('Login error: Response data is null');
+        return false;
+      }
+
+      // Extract tokens from nested data object
+      final data = responseData['data'] as Map<String, dynamic>?;
       if (data == null) {
+        print('Login error: No data object in response');
         return false;
       }
 
@@ -38,13 +47,24 @@ class AuthRepository {
       final refreshToken = data['refresh']?.toString();
 
       if (accessToken != null && refreshToken != null) {
+        print('Login successful - saving tokens (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
         await _tokenStorage.saveTokens(
           accessToken: accessToken,
           refreshToken: refreshToken,
         );
+        
+        // Verify tokens were saved
+        final savedToken = await _tokenStorage.getAccessToken();
+        if (savedToken != null) {
+          print('Tokens saved successfully (verified: ${savedToken.substring(0, 8)}...)');
+        } else {
+          print('ERROR: Tokens not saved correctly!');
+        }
+        
         return true;
       }
 
+      print('Login error: Missing access or refresh token in response');
       return false;
     } catch (e) {
       print('Login error: $e');
@@ -91,20 +111,34 @@ class AuthRepository {
       );
 
       // Registration may return tokens immediately or require email verification
-      final data = response.data as Map<String, dynamic>?;
-      if (data == null) {
+      // API wraps tokens in: {statusCode, error, message, data: {access, refresh}}
+      final responseData = response.data as Map<String, dynamic>?;
+      if (responseData == null) {
+        print('Registration error: Response data is null');
         return false;
       }
 
-      // If tokens are provided, save them
-      final accessToken = data['access']?.toString();
-      final refreshToken = data['refresh']?.toString();
+      // Extract tokens from nested data object if present
+      final data = responseData['data'] as Map<String, dynamic>?;
+      if (data != null) {
+        final accessToken = data['access']?.toString();
+        final refreshToken = data['refresh']?.toString();
 
-      if (accessToken != null && refreshToken != null) {
-        await _tokenStorage.saveTokens(
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-        );
+        if (accessToken != null && refreshToken != null) {
+          print('Registration successful - saving tokens (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
+          await _tokenStorage.saveTokens(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+          );
+          
+          // Verify tokens were saved
+          final savedToken = await _tokenStorage.getAccessToken();
+          if (savedToken != null) {
+            print('Tokens saved successfully (verified: ${savedToken.substring(0, 8)}...)');
+          } else {
+            print('ERROR: Tokens not saved correctly!');
+          }
+        }
       }
 
       return true;

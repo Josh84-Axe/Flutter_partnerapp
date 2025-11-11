@@ -15,20 +15,34 @@ class TokenStorage {
     required String accessToken,
     required String refreshToken,
   }) async {
+    print('TokenStorage: Saving tokens (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
     await Future.wait([
       _storage.write(key: _accessTokenKey, value: accessToken),
       _storage.write(key: _refreshTokenKey, value: refreshToken),
     ]);
+    print('TokenStorage: Tokens saved successfully');
   }
 
   /// Get the access token
   Future<String?> getAccessToken() async {
-    return await _storage.read(key: _accessTokenKey);
+    final token = await _storage.read(key: _accessTokenKey);
+    if (token != null) {
+      print('TokenStorage: Retrieved access token (${token.substring(0, 8)}...)');
+    } else {
+      print('TokenStorage: No access token found');
+    }
+    return token;
   }
 
   /// Get the refresh token
   Future<String?> getRefreshToken() async {
-    return await _storage.read(key: _refreshTokenKey);
+    final token = await _storage.read(key: _refreshTokenKey);
+    if (token != null) {
+      print('TokenStorage: Retrieved refresh token (${token.substring(0, 8)}...)');
+    } else {
+      print('TokenStorage: No refresh token found');
+    }
+    return token;
   }
 
   /// Check if tokens exist
