@@ -7,22 +7,14 @@ part of 'customer_sign_in.dart';
 // **************************************************************************
 
 CustomerSignIn _$CustomerSignInFromJson(Map<String, dynamic> json) =>
-    $checkedCreate(
-      'CustomerSignIn',
-      json,
-      ($checkedConvert) {
-        $checkKeys(
-          json,
-          requiredKeys: const ['first_name', 'phone'],
-        );
-        final val = CustomerSignIn(
-          firstName: $checkedConvert('first_name', (v) => v as String),
-          phone: $checkedConvert('phone', (v) => v as String),
-        );
-        return val;
-      },
-      fieldKeyMap: const {'firstName': 'first_name'},
-    );
+    $checkedCreate('CustomerSignIn', json, ($checkedConvert) {
+      $checkKeys(json, requiredKeys: const ['first_name', 'phone']);
+      final val = CustomerSignIn(
+        firstName: $checkedConvert('first_name', (v) => v as String),
+        phone: $checkedConvert('phone', (v) => v as String),
+      );
+      return val;
+    }, fieldKeyMap: const {'firstName': 'first_name'});
 
 Map<String, dynamic> _$CustomerSignInToJson(CustomerSignIn instance) =>
     <String, dynamic>{

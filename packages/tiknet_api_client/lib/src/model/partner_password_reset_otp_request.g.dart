@@ -7,24 +7,15 @@ part of 'partner_password_reset_otp_request.dart';
 // **************************************************************************
 
 PartnerPasswordResetOTPRequest _$PartnerPasswordResetOTPRequestFromJson(
-        Map<String, dynamic> json) =>
-    $checkedCreate(
-      'PartnerPasswordResetOTPRequest',
-      json,
-      ($checkedConvert) {
-        $checkKeys(
-          json,
-          requiredKeys: const ['email'],
-        );
-        final val = PartnerPasswordResetOTPRequest(
-          email: $checkedConvert('email', (v) => v as String),
-        );
-        return val;
-      },
-    );
+  Map<String, dynamic> json,
+) => $checkedCreate('PartnerPasswordResetOTPRequest', json, ($checkedConvert) {
+  $checkKeys(json, requiredKeys: const ['email']);
+  final val = PartnerPasswordResetOTPRequest(
+    email: $checkedConvert('email', (v) => v as String),
+  );
+  return val;
+});
 
 Map<String, dynamic> _$PartnerPasswordResetOTPRequestToJson(
-        PartnerPasswordResetOTPRequest instance) =>
-    <String, dynamic>{
-      'email': instance.email,
-    };
+  PartnerPasswordResetOTPRequest instance,
+) => <String, dynamic>{'email': instance.email};

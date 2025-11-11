@@ -7,22 +7,13 @@ part of 'verify_email_otp.dart';
 // **************************************************************************
 
 VerifyEmailOtp _$VerifyEmailOtpFromJson(Map<String, dynamic> json) =>
-    $checkedCreate(
-      'VerifyEmailOtp',
-      json,
-      ($checkedConvert) {
-        $checkKeys(
-          json,
-          requiredKeys: const ['code'],
-        );
-        final val = VerifyEmailOtp(
-          code: $checkedConvert('code', (v) => v as String),
-        );
-        return val;
-      },
-    );
+    $checkedCreate('VerifyEmailOtp', json, ($checkedConvert) {
+      $checkKeys(json, requiredKeys: const ['code']);
+      final val = VerifyEmailOtp(
+        code: $checkedConvert('code', (v) => v as String),
+      );
+      return val;
+    });
 
 Map<String, dynamic> _$VerifyEmailOtpToJson(VerifyEmailOtp instance) =>
-    <String, dynamic>{
-      'code': instance.code,
-    };
+    <String, dynamic>{'code': instance.code};
