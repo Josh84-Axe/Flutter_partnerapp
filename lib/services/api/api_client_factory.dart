@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'auth_interceptor.dart';
+import 'logging_interceptor.dart';
 import 'token_storage.dart';
 
 /// Factory for creating configured API clients with authentication
@@ -13,7 +13,18 @@ class ApiClientFactory {
     required TokenStorage tokenStorage,
     String? baseUrl,
   })  : _tokenStorage = tokenStorage,
-        _baseUrl = baseUrl ?? 'https://api.tiknetafrica.com/v1';
+        _baseUrl = baseUrl ?? 'https://api.tiknetafrica.com/v1' {
+    // Print BASE_URL at initialization for debugging
+    if (kDebugMode) {
+      print('');
+      print('═══════════════════════════════════════════════════════════');
+      print('🌐 API CLIENT FACTORY INITIALIZED');
+      print('═══════════════════════════════════════════════════════════');
+      print('BASE_URL: $_baseUrl');
+      print('═══════════════════════════════════════════════════════════');
+      print('');
+    }
+  }
 
   /// Create a configured Dio instance with auth interceptors
   Dio createDio() {
@@ -29,26 +40,9 @@ class ApiClientFactory {
       ),
     );
 
-    // Add pretty logger in debug mode only
-    if (!kReleaseMode) {
-      dio.interceptors.add(
-        PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          responseBody: false,
-          responseHeader: false,
-          error: true,
-          compact: true,
-          maxWidth: 90,
-          // Don't log Authorization headers for security
-          filter: (options, args) {
-            if (options.headers.containsKey('Authorization')) {
-              options.headers['Authorization'] = 'Bearer [REDACTED]';
-            }
-            return true;
-          },
-        ),
-      );
+    // Add comprehensive logging interceptor in debug mode
+    if (kDebugMode) {
+      dio.interceptors.add(ApiLoggingInterceptor());
     }
 
     // Add auth interceptor for automatic token management
