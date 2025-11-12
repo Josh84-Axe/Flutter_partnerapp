@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../models/plan_model.dart';
 import '../utils/app_theme.dart';
+import '../utils/currency_utils.dart';
 
 class InternetPlanScreen extends StatefulWidget {
   const InternetPlanScreen({super.key});
@@ -54,6 +55,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
     final appState = context.watch<AppState>();
     final plans = appState.plans;
     final colorScheme = Theme.of(context).colorScheme;
+    final partnerCountry = appState.currentUser?.country;
 
     return Scaffold(
       appBar: AppBar(
@@ -95,7 +97,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '\$${plan.price.toStringAsFixed(2)}',
+                              CurrencyUtils.formatPrice(plan.price, partnerCountry),
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
 import '../widgets/search_bar_widget.dart';
 import '../utils/app_theme.dart';
+import '../utils/currency_utils.dart';
 
 class BulkActionsScreen extends StatefulWidget {
   const BulkActionsScreen({super.key});
@@ -196,6 +197,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
 
   void _showAssignPlanDialog(BuildContext context) {
     final appState = context.read<AppState>();
+    final partnerCountry = appState.currentUser?.country;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -205,7 +207,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
           children: appState.plans.map((plan) {
             return ListTile(
               title: Text(plan.name),
-              subtitle: Text('\$${plan.price.toStringAsFixed(2)}'),
+              subtitle: Text(CurrencyUtils.formatPrice(plan.price, partnerCountry)),
               onTap: () {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
