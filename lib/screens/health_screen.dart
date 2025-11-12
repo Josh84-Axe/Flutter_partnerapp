@@ -34,6 +34,7 @@ class _HealthScreenState extends State<HealthScreen> {
   }
 
   void _showBlockDialog(String routerId, String routerName, bool isBlocked) {
+    final colorScheme = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -65,7 +66,7 @@ class _HealthScreenState extends State<HealthScreen> {
               );
             },
             style: FilledButton.styleFrom(
-              backgroundColor: isBlocked ? AppTheme.primaryGreen : Colors.red,
+              backgroundColor: isBlocked ? colorScheme.primary : colorScheme.error,
             ),
             child: Text(isBlocked ? 'unblock'.tr() : 'block'.tr()),
           ),
@@ -76,6 +77,8 @@ class _HealthScreenState extends State<HealthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
 
     return Scaffold(
@@ -133,13 +136,13 @@ class _HealthScreenState extends State<HealthScreen> {
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
                                       color: isOnline
-                                          ? AppTheme.primaryGreen.withValues(alpha: 0.1)
+                                          ? colorScheme.primaryContainer
                                           : AppTheme.errorRed.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Icon(
                                       isOnline ? Icons.wifi : Icons.wifi_off,
-                                      color: isOnline ? AppTheme.primaryGreen : AppTheme.errorRed,
+                                      color: isOnline ? colorScheme.primary : colorScheme.error,
                                       size: 24,
                                     ),
                                   ),
@@ -339,7 +342,7 @@ class _HealthScreenState extends State<HealthScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.settings, color: AppTheme.primaryGreen),
+              leading: Icon(Icons.settings, color: Theme.of(context).colorScheme.primary),
               title: Text('configure'.tr()),
               onTap: () {
                 Navigator.pop(context);

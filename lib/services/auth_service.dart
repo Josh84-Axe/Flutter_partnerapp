@@ -95,35 +95,8 @@ class AuthService {
   Future<List<UserModel>> getUsers() async {
     await Future.delayed(const Duration(milliseconds: 500));
     
-    return [
-      UserModel(
-        id: 'user_001',
-        name: 'Alice Johnson',
-        email: 'alice@example.com',
-        role: 'user',
-        phone: '+1234567891',
-        isActive: true,
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
-      ),
-      UserModel(
-        id: 'user_002',
-        name: 'Bob Smith',
-        email: 'bob@example.com',
-        role: 'user',
-        phone: '+1234567892',
-        isActive: true,
-        createdAt: DateTime.now().subtract(const Duration(days: 15)),
-      ),
-      UserModel(
-        id: 'user_003',
-        name: 'Carol White',
-        email: 'carol@example.com',
-        role: 'worker',
-        phone: '+1234567893',
-        isActive: false,
-        createdAt: DateTime.now().subtract(const Duration(days: 7)),
-      ),
-    ];
+    // Return empty list - load real data from API instead
+    return [];
   }
 
   Future<UserModel> createUser(Map<String, dynamic> userData) async {

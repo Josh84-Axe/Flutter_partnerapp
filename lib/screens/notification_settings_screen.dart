@@ -18,6 +18,8 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('notification_settings'.tr()),
@@ -94,7 +96,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               Navigator.pop(context);
             },
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.primaryGreen,
+              backgroundColor: colorScheme.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
             child: Text(
@@ -114,10 +116,11 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+        color: colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -126,7 +129,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppTheme.primaryGreen,
+              color: colorScheme.primary,
               borderRadius: BorderRadius.circular(24),
             ),
             child: Icon(
@@ -162,7 +165,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           Switch(
             value: value,
             onChanged: onChanged,
-            activeTrackColor: AppTheme.primaryGreen,
+            activeTrackColor: colorScheme.primary,
           ),
         ],
       ),

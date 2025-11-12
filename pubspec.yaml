@@ -48,6 +48,10 @@ dependencies:
   flutter_svg: ^2.0.10
   adaptive_theme: ^3.3.0
   webview_flutter: ^4.4.2
+  dio: ^5.9.0
+  flutter_secure_storage: ^9.2.4
+  tiknet_api_client:
+    path: packages/tiknet_api_client
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +64,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   golden_toolkit: ^0.15.0
+  pretty_dio_logger: ^1.4.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

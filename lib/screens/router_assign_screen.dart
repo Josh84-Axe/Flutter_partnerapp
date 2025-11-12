@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
-import '../utils/app_theme.dart';
 
 class RouterAssignScreen extends StatefulWidget {
   final String userId;
@@ -31,6 +30,8 @@ class _RouterAssignScreenState extends State<RouterAssignScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
     final routers = appState.routers.where((router) {
       if (_searchQuery.isEmpty) return true;
@@ -88,7 +89,7 @@ class _RouterAssignScreenState extends State<RouterAssignScreen> {
                         }
                       });
                     },
-                    activeColor: AppTheme.primaryGreen,
+                    activeColor: colorScheme.primary,
                   ),
                   onTap: () {
                     setState(() {

@@ -39,7 +39,8 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
               );
             },
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.errorRed,
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             child: Text('delete'.tr()),
           ),
@@ -52,6 +53,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final plans = appState.plans;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -94,10 +96,10 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                             const SizedBox(height: 4),
                             Text(
                               '\$${plan.price.toStringAsFixed(2)}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryGreen,
+                                color: colorScheme.primary,
                               ),
                             ),
                           ],
@@ -110,8 +112,8 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                             onPressed: () => _navigateToCreateEdit(plan: plan),
                             icon: const Icon(Icons.edit),
                             style: IconButton.styleFrom(
-                              foregroundColor: AppTheme.primaryGreen,
-                              backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                              foregroundColor: colorScheme.primary,
+                              backgroundColor: colorScheme.primaryContainer,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -119,8 +121,8 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                             onPressed: () => _showDeleteDialog(plan),
                             icon: const Icon(Icons.delete),
                             style: IconButton.styleFrom(
-                              foregroundColor: AppTheme.errorRed,
-                              backgroundColor: AppTheme.errorRed.withValues(alpha: 0.1),
+                              foregroundColor: colorScheme.error,
+                              backgroundColor: colorScheme.errorContainer,
                             ),
                           ),
                         ],
@@ -135,8 +137,6 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToCreateEdit(),
-        backgroundColor: AppTheme.primaryGreen,
-        foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: Text('new_plan'.tr()),
       ),

@@ -8,6 +8,8 @@ class ExploreDemoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Explore the Demo'),
@@ -67,7 +69,7 @@ class ExploreDemoScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.primaryGreen,
+                  color: colorScheme.primary,
                 ),
               ),
             ),
@@ -85,6 +87,7 @@ class ExploreDemoScreen extends StatelessWidget {
     required String buttonText,
     required VoidCallback onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
       elevation: 2,
       child: Padding(
@@ -96,10 +99,10 @@ class ExploreDemoScreen extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: AppTheme.primaryGreen, size: 28),
+              child: Icon(icon, color: colorScheme.primary, size: 28),
             ),
             const SizedBox(height: 16),
             Text(

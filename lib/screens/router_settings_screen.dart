@@ -42,6 +42,8 @@ class _RouterSettingsScreenState extends State<RouterSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
     final configurations = appState.routerConfigurations;
 
@@ -56,7 +58,7 @@ class _RouterSettingsScreenState extends State<RouterSettingsScreen> {
             icon: const Icon(Icons.add),
             label: const Text('Add New'),
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.primaryGreen,
+              backgroundColor: colorScheme.primary,
               foregroundColor: Colors.white,
             ),
           ),
@@ -118,8 +120,8 @@ class _RouterSettingsScreenState extends State<RouterSettingsScreen> {
                         },
                         icon: const Icon(Icons.edit),
                         style: IconButton.styleFrom(
-                          foregroundColor: AppTheme.primaryGreen,
-                          backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                          foregroundColor: colorScheme.primary,
+                          backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                         ),
                       ),
                       const SizedBox(width: 8),

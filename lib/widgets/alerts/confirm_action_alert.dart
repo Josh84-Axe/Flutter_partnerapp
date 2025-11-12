@@ -10,6 +10,8 @@ class ConfirmActionAlert {
     String cancelText = 'Cancel',
     bool isDestructive = false,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return showModalBottomSheet<bool>(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -25,8 +27,8 @@ class ConfirmActionAlert {
               height: 4,
               decoration: BoxDecoration(
                 color: isDestructive
-                    ? AppTheme.errorRed.withValues(alpha: 0.3)
-                    : AppTheme.primaryGreen.withValues(alpha: 0.3),
+                    ? colorScheme.error.withValues(alpha: 0.3)
+                    : colorScheme.primary.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -36,14 +38,14 @@ class ConfirmActionAlert {
               height: 64,
               decoration: BoxDecoration(
                 color: isDestructive
-                    ? AppTheme.errorRed.withValues(alpha: 0.1)
-                    : AppTheme.primaryGreen.withValues(alpha: 0.1),
+                    ? colorScheme.errorContainer
+                    : colorScheme.primaryContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.warning,
                 size: 40,
-                color: isDestructive ? AppTheme.errorRed : AppTheme.primaryGreen,
+                color: isDestructive ? colorScheme.error : colorScheme.primary,
               ),
             ),
             const SizedBox(height: 16),
@@ -81,8 +83,11 @@ class ConfirmActionAlert {
                     onPressed: () => Navigator.pop(context, true),
                     style: FilledButton.styleFrom(
                       backgroundColor: isDestructive
-                          ? AppTheme.errorRed
-                          : AppTheme.primaryGreen,
+                          ? colorScheme.error
+                          : colorScheme.primary,
+                      foregroundColor: isDestructive
+                          ? colorScheme.onError
+                          : colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(confirmText),

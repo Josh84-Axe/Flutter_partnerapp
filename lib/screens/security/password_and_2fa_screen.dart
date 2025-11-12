@@ -49,6 +49,8 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('security_settings'.tr()),
@@ -150,7 +152,7 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
               );
             },
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.primaryGreen,
+              backgroundColor: colorScheme.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
             child: const Text('Update Password'),
@@ -218,7 +220,7 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
               }
             },
             style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.primaryGreen,
+              backgroundColor: colorScheme.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
             child: Text('enable_2fa'.tr()),

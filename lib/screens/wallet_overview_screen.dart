@@ -28,6 +28,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
+    final colorScheme = Theme.of(context).colorScheme;
     
     final revenueTransactions = appState.transactions
         .where((t) => t.type == 'revenue')
@@ -66,14 +67,14 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppTheme.primaryGreen, AppTheme.lightGreen],
+                colors: [colorScheme.primary, colorScheme.primaryContainer],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryGreen.withValues(alpha: 0.3),
+                  color: colorScheme.primary.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -245,7 +246,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                   _buildSummaryRow(
                     'Current Balance',
                     MetricCard.formatCurrency(appState.walletBalance),
-                    AppTheme.primaryGreen,
+                    colorScheme.primary,
                   ),
                 ],
               ),
@@ -261,26 +262,28 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
     required String label,
     required VoidCallback onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+          color: colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppTheme.primaryGreen.withValues(alpha: 0.3),
+            color: colorScheme.primary.withValues(alpha: 0.3),
           ),
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppTheme.primaryGreen, size: 24),
+            Icon(icon, color: colorScheme.primary, size: 24),
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(
-                color: AppTheme.primaryGreen,
+              style: TextStyle(
+                color: colorScheme.primary,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -293,21 +296,23 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
   }
 
   Widget _buildTabChip(String label, bool isSelected, VoidCallback onTap) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryGreen : Colors.transparent,
+          color: isSelected ? colorScheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppTheme.primaryGreen,
+            color: colorScheme.primary,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : AppTheme.primaryGreen,
+            color: isSelected ? colorScheme.onPrimary : colorScheme.primary,
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
@@ -317,18 +322,20 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
   }
 
   Widget _buildPeriodChip(String label, bool isSelected, VoidCallback onTap) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryGreen.withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected ? colorScheme.primaryContainer : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight,
+            color: isSelected ? colorScheme.primary : AppTheme.textLight,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             fontSize: 12,
           ),

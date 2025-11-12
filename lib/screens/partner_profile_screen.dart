@@ -55,11 +55,13 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Partner Profile'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -115,7 +117,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                     ),
                     TextButton.icon(
                       onPressed: _addPaymentMethod,
-                      icon: const Icon(Icons.add, size: 20),
+                      icon: Icon(Icons.add, size: 20),
                       label: const Text('Add New'),
                     ),
                   ],
@@ -143,7 +145,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                 child: FilledButton(
                   onPressed: _showOtpValidation,
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.primaryGreen,
+                    backgroundColor: colorScheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: const Text(
@@ -165,24 +167,26 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     required IconData icon,
     TextInputType? keyboardType,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: AppTheme.primaryGreen),
+        prefixIcon: Icon(icon, color: colorScheme.primary),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
       ),
     );
   }
 
   Widget _buildPaymentMethodCard(Map<String, String> method) {
+    final colorScheme = Theme.of(context).colorScheme;
     IconData iconData;
     switch (method['icon']) {
       case 'account_balance':
@@ -202,8 +206,8 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
-              child: Icon(iconData, color: AppTheme.primaryGreen),
+              backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+              child: Icon(iconData, color: colorScheme.primary),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -238,12 +242,12 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.edit_outlined, size: 20),
+              icon: Icon(Icons.edit_outlined, size: 20),
               onPressed: () {},
-              color: AppTheme.primaryGreen,
+              color: colorScheme.primary,
             ),
             IconButton(
-              icon: const Icon(Icons.delete_outline, size: 20),
+              icon: Icon(Icons.delete_outline, size: 20),
               onPressed: () {},
               color: AppTheme.errorRed,
             ),

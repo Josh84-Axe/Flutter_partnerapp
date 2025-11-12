@@ -7,6 +7,8 @@ class TwoFactorSuccessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: Column(
         children: [
@@ -62,7 +64,7 @@ class TwoFactorSuccessScreen extends StatelessWidget {
                     Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.primaryGreen,
+                    backgroundColor: colorScheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: const Text(

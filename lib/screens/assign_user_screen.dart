@@ -89,22 +89,23 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
                 itemBuilder: (context, index) {
                   final user = users[index];
                   final isSelected = _selectedUserId == user.id;
+                  final colorScheme = Theme.of(context).colorScheme;
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
-                    color: isSelected ? AppTheme.primaryGreen.withValues(alpha: 0.1) : null,
+                    color: isSelected ? colorScheme.primaryContainer : null,
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                        backgroundColor: colorScheme.primaryContainer,
                         child: Text(
                           user.name[0].toUpperCase(),
-                          style: const TextStyle(color: AppTheme.primaryGreen),
+                          style: TextStyle(color: colorScheme.primary),
                         ),
                       ),
                       title: Text(user.name),
                       subtitle: Text(user.email),
                       trailing: Radio<String>(
                         value: user.id,
-                        activeColor: AppTheme.primaryGreen,
+                        activeColor: colorScheme.primary,
                       ),
                       onTap: () => setState(() => _selectedUserId = user.id),
                     ),
@@ -160,7 +161,7 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(

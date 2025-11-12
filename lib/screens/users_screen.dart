@@ -257,7 +257,6 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showUserDialog(),
-        backgroundColor: AppTheme.primaryGreen,
         child: const Icon(Icons.add),
       ),
     );
@@ -288,15 +287,17 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
         final isConnected = user.isActive && index % 2 == 0;
         final connectionType = index % 3 == 0 ? 'Gateway' : 'Assigned';
         
+        final colorScheme = Theme.of(context).colorScheme;
+        
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+              backgroundColor: colorScheme.primaryContainer,
               child: Text(
                 user.name[0].toUpperCase(),
-                style: const TextStyle(
-                  color: AppTheme.primaryGreen,
+                style: TextStyle(
+                  color: colorScheme.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -396,7 +397,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               },
             ),
             ListTile(
-              leading: const Icon(Icons.person, color: AppTheme.primaryGreen),
+              leading: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
               title: Text('view_details'.tr()),
               onTap: () {
                 Navigator.pop(context);
@@ -441,7 +442,8 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                           Navigator.pop(context);
                         },
                         style: FilledButton.styleFrom(
-                          backgroundColor: AppTheme.errorRed,
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                          foregroundColor: Theme.of(context).colorScheme.onError,
                         ),
                         child: Text('remove'.tr()),
                       ),

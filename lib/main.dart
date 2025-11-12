@@ -64,6 +64,10 @@ import 'screens/notification_router_screen.dart';
 import 'screens/user_details_screen.dart';
 import 'screens/role_permission_screen.dart';
 import 'screens/assign_role_screen.dart';
+import 'screens/router_health_screen.dart';
+import 'screens/transaction_payment_history_screen.dart';
+import 'screens/add_payout_method_screen.dart';
+import 'screens/assign_router_screen.dart';
 import 'models/hotspot_profile_model.dart';
 import 'models/user_model.dart';
 
@@ -101,18 +105,30 @@ class HotspotPartnerApp extends StatelessWidget {
     
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        // Use dynamic colors if available (Android 12+), otherwise fallback to Tiknet themes
-        ThemeData lightTheme = themeProvider.currentTheme;
-        ThemeData darkTheme = themeProvider.currentTheme;
+        // Use dynamic colors from Material You if available (Android 12+)
+        // Otherwise fall back to our professional blue brand colors
+        ColorScheme lightScheme;
+        ColorScheme darkScheme;
         
-        // Only apply dynamic colors if user hasn't selected a specific theme variant
-        // and dynamic colors are available
         if (lightDynamic != null && darkDynamic != null) {
-          // For now, we'll use the selected theme variant as the base
-          // Dynamic colors can be optionally integrated in the future
-          lightTheme = themeProvider.currentTheme;
-          darkTheme = themeProvider.currentTheme;
+          // Use harmonized dynamic colors from the system
+          lightScheme = lightDynamic.harmonized();
+          darkScheme = darkDynamic.harmonized();
+        } else {
+          // Fall back to brand blue seed color
+          lightScheme = ColorScheme.fromSeed(
+            seedColor: AppTheme.brandBlue,
+            brightness: Brightness.light,
+          );
+          darkScheme = ColorScheme.fromSeed(
+            seedColor: AppTheme.brandBlue,
+            brightness: Brightness.dark,
+          );
         }
+        
+        // Build themes with consistent component styling
+        final lightTheme = AppTheme.fromScheme(lightScheme);
+        final darkTheme = AppTheme.fromScheme(darkScheme);
         
         return MaterialApp(
           title: 'Tiknet Partner App',
@@ -162,6 +178,10 @@ class HotspotPartnerApp extends StatelessWidget {
         '/payout-request': (context) => const PayoutRequestScreen(),
         '/payout-submitted': (context) => const PayoutSubmittedScreen(),
         '/revenue-breakdown': (context) => const RevenueBreakdownScreen(),
+        '/router-health': (context) => const RouterHealthScreen(),
+        '/transaction-payment-history': (context) => const TransactionPaymentHistoryScreen(),
+        '/add-payout-method': (context) => const AddPayoutMethodScreen(),
+        '/assign-router': (context) => const AssignRouterScreen(),
         '/security/password-2fa': (context) => const PasswordAndTwoFactorScreen(),
         '/security/authenticators': (context) => const AuthenticatorsScreen(),
         '/security/2fa-success': (context) => const TwoFactorSuccessScreen(),
@@ -393,20 +413,20 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(
-              color: AppTheme.primaryGreen,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 30,
                   backgroundColor: Colors.white,
                   child: Icon(
                     Icons.person,
                     size: 40,
-                    color: AppTheme.primaryGreen,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 const SizedBox(height: 12),

@@ -43,6 +43,8 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
 
     return Scaffold(
@@ -116,7 +118,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 2),
+                            borderSide: BorderSide(color: colorScheme.primary, width: 2),
                           ),
                         ),
                       ),
@@ -127,7 +129,8 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                         _amountController.text = appState.walletBalance.toStringAsFixed(2);
                       },
                       style: FilledButton.styleFrom(
-                        backgroundColor: AppTheme.primaryGreen,
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                       ),
                       child: const Text('Max'),
@@ -210,7 +213,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                 ),
                 const SizedBox(height: 16),
                 Card(
-                  color: AppTheme.primaryGreen.withValues(alpha: 0.05),
+                  color: colorScheme.primaryContainer.withValues(alpha: 0.3),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -240,10 +243,10 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                             ),
                             Text(
                               MetricCard.formatCurrency(_finalAmount),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryGreen,
+                                color: colorScheme.primary,
                               ),
                             ),
                           ],
@@ -276,7 +279,8 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                     Navigator.of(context).pushReplacementNamed('/payout-submitted');
                   } : null,
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.primaryGreen,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: Text(
@@ -293,6 +297,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
   }
 
   Widget _buildMethodButton(String label, String value, IconData icon) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isSelected = _selectedMethod == value;
     return GestureDetector(
       onTap: () {
@@ -305,11 +310,11 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.primaryGreen.withValues(alpha: 0.1)
+              ? colorScheme.primaryContainer
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight.withValues(alpha: 0.3),
+            color: isSelected ? colorScheme.primary : AppTheme.textLight.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -317,14 +322,14 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight,
+              color: isSelected ? colorScheme.primary : AppTheme.textLight,
               size: 32,
             ),
             const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppTheme.primaryGreen : AppTheme.textDark,
+                color: isSelected ? colorScheme.primary : AppTheme.textDark,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 fontSize: 14,
               ),

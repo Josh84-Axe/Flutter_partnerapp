@@ -9,6 +9,8 @@ class RolePermissionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
     final roles = appState.roles;
 
@@ -40,7 +42,7 @@ class RolePermissionScreen extends StatelessWidget {
                 icon: const Icon(Icons.add, size: 18),
                 label: Text('create_new_role'.tr()),
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.primaryGreen,
+                  backgroundColor: colorScheme.primary,
                 ),
               ),
             ],
@@ -56,12 +58,12 @@ class RolePermissionScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                      color: colorScheme.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       _getRoleIcon(role.name),
-                      color: AppTheme.primaryGreen,
+                      color: colorScheme.primary,
                       size: 28,
                     ),
                   ),
@@ -129,8 +131,8 @@ class RolePermissionScreen extends StatelessWidget {
                             icon: const Icon(Icons.router, size: 18),
                             label: Text('manage_assigned_routers'.tr()),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: AppTheme.primaryGreen,
-                              side: const BorderSide(color: AppTheme.primaryGreen),
+                              foregroundColor: colorScheme.primary,
+                              side: BorderSide(color: colorScheme.primary),
                             ),
                           ),
                         ],

@@ -41,14 +41,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
       lastDate: DateTime.now(),
       initialDateRange: _dateRange,
       builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppTheme.primaryGreen,
-            ),
-          ),
-          child: child!,
-        );
+        return child!;
       },
     );
 
@@ -62,9 +55,9 @@ class _ReportingScreenState extends State<ReportingScreen> {
   void _generateReport() {
     if (_dateRange == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a date range'),
-          backgroundColor: AppTheme.errorRed,
+        SnackBar(
+          content: const Text('Please select a date range'),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
@@ -79,6 +72,8 @@ class _ReportingScreenState extends State<ReportingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Data Export & Reporting'),
@@ -118,7 +113,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
                 return RadioListTile<String>(
                   value: type,
                   title: Text(type),
-                  activeColor: AppTheme.primaryGreen,
+                  activeColor: colorScheme.primary,
                   contentPadding: EdgeInsets.zero,
                 );
               }).toList(),
@@ -143,7 +138,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_today, size: 20, color: AppTheme.primaryGreen),
+                  Icon(Icons.calendar_today, size: 20, color: colorScheme.primary),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -186,7 +181,8 @@ class _ReportingScreenState extends State<ReportingScreen> {
             child: FilledButton(
               onPressed: _generateReport,
               style: FilledButton.styleFrom(
-                backgroundColor: AppTheme.primaryGreen,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: const Text(
@@ -211,15 +207,16 @@ class _ReportingScreenState extends State<ReportingScreen> {
   }
 
   Widget _buildFormatOption(String format, IconData icon) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isSelected = _selectedFormat == format;
     return InkWell(
       onTap: () => setState(() => _selectedFormat = format),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryGreen.withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected ? colorScheme.primaryContainer : Colors.transparent,
           border: Border.all(
-            color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight.withValues(alpha: 0.3),
+            color: isSelected ? colorScheme.primary : AppTheme.textLight.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -229,14 +226,14 @@ class _ReportingScreenState extends State<ReportingScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppTheme.primaryGreen : AppTheme.textLight,
+              color: isSelected ? colorScheme.primary : AppTheme.textLight,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               format,
               style: TextStyle(
-                color: isSelected ? AppTheme.primaryGreen : AppTheme.textDark,
+                color: isSelected ? colorScheme.primary : AppTheme.textDark,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 fontSize: 15,
               ),
@@ -248,6 +245,8 @@ class _ReportingScreenState extends State<ReportingScreen> {
   }
 
   Widget _buildReportCard(Map<String, dynamic> report) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -255,10 +254,10 @@ class _ReportingScreenState extends State<ReportingScreen> {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+              backgroundColor: colorScheme.primaryContainer,
               child: Icon(
                 report['format'] == 'PDF' ? Icons.picture_as_pdf : Icons.table_chart,
-                color: AppTheme.primaryGreen,
+                color: colorScheme.primary,
                 size: 20,
               ),
             ),
@@ -288,13 +287,13 @@ class _ReportingScreenState extends State<ReportingScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                color: colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 report['format'],
-                style: const TextStyle(
-                  color: AppTheme.primaryGreen,
+                style: TextStyle(
+                  color: colorScheme.primary,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -304,7 +303,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
             IconButton(
               icon: const Icon(Icons.download, size: 20),
               onPressed: () {},
-              color: AppTheme.primaryGreen,
+              color: colorScheme.primary,
             ),
           ],
         ),

@@ -19,31 +19,33 @@ class StatusBadgeWidget extends StatelessWidget {
     required this.type,
   });
 
-  Color _getBackgroundColor() {
+  Color _getBackgroundColor(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     switch (type) {
       case BadgeType.success:
         return AppTheme.successGreen.withValues(alpha: 0.1);
       case BadgeType.warning:
         return AppTheme.warningAmber.withValues(alpha: 0.1);
       case BadgeType.error:
-        return AppTheme.errorRed.withValues(alpha: 0.1);
+        return colorScheme.errorContainer;
       case BadgeType.info:
-        return AppTheme.primaryGreen.withValues(alpha: 0.1);
+        return colorScheme.primaryContainer;
       case BadgeType.pending:
         return AppTheme.warningAmber.withValues(alpha: 0.1);
     }
   }
 
-  Color _getTextColor() {
+  Color _getTextColor(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     switch (type) {
       case BadgeType.success:
         return AppTheme.successGreen;
       case BadgeType.warning:
         return AppTheme.warningAmber;
       case BadgeType.error:
-        return AppTheme.errorRed;
+        return colorScheme.error;
       case BadgeType.info:
-        return AppTheme.primaryGreen;
+        return colorScheme.primary;
       case BadgeType.pending:
         return AppTheme.warningAmber;
     }
@@ -54,13 +56,13 @@ class StatusBadgeWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: _getBackgroundColor(),
+        color: _getBackgroundColor(context),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: _getTextColor(),
+          color: _getTextColor(context),
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),

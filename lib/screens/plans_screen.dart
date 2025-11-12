@@ -271,7 +271,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                       Text(
                                         MetricCard.formatCurrency(plan.price),
                                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                              color: AppTheme.primaryGreen,
+                                              color: Theme.of(context).colorScheme.primary,
                                               fontWeight: FontWeight.bold,
                                             ),
                                       ),
@@ -323,7 +323,6 @@ class _PlansScreenState extends State<PlansScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showCreatePlanDialog,
-        backgroundColor: AppTheme.primaryGreen,
         child: const Icon(Icons.add),
       ),
     );
@@ -335,10 +334,10 @@ class _PlansScreenState extends State<PlansScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 20, color: AppTheme.primaryGreen),
+          child: Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
         ),
         const SizedBox(width: 12),
         Expanded(

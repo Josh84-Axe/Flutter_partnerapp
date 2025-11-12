@@ -45,6 +45,8 @@ class _CarouselScreenState extends State<CarouselScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
@@ -66,13 +68,13 @@ class _CarouselScreenState extends State<CarouselScreen> {
                           width: 120,
                           height: 120,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                            color: colorScheme.primary.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             _getIconData(slide['icon']!),
                             size: 64,
-                            color: AppTheme.primaryGreen,
+                            color: colorScheme.primary,
                           ),
                         ),
                         const SizedBox(height: 48),
@@ -109,8 +111,8 @@ class _CarouselScreenState extends State<CarouselScreen> {
                   height: 8,
                   decoration: BoxDecoration(
                     color: _currentPage == index
-                        ? AppTheme.primaryGreen
-                        : AppTheme.primaryGreen.withValues(alpha: 0.3),
+                        ? colorScheme.primary
+                        : colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),

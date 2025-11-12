@@ -9,6 +9,8 @@ class UserRoleScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final appState = context.watch<AppState>();
     final roles = appState.roles;
 
@@ -47,7 +49,7 @@ class UserRoleScreen extends StatelessWidget {
                       );
                     },
                     style: IconButton.styleFrom(
-                      foregroundColor: AppTheme.primaryGreen,
+                      foregroundColor: colorScheme.primary,
                     ),
                   ),
                   IconButton(

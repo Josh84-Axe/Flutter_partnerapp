@@ -51,6 +51,8 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final purpose = args?['purpose'] as String? ?? 'Verify your identity';
 
@@ -58,7 +60,7 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
       appBar: AppBar(
         title: const Text('OTP Validation'),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -67,10 +69,10 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.mail_outline,
               size: 64,
-              color: AppTheme.primaryGreen,
+              color: colorScheme.primary,
             ),
             const SizedBox(height: 24),
             Text(
@@ -117,8 +119,8 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: AppTheme.primaryGreen,
+                        borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
                           width: 2,
                         ),
                       ),
@@ -140,7 +142,7 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
               child: FilledButton(
                 onPressed: _verifyCode,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.primaryGreen,
+                  backgroundColor: colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: const Text(

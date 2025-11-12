@@ -13,6 +13,8 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -20,7 +22,7 @@ class WelcomeScreen extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppTheme.primaryGreen.withValues(alpha: 0.1),
+              colorScheme.primaryContainer,
               AppTheme.pureWhite,
             ],
           ),
@@ -35,7 +37,7 @@ class WelcomeScreen extends StatelessWidget {
                 Icon(
                   Icons.wifi_tethering,
                   size: 100,
-                  color: AppTheme.primaryGreen,
+                  color: colorScheme.primary,
                 ),
                 const SizedBox(height: 32),
                 const Text(

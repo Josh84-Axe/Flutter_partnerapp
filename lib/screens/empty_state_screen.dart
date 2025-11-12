@@ -7,6 +7,8 @@ class EmptyStateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('empty_state_example'.tr()),
@@ -21,13 +23,13 @@ class EmptyStateScreen extends StatelessWidget {
                 width: 128,
                 height: 128,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                  color: colorScheme.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.group_add,
                   size: 64,
-                  color: AppTheme.primaryGreen,
+                  color: colorScheme.primary,
                 ),
               ),
               const SizedBox(height: 32),

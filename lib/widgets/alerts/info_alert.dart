@@ -8,6 +8,8 @@ class InfoAlert {
     String message = '',
     String buttonText = 'Got It',
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -21,13 +23,13 @@ class InfoAlert {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen.withValues(alpha: 0.2),
+                  color: colorScheme.primaryContainer,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.info,
                   size: 40,
-                  color: AppTheme.primaryGreen,
+                  color: colorScheme.primary,
                 ),
               ),
               const SizedBox(height: 24),

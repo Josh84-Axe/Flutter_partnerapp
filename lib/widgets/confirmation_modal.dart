@@ -45,6 +45,8 @@ class ConfirmationModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Container(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -62,7 +64,7 @@ class ConfirmationModal extends StatelessWidget {
           Icon(
             isDestructive ? Icons.warning_rounded : Icons.info_rounded,
             size: 48,
-            color: isDestructive ? AppTheme.warningAmber : AppTheme.primaryGreen,
+            color: isDestructive ? AppTheme.warningAmber : colorScheme.primary,
           ),
           const SizedBox(height: 16),
           Text(
@@ -94,8 +96,11 @@ class ConfirmationModal extends StatelessWidget {
                   onPressed: onConfirm,
                   style: FilledButton.styleFrom(
                     backgroundColor: isDestructive
-                        ? AppTheme.errorRed
-                        : AppTheme.primaryGreen,
+                        ? colorScheme.error
+                        : colorScheme.primary,
+                    foregroundColor: isDestructive
+                        ? colorScheme.onError
+                        : colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: Text(confirmText),

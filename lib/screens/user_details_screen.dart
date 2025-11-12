@@ -10,11 +10,13 @@ class UserDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('user_information_details'.tr()),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -26,13 +28,13 @@ class UserDetailsScreen extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 48,
-                  backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                  backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                   child: Text(
                     user.name[0].toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryGreen,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ),
@@ -134,7 +136,7 @@ class UserDetailsScreen extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              trailing: const Icon(Icons.chevron_right, color: AppTheme.textLight),
+              trailing: Icon(Icons.chevron_right, color: AppTheme.textLight),
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('user_data_usage'.tr())),

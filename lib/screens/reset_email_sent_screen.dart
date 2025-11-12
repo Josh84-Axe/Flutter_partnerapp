@@ -7,11 +7,13 @@ class ResetEmailSentScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('email_sent'.tr()),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
         ),
       ),
@@ -61,7 +63,7 @@ class ResetEmailSentScreen extends StatelessWidget {
                 },
                 child: Text(
                   'didnt_receive_email_resend'.tr(),
-                  style: const TextStyle(color: AppTheme.primaryGreen),
+                  style: TextStyle(color: colorScheme.primary),
                 ),
               ),
             ],

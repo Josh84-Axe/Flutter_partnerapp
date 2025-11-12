@@ -127,6 +127,8 @@ class _PlanValidityConfigScreenState extends State<PlanValidityConfigScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Plan Validity Configuration'),
@@ -174,8 +176,8 @@ class _PlanValidityConfigScreenState extends State<PlanValidityConfigScreen> {
                               onPressed: () => _showAddEditDialog(item: config),
                               icon: const Icon(Icons.edit),
                               style: IconButton.styleFrom(
-                                foregroundColor: AppTheme.primaryGreen,
-                                backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                                foregroundColor: colorScheme.primary,
+                                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                               ),
                             ),
                             const SizedBox(width: 8),

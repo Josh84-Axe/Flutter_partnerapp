@@ -10,6 +10,8 @@ class RouterDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(router.name),
@@ -126,13 +128,14 @@ class RouterDetailsScreen extends StatelessWidget {
     required String title,
     required List<Widget> children,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppTheme.primaryGreen,
+                color: colorScheme.primary,
                 fontWeight: FontWeight.w600,
               ),
         ),
@@ -177,6 +180,7 @@ class RouterDetailsScreen extends StatelessWidget {
     required String label,
     required VoidCallback onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -194,10 +198,10 @@ class RouterDetailsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: AppTheme.primaryGreen),
+              child: Icon(icon, color: colorScheme.primary),
             ),
             const SizedBox(width: 16),
             Expanded(
