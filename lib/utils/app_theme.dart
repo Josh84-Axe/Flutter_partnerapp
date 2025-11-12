@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Professional Blue seed color (replacing neon green)
+  // Tiknet Brand Colors from app_icon
+  static const Color brandGreen = Color(0xFF2E7D32); // Dark green for text/icons
+  static const Color brandLightGreen = Color(0xFF8FD5A6); // Light green background
+  
+  // Professional Blue seed color (legacy)
   static const Color brandBlue = Color(0xFF1E88E5);
   
   // Legacy colors for backward compatibility
@@ -116,7 +120,7 @@ class AppTheme {
 
   static ThemeData get lightTheme {
     final scheme = ColorScheme.fromSeed(
-      seedColor: brandBlue,
+      seedColor: brandGreen,
       brightness: Brightness.light,
     );
     return fromScheme(scheme);
@@ -124,7 +128,7 @@ class AppTheme {
 
   static ThemeData get darkTheme {
     final scheme = ColorScheme.fromSeed(
-      seedColor: brandBlue,
+      seedColor: brandGreen,
       brightness: Brightness.dark,
     );
     return fromScheme(scheme);

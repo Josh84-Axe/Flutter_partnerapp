@@ -116,13 +116,13 @@ class HotspotPartnerApp extends StatelessWidget {
           lightScheme = lightDynamic.harmonized();
           darkScheme = darkDynamic.harmonized();
         } else {
-          // Fall back to brand blue seed color
+          // Fall back to brand green seed color from app_icon
           lightScheme = ColorScheme.fromSeed(
-            seedColor: AppTheme.brandBlue,
+            seedColor: AppTheme.brandGreen,
             brightness: Brightness.light,
           );
           darkScheme = ColorScheme.fromSeed(
-            seedColor: AppTheme.brandBlue,
+            seedColor: AppTheme.brandGreen,
             brightness: Brightness.dark,
           );
         }
