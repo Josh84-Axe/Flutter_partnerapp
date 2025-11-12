@@ -7,6 +7,7 @@ import 'utils/app_theme.dart';
 import 'providers/app_state.dart';
 import 'providers/theme_provider.dart';
 import 'screens/login_screen.dart';
+import 'screens/registration_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/users_screen.dart';
 import 'screens/plans_screen.dart';
@@ -146,6 +147,7 @@ class HotspotPartnerApp extends StatelessWidget {
         '/auth-wrapper': (context) => const AuthWrapper(),
         '/login': (context) => const LoginScreenM3(),
         '/login-old': (context) => const LoginScreen(),
+        '/register': (context) => const RegistrationScreen(),
         '/home': (context) => const HomeScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/notifications': (context) => const NotificationsScreen(),

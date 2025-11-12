@@ -199,6 +199,79 @@ class AppState with ChangeNotifier {
     }
   }
   
+  Future<bool> registerWithDetails({
+    required String fullName,
+    required String email,
+    required String password,
+    String? phone,
+    String? businessName,
+    String? address,
+    String? city,
+    String? country,
+    int? numberOfRouters,
+  }) async {
+    _setLoading(true);
+    try {
+      if (_useRemoteApi) {
+        // Use real API
+        _initializeRepositories();
+        final success = await _authRepository!.register(
+          firstName: fullName,
+          email: email,
+          password: password,
+          phone: phone,
+          businessName: businessName,
+          address: address,
+          city: city,
+          country: country,
+          numberOfRouters: numberOfRouters,
+        );
+        if (success) {
+          // Try to load profile to get user data
+          // If registration requires email verification, this might fail
+          try {
+            final profileData = await _partnerRepository!.fetchProfile();
+            if (profileData != null) {
+              _currentUser = UserModel(
+                id: profileData['id']?.toString() ?? '1',
+                name: profileData['first_name']?.toString() ?? fullName,
+                email: profileData['email']?.toString() ?? email,
+                role: 'Partner',
+                isActive: true,
+                createdAt: DateTime.now(),
+              );
+              await loadDashboardData();
+            }
+          } catch (e) {
+            // If profile fetch fails (e.g., email verification required),
+            // create a temporary user model
+            _currentUser = UserModel(
+              id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
+              name: fullName,
+              email: email,
+              role: 'Partner',
+              isActive: false,
+              createdAt: DateTime.now(),
+            );
+          }
+        }
+        _setLoading(false);
+        return success;
+      } else {
+        // Use mock service
+        final result = await _authService.register(fullName, email, password);
+        _currentUser = UserModel.fromJson(result['user']);
+        await loadDashboardData();
+        _setLoading(false);
+        return true;
+      }
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
+  
   Future<void> logout() async {
     if (_useRemoteApi && _authRepository != null) {
       await _authRepository!.logout();

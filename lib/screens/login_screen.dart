@@ -281,9 +281,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () {
-                      setState(() {
-                        _isLogin = !_isLogin;
-                      });
+                      if (_isLogin) {
+                        Navigator.of(context).pushNamed('/register');
+                      } else {
+                        setState(() {
+                          _isLogin = !_isLogin;
+                        });
+                      }
                     },
                     child: Text(
                       _isLogin ? 'dont_have_account'.tr() : 'already_have_account'.tr(),

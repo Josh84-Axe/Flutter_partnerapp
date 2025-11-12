@@ -89,6 +89,7 @@ class AuthRepository {
     required String email,
     required String password,
     String? phone,
+    String? businessName,
     String? address,
     String? city,
     String? country,
@@ -103,6 +104,7 @@ class AuthRepository {
           'password': password,
           'password2': password, // Confirm password with same value
           if (phone != null) 'phone': phone,
+          if (businessName != null) 'business_name': businessName,
           if (address != null) 'addresse': address, // Note: API uses 'addresse' (with 'e')
           if (city != null) 'city': city,
           if (country != null) 'country': country,
