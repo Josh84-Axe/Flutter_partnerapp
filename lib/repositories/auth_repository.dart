@@ -97,14 +97,14 @@ class AuthRepository {
   }) async {
     try {
       final response = await _dio.post(
-        '/partner/register-init/',
+        '/partner/register/',
         data: {
           'first_name': firstName,
           'email': email,
           'password': password,
           'password2': password, // Confirm password with same value
           if (phone != null) 'phone': phone,
-          if (businessName != null) 'business_name': businessName,
+          if (businessName != null) 'entreprise_name': businessName,
           if (address != null) 'addresse': address, // Note: API uses 'addresse' (with 'e')
           if (city != null) 'city': city,
           if (country != null) 'country': country,
@@ -113,37 +113,50 @@ class AuthRepository {
       );
 
       // Registration may return tokens immediately or require email verification
-      // API wraps tokens in: {statusCode, error, message, data: {access, refresh}}
+      // API wraps response in: {statusCode, error, message, data: {...}}
       final responseData = response.data as Map<String, dynamic>?;
       if (responseData == null) {
         print('Registration error: Response data is null');
         return false;
       }
 
-      // Extract tokens from nested data object if present
-      final data = responseData['data'] as Map<String, dynamic>?;
-      if (data != null) {
-        final accessToken = data['access']?.toString();
-        final refreshToken = data['refresh']?.toString();
+      // Check if registration was successful
+      final statusCode = responseData['statusCode'];
+      final error = responseData['error'];
+      
+      if (statusCode == 200 && error == false) {
+        print('Registration successful: ${responseData['message']}');
+        
+        // Extract tokens from nested data object if present
+        final data = responseData['data'] as Map<String, dynamic>?;
+        if (data != null) {
+          final accessToken = data['access']?.toString();
+          final refreshToken = data['refresh']?.toString();
 
-        if (accessToken != null && refreshToken != null) {
-          print('Registration successful - saving tokens (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
-          await _tokenStorage.saveTokens(
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-          );
-          
-          // Verify tokens were saved
-          final savedToken = await _tokenStorage.getAccessToken();
-          if (savedToken != null) {
-            print('Tokens saved successfully (verified: ${savedToken.substring(0, 8)}...)');
+          if (accessToken != null && refreshToken != null) {
+            print('Registration returned tokens - saving (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
+            await _tokenStorage.saveTokens(
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+            );
+            
+            // Verify tokens were saved
+            final savedToken = await _tokenStorage.getAccessToken();
+            if (savedToken != null) {
+              print('Tokens saved successfully (verified: ${savedToken.substring(0, 8)}...)');
+            } else {
+              print('ERROR: Tokens not saved correctly!');
+            }
           } else {
-            print('ERROR: Tokens not saved correctly!');
+            print('Registration requires email verification - no tokens returned');
           }
         }
+        
+        return true;
       }
 
-      return true;
+      print('Registration failed: ${responseData['message']}');
+      return false;
     } catch (e) {
       print('Registration error: $e');
       return false;

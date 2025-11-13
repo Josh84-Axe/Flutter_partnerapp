@@ -20,6 +20,7 @@ import '../repositories/auth_repository.dart';
 import '../repositories/partner_repository.dart';
 import '../repositories/wallet_repository.dart';
 import '../repositories/router_repository.dart';
+import '../utils/country_utils.dart';
 
 class AppState with ChangeNotifier {
   // Legacy mock services
@@ -215,6 +216,14 @@ class AppState with ChangeNotifier {
       if (_useRemoteApi) {
         // Use real API
         _initializeRepositories();
+        
+        // Convert country name to ISO code if needed
+        String? countryIsoCode;
+        if (country != null) {
+          countryIsoCode = CountryUtils.getIsoCode(country);
+          print('Registration: Converting country "$country" to ISO code "$countryIsoCode"');
+        }
+        
         final success = await _authRepository!.register(
           firstName: fullName,
           email: email,
@@ -223,28 +232,36 @@ class AppState with ChangeNotifier {
           businessName: businessName,
           address: address,
           city: city,
-          country: country,
+          country: countryIsoCode,
           numberOfRouters: numberOfRouters,
         );
         if (success) {
-          // Try to load profile to get user data
-          // If registration requires email verification, this might fail
-          try {
-            final profileData = await _partnerRepository!.fetchProfile();
-            if (profileData != null) {
-              _currentUser = UserModel(
-                id: profileData['id']?.toString() ?? '1',
-                name: profileData['first_name']?.toString() ?? fullName,
-                email: profileData['email']?.toString() ?? email,
-                role: 'Partner',
-                isActive: true,
-                createdAt: DateTime.now(),
-              );
-              await loadDashboardData();
+          // Registration successful - check if we have tokens (immediate login)
+          // or if email verification is required
+          final hasTokens = await _authRepository!.isAuthenticated();
+          
+          if (hasTokens) {
+            // Tokens were returned - try to load profile
+            try {
+              final profileData = await _partnerRepository!.fetchProfile();
+              if (profileData != null) {
+                _currentUser = UserModel(
+                  id: profileData['id']?.toString() ?? '1',
+                  name: profileData['first_name']?.toString() ?? fullName,
+                  email: profileData['email']?.toString() ?? email,
+                  role: 'Partner',
+                  isActive: true,
+                  createdAt: DateTime.now(),
+                );
+                await loadDashboardData();
+              }
+            } catch (e) {
+              print('Profile fetch failed after registration: $e');
             }
-          } catch (e) {
-            // If profile fetch fails (e.g., email verification required),
-            // create a temporary user model
+          } else {
+            // No tokens - email verification required
+            // Create a temporary user model for UI purposes
+            print('Registration successful - email verification required');
             _currentUser = UserModel(
               id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
               name: fullName,
