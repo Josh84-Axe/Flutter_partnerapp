@@ -131,6 +131,47 @@ class AppState with ChangeNotifier {
   int get unreadNotificationCount => _notifications.where((n) => !n.isRead).length;
   SubscriptionModel? get subscription => _subscription;
   
+  // Repository getters
+  SessionRepository get sessionRepository {
+    _initializeRepositories();
+    return _sessionRepository!;
+  }
+  
+  PasswordRepository get passwordRepository {
+    _initializeRepositories();
+    return _passwordRepository!;
+  }
+  
+  PlanConfigRepository get planConfigRepository {
+    _initializeRepositories();
+    return _planConfigRepository!;
+  }
+  
+  TransactionRepository get transactionRepository {
+    _initializeRepositories();
+    return _transactionRepository!;
+  }
+  
+  CollaboratorRepository get collaboratorRepository {
+    _initializeRepositories();
+    return _collaboratorRepository!;
+  }
+  
+  PaymentMethodRepository get paymentMethodRepository {
+    _initializeRepositories();
+    return _paymentMethodRepository!;
+  }
+  
+  AdditionalDeviceRepository get additionalDeviceRepository {
+    _initializeRepositories();
+    return _additionalDeviceRepository!;
+  }
+  
+  PlanRepository get planRepository {
+    _initializeRepositories();
+    return _planRepository!;
+  }
+  
   Future<bool> login(String email, String password) async {
     _setLoading(true);
     try {
