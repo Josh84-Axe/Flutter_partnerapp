@@ -196,6 +196,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final revenueTransactions = appState.transactions
         .where((t) => t.type == 'revenue' && t.createdAt.month == currentMonth)
         .toList();
+    final partnerCountry = appState.currentUser?.country;
     
     showModalBottomSheet(
       context: context,
