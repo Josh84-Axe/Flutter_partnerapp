@@ -23,6 +23,13 @@ import '../repositories/router_repository.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/hotspot_repository.dart';
 import '../repositories/plan_repository.dart';
+import '../repositories/session_repository.dart';
+import '../repositories/password_repository.dart';
+import '../repositories/plan_config_repository.dart';
+import '../repositories/transaction_repository.dart';
+import '../repositories/collaborator_repository.dart';
+import '../repositories/payment_method_repository.dart';
+import '../repositories/additional_device_repository.dart';
 import '../utils/country_utils.dart';
 
 class AppState with ChangeNotifier {
@@ -39,6 +46,13 @@ class AppState with ChangeNotifier {
   CustomerRepository? _customerRepository;
   HotspotRepository? _hotspotRepository;
   PlanRepository? _planRepository;
+  SessionRepository? _sessionRepository;
+  PasswordRepository? _passwordRepository;
+  PlanConfigRepository? _planConfigRepository;
+  TransactionRepository? _transactionRepository;
+  CollaboratorRepository? _collaboratorRepository;
+  PaymentMethodRepository? _paymentMethodRepository;
+  AdditionalDeviceRepository? _additionalDeviceRepository;
   
   // Feature flag to toggle between mock and real API
   bool _useRemoteApi = ApiConfig.useRemoteApi;
@@ -68,6 +82,16 @@ class AppState with ChangeNotifier {
       _partnerRepository = PartnerRepository(dio: dio);
       _walletRepository = WalletRepository(dio: dio);
       _routerRepository = RouterRepository(dio: dio);
+      _customerRepository = CustomerRepository(dio: dio);
+      _hotspotRepository = HotspotRepository(dio: dio);
+      _planRepository = PlanRepository(dio: dio);
+      _sessionRepository = SessionRepository(dio: dio);
+      _passwordRepository = PasswordRepository(dio: dio);
+      _planConfigRepository = PlanConfigRepository(dio: dio);
+      _transactionRepository = TransactionRepository(dio: dio);
+      _collaboratorRepository = CollaboratorRepository(dio: dio);
+      _paymentMethodRepository = PaymentMethodRepository(dio: dio);
+      _additionalDeviceRepository = AdditionalDeviceRepository(dio: dio);
     }
   }
   

@@ -162,4 +162,57 @@ class AuthRepository {
       return false;
     }
   }
+
+  /// Confirm registration with OTP
+  Future<Map<String, dynamic>?> confirmRegistration(String email, String code) async {
+    try {
+      final response = await _dio.post(
+        '/partner/register-confirm/',
+        data: {'email': email, 'code': code},
+      );
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      print('Confirm registration error: $e');
+      rethrow;
+    }
+  }
+
+  /// Verify email with OTP
+  Future<bool> verifyEmailOtp(String email, String otp) async {
+    try {
+      await _dio.post(
+        '/partner/verify-email-otp/',
+        data: {'email': email, 'otp': otp},
+      );
+      return true;
+    } catch (e) {
+      print('Verify email OTP error: $e');
+      return false;
+    }
+  }
+
+  /// Resend verification OTP
+  Future<bool> resendVerifyEmailOtp(String email) async {
+    try {
+      await _dio.post(
+        '/partner/resend-verify-email-otp/',
+        data: {'email': email},
+      );
+      return true;
+    } catch (e) {
+      print('Resend verify email OTP error: $e');
+      return false;
+    }
+  }
+
+  /// Check token validity
+  Future<bool> checkToken() async {
+    try {
+      final response = await _dio.get('/partner/check-token/');
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Check token error: $e');
+      return false;
+    }
+  }
 }
