@@ -7,35 +7,15 @@ class RouterRepository {
   RouterRepository({required Dio dio}) : _dio = dio;
 
   /// Fetch list of routers
-  /// Note: Backend doesn't have /partner/routers/ endpoint
-  /// Routers are extracted from /partner/plans/ response
+  /// Uses /partner/routers/list/ endpoint
   Future<List<dynamic>> fetchRouters() async {
     try {
-      // Fetch plans which contain router data
-      final response = await _dio.get('/partner/plans/');
+      final response = await _dio.get('/partner/routers/list/');
       final responseData = response.data;
       
-      // Extract routers from plans response
+      // API returns: {statusCode, error, message, data: [...], exception}
       if (responseData is Map && responseData['data'] is List) {
-        final plans = responseData['data'] as List;
-        final routersMap = <int, Map<String, dynamic>>{};
-        
-        // Collect unique routers from all plans
-        for (final plan in plans) {
-          if (plan is Map && plan['routers'] is List) {
-            final routers = plan['routers'] as List;
-            for (final router in routers) {
-              if (router is Map) {
-                final routerId = router['id'];
-                if (routerId != null && !routersMap.containsKey(routerId)) {
-                  routersMap[routerId] = router as Map<String, dynamic>;
-                }
-              }
-            }
-          }
-        }
-        
-        return routersMap.values.toList();
+        return responseData['data'] as List;
       }
       
       return [];
@@ -85,9 +65,11 @@ class RouterRepository {
   }
 
   /// Add a new router
+  /// Required fields: name, ip_address, username, password
+  /// Optional fields: secret, dns_name, api_port, coa_port
   Future<Map<String, dynamic>?> addRouter(Map<String, dynamic> routerData) async {
     try {
-      final response = await _dio.post('/partner/routers/add/', data: routerData);
+      final response = await _dio.post('/partner/routers-add/', data: routerData);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
       print('Add router error: $e');

@@ -20,6 +20,9 @@ import '../repositories/auth_repository.dart';
 import '../repositories/partner_repository.dart';
 import '../repositories/wallet_repository.dart';
 import '../repositories/router_repository.dart';
+import '../repositories/customer_repository.dart';
+import '../repositories/hotspot_repository.dart';
+import '../repositories/plan_repository.dart';
 import '../utils/country_utils.dart';
 
 class AppState with ChangeNotifier {
