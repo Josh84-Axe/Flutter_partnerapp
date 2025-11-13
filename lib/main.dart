@@ -71,6 +71,10 @@ import 'screens/assign_router_screen.dart';
 import 'screens/email_verification_screen.dart';
 import 'screens/hotspot_users_management_screen.dart';
 import 'screens/plan_assignment_screen.dart';
+import 'screens/session_management_screen.dart';
+import 'screens/payment_methods_screen.dart';
+import 'screens/collaborators_management_screen.dart';
+import 'screens/assigned_plans_list_screen.dart';
 import 'models/hotspot_profile_model.dart';
 import 'models/user_model.dart';
 
@@ -183,6 +187,10 @@ class HotspotPartnerApp extends StatelessWidget {
         },
         '/hotspot-users-management': (context) => const HotspotUsersManagementScreen(),
         '/plan-assignment': (context) => const PlanAssignmentScreen(),
+        '/session-management': (context) => const SessionManagementScreen(),
+        '/payment-methods': (context) => const PaymentMethodsScreen(),
+        '/collaborators-management': (context) => const CollaboratorsManagementScreen(),
+        '/assigned-plans-list': (context) => const AssignedPlansListScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/router-details') {
