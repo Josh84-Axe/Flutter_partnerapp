@@ -464,11 +464,14 @@ class AppState with ChangeNotifier {
     try {
       if (_useRemoteApi) {
         // Ensure repositories are initialized
-        if (_partnerRepository == null) _initializeRepositories();
+        if (_customerRepository == null) _initializeRepositories();
         
-        // Note: Customer list endpoint needs to be verified with backend
-        // For now, return empty list as the endpoint returns 404
-        _users = [];
+        final response = await _customerRepository!.fetchCustomers();
+        if (response != null && response['results'] is List) {
+          _users = (response['results'] as List).map((u) => UserModel.fromJson(u)).toList();
+        } else {
+          _users = [];
+        }
       } else {
         _users = await _authService.getUsers();
       }
@@ -638,8 +641,16 @@ class AppState with ChangeNotifier {
   Future<void> createPlan(Map<String, dynamic> planData) async {
     _setLoading(true);
     try {
-      await _paymentService.createPlan(planData);
-      await loadPlans();
+      if (_useRemoteApi) {
+        // Ensure repositories are initialized
+        if (_planRepository == null) _initializeRepositories();
+        
+        await _planRepository!.createPlan(planData);
+        await loadPlans();
+      } else {
+        await _paymentService.createPlan(planData);
+        await loadPlans();
+      }
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
@@ -650,7 +661,14 @@ class AppState with ChangeNotifier {
   Future<void> assignPlan(String userId, String planId) async {
     _setLoading(true);
     try {
-      await _paymentService.assignPlan(userId, planId);
+      if (_useRemoteApi) {
+        // Ensure repositories are initialized
+        if (_planRepository == null) _initializeRepositories();
+        
+        await _planRepository!.assignPlan({'user_id': userId, 'plan_id': planId});
+      } else {
+        await _paymentService.assignPlan(userId, planId);
+      }
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
@@ -674,8 +692,16 @@ class AppState with ChangeNotifier {
   Future<void> createRouter(Map<String, dynamic> routerData) async {
     _setLoading(true);
     try {
-      await _connectivityService.createRouter(routerData);
-      await loadRouters();
+      if (_useRemoteApi) {
+        // Ensure repositories are initialized
+        if (_routerRepository == null) _initializeRepositories();
+        
+        await _routerRepository!.addRouter(routerData);
+        await loadRouters();
+      } else {
+        await _connectivityService.createRouter(routerData);
+        await loadRouters();
+      }
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
