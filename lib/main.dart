@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:dynamic_color/dynamic_color.dart';
 import 'utils/app_theme.dart';
 import 'providers/app_state.dart';
 import 'providers/theme_provider.dart';
+import 'theme/tiknet_themes.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -99,48 +99,18 @@ class HotspotPartnerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     
-    // Capture localization data before entering DynamicColorBuilder
-    final localizationDelegates = context.localizationDelegates;
-    final supportedLocales = context.supportedLocales;
-    final locale = context.locale;
-    
-    return DynamicColorBuilder(
-      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        // Use dynamic colors from Material You if available (Android 12+)
-        // Otherwise fall back to our professional blue brand colors
-        ColorScheme lightScheme;
-        ColorScheme darkScheme;
-        
-        if (lightDynamic != null && darkDynamic != null) {
-          // Use harmonized dynamic colors from the system
-          lightScheme = lightDynamic.harmonized();
-          darkScheme = darkDynamic.harmonized();
-        } else {
-          // Fall back to brand green seed color from app_icon
-          lightScheme = ColorScheme.fromSeed(
-            seedColor: AppTheme.brandGreen,
-            brightness: Brightness.light,
-          );
-          darkScheme = ColorScheme.fromSeed(
-            seedColor: AppTheme.brandGreen,
-            brightness: Brightness.dark,
-          );
-        }
-        
-        // Build themes with consistent component styling
-        final lightTheme = AppTheme.fromScheme(lightScheme);
-        final darkTheme = AppTheme.fromScheme(darkScheme);
-        
-        return MaterialApp(
-          title: 'Tiknet Partner App',
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: themeProvider.themeMode,
-          debugShowCheckedModeBanner: false,
-          localizationsDelegates: localizationDelegates,
-          supportedLocales: supportedLocales,
-          locale: locale,
-          home: const SplashScreen(),
+    // Use ThemeProvider's selected theme directly (no dynamic colors from wallpaper)
+    // This ensures consistent brand colors regardless of device wallpaper
+    return MaterialApp(
+      title: 'Tiknet Partner App',
+      theme: themeProvider.currentTheme,
+      darkTheme: TiknetThemes.getPillRoundedDarkTheme(),
+      themeMode: themeProvider.themeMode,
+      debugShowCheckedModeBanner: false,
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+      home: const SplashScreen(),
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
