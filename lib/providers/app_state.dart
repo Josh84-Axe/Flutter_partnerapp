@@ -36,6 +36,9 @@ class AppState with ChangeNotifier {
   PartnerRepository? _partnerRepository;
   WalletRepository? _walletRepository;
   RouterRepository? _routerRepository;
+  CustomerRepository? _customerRepository;
+  HotspotRepository? _hotspotRepository;
+  PlanRepository? _planRepository;
   
   // Feature flag to toggle between mock and real API
   bool _useRemoteApi = ApiConfig.useRemoteApi;
