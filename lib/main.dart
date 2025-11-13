@@ -68,6 +68,9 @@ import 'screens/router_health_screen.dart';
 import 'screens/transaction_payment_history_screen.dart';
 import 'screens/add_payout_method_screen.dart';
 import 'screens/assign_router_screen.dart';
+import 'screens/email_verification_screen.dart';
+import 'screens/hotspot_users_management_screen.dart';
+import 'screens/plan_assignment_screen.dart';
 import 'models/hotspot_profile_model.dart';
 import 'models/user_model.dart';
 
@@ -174,6 +177,12 @@ class HotspotPartnerApp extends StatelessWidget {
         '/onboarding-old': (context) => const OnboardingFlow(),
         '/about': (context) => const AboutAppScreen(),
         '/empty-state': (context) => const EmptyStateScreen(),
+        '/email-verification': (context) {
+          final email = ModalRoute.of(context)?.settings.arguments as String? ?? 'sientey@hotmail.com';
+          return EmailVerificationScreen(email: email);
+        },
+        '/hotspot-users-management': (context) => const HotspotUsersManagementScreen(),
+        '/plan-assignment': (context) => const PlanAssignmentScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/router-details') {
