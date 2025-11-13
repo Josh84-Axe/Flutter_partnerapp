@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../utils/currency_utils.dart';
 
 class MetricCard extends StatelessWidget {
   final String title;
@@ -73,7 +74,11 @@ class MetricCard extends StatelessWidget {
     );
   }
 
-  static String formatCurrency(double amount) {
+  static String formatCurrency(double amount, [String? country]) {
+    if (country != null) {
+      return CurrencyUtils.formatPrice(amount, country);
+    }
+    // Fallback to USD if no country provided
     final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
     return formatter.format(amount);
   }

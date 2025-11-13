@@ -29,6 +29,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final colorScheme = Theme.of(context).colorScheme;
+    final partnerCountry = appState.currentUser?.country;
     
     final revenueTransactions = appState.transactions
         .where((t) => t.type == 'revenue')
@@ -92,7 +93,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  MetricCard.formatCurrency(appState.walletBalance),
+                  MetricCard.formatCurrency(appState.walletBalance, partnerCountry),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 36,
@@ -174,7 +175,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                   style: const TextStyle(fontSize: 12),
                 ),
                 trailing: Text(
-                  '${isRevenue ? '+' : '-'}${MetricCard.formatCurrency(transaction.amount.abs())}',
+                  '${isRevenue ? '+' : '-'}${MetricCard.formatCurrency(transaction.amount.abs(), partnerCountry)}',
                   style: TextStyle(
                     color: isRevenue ? AppTheme.successGreen : AppTheme.errorRed,
                     fontWeight: FontWeight.bold,
@@ -233,19 +234,19 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                 children: [
                   _buildSummaryRow(
                     'Total Revenue',
-                    MetricCard.formatCurrency(totalRevenue),
+                    MetricCard.formatCurrency(totalRevenue, partnerCountry),
                     AppTheme.successGreen,
                   ),
                   const Divider(height: 24),
                   _buildSummaryRow(
                     'Total Payouts',
-                    MetricCard.formatCurrency(totalPayouts),
+                    MetricCard.formatCurrency(totalPayouts, partnerCountry),
                     AppTheme.errorRed,
                   ),
                   const Divider(height: 24),
                   _buildSummaryRow(
                     'Current Balance',
-                    MetricCard.formatCurrency(appState.walletBalance),
+                    MetricCard.formatCurrency(appState.walletBalance, partnerCountry),
                     colorScheme.primary,
                   ),
                 ],

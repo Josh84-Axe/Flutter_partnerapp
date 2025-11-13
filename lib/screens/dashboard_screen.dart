@@ -26,6 +26,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
+    final partnerCountry = appState.currentUser?.country;
     
     final totalRevenue = appState.transactions
         .where((t) => t.type == 'revenue')
@@ -122,7 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: _buildMetricWidget(
                       context,
                       title: 'total_revenue'.tr(),
-                      value: MetricCard.formatCurrency(totalRevenue),
+                      value: MetricCard.formatCurrency(totalRevenue, partnerCountry),
                       icon: Icons.paid,
                       isLoading: appState.isLoading,
                     ),
@@ -231,7 +232,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     title: Text(txn.description),
                     subtitle: Text('${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year}'),
                     trailing: Text(
-                      MetricCard.formatCurrency(txn.amount),
+                      MetricCard.formatCurrency(txn.amount, partnerCountry),
                       style: const TextStyle(color: AppTheme.successGreen, fontWeight: FontWeight.bold),
                     ),
                   );
