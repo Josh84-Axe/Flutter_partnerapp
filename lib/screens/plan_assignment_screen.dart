@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
-import '../utils/country_utils.dart';
+import '../utils/currency_utils.dart';
 
 class PlanAssignmentScreen extends StatefulWidget {
   const PlanAssignmentScreen({super.key});
@@ -151,7 +151,8 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                             )
                           ]
                         : appState.plans.map((plan) {
-                            final currencySymbol = CountryUtils.getCurrencySymbol('TG');
+                            final partnerCountry = appState.currentUser?.country ?? 'TG';
+                            final currencySymbol = CurrencyUtils.getCurrencySymbol(partnerCountry);
                             
                             return DropdownMenuItem(
                               value: plan.id,
@@ -199,7 +200,8 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                           ...appState.plans
                               .where((p) => p.id == _selectedPlan)
                               .map((plan) {
-                            final currencySymbol = CountryUtils.getCurrencySymbol('TG');
+                            final partnerCountry = appState.currentUser?.country ?? 'TG';
+                            final currencySymbol = CurrencyUtils.getCurrencySymbol(partnerCountry);
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
