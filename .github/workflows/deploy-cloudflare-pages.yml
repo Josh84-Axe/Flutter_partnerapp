@@ -3,7 +3,7 @@ name: Deploy to Cloudflare Pages
 on:
   push:
     branches:
-      - devin/1759955345-initial-flutter-app  # Production branch
+      - devin/1763121919-api-alignment-patch  # Production branch
   pull_request:
     branches:
       - devin/1759955345-initial-flutter-app  # PR previews
@@ -19,7 +19,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.5'  # Pin Flutter version for consistency
+          flutter-version: '3.35.7'  # Match your current Flutter version
           channel: 'stable'
           cache: true
       
@@ -27,15 +27,15 @@ jobs:
         run: flutter pub get
       
       - name: Build web app
-        run: flutter build web --release --web-renderer canvaskit
+        run: flutter build web --release
       
       - name: Deploy to Cloudflare Pages (Production)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/devin/1759955345-initial-flutter-app'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/devin/1763121919-api-alignment-patch'
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: flutter-partner-app
+          projectName: wifi-4u-partner
           directory: build/web
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: main  # Deploy to production environment
@@ -46,7 +46,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: flutter-partner-app
+          projectName: wifi-4u-partner
           directory: build/web
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.head_ref }}  # Deploy to preview environment
@@ -57,7 +57,7 @@ jobs:
         with:
           script: |
             const prNumber = context.issue.number;
-            const previewUrl = `https://${{ github.head_ref }}.flutter-partner-app.pages.dev`;
+            const previewUrl = `https://${context.payload.pull_request.head.ref}.wifi-4u-partner.pages.dev`;
             
             github.rest.issues.createComment({
               issue_number: prNumber,
