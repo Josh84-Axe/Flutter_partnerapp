@@ -193,7 +193,7 @@ class AuthRepository {
       print('✉️ [AuthRepository] Verify email OTP for: $email');
       final response = await _dio.post(
         '/partner/verify-email-otp/',
-        data: {'email': email, 'otp': otp},
+        data: {'email': email, 'code': otp}, // Backend expects 'code' field, not 'otp'
       );
       print('✅ [AuthRepository] Verify email OTP response: ${response.data}');
       return true;
