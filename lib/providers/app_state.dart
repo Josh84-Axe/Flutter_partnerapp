@@ -31,6 +31,7 @@ import '../repositories/collaborator_repository.dart';
 import '../repositories/payment_method_repository.dart';
 import '../repositories/additional_device_repository.dart';
 import '../utils/country_utils.dart';
+import '../utils/currency_utils.dart';
 
 class AppState with ChangeNotifier {
   // Legacy mock services
@@ -115,6 +116,7 @@ class AppState with ChangeNotifier {
   SubscriptionModel? _subscription;
   
   UserModel? get currentUser => _currentUser;
+  String? get partnerCountry => _partnerCountry;
   bool get isLoading => _isLoading;
   String? get error => _error;
   List<UserModel> get users => _users;
@@ -131,6 +133,10 @@ class AppState with ChangeNotifier {
   LanguageModel get selectedLanguage => _selectedLanguage;
   int get unreadNotificationCount => _notifications.where((n) => !n.isRead).length;
   SubscriptionModel? get subscription => _subscription;
+  
+  // Currency formatting helpers
+  String get currencySymbol => CurrencyUtils.getCurrencySymbol(_partnerCountry);
+  String formatMoney(double amount) => CurrencyUtils.formatPrice(amount, _partnerCountry);
   
   // Repository getters
   SessionRepository get sessionRepository {
@@ -388,6 +394,12 @@ class AppState with ChangeNotifier {
         try {
           final profileData = await _partnerRepository!.fetchProfile();
           if (profileData != null) {
+            // Store partner country for currency display
+            _partnerCountry = profileData['country']?.toString() ?? 
+                            profileData['country_name']?.toString() ?? 
+                            'Togo'; // Default to Togo for West African partners
+            print('Partner country loaded: $_partnerCountry');
+            
             _currentUser = UserModel(
               id: profileData['id']?.toString() ?? '1',
               name: '${profileData['first_name'] ?? ''} ${profileData['last_name'] ?? ''}'.trim(),
@@ -508,10 +520,16 @@ class AppState with ChangeNotifier {
         // Ensure repositories are initialized
         if (_customerRepository == null) _initializeRepositories();
         
-        final response = await _customerRepository!.fetchCustomers();
+        print('Loading users from API...');
+        final response = await _customerRepository!.fetchCustomers(page: 1, pageSize: 20);
+        print('Users API response: $response');
+        
         if (response != null && response['results'] is List) {
-          _users = (response['results'] as List).map((u) => UserModel.fromJson(u)).toList();
+          final usersList = response['results'] as List;
+          print('Found ${usersList.length} users');
+          _users = usersList.map((u) => UserModel.fromJson(u)).toList();
         } else {
+          print('No users found or invalid response structure');
           _users = [];
         }
       } else {
@@ -520,7 +538,9 @@ class AppState with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       print('Load users error: $e');
-      _setError(e.toString());
+      _setError('Failed to load users: $e');
+      _users = [];
+      notifyListeners();
     }
   }
   
