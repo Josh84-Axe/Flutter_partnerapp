@@ -20,17 +20,13 @@ class AboutAppScreen extends StatelessWidget {
           Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 32),
-              child: Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.widgets,
-                  size: 64,
-                  color: colorScheme.onPrimary,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset(
+                  'assets/icons/app_icon.png',
+                  width: 96,
+                  height: 96,
+                  fit: BoxFit.cover,
                 ),
               ),
             ),

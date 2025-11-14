@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
+import '../utils/currency_utils.dart';
 import '../widgets/metric_card.dart';
 import '../widgets/filter_chip_widget.dart';
 import '../widgets/status_badge_widget.dart';
@@ -30,6 +31,9 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   void _showPayoutDialog() {
     final amountController = TextEditingController();
     String selectedMethod = 'bank_transfer';
+    final appState = context.read<AppState>();
+    final partnerCountry = appState.currentUser?.country;
+    final currencySymbol = CurrencyUtils.getCurrencySymbol(partnerCountry);
 
     showDialog(
       context: context,
@@ -43,7 +47,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 controller: amountController,
                 decoration: InputDecoration(
                   labelText: 'amount'.tr(),
-                  prefixText: '\$ ',
+                  prefixText: '$currencySymbol ',
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -101,6 +105,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final colorScheme = Theme.of(context).colorScheme;
+    final partnerCountry = appState.currentUser?.country;
     
     final totalRevenue = appState.transactions
         .where((t) => t.type == 'revenue')
@@ -154,7 +159,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          MetricCard.formatCurrency(appState.walletBalance),
+                          MetricCard.formatCurrency(appState.walletBalance, partnerCountry),
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -186,7 +191,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          MetricCard.formatCurrency(totalRevenue),
+                          MetricCard.formatCurrency(totalRevenue, partnerCountry),
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 color: AppTheme.successGreen,
                                 fontWeight: FontWeight.bold,
@@ -290,7 +295,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                 ],
                               ),
                               trailing: Text(
-                                '${isRevenue ? '+' : '-'}${MetricCard.formatCurrency(transaction.amount.abs())}',
+                                '${isRevenue ? '+' : '-'}${MetricCard.formatCurrency(transaction.amount.abs(), partnerCountry)}',
                                 style: TextStyle(
                                   color: isRevenue ? AppTheme.successGreen : AppTheme.errorRed,
                                   fontWeight: FontWeight.bold,

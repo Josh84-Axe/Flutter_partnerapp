@@ -20,6 +20,18 @@ import '../repositories/auth_repository.dart';
 import '../repositories/partner_repository.dart';
 import '../repositories/wallet_repository.dart';
 import '../repositories/router_repository.dart';
+import '../repositories/customer_repository.dart';
+import '../repositories/hotspot_repository.dart';
+import '../repositories/plan_repository.dart';
+import '../repositories/session_repository.dart';
+import '../repositories/password_repository.dart';
+import '../repositories/plan_config_repository.dart';
+import '../repositories/transaction_repository.dart';
+import '../repositories/collaborator_repository.dart';
+import '../repositories/payment_method_repository.dart';
+import '../repositories/additional_device_repository.dart';
+import '../utils/country_utils.dart';
+import '../utils/currency_utils.dart';
 
 class AppState with ChangeNotifier {
   // Legacy mock services
@@ -32,6 +44,16 @@ class AppState with ChangeNotifier {
   PartnerRepository? _partnerRepository;
   WalletRepository? _walletRepository;
   RouterRepository? _routerRepository;
+  CustomerRepository? _customerRepository;
+  HotspotRepository? _hotspotRepository;
+  PlanRepository? _planRepository;
+  SessionRepository? _sessionRepository;
+  PasswordRepository? _passwordRepository;
+  PlanConfigRepository? _planConfigRepository;
+  TransactionRepository? _transactionRepository;
+  CollaboratorRepository? _collaboratorRepository;
+  PaymentMethodRepository? _paymentMethodRepository;
+  AdditionalDeviceRepository? _additionalDeviceRepository;
   
   // Feature flag to toggle between mock and real API
   bool _useRemoteApi = ApiConfig.useRemoteApi;
@@ -61,10 +83,21 @@ class AppState with ChangeNotifier {
       _partnerRepository = PartnerRepository(dio: dio);
       _walletRepository = WalletRepository(dio: dio);
       _routerRepository = RouterRepository(dio: dio);
+      _customerRepository = CustomerRepository(dio: dio);
+      _hotspotRepository = HotspotRepository(dio: dio);
+      _planRepository = PlanRepository(dio: dio);
+      _sessionRepository = SessionRepository(dio: dio);
+      _passwordRepository = PasswordRepository(dio: dio);
+      _planConfigRepository = PlanConfigRepository(dio: dio);
+      _transactionRepository = TransactionRepository(dio: dio);
+      _collaboratorRepository = CollaboratorRepository(dio: dio);
+      _paymentMethodRepository = PaymentMethodRepository(dio: dio);
+      _additionalDeviceRepository = AdditionalDeviceRepository(dio: dio);
     }
   }
   
   UserModel? _currentUser;
+  String? _partnerCountry; // Store partner country for currency display
   bool _isLoading = false;
   String? _error;
   
@@ -83,6 +116,7 @@ class AppState with ChangeNotifier {
   SubscriptionModel? _subscription;
   
   UserModel? get currentUser => _currentUser;
+  String? get partnerCountry => _partnerCountry;
   bool get isLoading => _isLoading;
   String? get error => _error;
   List<UserModel> get users => _users;
@@ -99,6 +133,51 @@ class AppState with ChangeNotifier {
   LanguageModel get selectedLanguage => _selectedLanguage;
   int get unreadNotificationCount => _notifications.where((n) => !n.isRead).length;
   SubscriptionModel? get subscription => _subscription;
+  
+  // Currency formatting helpers
+  String get currencySymbol => CurrencyUtils.getCurrencySymbol(_partnerCountry);
+  String formatMoney(double amount) => CurrencyUtils.formatPrice(amount, _partnerCountry);
+  
+  // Repository getters
+  SessionRepository get sessionRepository {
+    _initializeRepositories();
+    return _sessionRepository!;
+  }
+  
+  PasswordRepository get passwordRepository {
+    _initializeRepositories();
+    return _passwordRepository!;
+  }
+  
+  PlanConfigRepository get planConfigRepository {
+    _initializeRepositories();
+    return _planConfigRepository!;
+  }
+  
+  TransactionRepository get transactionRepository {
+    _initializeRepositories();
+    return _transactionRepository!;
+  }
+  
+  CollaboratorRepository get collaboratorRepository {
+    _initializeRepositories();
+    return _collaboratorRepository!;
+  }
+  
+  PaymentMethodRepository get paymentMethodRepository {
+    _initializeRepositories();
+    return _paymentMethodRepository!;
+  }
+  
+  AdditionalDeviceRepository get additionalDeviceRepository {
+    _initializeRepositories();
+    return _additionalDeviceRepository!;
+  }
+  
+  PlanRepository get planRepository {
+    _initializeRepositories();
+    return _planRepository!;
+  }
   
   Future<bool> login(String email, String password) async {
     _setLoading(true);
@@ -199,6 +278,95 @@ class AppState with ChangeNotifier {
     }
   }
   
+  Future<bool> registerWithDetails({
+    required String fullName,
+    required String email,
+    required String password,
+    String? phone,
+    String? businessName,
+    String? address,
+    String? city,
+    String? country,
+    int? numberOfRouters,
+  }) async {
+    _setLoading(true);
+    try {
+      if (_useRemoteApi) {
+        // Use real API
+        _initializeRepositories();
+        
+        // Convert country name to ISO code if needed
+        String? countryIsoCode;
+        if (country != null) {
+          countryIsoCode = CountryUtils.getIsoCode(country);
+          print('Registration: Converting country "$country" to ISO code "$countryIsoCode"');
+        }
+        
+        final success = await _authRepository!.register(
+          firstName: fullName,
+          email: email,
+          password: password,
+          phone: phone,
+          businessName: businessName,
+          address: address,
+          city: city,
+          country: countryIsoCode,
+          numberOfRouters: numberOfRouters,
+        );
+        if (success) {
+          // Registration successful - check if we have tokens (immediate login)
+          // or if email verification is required
+          final hasTokens = await _authRepository!.isAuthenticated();
+          
+          if (hasTokens) {
+            // Tokens were returned - try to load profile
+            try {
+              final profileData = await _partnerRepository!.fetchProfile();
+              if (profileData != null) {
+                _currentUser = UserModel(
+                  id: profileData['id']?.toString() ?? '1',
+                  name: profileData['first_name']?.toString() ?? fullName,
+                  email: profileData['email']?.toString() ?? email,
+                  role: 'Partner',
+                  isActive: true,
+                  createdAt: DateTime.now(),
+                );
+                await loadDashboardData();
+              }
+            } catch (e) {
+              print('Profile fetch failed after registration: $e');
+            }
+          } else {
+            // No tokens - email verification required
+            // Create a temporary user model for UI purposes
+            print('Registration successful - email verification required');
+            _currentUser = UserModel(
+              id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
+              name: fullName,
+              email: email,
+              role: 'Partner',
+              isActive: false,
+              createdAt: DateTime.now(),
+            );
+          }
+        }
+        _setLoading(false);
+        return success;
+      } else {
+        // Use mock service
+        final result = await _authService.register(fullName, email, password);
+        _currentUser = UserModel.fromJson(result['user']);
+        await loadDashboardData();
+        _setLoading(false);
+        return true;
+      }
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
+  
   Future<void> logout() async {
     if (_useRemoteApi && _authRepository != null) {
       await _authRepository!.logout();
@@ -226,6 +394,12 @@ class AppState with ChangeNotifier {
         try {
           final profileData = await _partnerRepository!.fetchProfile();
           if (profileData != null) {
+            // Store partner country for currency display
+            _partnerCountry = profileData['country']?.toString() ?? 
+                            profileData['country_name']?.toString() ?? 
+                            'Togo'; // Default to Togo for West African partners
+            print('Partner country loaded: $_partnerCountry');
+            
             _currentUser = UserModel(
               id: profileData['id']?.toString() ?? '1',
               name: '${profileData['first_name'] ?? ''} ${profileData['last_name'] ?? ''}'.trim(),
@@ -344,17 +518,29 @@ class AppState with ChangeNotifier {
     try {
       if (_useRemoteApi) {
         // Ensure repositories are initialized
-        if (_partnerRepository == null) _initializeRepositories();
+        if (_customerRepository == null) _initializeRepositories();
         
-        // Note: Customer list endpoint needs to be verified with backend
-        // For now, return empty list as the endpoint returns 404
-        _users = [];
+        print('Loading users from API...');
+        final response = await _customerRepository!.fetchCustomers(page: 1, pageSize: 20);
+        print('Users API response: $response');
+        
+        if (response != null && response['results'] is List) {
+          final usersList = response['results'] as List;
+          print('Found ${usersList.length} users');
+          _users = usersList.map((u) => UserModel.fromJson(u)).toList();
+        } else {
+          print('No users found or invalid response structure');
+          _users = [];
+        }
       } else {
         _users = await _authService.getUsers();
       }
       notifyListeners();
     } catch (e) {
-      _setError(e.toString());
+      print('Load users error: $e');
+      _setError('Failed to load users: $e');
+      _users = [];
+      notifyListeners();
     }
   }
   
@@ -518,8 +704,16 @@ class AppState with ChangeNotifier {
   Future<void> createPlan(Map<String, dynamic> planData) async {
     _setLoading(true);
     try {
-      await _paymentService.createPlan(planData);
-      await loadPlans();
+      if (_useRemoteApi) {
+        // Ensure repositories are initialized
+        if (_planRepository == null) _initializeRepositories();
+        
+        await _planRepository!.createPlan(planData);
+        await loadPlans();
+      } else {
+        await _paymentService.createPlan(planData);
+        await loadPlans();
+      }
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
@@ -530,7 +724,14 @@ class AppState with ChangeNotifier {
   Future<void> assignPlan(String userId, String planId) async {
     _setLoading(true);
     try {
-      await _paymentService.assignPlan(userId, planId);
+      if (_useRemoteApi) {
+        // Ensure repositories are initialized
+        if (_planRepository == null) _initializeRepositories();
+        
+        await _planRepository!.assignPlan({'user_id': userId, 'plan_id': planId});
+      } else {
+        await _paymentService.assignPlan(userId, planId);
+      }
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
@@ -554,8 +755,16 @@ class AppState with ChangeNotifier {
   Future<void> createRouter(Map<String, dynamic> routerData) async {
     _setLoading(true);
     try {
-      await _connectivityService.createRouter(routerData);
-      await loadRouters();
+      if (_useRemoteApi) {
+        // Ensure repositories are initialized
+        if (_routerRepository == null) _initializeRepositories();
+        
+        await _routerRepository!.addRouter(routerData);
+        await loadRouters();
+      } else {
+        await _connectivityService.createRouter(routerData);
+        await loadRouters();
+      }
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());

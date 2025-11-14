@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:dynamic_color/dynamic_color.dart';
-import 'utils/app_theme.dart';
 import 'providers/app_state.dart';
 import 'providers/theme_provider.dart';
+import 'theme/tiknet_themes.dart';
 import 'screens/login_screen.dart';
+import 'screens/registration_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/users_screen.dart';
 import 'screens/plans_screen.dart';
@@ -68,6 +68,13 @@ import 'screens/router_health_screen.dart';
 import 'screens/transaction_payment_history_screen.dart';
 import 'screens/add_payout_method_screen.dart';
 import 'screens/assign_router_screen.dart';
+import 'screens/email_verification_screen.dart';
+import 'screens/hotspot_users_management_screen.dart';
+import 'screens/plan_assignment_screen.dart';
+import 'screens/session_management_screen.dart';
+import 'screens/payment_methods_screen.dart';
+import 'screens/collaborators_management_screen.dart';
+import 'screens/assigned_plans_list_screen.dart';
 import 'models/hotspot_profile_model.dart';
 import 'models/user_model.dart';
 
@@ -98,54 +105,25 @@ class HotspotPartnerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     
-    // Capture localization data before entering DynamicColorBuilder
-    final localizationDelegates = context.localizationDelegates;
-    final supportedLocales = context.supportedLocales;
-    final locale = context.locale;
-    
-    return DynamicColorBuilder(
-      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        // Use dynamic colors from Material You if available (Android 12+)
-        // Otherwise fall back to our professional blue brand colors
-        ColorScheme lightScheme;
-        ColorScheme darkScheme;
-        
-        if (lightDynamic != null && darkDynamic != null) {
-          // Use harmonized dynamic colors from the system
-          lightScheme = lightDynamic.harmonized();
-          darkScheme = darkDynamic.harmonized();
-        } else {
-          // Fall back to brand blue seed color
-          lightScheme = ColorScheme.fromSeed(
-            seedColor: AppTheme.brandBlue,
-            brightness: Brightness.light,
-          );
-          darkScheme = ColorScheme.fromSeed(
-            seedColor: AppTheme.brandBlue,
-            brightness: Brightness.dark,
-          );
-        }
-        
-        // Build themes with consistent component styling
-        final lightTheme = AppTheme.fromScheme(lightScheme);
-        final darkTheme = AppTheme.fromScheme(darkScheme);
-        
-        return MaterialApp(
-          title: 'Tiknet Partner App',
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: themeProvider.themeMode,
-          debugShowCheckedModeBanner: false,
-          localizationsDelegates: localizationDelegates,
-          supportedLocales: supportedLocales,
-          locale: locale,
-          home: const SplashScreen(),
+    // Use ThemeProvider's selected theme directly (no dynamic colors from wallpaper)
+    // This ensures consistent brand colors regardless of device wallpaper
+    return MaterialApp(
+      title: 'Tiknet Partner App',
+      theme: themeProvider.currentTheme,
+      darkTheme: TiknetThemes.getPillRoundedDarkTheme(),
+      themeMode: themeProvider.themeMode,
+      debugShowCheckedModeBanner: false,
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+      home: const SplashScreen(),
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
         '/auth-wrapper': (context) => const AuthWrapper(),
         '/login': (context) => const LoginScreenM3(),
         '/login-old': (context) => const LoginScreen(),
+        '/register': (context) => const RegistrationScreen(),
         '/home': (context) => const HomeScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/notifications': (context) => const NotificationsScreen(),
@@ -203,6 +181,16 @@ class HotspotPartnerApp extends StatelessWidget {
         '/onboarding-old': (context) => const OnboardingFlow(),
         '/about': (context) => const AboutAppScreen(),
         '/empty-state': (context) => const EmptyStateScreen(),
+        '/email-verification': (context) {
+          final email = ModalRoute.of(context)?.settings.arguments as String? ?? 'sientey@hotmail.com';
+          return EmailVerificationScreen(email: email);
+        },
+        '/hotspot-users-management': (context) => const HotspotUsersManagementScreen(),
+        '/plan-assignment': (context) => const PlanAssignmentScreen(),
+        '/session-management': (context) => const SessionManagementScreen(),
+        '/payment-methods': (context) => const PaymentMethodsScreen(),
+        '/collaborators-management': (context) => const CollaboratorsManagementScreen(),
+        '/assigned-plans-list': (context) => const AssignedPlansListScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/router-details') {
@@ -247,8 +235,6 @@ class HotspotPartnerApp extends StatelessWidget {
           );
         }
         return null;
-      },
-        );
       },
     );
   }

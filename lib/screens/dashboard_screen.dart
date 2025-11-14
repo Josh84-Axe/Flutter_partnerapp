@@ -122,7 +122,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: _buildMetricWidget(
                       context,
                       title: 'total_revenue'.tr(),
-                      value: MetricCard.formatCurrency(totalRevenue),
+                      value: appState.formatMoney(totalRevenue),
                       icon: Icons.paid,
                       isLoading: appState.isLoading,
                     ),
@@ -231,7 +231,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     title: Text(txn.description),
                     subtitle: Text('${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year}'),
                     trailing: Text(
-                      MetricCard.formatCurrency(txn.amount),
+                      appState.formatMoney(txn.amount),
                       style: const TextStyle(color: AppTheme.successGreen, fontWeight: FontWeight.bold),
                     ),
                   );

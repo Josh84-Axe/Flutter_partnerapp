@@ -113,10 +113,10 @@ class TiknetThemes {
     );
   }
 
-  // Flat Light Green Theme - deeper green with enhanced contrast
+  // Flat Light Green Theme - Tiknet brand green
   static ThemeData getFlatLightGreenTheme() {
     final scheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF1B5E20), // Deeper green (was #2E7D32)
+      seedColor: const Color(0xFF2E7D32), // Tiknet brand green from app_icon
       brightness: Brightness.light,
     );
     return _base(scheme);

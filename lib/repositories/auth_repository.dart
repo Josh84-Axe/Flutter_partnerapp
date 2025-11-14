@@ -89,6 +89,7 @@ class AuthRepository {
     required String email,
     required String password,
     String? phone,
+    String? businessName,
     String? address,
     String? city,
     String? country,
@@ -96,13 +97,14 @@ class AuthRepository {
   }) async {
     try {
       final response = await _dio.post(
-        '/partner/register-init/',
+        '/partner/register/',
         data: {
           'first_name': firstName,
           'email': email,
           'password': password,
           'password2': password, // Confirm password with same value
           if (phone != null) 'phone': phone,
+          if (businessName != null) 'entreprise_name': businessName,
           if (address != null) 'addresse': address, // Note: API uses 'addresse' (with 'e')
           if (city != null) 'city': city,
           if (country != null) 'country': country,
@@ -111,39 +113,105 @@ class AuthRepository {
       );
 
       // Registration may return tokens immediately or require email verification
-      // API wraps tokens in: {statusCode, error, message, data: {access, refresh}}
+      // API wraps response in: {statusCode, error, message, data: {...}}
       final responseData = response.data as Map<String, dynamic>?;
       if (responseData == null) {
         print('Registration error: Response data is null');
         return false;
       }
 
-      // Extract tokens from nested data object if present
-      final data = responseData['data'] as Map<String, dynamic>?;
-      if (data != null) {
-        final accessToken = data['access']?.toString();
-        final refreshToken = data['refresh']?.toString();
+      // Check if registration was successful
+      final statusCode = responseData['statusCode'];
+      final error = responseData['error'];
+      
+      if (statusCode == 200 && error == false) {
+        print('Registration successful: ${responseData['message']}');
+        
+        // Extract tokens from nested data object if present
+        final data = responseData['data'] as Map<String, dynamic>?;
+        if (data != null) {
+          final accessToken = data['access']?.toString();
+          final refreshToken = data['refresh']?.toString();
 
-        if (accessToken != null && refreshToken != null) {
-          print('Registration successful - saving tokens (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
-          await _tokenStorage.saveTokens(
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-          );
-          
-          // Verify tokens were saved
-          final savedToken = await _tokenStorage.getAccessToken();
-          if (savedToken != null) {
-            print('Tokens saved successfully (verified: ${savedToken.substring(0, 8)}...)');
+          if (accessToken != null && refreshToken != null) {
+            print('Registration returned tokens - saving (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
+            await _tokenStorage.saveTokens(
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+            );
+            
+            // Verify tokens were saved
+            final savedToken = await _tokenStorage.getAccessToken();
+            if (savedToken != null) {
+              print('Tokens saved successfully (verified: ${savedToken.substring(0, 8)}...)');
+            } else {
+              print('ERROR: Tokens not saved correctly!');
+            }
           } else {
-            print('ERROR: Tokens not saved correctly!');
+            print('Registration requires email verification - no tokens returned');
           }
         }
+        
+        return true;
       }
 
-      return true;
+      print('Registration failed: ${responseData['message']}');
+      return false;
     } catch (e) {
       print('Registration error: $e');
+      return false;
+    }
+  }
+
+  /// Confirm registration with OTP
+  Future<Map<String, dynamic>?> confirmRegistration(String email, String code) async {
+    try {
+      final response = await _dio.post(
+        '/partner/register-confirm/',
+        data: {'email': email, 'code': code},
+      );
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      print('Confirm registration error: $e');
+      rethrow;
+    }
+  }
+
+  /// Verify email with OTP
+  Future<bool> verifyEmailOtp(String email, String otp) async {
+    try {
+      await _dio.post(
+        '/partner/verify-email-otp/',
+        data: {'email': email, 'otp': otp},
+      );
+      return true;
+    } catch (e) {
+      print('Verify email OTP error: $e');
+      return false;
+    }
+  }
+
+  /// Resend verification OTP
+  Future<bool> resendVerifyEmailOtp(String email) async {
+    try {
+      await _dio.post(
+        '/partner/resend-verify-email-otp/',
+        data: {'email': email},
+      );
+      return true;
+    } catch (e) {
+      print('Resend verify email OTP error: $e');
+      return false;
+    }
+  }
+
+  /// Check token validity
+  Future<bool> checkToken() async {
+    try {
+      final response = await _dio.get('/partner/check-token/');
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Check token error: $e');
       return false;
     }
   }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../utils/app_theme.dart';
+import '../providers/app_state.dart';
 
 class PartnerProfileScreen extends StatefulWidget {
   const PartnerProfileScreen({super.key});
@@ -9,10 +11,28 @@ class PartnerProfileScreen extends StatefulWidget {
 }
 
 class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
-  final _companyNameController = TextEditingController(text: 'Tiknet Solutions Ltd.');
-  final _addressController = TextEditingController(text: '123 Main Street, Accra, Ghana');
-  final _phoneController = TextEditingController(text: '+233 24 123 4567');
-  final _emailController = TextEditingController(text: 'partner@tiknet.com');
+  late TextEditingController _companyNameController;
+  late TextEditingController _addressController;
+  late TextEditingController _phoneController;
+  late TextEditingController _emailController;
+  late TextEditingController _cityController;
+  late TextEditingController _countryController;
+  late TextEditingController _routersController;
+
+  @override
+  void initState() {
+    super.initState();
+    final appState = context.read<AppState>();
+    final user = appState.currentUser;
+    
+    _companyNameController = TextEditingController(text: user?.name ?? '');
+    _addressController = TextEditingController(text: user?.address ?? '');
+    _phoneController = TextEditingController(text: user?.phone ?? '');
+    _emailController = TextEditingController(text: user?.email ?? '');
+    _cityController = TextEditingController(text: user?.city ?? '');
+    _countryController = TextEditingController(text: user?.country ?? '');
+    _routersController = TextEditingController(text: user?.numberOfRouters?.toString() ?? '');
+  }
 
   final List<Map<String, String>> _paymentMethods = [
     {
@@ -35,6 +55,9 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     _addressController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
+    _cityController.dispose();
+    _countryController.dispose();
+    _routersController.dispose();
     super.dispose();
   }
 
@@ -81,14 +104,15 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _companyNameController,
-                  label: 'Company Name',
+                  label: 'Full Name / Business Name',
                   icon: Icons.business,
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
-                  controller: _addressController,
-                  label: 'Business Address',
-                  icon: Icons.location_on_outlined,
+                  controller: _emailController,
+                  label: 'Email Address',
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
@@ -99,10 +123,28 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
-                  controller: _emailController,
-                  label: 'Email Address',
-                  icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
+                  controller: _addressController,
+                  label: 'Business Address',
+                  icon: Icons.location_on_outlined,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _cityController,
+                  label: 'City',
+                  icon: Icons.location_city,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _countryController,
+                  label: 'Country',
+                  icon: Icons.flag,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _routersController,
+                  label: 'Number of Routers',
+                  icon: Icons.router,
+                  keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 32),
                 Row(

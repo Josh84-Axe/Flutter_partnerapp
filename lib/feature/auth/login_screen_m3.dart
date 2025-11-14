@@ -72,19 +72,13 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
           padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
           children: [
             const SizedBox(height: 36),
-            // Logo
+            // Logo - Tiknet icon covering full space without background
             Center(
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: scheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Icon(
-                  Icons.wifi_rounded,
-                  size: 56,
-                  color: scheme.onPrimaryContainer,
-                ),
+              child: Image.asset(
+                'assets/images/logo_tiknet.png',
+                width: 120,
+                height: 120,
+                fit: BoxFit.contain,
               )
                   .animate()
                   .fadeIn(duration: M3Motion.splashFade)
@@ -152,12 +146,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
               onPressed: _isLoading
                   ? null
                   : () {
-                      // TODO: Navigate to registration screen
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Registration coming soon'),
-                        ),
-                      );
+                      Navigator.of(context).pushNamed('/register');
                     },
               child: const Text('Create account'),
             ),
