@@ -37,7 +37,7 @@ class UserModel {
         id: json['customer']?.toString() ?? json['id']?.toString() ?? '',
         name: '${json['first_name'] ?? ''} ${json['last_name'] ?? ''}'.trim(),
         email: json['email'] ?? '',
-        role: 'Customer',
+        role: 'user', // Use lowercase 'user' to match UsersScreen filter
         phone: json['phone'],
         isActive: !(json['blocked'] ?? false),
         createdAt: json['date_added'] != null 
