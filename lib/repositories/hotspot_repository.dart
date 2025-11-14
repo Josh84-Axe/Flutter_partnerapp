@@ -11,17 +11,23 @@ class HotspotRepository {
   /// Fetch list of hotspot profiles
   Future<List<dynamic>> fetchProfiles() async {
     try {
+      print('🔥 [HotspotRepository] Fetching hotspot profiles');
       final response = await _dio.get('/partner/hotspot/profiles/list/');
+      print('✅ [HotspotRepository] Fetch profiles response: ${response.data}');
+      
       final responseData = response.data;
       
       // API returns: {statusCode, error, message, data: [...], exception}
       if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+        final profiles = responseData['data'] as List;
+        print('✅ [HotspotRepository] Found ${profiles.length} profiles');
+        return profiles;
       }
       
+      print('⚠️ [HotspotRepository] No profiles found');
       return [];
     } catch (e) {
-      print('Fetch hotspot profiles error: $e');
+      print('❌ [HotspotRepository] Fetch hotspot profiles error: $e');
       rethrow;
     }
   }
@@ -30,13 +36,16 @@ class HotspotRepository {
   /// Required fields depend on backend schema
   Future<Map<String, dynamic>?> createProfile(Map<String, dynamic> profileData) async {
     try {
+      print('➕ [HotspotRepository] Creating hotspot profile');
+      print('📦 [HotspotRepository] Profile data: $profileData');
       final response = await _dio.post(
         '/partner/hotspot/profiles/create/',
         data: profileData,
       );
+      print('✅ [HotspotRepository] Create profile response: ${response.data}');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Create hotspot profile error: $e');
+      print('❌ [HotspotRepository] Create hotspot profile error: $e');
       rethrow;
     }
   }
@@ -85,17 +94,23 @@ class HotspotRepository {
   /// Fetch list of hotspot users
   Future<List<dynamic>> fetchUsers() async {
     try {
+      print('👥 [HotspotRepository] Fetching hotspot users');
       final response = await _dio.get('/partner/hotspot/users/list/');
+      print('✅ [HotspotRepository] Fetch users response: ${response.data}');
+      
       final responseData = response.data;
       
       // API returns: {statusCode, error, message, data: [...], exception}
       if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+        final users = responseData['data'] as List;
+        print('✅ [HotspotRepository] Found ${users.length} users');
+        return users;
       }
       
+      print('⚠️ [HotspotRepository] No users found');
       return [];
     } catch (e) {
-      print('Fetch hotspot users error: $e');
+      print('❌ [HotspotRepository] Fetch hotspot users error: $e');
       rethrow;
     }
   }
@@ -104,13 +119,16 @@ class HotspotRepository {
   /// Required fields: username, password, and router association
   Future<Map<String, dynamic>?> createUser(Map<String, dynamic> userData) async {
     try {
+      print('➕ [HotspotRepository] Creating hotspot user');
+      print('📦 [HotspotRepository] User data: $userData');
       final response = await _dio.post(
         '/partner/hotspot/users/create/',
         data: userData,
       );
+      print('✅ [HotspotRepository] Create user response: ${response.data}');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Create hotspot user error: $e');
+      print('❌ [HotspotRepository] Create hotspot user error: $e');
       rethrow;
     }
   }

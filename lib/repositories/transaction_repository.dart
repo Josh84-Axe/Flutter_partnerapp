@@ -24,20 +24,25 @@ class TransactionRepository {
       if (startDate != null) queryParams['start_date'] = startDate;
       if (endDate != null) queryParams['end_date'] = endDate;
 
+      print('💳 [TransactionRepository] Fetching transactions with filters: $queryParams');
       final response = await _dio.get(
         '/partner/transactions/',
         queryParameters: queryParams,
       );
+      print('✅ [TransactionRepository] Fetch transactions response: ${response.data}');
       
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+        final transactions = responseData['data'] as List;
+        print('✅ [TransactionRepository] Found ${transactions.length} transactions');
+        return transactions;
       }
       
+      print('⚠️ [TransactionRepository] No transactions found');
       return [];
     } catch (e) {
-      print('Fetch transactions error: $e');
+      print('❌ [TransactionRepository] Fetch transactions error: $e');
       rethrow;
     }
   }
@@ -45,16 +50,22 @@ class TransactionRepository {
   /// Fetch additional device transactions
   Future<List<dynamic>> fetchAdditionalDeviceTransactions() async {
     try {
+      print('📱 [TransactionRepository] Fetching additional device transactions');
       final response = await _dio.get('/partner/transactions/additional-devices/');
+      print('✅ [TransactionRepository] Response: ${response.data}');
+      
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+        final transactions = responseData['data'] as List;
+        print('✅ [TransactionRepository] Found ${transactions.length} device transactions');
+        return transactions;
       }
       
+      print('⚠️ [TransactionRepository] No device transactions found');
       return [];
     } catch (e) {
-      print('Fetch additional device transactions error: $e');
+      print('❌ [TransactionRepository] Fetch additional device transactions error: $e');
       rethrow;
     }
   }
@@ -62,16 +73,22 @@ class TransactionRepository {
   /// Fetch assigned plan transactions
   Future<List<dynamic>> fetchAssignedPlanTransactions() async {
     try {
+      print('📋 [TransactionRepository] Fetching assigned plan transactions');
       final response = await _dio.get('/partner/transactions/assigned-plans/');
+      print('✅ [TransactionRepository] Response: ${response.data}');
+      
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+        final transactions = responseData['data'] as List;
+        print('✅ [TransactionRepository] Found ${transactions.length} plan transactions');
+        return transactions;
       }
       
+      print('⚠️ [TransactionRepository] No plan transactions found');
       return [];
     } catch (e) {
-      print('Fetch assigned plan transactions error: $e');
+      print('❌ [TransactionRepository] Fetch assigned plan transactions error: $e');
       rethrow;
     }
   }
