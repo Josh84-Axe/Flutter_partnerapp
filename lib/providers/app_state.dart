@@ -96,6 +96,7 @@ class AppState with ChangeNotifier {
   }
   
   UserModel? _currentUser;
+  String? _partnerCountry; // Store partner country for currency display
   bool _isLoading = false;
   String? _error;
   
@@ -518,6 +519,7 @@ class AppState with ChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
+      print('Load users error: $e');
       _setError(e.toString());
     }
   }
