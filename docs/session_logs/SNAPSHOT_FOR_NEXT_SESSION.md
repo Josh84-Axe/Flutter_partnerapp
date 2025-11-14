@@ -30,7 +30,7 @@
 ### Admin Account Credentials
 
 - **Email:** admin@tiknetafrica.com
-- **Password:** uN5]B}u8<A1T
+- **Password:** [REDACTED_PASSWORD]
 - **Profile:** country: null (defaults to Togo in app)
 - **Data:** 4 customers, 4 routers
 
@@ -94,7 +94,7 @@
 
 **Browser Testing (Critical!):**
 1. Start Flutter web: `flutter run -d web-server --web-port=8080`
-2. Login with admin@tiknetafrica.com / uN5]B}u8<A1T
+2. Login with admin@tiknetafrica.com / [REDACTED_PASSWORD]
 3. Verify currency displays CFA on Dashboard
 4. Navigate to Users screen and verify all 4 customers visible
 5. Take screenshots of working features

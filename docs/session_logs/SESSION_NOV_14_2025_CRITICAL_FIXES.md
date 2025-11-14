@@ -142,7 +142,7 @@ Fix 3 critical issues preventing the Flutter Partner App from functioning:
 
 **Browser Testing (as requested by user):**
 1. Started Flutter web app: `flutter run -d web-server --web-port=8080`
-2. Logged in with admin@tiknetafrica.com / uN5]B}u8<A1T
+2. Logged in with admin@tiknetafrica.com / [REDACTED_PASSWORD]
 3. Verified currency displays CFA on Dashboard
 4. Navigated to Users screen and verified all 4 customers visible
 5. Took screenshots of both fixes working

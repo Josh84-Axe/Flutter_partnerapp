@@ -49,7 +49,7 @@ I've been working on the Flutter Partner App to fix 3 critical issues. In the la
 
 **Steps:**
 1. Start Flutter web app: `flutter run -d web-server --web-port=8080 --web-hostname=0.0.0.0`
-2. Login with admin@tiknetafrica.com / uN5]B}u8<A1T
+2. Login with admin@tiknetafrica.com / [REDACTED_PASSWORD]
 3. Navigate to Routers screen
 4. Verify 4 routers display
 5. Test router creation with valid data
@@ -92,7 +92,7 @@ I've been working on the Flutter Partner App to fix 3 critical issues. In the la
 ## Admin Account Details
 
 - **Email:** admin@tiknetafrica.com
-- **Password:** uN5]B}u8<A1T
+- **Password:** [REDACTED_PASSWORD]
 - **Profile:** country: null (defaults to Togo in app)
 - **Data:** 4 customers, 4 routers
 
