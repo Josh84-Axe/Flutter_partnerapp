@@ -12,8 +12,6 @@ class ApiConfig {
 
   /// Feature flag to enable/disable remote API integration
   /// Set to false to use mock data during development/testing
-  static const bool useRemoteApi = bool.fromEnvironment(
-    'USE_REMOTE_API',
-    defaultValue: true, // Enabled for API integration testing
-  );
+  /// TEMPORARY: Hardcoded to true for web builds (bool.fromEnvironment doesn't work reliably on web)
+  static const bool useRemoteApi = true; // bool.fromEnvironment('USE_REMOTE_API', defaultValue: true);
 }

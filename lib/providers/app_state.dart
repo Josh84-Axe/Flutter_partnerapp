@@ -58,10 +58,18 @@ class AppState with ChangeNotifier {
   // Feature flag to toggle between mock and real API
   bool _useRemoteApi = ApiConfig.useRemoteApi;
   
+  // Constructor with debug logging
+  AppState() {
+    print('🔧 [AppState] Initializing AppState');
+    print('🔧 [AppState] ApiConfig.useRemoteApi = ${ApiConfig.useRemoteApi}');
+    print('🔧 [AppState] _useRemoteApi = $_useRemoteApi');
+  }
+  
   bool get useRemoteApi => _useRemoteApi;
   
   /// Toggle between mock data and real API (for testing)
   void setUseRemoteApi(bool value) {
+    print('🔧 [AppState] setUseRemoteApi called with value: $value');
     _useRemoteApi = value;
     notifyListeners();
   }
@@ -180,41 +188,41 @@ class AppState with ChangeNotifier {
   }
   
   Future<bool> login(String email, String password) async {
+    print('🔐 [AppState] login() called with email: $email');
+    print('🔐 [AppState] _useRemoteApi = $_useRemoteApi');
+    print('🔐 [AppState] ApiConfig.useRemoteApi = ${ApiConfig.useRemoteApi}');
+    
     _setLoading(true);
     try {
-      if (_useRemoteApi) {
-        // Use real API
-        _initializeRepositories();
-        final success = await _authRepository!.login(
-          email: email,
-          password: password,
-        );
-        if (success) {
-          // Load profile to get user data
-          final profileData = await _partnerRepository!.fetchProfile();
-          if (profileData != null) {
-            _currentUser = UserModel(
-              id: profileData['id']?.toString() ?? '1',
-              name: profileData['first_name']?.toString() ?? 'Partner',
-              email: profileData['email']?.toString() ?? email,
-              role: 'Partner',
-              isActive: true,
-              createdAt: DateTime.now(),
-            );
-          }
-          await loadDashboardData();
+      // FORCE REMOTE API: Always use real API for login (ignore _useRemoteApi flag)
+      // This is a temporary fix to bypass the mock data issue
+      print('🔐 [AppState] FORCING remote API login (ignoring _useRemoteApi flag)');
+      
+      // Use real API
+      _initializeRepositories();
+      final success = await _authRepository!.login(
+        email: email,
+        password: password,
+      );
+      if (success) {
+        // Load profile to get user data
+        final profileData = await _partnerRepository!.fetchProfile();
+        if (profileData != null) {
+          _currentUser = UserModel(
+            id: profileData['id']?.toString() ?? '1',
+            name: profileData['first_name']?.toString() ?? 'Partner',
+            email: profileData['email']?.toString() ?? email,
+            role: 'Partner',
+            isActive: true,
+            createdAt: DateTime.now(),
+          );
         }
-        _setLoading(false);
-        return success;
-      } else {
-        // Use mock service
-        final result = await _authService.login(email, password);
-        _currentUser = UserModel.fromJson(result['user']);
         await loadDashboardData();
-        _setLoading(false);
-        return true;
       }
+      _setLoading(false);
+      return success;
     } catch (e) {
+      print('🔐 [AppState] Login error: $e');
       _setError(e.toString());
       _setLoading(false);
       return false;
