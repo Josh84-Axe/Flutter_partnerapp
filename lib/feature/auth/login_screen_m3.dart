@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../motion/m3_motion.dart';
 import '../../providers/app_state.dart';
+import '../../services/api/token_storage.dart';
 
 /// Material 3 login screen with unified theme components
 /// Uses M3 TextFields, FilledButton, and animations
@@ -26,6 +27,8 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
   }
 
   Future<void> _handleLogin() async {
+    print('🔐 [LoginScreenM3] _handleLogin() called');
+    
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter email and password')),
@@ -38,16 +41,43 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
     });
 
     try {
-      await context.read<AppState>().login(
+      print('🔐 [LoginScreenM3] Calling AppState.login()');
+      final success = await context.read<AppState>().login(
             _emailController.text,
             _passwordController.text,
           );
+      print('🔐 [LoginScreenM3] AppState.login() returned: $success');
 
       if (!mounted) return;
 
+      // Check if login was successful
+      if (!success) {
+        print('🔐 [LoginScreenM3] Login failed - showing error');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login failed - invalid credentials')),
+        );
+        return;
+      }
+
+      // Verify token was saved before navigating
+      print('🔐 [LoginScreenM3] Verifying token was saved');
+      final tokenStorage = TokenStorage();
+      final accessToken = await tokenStorage.getAccessToken();
+      print('🔐 [LoginScreenM3] Access token exists: ${accessToken != null}');
+      
+      if (accessToken == null) {
+        print('🔐 [LoginScreenM3] No token found - showing error');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Authentication failed - no token received')),
+        );
+        return;
+      }
+
+      print('🔐 [LoginScreenM3] Login successful - navigating to /home');
       // Navigate to home on successful login
       Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
+      print('🔐 [LoginScreenM3] Exception during login: $e');
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
