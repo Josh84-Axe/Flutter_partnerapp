@@ -119,4 +119,90 @@ class CustomerRepository {
       rethrow;
     }
   }
+
+  /// Create a new customer
+  Future<Map<String, dynamic>> createCustomer(Map<String, dynamic> customerData) async {
+    try {
+      print('➕ [CustomerRepository] Creating customer: ${customerData['email']}');
+      final response = await _dio.post(
+        '/partner/customers/',
+        data: customerData,
+      );
+      print('✅ [CustomerRepository] Customer created successfully');
+      
+      final responseData = response.data;
+      if (responseData is Map && responseData['data'] != null) {
+        return responseData['data'] as Map<String, dynamic>;
+      }
+      
+      return responseData as Map<String, dynamic>;
+    } catch (e) {
+      print('❌ [CustomerRepository] Create customer error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update an existing customer
+  Future<Map<String, dynamic>> updateCustomer(String id, Map<String, dynamic> customerData) async {
+    try {
+      print('✏️ [CustomerRepository] Updating customer: $id');
+      final response = await _dio.put(
+        '/partner/customers/$id/',
+        data: customerData,
+      );
+      print('✅ [CustomerRepository] Customer updated successfully');
+      
+      final responseData = response.data;
+      if (responseData is Map && responseData['data'] != null) {
+        return responseData['data'] as Map<String, dynamic>;
+      }
+      
+      return responseData as Map<String, dynamic>;
+    } catch (e) {
+      print('❌ [CustomerRepository] Update customer error: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a customer
+  Future<void> deleteCustomer(String id) async {
+    try {
+      print('🗑️ [CustomerRepository] Deleting customer: $id');
+      await _dio.delete('/partner/customers/$id/');
+      print('✅ [CustomerRepository] Customer deleted successfully');
+    } catch (e) {
+      print('❌ [CustomerRepository] Delete customer error: $e');
+      rethrow;
+    }
+  }
+
+  /// Block a customer
+  Future<void> blockCustomer(String id) async {
+    try {
+      print('🚫 [CustomerRepository] Blocking customer: $id');
+      await _dio.put(
+        '/partner/customers/$id/block-or-unblock/',
+        data: {'is_blocked': true},
+      );
+      print('✅ [CustomerRepository] Customer blocked successfully');
+    } catch (e) {
+      print('❌ [CustomerRepository] Block customer error: $e');
+      rethrow;
+    }
+  }
+
+  /// Unblock a customer
+  Future<void> unblockCustomer(String id) async {
+    try {
+      print('✅ [CustomerRepository] Unblocking customer: $id');
+      await _dio.put(
+        '/partner/customers/$id/block-or-unblock/',
+        data: {'is_blocked': false},
+      );
+      print('✅ [CustomerRepository] Customer unblocked successfully');
+    } catch (e) {
+      print('❌ [CustomerRepository] Unblock customer error: $e');
+      rethrow;
+    }
+  }
 }

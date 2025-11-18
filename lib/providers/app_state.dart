@@ -232,53 +232,44 @@ class AppState with ChangeNotifier {
   Future<bool> register(String name, String email, String password) async {
     _setLoading(true);
     try {
-      if (_useRemoteApi) {
-        // Use real API
-        _initializeRepositories();
-        final success = await _authRepository!.register(
-          firstName: name,
-          email: email,
-          password: password,
-        );
-        if (success) {
-          // Try to load profile to get user data
-          // If registration requires email verification, this might fail
-          try {
-            final profileData = await _partnerRepository!.fetchProfile();
-            if (profileData != null) {
-              _currentUser = UserModel(
-                id: profileData['id']?.toString() ?? '1',
-                name: profileData['first_name']?.toString() ?? name,
-                email: profileData['email']?.toString() ?? email,
-                role: 'Partner',
-                isActive: true,
-                createdAt: DateTime.now(),
-              );
-              await loadDashboardData();
-            }
-          } catch (e) {
-            // If profile fetch fails (e.g., email verification required),
-            // create a temporary user model
+      // FORCE REMOTE API: Always use real API (no mock fallback)
+      _initializeRepositories();
+      final success = await _authRepository!.register(
+        firstName: name,
+        email: email,
+        password: password,
+      );
+      if (success) {
+        // Try to load profile to get user data
+        // If registration requires email verification, this might fail
+        try {
+          final profileData = await _partnerRepository!.fetchProfile();
+          if (profileData != null) {
             _currentUser = UserModel(
-              id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
-              name: name,
-              email: email,
+              id: profileData['id']?.toString() ?? '1',
+              name: profileData['first_name']?.toString() ?? name,
+              email: profileData['email']?.toString() ?? email,
               role: 'Partner',
-              isActive: false,
+              isActive: true,
               createdAt: DateTime.now(),
             );
+            await loadDashboardData();
           }
+        } catch (e) {
+          // If profile fetch fails (e.g., email verification required),
+          // create a temporary user model
+          _currentUser = UserModel(
+            id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
+            name: name,
+            email: email,
+            role: 'Partner',
+            isActive: false,
+            createdAt: DateTime.now(),
+          );
         }
-        _setLoading(false);
-        return success;
-      } else {
-        // Use mock service
-        final result = await _authService.register(name, email, password);
-        _currentUser = UserModel.fromJson(result['user']);
-        await loadDashboardData();
-        _setLoading(false);
-        return true;
       }
+      _setLoading(false);
+      return success;
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
@@ -299,75 +290,66 @@ class AppState with ChangeNotifier {
   }) async {
     _setLoading(true);
     try {
-      if (_useRemoteApi) {
-        // Use real API
-        _initializeRepositories();
-        
-        // Convert country name to ISO code if needed
-        String? countryIsoCode;
-        if (country != null) {
-          countryIsoCode = CountryUtils.getIsoCode(country);
-          print('Registration: Converting country "$country" to ISO code "$countryIsoCode"');
-        }
-        
-        final success = await _authRepository!.register(
-          firstName: fullName,
-          email: email,
-          password: password,
-          phone: phone,
-          businessName: businessName,
-          address: address,
-          city: city,
-          country: countryIsoCode,
-          numberOfRouters: numberOfRouters,
-        );
-        if (success) {
-          // Registration successful - check if we have tokens (immediate login)
-          // or if email verification is required
-          final hasTokens = await _authRepository!.isAuthenticated();
-          
-          if (hasTokens) {
-            // Tokens were returned - try to load profile
-            try {
-              final profileData = await _partnerRepository!.fetchProfile();
-              if (profileData != null) {
-                _currentUser = UserModel(
-                  id: profileData['id']?.toString() ?? '1',
-                  name: profileData['first_name']?.toString() ?? fullName,
-                  email: profileData['email']?.toString() ?? email,
-                  role: 'Partner',
-                  isActive: true,
-                  createdAt: DateTime.now(),
-                );
-                await loadDashboardData();
-              }
-            } catch (e) {
-              print('Profile fetch failed after registration: $e');
-            }
-          } else {
-            // No tokens - email verification required
-            // Create a temporary user model for UI purposes
-            print('Registration successful - email verification required');
-            _currentUser = UserModel(
-              id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
-              name: fullName,
-              email: email,
-              role: 'Partner',
-              isActive: false,
-              createdAt: DateTime.now(),
-            );
-          }
-        }
-        _setLoading(false);
-        return success;
-      } else {
-        // Use mock service
-        final result = await _authService.register(fullName, email, password);
-        _currentUser = UserModel.fromJson(result['user']);
-        await loadDashboardData();
-        _setLoading(false);
-        return true;
+      // FORCE REMOTE API: Always use real API (no mock fallback)
+      _initializeRepositories();
+      
+      // Convert country name to ISO code if needed
+      String? countryIsoCode;
+      if (country != null) {
+        countryIsoCode = CountryUtils.getIsoCode(country);
+        print('Registration: Converting country "$country" to ISO code "$countryIsoCode"');
       }
+      
+      final success = await _authRepository!.register(
+        firstName: fullName,
+        email: email,
+        password: password,
+        phone: phone,
+        businessName: businessName,
+        address: address,
+        city: city,
+        country: countryIsoCode,
+        numberOfRouters: numberOfRouters,
+      );
+      if (success) {
+        // Registration successful - check if we have tokens (immediate login)
+        // or if email verification is required
+        final hasTokens = await _authRepository!.isAuthenticated();
+        
+        if (hasTokens) {
+          // Tokens were returned - try to load profile
+          try {
+            final profileData = await _partnerRepository!.fetchProfile();
+            if (profileData != null) {
+              _currentUser = UserModel(
+                id: profileData['id']?.toString() ?? '1',
+                name: profileData['first_name']?.toString() ?? fullName,
+                email: profileData['email']?.toString() ?? email,
+                role: 'Partner',
+                isActive: true,
+                createdAt: DateTime.now(),
+              );
+              await loadDashboardData();
+            }
+          } catch (e) {
+            print('Profile fetch failed after registration: $e');
+          }
+        } else {
+          // No tokens - email verification required
+          // Create a temporary user model for UI purposes
+          print('Registration successful - email verification required');
+          _currentUser = UserModel(
+            id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
+            name: fullName,
+            email: email,
+            role: 'Partner',
+            isActive: false,
+            createdAt: DateTime.now(),
+          );
+        }
+      }
+      _setLoading(false);
+      return success;
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
@@ -376,11 +358,9 @@ class AppState with ChangeNotifier {
   }
   
   Future<void> logout() async {
-    if (_useRemoteApi && _authRepository != null) {
-      await _authRepository!.logout();
-    } else {
-      await _authService.logout();
-    }
+    // FORCE REMOTE API: Always use real API (no mock fallback)
+    _initializeRepositories();
+    await _authRepository!.logout();
     _currentUser = null;
     _users = [];
     _routers = [];
@@ -391,43 +371,36 @@ class AppState with ChangeNotifier {
   }
   
   Future<void> checkAuthStatus() async {
-    if (_useRemoteApi) {
-      // Check if we have a saved token and initialize repositories
-      _initializeRepositories();
-      final tokenStorage = TokenStorage();
-      final accessToken = await tokenStorage.getAccessToken();
-      
-      if (accessToken != null) {
-        // Try to fetch profile to verify token is still valid
-        try {
-          final profileData = await _partnerRepository!.fetchProfile();
-          if (profileData != null) {
-            // Store partner country for currency display
-            _partnerCountry = profileData['country']?.toString() ?? 
-                            profileData['country_name']?.toString() ?? 
-                            'Togo'; // Default to Togo for West African partners
-            print('Partner country loaded: $_partnerCountry');
-            
-            _currentUser = UserModel(
-              id: profileData['id']?.toString() ?? '1',
-              name: '${profileData['first_name'] ?? ''} ${profileData['last_name'] ?? ''}'.trim(),
-              email: profileData['email']?.toString() ?? '',
-              role: 'Partner',
-              isActive: true,
-              createdAt: DateTime.now(),
-            );
-            await loadDashboardData();
-          }
-        } catch (e) {
-          // Token is invalid, clear it
-          await tokenStorage.clearTokens();
-          _currentUser = null;
+    // FORCE REMOTE API: Always use real API (no mock fallback)
+    _initializeRepositories();
+    final tokenStorage = TokenStorage();
+    final accessToken = await tokenStorage.getAccessToken();
+    
+    if (accessToken != null) {
+      // Try to fetch profile to verify token is still valid
+      try {
+        final profileData = await _partnerRepository!.fetchProfile();
+        if (profileData != null) {
+          // Store partner country for currency display
+          _partnerCountry = profileData['country']?.toString() ?? 
+                          profileData['country_name']?.toString() ?? 
+                          'Togo'; // Default to Togo for West African partners
+          print('Partner country loaded: $_partnerCountry');
+          
+          _currentUser = UserModel(
+            id: profileData['id']?.toString() ?? '1',
+            name: '${profileData['first_name'] ?? ''} ${profileData['last_name'] ?? ''}'.trim(),
+            email: profileData['email']?.toString() ?? '',
+            role: 'Partner',
+            isActive: true,
+            createdAt: DateTime.now(),
+          );
+          await loadDashboardData();
         }
-      }
-    } else {
-      _currentUser = await _authService.getCurrentUser();
-      if (_currentUser != null) {
-        await loadDashboardData();
+      } catch (e) {
+        // Token is invalid, clear it
+        await tokenStorage.clearTokens();
+        _currentUser = null;
       }
     }
     notifyListeners();
@@ -461,18 +434,9 @@ class AppState with ChangeNotifier {
 
   Future<void> loadSubscription() async {
     try {
-      _subscription = SubscriptionModel(
-        id: '1',
-        tier: 'Standard',
-        renewalDate: DateTime(2023, 12, 10),
-        isActive: true,
-        monthlyFee: 29.99,
-        features: {
-          'maxRouters': 5,
-          'maxUsers': 100,
-          'support': '24/7',
-        },
-      );
+      // TODO: Replace with real API call when subscription endpoint is available
+      // For now, set to null to show "No subscription" instead of mock data
+      _subscription = null;
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -524,24 +488,20 @@ class AppState with ChangeNotifier {
   
   Future<void> loadUsers() async {
     try {
-      if (_useRemoteApi) {
-        // Ensure repositories are initialized
-        if (_customerRepository == null) _initializeRepositories();
-        
-        print('Loading users from API...');
-        final response = await _customerRepository!.fetchCustomers(page: 1, pageSize: 20);
-        print('Users API response: $response');
-        
-        if (response != null && response['results'] is List) {
-          final usersList = response['results'] as List;
-          print('Found ${usersList.length} users');
-          _users = usersList.map((u) => UserModel.fromJson(u)).toList();
-        } else {
-          print('No users found or invalid response structure');
-          _users = [];
-        }
+      // FORCE REMOTE API: Always use real API (no mock fallback)
+      if (_customerRepository == null) _initializeRepositories();
+      
+      print('Loading users from API...');
+      final response = await _customerRepository!.fetchCustomers(page: 1, pageSize: 20);
+      print('Users API response: $response');
+      
+      if (response != null && response['results'] is List) {
+        final usersList = response['results'] as List;
+        print('Found ${usersList.length} users');
+        _users = usersList.map((u) => UserModel.fromJson(u)).toList();
       } else {
-        _users = await _authService.getUsers();
+        print('No users found or invalid response structure');
+        _users = [];
       }
       notifyListeners();
     } catch (e) {
@@ -554,28 +514,24 @@ class AppState with ChangeNotifier {
   
   Future<void> loadRouters() async {
     try {
-      if (_useRemoteApi) {
-        // Ensure repositories are initialized
-        if (_routerRepository == null) _initializeRepositories();
-        
-        final routersData = await _routerRepository!.fetchRouters();
-        _routers = routersData.map((data) {
-          return RouterModel(
-            id: data['id']?.toString() ?? '',
-            name: data['name']?.toString() ?? 'Router',
-            macAddress: data['mac_address']?.toString() ?? '00:00:00:00:00:00',
-            status: data['is_active'] == true ? 'online' : 'offline',
-            connectedUsers: (data['connected_users'] as num?)?.toInt() ?? 0,
-            dataUsageGB: (data['data_usage_gb'] as num?)?.toDouble() ?? 0.0,
-            uptimeHours: (data['uptime_hours'] as num?)?.toInt() ?? 0,
-            lastSeen: data['last_seen'] != null 
-                ? DateTime.tryParse(data['last_seen'].toString()) ?? DateTime.now()
-                : DateTime.now(),
-          );
-        }).toList();
-      } else {
-        _routers = await _connectivityService.getRouters();
-      }
+      // FORCE REMOTE API: Always use real API (no mock fallback)
+      if (_routerRepository == null) _initializeRepositories();
+      
+      final routersData = await _routerRepository!.fetchRouters();
+      _routers = routersData.map((data) {
+        return RouterModel(
+          id: data['id']?.toString() ?? '',
+          name: data['name']?.toString() ?? 'Router',
+          macAddress: data['mac_address']?.toString() ?? '00:00:00:00:00:00',
+          status: data['is_active'] == true ? 'online' : 'offline',
+          connectedUsers: (data['connected_users'] as num?)?.toInt() ?? 0,
+          dataUsageGB: (data['data_usage_gb'] as num?)?.toDouble() ?? 0.0,
+          uptimeHours: (data['uptime_hours'] as num?)?.toInt() ?? 0,
+          lastSeen: data['last_seen'] != null 
+              ? DateTime.tryParse(data['last_seen'].toString()) ?? DateTime.now()
+              : DateTime.now(),
+        );
+      }).toList();
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -584,32 +540,28 @@ class AppState with ChangeNotifier {
   
   Future<void> loadPlans() async {
     try {
-      if (_useRemoteApi) {
-        // Ensure repositories are initialized
-        if (_walletRepository == null) _initializeRepositories();
+      // FORCE REMOTE API: Always use real API (no mock fallback)
+      if (_walletRepository == null) _initializeRepositories();
+      
+      // Fetch plans from API
+      final plansData = await _walletRepository!.fetchPlans();
+      _plans = plansData.map<PlanModel>((data) {
+        // API returns 'validity' in minutes, convert to days
+        final validityMinutes = (data['validity'] as num?)?.toInt() ?? 0;
+        final validityDays = validityMinutes > 0 ? (validityMinutes / 1440).ceil() : 1;
         
-        // Fetch plans from API
-        final plansData = await _walletRepository!.fetchPlans();
-        _plans = plansData.map<PlanModel>((data) {
-          // API returns 'validity' in minutes, convert to days
-          final validityMinutes = (data['validity'] as num?)?.toInt() ?? 0;
-          final validityDays = validityMinutes > 0 ? (validityMinutes / 1440).ceil() : 1;
-          
-          return PlanModel(
-            id: data['id']?.toString() ?? '',
-            name: data['name']?.toString() ?? 'Plan',
-            price: double.tryParse(data['price']?.toString() ?? '0') ?? 0.0,
-            dataLimitGB: (data['data_limit'] as num?)?.toInt() ?? 0,
-            validityDays: validityDays,
-            speedMbps: 10, // API doesn't provide speed, use default
-            isActive: data['is_active'] == true,
-            deviceAllowed: (data['shared_users'] as num?)?.toInt() ?? 1,
-            userProfile: data['profile_name']?.toString() ?? 'Basic',
-          );
-        }).toList();
-      } else {
-        _plans = await _paymentService.getPlans();
-      }
+        return PlanModel(
+          id: data['id']?.toString() ?? '',
+          name: data['name']?.toString() ?? 'Plan',
+          price: double.tryParse(data['price']?.toString() ?? '0') ?? 0.0,
+          dataLimitGB: (data['data_limit'] as num?)?.toInt() ?? 0,
+          validityDays: validityDays,
+          speedMbps: 10, // API doesn't provide speed, use default
+          isActive: data['is_active'] == true,
+          deviceAllowed: (data['shared_users'] as num?)?.toInt() ?? 1,
+          userProfile: data['profile_name']?.toString() ?? 'Basic',
+        );
+      }).toList();
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -618,34 +570,30 @@ class AppState with ChangeNotifier {
   
   Future<void> loadTransactions() async {
     try {
-      if (_useRemoteApi) {
-        // Ensure repositories are initialized
-        if (_walletRepository == null) _initializeRepositories();
+      // FORCE REMOTE API: Always use real API (no mock fallback)
+      if (_walletRepository == null) _initializeRepositories();
+      
+      // Fetch transactions from API
+      final transactionsData = await _walletRepository!.fetchTransactions();
+      _transactions = transactionsData.map<TransactionModel>((data) {
+        // API uses 'amount_paid' not 'amount'
+        final amount = double.tryParse(data['amount_paid']?.toString() ?? '0') ?? 0.0;
         
-        // Fetch transactions from API
-        final transactionsData = await _walletRepository!.fetchTransactions();
-        _transactions = transactionsData.map<TransactionModel>((data) {
-          // API uses 'amount_paid' not 'amount'
-          final amount = double.tryParse(data['amount_paid']?.toString() ?? '0') ?? 0.0;
-          
-          return TransactionModel(
-            id: data['id']?.toString() ?? '',
-            amount: amount,
-            type: data['type']?.toString() ?? 'unknown',
-            status: data['status']?.toString() ?? 'pending',
-            createdAt: data['created_at'] != null 
-                ? DateTime.tryParse(data['created_at'].toString()) ?? DateTime.now()
-                : DateTime.now(),
-            description: data['payment_reference']?.toString() ?? '', // Use payment_reference as description
-            paymentMethod: data['payment_method']?.toString(),
-            gateway: data['gateway']?.toString(),
-            workerId: data['worker_id']?.toString(),
-            accountId: data['account_id']?.toString(),
-          );
-        }).toList();
-      } else {
-        _transactions = await _paymentService.getTransactions();
-      }
+        return TransactionModel(
+          id: data['id']?.toString() ?? '',
+          amount: amount,
+          type: data['type']?.toString() ?? 'unknown',
+          status: data['status']?.toString() ?? 'pending',
+          createdAt: data['created_at'] != null 
+              ? DateTime.tryParse(data['created_at'].toString()) ?? DateTime.now()
+              : DateTime.now(),
+          description: data['payment_reference']?.toString() ?? '', // Use payment_reference as description
+          paymentMethod: data['payment_method']?.toString(),
+          gateway: data['gateway']?.toString(),
+          workerId: data['worker_id']?.toString(),
+          accountId: data['account_id']?.toString(),
+        );
+      }).toList();
       notifyListeners();
     } catch (e) {
       _setError(e.toString());
@@ -654,18 +602,14 @@ class AppState with ChangeNotifier {
   
   Future<void> loadWalletBalance() async {
     try {
-      if (_useRemoteApi) {
-        // Ensure repositories are initialized
-        if (_walletRepository == null) _initializeRepositories();
-        
-        final balanceData = await _walletRepository!.fetchBalance();
-        if (balanceData != null) {
-          // API returns 'wallet_balance', not 'balance'
-          final balanceStr = balanceData['wallet_balance']?.toString() ?? '0.0';
-          _walletBalance = double.tryParse(balanceStr) ?? 0.0;
-        }
-      } else {
-        _walletBalance = await _paymentService.getWalletBalance();
+      // FORCE REMOTE API: Always use real API (no mock fallback)
+      if (_walletRepository == null) _initializeRepositories();
+      
+      final balanceData = await _walletRepository!.fetchBalance();
+      if (balanceData != null) {
+        // API returns 'wallet_balance', not 'balance'
+        final balanceStr = balanceData['wallet_balance']?.toString() ?? '0.0';
+        _walletBalance = double.tryParse(balanceStr) ?? 0.0;
       }
       notifyListeners();
     } catch (e) {
@@ -676,129 +620,139 @@ class AppState with ChangeNotifier {
   Future<void> createUser(Map<String, dynamic> userData) async {
     _setLoading(true);
     try {
-      await _authService.createUser(userData);
+      // FORCE REMOTE API: Use CustomerRepository instead of mock AuthService
+      if (_customerRepository == null) _initializeRepositories();
+      await _customerRepository!.createCustomer(userData);
       await loadUsers();
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
+      rethrow; // Re-throw to allow UI to handle error
     }
   }
   
   Future<void> updateUser(String id, Map<String, dynamic> userData) async {
     _setLoading(true);
     try {
-      await _authService.updateUser(id, userData);
+      // FORCE REMOTE API: Use CustomerRepository instead of mock AuthService
+      if (_customerRepository == null) _initializeRepositories();
+      await _customerRepository!.updateCustomer(id, userData);
       await loadUsers();
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
+      rethrow; // Re-throw to allow UI to handle error
     }
   }
   
   Future<void> deleteUser(String id) async {
     _setLoading(true);
     try {
-      await _authService.deleteUser(id);
+      // FORCE REMOTE API: Use CustomerRepository instead of mock AuthService
+      if (_customerRepository == null) _initializeRepositories();
+      await _customerRepository!.deleteCustomer(id);
       await loadUsers();
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
+      rethrow; // Re-throw to allow UI to handle error
     }
   }
   
   Future<void> createPlan(Map<String, dynamic> planData) async {
     _setLoading(true);
     try {
-      if (_useRemoteApi) {
-        // Ensure repositories are initialized
-        if (_planRepository == null) _initializeRepositories();
-        
-        await _planRepository!.createPlan(planData);
-        await loadPlans();
-      } else {
-        await _paymentService.createPlan(planData);
-        await loadPlans();
-      }
+      // FORCE REMOTE API: Always use real API (no mock fallback)
+      if (_planRepository == null) _initializeRepositories();
+      
+      await _planRepository!.createPlan(planData);
+      await loadPlans();
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
+      rethrow; // Re-throw to allow UI to handle error
     }
   }
   
   Future<void> assignPlan(String userId, String planId) async {
     _setLoading(true);
     try {
-      if (_useRemoteApi) {
-        // Ensure repositories are initialized
-        if (_planRepository == null) _initializeRepositories();
-        
-        await _planRepository!.assignPlan({'user_id': userId, 'plan_id': planId});
-      } else {
-        await _paymentService.assignPlan(userId, planId);
-      }
+      // FORCE REMOTE API: Always use real API (no mock fallback)
+      if (_planRepository == null) _initializeRepositories();
+      
+      await _planRepository!.assignPlan({'user_id': userId, 'plan_id': planId});
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
+      rethrow; // Re-throw to allow UI to handle error
     }
   }
   
   Future<void> requestPayout(double amount, String method) async {
     _setLoading(true);
     try {
-      await _paymentService.requestPayout(amount, method);
+      // FORCE REMOTE API: Use WalletRepository instead of mock PaymentService
+      if (_walletRepository == null) _initializeRepositories();
+      await _walletRepository!.createWithdrawal({
+        'amount': amount,
+        'payment_method': method,
+      });
       await loadTransactions();
       await loadWalletBalance();
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
+      rethrow; // Re-throw to allow UI to handle error
     }
   }
   
   Future<void> createRouter(Map<String, dynamic> routerData) async {
     _setLoading(true);
     try {
-      if (_useRemoteApi) {
-        // Ensure repositories are initialized
-        if (_routerRepository == null) _initializeRepositories();
-        
-        await _routerRepository!.addRouter(routerData);
-        await loadRouters();
-      } else {
-        await _connectivityService.createRouter(routerData);
-        await loadRouters();
-      }
+      // FORCE REMOTE API: Always use real API (no mock fallback)
+      if (_routerRepository == null) _initializeRepositories();
+      
+      await _routerRepository!.addRouter(routerData);
+      await loadRouters();
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
+      rethrow; // Re-throw to allow UI to handle error
     }
   }
   
   Future<void> blockDevice(String deviceId) async {
     _setLoading(true);
     try {
-      await _connectivityService.blockDevice(deviceId);
+      // FORCE REMOTE API: Use CustomerRepository for block/unblock operations
+      if (_customerRepository == null) _initializeRepositories();
+      await _customerRepository!.blockCustomer(deviceId);
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
+      rethrow; // Re-throw to allow UI to handle error
     }
   }
   
   Future<void> unblockDevice(String deviceId) async {
     _setLoading(true);
     try {
-      await _connectivityService.unblockDevice(deviceId);
+      // FORCE REMOTE API: Use CustomerRepository for block/unblock operations
+      if (_customerRepository == null) _initializeRepositories();
+      await _customerRepository!.unblockCustomer(deviceId);
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
+      rethrow; // Re-throw to allow UI to handle error
     }
   }
   
