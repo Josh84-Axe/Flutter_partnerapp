@@ -8,26 +8,26 @@ class ApiLoggingInterceptor extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     if (kDebugMode) {
       print('');
-      print('═══════════════════════════════════════════════════════════');
-      print('📤 API REQUEST');
-      print('═══════════════════════════════════════════════════════════');
-      print('Method: ${options.method}');
-      print('URL: ${options.uri}');
+      if (kDebugMode) print('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) print('📤 API REQUEST');
+      if (kDebugMode) print('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) print('Method: ${options.method}');
+      if (kDebugMode) print('URL: ${options.uri}');
       
       if (options.queryParameters.isNotEmpty) {
-        print('Query Parameters: ${options.queryParameters}');
+        if (kDebugMode) print('Query Parameters: ${options.queryParameters}');
       }
       
-      print('Headers:');
+      if (kDebugMode) print('Headers:');
       options.headers.forEach((key, value) {
         if (key.toLowerCase() == 'authorization') {
           // Mask token - show only first 8 characters
           final maskedValue = value.toString().length > 8 
               ? '${value.toString().substring(0, 8)}...[MASKED]'
               : '[MASKED]';
-          print('  $key: $maskedValue');
+          if (kDebugMode) print('  $key: $maskedValue');
         } else {
-          print('  $key: $value');
+          if (kDebugMode) print('  $key: $value');
         }
       });
       
@@ -36,10 +36,10 @@ class ApiLoggingInterceptor extends Interceptor {
         final truncated = dataStr.length > 300 
             ? '${dataStr.substring(0, 300)}...[TRUNCATED]'
             : dataStr;
-        print('Request Body: $truncated');
+        if (kDebugMode) print('Request Body: $truncated');
       }
       
-      print('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) print('═══════════════════════════════════════════════════════════');
     }
     
     handler.next(options);
@@ -49,16 +49,16 @@ class ApiLoggingInterceptor extends Interceptor {
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     if (kDebugMode) {
       print('');
-      print('═══════════════════════════════════════════════════════════');
-      print('📥 API RESPONSE');
-      print('═══════════════════════════════════════════════════════════');
-      print('Status Code: ${response.statusCode}');
-      print('URL: ${response.requestOptions.uri}');
+      if (kDebugMode) print('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) print('📥 API RESPONSE');
+      if (kDebugMode) print('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) print('Status Code: ${response.statusCode}');
+      if (kDebugMode) print('URL: ${response.requestOptions.uri}');
       
       if (response.headers.map.isNotEmpty) {
-        print('Response Headers:');
+        if (kDebugMode) print('Response Headers:');
         response.headers.map.forEach((key, value) {
-          print('  $key: ${value.join(", ")}');
+          if (kDebugMode) print('  $key: ${value.join(", ")}');
         });
       }
       
@@ -67,10 +67,10 @@ class ApiLoggingInterceptor extends Interceptor {
         final truncated = dataStr.length > 300 
             ? '${dataStr.substring(0, 300)}...[TRUNCATED]'
             : dataStr;
-        print('Response Body: $truncated');
+        if (kDebugMode) print('Response Body: $truncated');
       }
       
-      print('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) print('═══════════════════════════════════════════════════════════');
     }
     
     handler.next(response);
@@ -80,34 +80,34 @@ class ApiLoggingInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (kDebugMode) {
       print('');
-      print('═══════════════════════════════════════════════════════════');
-      print('❌ API ERROR');
-      print('═══════════════════════════════════════════════════════════');
-      print('Error Type: ${err.type}');
-      print('Error Message: ${err.message}');
-      print('URL: ${err.requestOptions.uri}');
-      print('Method: ${err.requestOptions.method}');
+      if (kDebugMode) print('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) print('❌ API ERROR');
+      if (kDebugMode) print('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) print('Error Type: ${err.type}');
+      if (kDebugMode) print('Error Message: ${err.message}');
+      if (kDebugMode) print('URL: ${err.requestOptions.uri}');
+      if (kDebugMode) print('Method: ${err.requestOptions.method}');
       
       if (err.response != null) {
-        print('Status Code: ${err.response?.statusCode}');
+        if (kDebugMode) print('Status Code: ${err.response?.statusCode}');
         
         if (err.response?.data != null) {
           final dataStr = err.response?.data.toString() ?? '';
           final truncated = dataStr.length > 300 
               ? '${dataStr.substring(0, 300)}...[TRUNCATED]'
               : dataStr;
-          print('Error Response: $truncated');
+          if (kDebugMode) print('Error Response: $truncated');
         }
         
         // Log CORS-related errors
         if (err.type == DioExceptionType.connectionError || 
             err.type == DioExceptionType.unknown) {
-          print('⚠️  Possible CORS issue - check browser console for details');
+          if (kDebugMode) print('⚠️  Possible CORS issue - check browser console for details');
         }
       }
       
-      print('Stack Trace: ${err.stackTrace?.toString().split('\n').take(5).join('\n')}');
-      print('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) print('Stack Trace: ${err.stackTrace?.toString().split('\n').take(5).join('\n')}');
+      if (kDebugMode) print('═══════════════════════════════════════════════════════════');
     }
     
     handler.next(err);

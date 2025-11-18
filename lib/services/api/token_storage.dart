@@ -26,7 +26,7 @@ class TokenStorage {
     required String accessToken,
     required String refreshToken,
   }) async {
-    print('TokenStorage: Saving tokens (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
+    if (kDebugMode) print('TokenStorage: Saving tokens (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
     
     if (kIsWeb) {
       await _ensurePrefsInitialized();
@@ -41,7 +41,7 @@ class TokenStorage {
       ]);
     }
     
-    print('TokenStorage: Tokens saved successfully');
+    if (kDebugMode) print('TokenStorage: Tokens saved successfully');
   }
 
   /// Get the access token
@@ -56,9 +56,9 @@ class TokenStorage {
     }
     
     if (token != null) {
-      print('TokenStorage: Retrieved access token (${token.substring(0, 8)}...)');
+      if (kDebugMode) print('TokenStorage: Retrieved access token (${token.substring(0, 8)}...)');
     } else {
-      print('TokenStorage: No access token found');
+      if (kDebugMode) print('TokenStorage: No access token found');
     }
     return token;
   }
@@ -75,9 +75,9 @@ class TokenStorage {
     }
     
     if (token != null) {
-      print('TokenStorage: Retrieved refresh token (${token.substring(0, 8)}...)');
+      if (kDebugMode) print('TokenStorage: Retrieved refresh token (${token.substring(0, 8)}...)');
     } else {
-      print('TokenStorage: No refresh token found');
+      if (kDebugMode) print('TokenStorage: No refresh token found');
     }
     return token;
   }

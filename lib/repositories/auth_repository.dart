@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../services/api/token_storage.dart';
+import 'package:flutter/foundation.dart';
 
 /// Repository for authentication operations
 /// Uses Dio directly for API calls
@@ -20,7 +21,7 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      print('🔐 [AuthRepository] Login request for: $email');
+      if (kDebugMode) print('🔐 [AuthRepository] Login request for: $email');
       final response = await _dio.post(
         '/partner/login/',
         data: {
@@ -29,21 +30,21 @@ class AuthRepository {
         },
       );
 
-      print('✅ [AuthRepository] Login response status: ${response.statusCode}');
-      print('📦 [AuthRepository] Login response data: ${response.data}');
+      if (kDebugMode) print('✅ [AuthRepository] Login response status: ${response.statusCode}');
+      if (kDebugMode) print('📦 [AuthRepository] Login response data: ${response.data}');
 
       // Extract tokens from response
       // API wraps tokens in: {statusCode, error, message, data: {access, refresh}}
       final responseData = response.data as Map<String, dynamic>?;
       if (responseData == null) {
-        print('❌ [AuthRepository] Login error: Response data is null');
+        if (kDebugMode) print('❌ [AuthRepository] Login error: Response data is null');
         return false;
       }
 
       // Extract tokens from nested data object
       final data = responseData['data'] as Map<String, dynamic>?;
       if (data == null) {
-        print('❌ [AuthRepository] Login error: No data object in response');
+        if (kDebugMode) print('❌ [AuthRepository] Login error: No data object in response');
         return false;
       }
 
@@ -51,7 +52,7 @@ class AuthRepository {
       final refreshToken = data['refresh']?.toString();
 
       if (accessToken != null && refreshToken != null) {
-        print('✅ [AuthRepository] Login successful - saving tokens (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
+        if (kDebugMode) print('✅ [AuthRepository] Login successful - saving tokens (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
         await _tokenStorage.saveTokens(
           accessToken: accessToken,
           refreshToken: refreshToken,
@@ -60,18 +61,18 @@ class AuthRepository {
         // Verify tokens were saved
         final savedToken = await _tokenStorage.getAccessToken();
         if (savedToken != null) {
-          print('✅ [AuthRepository] Tokens saved successfully (verified: ${savedToken.substring(0, 8)}...)');
+          if (kDebugMode) print('✅ [AuthRepository] Tokens saved successfully (verified: ${savedToken.substring(0, 8)}...)');
         } else {
-          print('❌ [AuthRepository] ERROR: Tokens not saved correctly!');
+          if (kDebugMode) print('❌ [AuthRepository] ERROR: Tokens not saved correctly!');
         }
         
         return true;
       }
 
-      print('❌ [AuthRepository] Login error: Missing access or refresh token in response');
+      if (kDebugMode) print('❌ [AuthRepository] Login error: Missing access or refresh token in response');
       return false;
     } catch (e) {
-      print('❌ [AuthRepository] Login error: $e');
+      if (kDebugMode) print('❌ [AuthRepository] Login error: $e');
       return false;
     }
   }
@@ -100,7 +101,7 @@ class AuthRepository {
     int? numberOfRouters,
   }) async {
     try {
-      print('📝 [AuthRepository] Register request for: $email');
+      if (kDebugMode) print('📝 [AuthRepository] Register request for: $email');
       final requestData = {
         'first_name': firstName,
         'email': email,
@@ -113,18 +114,18 @@ class AuthRepository {
         if (country != null) 'country': country,
         if (numberOfRouters != null) 'number_of_router': numberOfRouters,
       };
-      print('📦 [AuthRepository] Register request data: $requestData');
+      if (kDebugMode) print('📦 [AuthRepository] Register request data: $requestData');
       
       final response = await _dio.post('/partner/register/', data: requestData);
 
-      print('✅ [AuthRepository] Register response status: ${response.statusCode}');
-      print('📦 [AuthRepository] Register response data: ${response.data}');
+      if (kDebugMode) print('✅ [AuthRepository] Register response status: ${response.statusCode}');
+      if (kDebugMode) print('📦 [AuthRepository] Register response data: ${response.data}');
 
       // Registration may return tokens immediately or require email verification
       // API wraps response in: {statusCode, error, message, data: {...}}
       final responseData = response.data as Map<String, dynamic>?;
       if (responseData == null) {
-        print('❌ [AuthRepository] Registration error: Response data is null');
+        if (kDebugMode) print('❌ [AuthRepository] Registration error: Response data is null');
         return false;
       }
 
@@ -133,7 +134,7 @@ class AuthRepository {
       final error = responseData['error'];
       
       if (statusCode == 200 && error == false) {
-        print('✅ [AuthRepository] Registration successful: ${responseData['message']}');
+        if (kDebugMode) print('✅ [AuthRepository] Registration successful: ${responseData['message']}');
         
         // Extract tokens from nested data object if present
         final data = responseData['data'] as Map<String, dynamic>?;
@@ -142,7 +143,7 @@ class AuthRepository {
           final refreshToken = data['refresh']?.toString();
 
           if (accessToken != null && refreshToken != null) {
-            print('✅ [AuthRepository] Registration returned tokens - saving (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
+            if (kDebugMode) print('✅ [AuthRepository] Registration returned tokens - saving (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
             await _tokenStorage.saveTokens(
               accessToken: accessToken,
               refreshToken: refreshToken,
@@ -151,22 +152,22 @@ class AuthRepository {
             // Verify tokens were saved
             final savedToken = await _tokenStorage.getAccessToken();
             if (savedToken != null) {
-              print('✅ [AuthRepository] Tokens saved successfully (verified: ${savedToken.substring(0, 8)}...)');
+              if (kDebugMode) print('✅ [AuthRepository] Tokens saved successfully (verified: ${savedToken.substring(0, 8)}...)');
             } else {
-              print('❌ [AuthRepository] ERROR: Tokens not saved correctly!');
+              if (kDebugMode) print('❌ [AuthRepository] ERROR: Tokens not saved correctly!');
             }
           } else {
-            print('ℹ️ [AuthRepository] Registration requires email verification - no tokens returned');
+            if (kDebugMode) print('ℹ️ [AuthRepository] Registration requires email verification - no tokens returned');
           }
         }
         
         return true;
       }
 
-      print('❌ [AuthRepository] Registration failed: ${responseData['message']}');
+      if (kDebugMode) print('❌ [AuthRepository] Registration failed: ${responseData['message']}');
       return false;
     } catch (e) {
-      print('❌ [AuthRepository] Registration error: $e');
+      if (kDebugMode) print('❌ [AuthRepository] Registration error: $e');
       return false;
     }
   }
@@ -174,15 +175,15 @@ class AuthRepository {
   /// Confirm registration with OTP
   Future<Map<String, dynamic>?> confirmRegistration(String email, String code) async {
     try {
-      print('✉️ [AuthRepository] Confirm registration for: $email');
+      if (kDebugMode) print('✉️ [AuthRepository] Confirm registration for: $email');
       final response = await _dio.post(
         '/partner/register-confirm/',
         data: {'email': email, 'code': code},
       );
-      print('✅ [AuthRepository] Confirm registration response: ${response.data}');
+      if (kDebugMode) print('✅ [AuthRepository] Confirm registration response: ${response.data}');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('❌ [AuthRepository] Confirm registration error: $e');
+      if (kDebugMode) print('❌ [AuthRepository] Confirm registration error: $e');
       rethrow;
     }
   }
@@ -190,15 +191,15 @@ class AuthRepository {
   /// Verify email with OTP
   Future<bool> verifyEmailOtp(String email, String otp) async {
     try {
-      print('✉️ [AuthRepository] Verify email OTP for: $email');
+      if (kDebugMode) print('✉️ [AuthRepository] Verify email OTP for: $email');
       final response = await _dio.post(
         '/partner/verify-email-otp/',
         data: {'email': email, 'code': otp}, // Backend expects 'code' field, not 'otp'
       );
-      print('✅ [AuthRepository] Verify email OTP response: ${response.data}');
+      if (kDebugMode) print('✅ [AuthRepository] Verify email OTP response: ${response.data}');
       return true;
     } catch (e) {
-      print('❌ [AuthRepository] Verify email OTP error: $e');
+      if (kDebugMode) print('❌ [AuthRepository] Verify email OTP error: $e');
       return false;
     }
   }
@@ -206,15 +207,15 @@ class AuthRepository {
   /// Resend verification OTP
   Future<bool> resendVerifyEmailOtp(String email) async {
     try {
-      print('✉️ [AuthRepository] Resend verify email OTP for: $email');
+      if (kDebugMode) print('✉️ [AuthRepository] Resend verify email OTP for: $email');
       final response = await _dio.post(
         '/partner/resend-verify-email-otp/',
         data: {'email': email},
       );
-      print('✅ [AuthRepository] Resend verify email OTP response: ${response.data}');
+      if (kDebugMode) print('✅ [AuthRepository] Resend verify email OTP response: ${response.data}');
       return true;
     } catch (e) {
-      print('❌ [AuthRepository] Resend verify email OTP error: $e');
+      if (kDebugMode) print('❌ [AuthRepository] Resend verify email OTP error: $e');
       return false;
     }
   }
@@ -222,12 +223,12 @@ class AuthRepository {
   /// Check token validity
   Future<bool> checkToken() async {
     try {
-      print('🔑 [AuthRepository] Checking token validity');
+      if (kDebugMode) print('🔑 [AuthRepository] Checking token validity');
       final response = await _dio.get('/partner/check-token/');
-      print('✅ [AuthRepository] Token check response: ${response.statusCode}');
+      if (kDebugMode) print('✅ [AuthRepository] Token check response: ${response.statusCode}');
       return response.statusCode == 200;
     } catch (e) {
-      print('❌ [AuthRepository] Check token error: $e');
+      if (kDebugMode) print('❌ [AuthRepository] Check token error: $e');
       return false;
     }
   }
@@ -235,15 +236,15 @@ class AuthRepository {
   /// Request password reset
   Future<bool> requestPasswordReset(String email) async {
     try {
-      print('🔑 [AuthRepository] Request password reset for: $email');
+      if (kDebugMode) print('🔑 [AuthRepository] Request password reset for: $email');
       final response = await _dio.post(
         '/partner/password-reset/',
         data: {'email': email},
       );
-      print('✅ [AuthRepository] Password reset request response: ${response.data}');
+      if (kDebugMode) print('✅ [AuthRepository] Password reset request response: ${response.data}');
       return true;
     } catch (e) {
-      print('❌ [AuthRepository] Request password reset error: $e');
+      if (kDebugMode) print('❌ [AuthRepository] Request password reset error: $e');
       return false;
     }
   }
@@ -255,7 +256,7 @@ class AuthRepository {
     required String newPassword,
   }) async {
     try {
-      print('🔑 [AuthRepository] Confirm password reset for: $email');
+      if (kDebugMode) print('🔑 [AuthRepository] Confirm password reset for: $email');
       final response = await _dio.post(
         '/partner/password-reset-confirm/',
         data: {
@@ -264,10 +265,10 @@ class AuthRepository {
           'new_password': newPassword,
         },
       );
-      print('✅ [AuthRepository] Password reset confirm response: ${response.data}');
+      if (kDebugMode) print('✅ [AuthRepository] Password reset confirm response: ${response.data}');
       return true;
     } catch (e) {
-      print('❌ [AuthRepository] Confirm password reset error: $e');
+      if (kDebugMode) print('❌ [AuthRepository] Confirm password reset error: $e');
       return false;
     }
   }
@@ -278,7 +279,7 @@ class AuthRepository {
     required String newPassword,
   }) async {
     try {
-      print('🔑 [AuthRepository] Change password request');
+      if (kDebugMode) print('🔑 [AuthRepository] Change password request');
       final response = await _dio.post(
         '/partner/change-password/',
         data: {
@@ -286,10 +287,10 @@ class AuthRepository {
           'new_password': newPassword,
         },
       );
-      print('✅ [AuthRepository] Change password response: ${response.data}');
+      if (kDebugMode) print('✅ [AuthRepository] Change password response: ${response.data}');
       return true;
     } catch (e) {
-      print('❌ [AuthRepository] Change password error: $e');
+      if (kDebugMode) print('❌ [AuthRepository] Change password error: $e');
       return false;
     }
   }

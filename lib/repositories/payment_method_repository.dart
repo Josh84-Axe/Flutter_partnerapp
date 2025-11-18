@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Repository for payment method operations
 class PaymentMethodRepository {
@@ -18,7 +19,7 @@ class PaymentMethodRepository {
       
       return [];
     } catch (e) {
-      print('Fetch payment methods error: $e');
+      if (kDebugMode) print('Fetch payment methods error: $e');
       rethrow;
     }
   }
@@ -29,7 +30,7 @@ class PaymentMethodRepository {
       final response = await _dio.post('/partner/payment-methods/create/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Create payment method error: $e');
+      if (kDebugMode) print('Create payment method error: $e');
       rethrow;
     }
   }
@@ -40,7 +41,7 @@ class PaymentMethodRepository {
       final response = await _dio.get('/partner/payment-methods/$slug/');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Get payment method details error: $e');
+      if (kDebugMode) print('Get payment method details error: $e');
       rethrow;
     }
   }
@@ -51,7 +52,7 @@ class PaymentMethodRepository {
       final response = await _dio.put('/partner/payment-methods/$slug/update/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Update payment method error: $e');
+      if (kDebugMode) print('Update payment method error: $e');
       rethrow;
     }
   }
@@ -62,7 +63,7 @@ class PaymentMethodRepository {
       await _dio.delete('/partner/payment-methods/$slug/delete/');
       return true;
     } catch (e) {
-      print('Delete payment method error: $e');
+      if (kDebugMode) print('Delete payment method error: $e');
       return false;
     }
   }

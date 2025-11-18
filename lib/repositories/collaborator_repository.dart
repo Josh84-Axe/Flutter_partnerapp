@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Repository for collaborator and role management operations
 class CollaboratorRepository {
@@ -20,7 +21,7 @@ class CollaboratorRepository {
       
       return [];
     } catch (e) {
-      print('Fetch collaborators error: $e');
+      if (kDebugMode) print('Fetch collaborators error: $e');
       rethrow;
     }
   }
@@ -31,7 +32,7 @@ class CollaboratorRepository {
       final response = await _dio.post('/partner/collaborators/create/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Create collaborator error: $e');
+      if (kDebugMode) print('Create collaborator error: $e');
       rethrow;
     }
   }
@@ -45,7 +46,7 @@ class CollaboratorRepository {
       );
       return true;
     } catch (e) {
-      print('Assign role error: $e');
+      if (kDebugMode) print('Assign role error: $e');
       return false;
     }
   }
@@ -59,7 +60,7 @@ class CollaboratorRepository {
       );
       return true;
     } catch (e) {
-      print('Update role error: $e');
+      if (kDebugMode) print('Update role error: $e');
       return false;
     }
   }
@@ -70,7 +71,7 @@ class CollaboratorRepository {
       await _dio.delete('/partner/collaborators/$username/delete/');
       return true;
     } catch (e) {
-      print('Delete collaborator error: $e');
+      if (kDebugMode) print('Delete collaborator error: $e');
       return false;
     }
   }
@@ -89,7 +90,7 @@ class CollaboratorRepository {
       
       return [];
     } catch (e) {
-      print('Fetch roles error: $e');
+      if (kDebugMode) print('Fetch roles error: $e');
       rethrow;
     }
   }
@@ -100,7 +101,7 @@ class CollaboratorRepository {
       final response = await _dio.post('/partner/roles/create/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Create role error: $e');
+      if (kDebugMode) print('Create role error: $e');
       rethrow;
     }
   }
@@ -111,7 +112,7 @@ class CollaboratorRepository {
       final response = await _dio.get('/partner/roles/$slug/');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Get role details error: $e');
+      if (kDebugMode) print('Get role details error: $e');
       rethrow;
     }
   }
@@ -122,7 +123,7 @@ class CollaboratorRepository {
       final response = await _dio.put('/partner/roles/$slug/update/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Update role error: $e');
+      if (kDebugMode) print('Update role error: $e');
       rethrow;
     }
   }
@@ -133,7 +134,7 @@ class CollaboratorRepository {
       await _dio.delete('/partner/roles/$slug/delete/');
       return true;
     } catch (e) {
-      print('Delete role error: $e');
+      if (kDebugMode) print('Delete role error: $e');
       return false;
     }
   }

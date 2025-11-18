@@ -32,6 +32,7 @@ import '../repositories/payment_method_repository.dart';
 import '../repositories/additional_device_repository.dart';
 import '../utils/country_utils.dart';
 import '../utils/currency_utils.dart';
+import 'package:flutter/foundation.dart';
 
 class AppState with ChangeNotifier {
   // Legacy mock services
@@ -60,16 +61,16 @@ class AppState with ChangeNotifier {
   
   // Constructor with debug logging
   AppState() {
-    print('🔧 [AppState] Initializing AppState');
-    print('🔧 [AppState] ApiConfig.useRemoteApi = ${ApiConfig.useRemoteApi}');
-    print('🔧 [AppState] _useRemoteApi = $_useRemoteApi');
+    if (kDebugMode) print('🔧 [AppState] Initializing AppState');
+    if (kDebugMode) print('🔧 [AppState] ApiConfig.useRemoteApi = ${ApiConfig.useRemoteApi}');
+    if (kDebugMode) print('🔧 [AppState] _useRemoteApi = $_useRemoteApi');
   }
   
   bool get useRemoteApi => _useRemoteApi;
   
   /// Toggle between mock data and real API (for testing)
   void setUseRemoteApi(bool value) {
-    print('🔧 [AppState] setUseRemoteApi called with value: $value');
+    if (kDebugMode) print('🔧 [AppState] setUseRemoteApi called with value: $value');
     _useRemoteApi = value;
     notifyListeners();
   }
@@ -188,15 +189,15 @@ class AppState with ChangeNotifier {
   }
   
   Future<bool> login(String email, String password) async {
-    print('🔐 [AppState] login() called with email: $email');
-    print('🔐 [AppState] _useRemoteApi = $_useRemoteApi');
-    print('🔐 [AppState] ApiConfig.useRemoteApi = ${ApiConfig.useRemoteApi}');
+    if (kDebugMode) print('🔐 [AppState] login() called with email: $email');
+    if (kDebugMode) print('🔐 [AppState] _useRemoteApi = $_useRemoteApi');
+    if (kDebugMode) print('🔐 [AppState] ApiConfig.useRemoteApi = ${ApiConfig.useRemoteApi}');
     
     _setLoading(true);
     try {
       // FORCE REMOTE API: Always use real API for login (ignore _useRemoteApi flag)
       // This is a temporary fix to bypass the mock data issue
-      print('🔐 [AppState] FORCING remote API login (ignoring _useRemoteApi flag)');
+      if (kDebugMode) print('🔐 [AppState] FORCING remote API login (ignoring _useRemoteApi flag)');
       
       // Use real API
       _initializeRepositories();
@@ -222,7 +223,7 @@ class AppState with ChangeNotifier {
       _setLoading(false);
       return success;
     } catch (e) {
-      print('🔐 [AppState] Login error: $e');
+      if (kDebugMode) print('🔐 [AppState] Login error: $e');
       _setError(e.toString());
       _setLoading(false);
       return false;
@@ -297,7 +298,7 @@ class AppState with ChangeNotifier {
       String? countryIsoCode;
       if (country != null) {
         countryIsoCode = CountryUtils.getIsoCode(country);
-        print('Registration: Converting country "$country" to ISO code "$countryIsoCode"');
+        if (kDebugMode) print('Registration: Converting country "$country" to ISO code "$countryIsoCode"');
       }
       
       final success = await _authRepository!.register(
@@ -332,12 +333,12 @@ class AppState with ChangeNotifier {
               await loadDashboardData();
             }
           } catch (e) {
-            print('Profile fetch failed after registration: $e');
+            if (kDebugMode) print('Profile fetch failed after registration: $e');
           }
         } else {
           // No tokens - email verification required
           // Create a temporary user model for UI purposes
-          print('Registration successful - email verification required');
+          if (kDebugMode) print('Registration successful - email verification required');
           _currentUser = UserModel(
             id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
             name: fullName,
@@ -385,7 +386,7 @@ class AppState with ChangeNotifier {
           _partnerCountry = profileData['country']?.toString() ?? 
                           profileData['country_name']?.toString() ?? 
                           'Togo'; // Default to Togo for West African partners
-          print('Partner country loaded: $_partnerCountry');
+          if (kDebugMode) print('Partner country loaded: $_partnerCountry');
           
           _currentUser = UserModel(
             id: profileData['id']?.toString() ?? '1',
@@ -491,21 +492,21 @@ class AppState with ChangeNotifier {
       // FORCE REMOTE API: Always use real API (no mock fallback)
       if (_customerRepository == null) _initializeRepositories();
       
-      print('Loading users from API...');
+      if (kDebugMode) print('Loading users from API...');
       final response = await _customerRepository!.fetchCustomers(page: 1, pageSize: 20);
-      print('Users API response: $response');
+      if (kDebugMode) print('Users API response: $response');
       
       if (response != null && response['results'] is List) {
         final usersList = response['results'] as List;
-        print('Found ${usersList.length} users');
+        if (kDebugMode) print('Found ${usersList.length} users');
         _users = usersList.map((u) => UserModel.fromJson(u)).toList();
       } else {
-        print('No users found or invalid response structure');
+        if (kDebugMode) print('No users found or invalid response structure');
         _users = [];
       }
       notifyListeners();
     } catch (e) {
-      print('Load users error: $e');
+      if (kDebugMode) print('Load users error: $e');
       _setError('Failed to load users: $e');
       _users = [];
       notifyListeners();

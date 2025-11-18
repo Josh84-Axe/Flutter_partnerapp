@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Repository for partner profile and dashboard operations
 class PartnerRepository {
@@ -9,13 +10,13 @@ class PartnerRepository {
   /// Fetch partner profile
   Future<Map<String, dynamic>?> fetchProfile() async {
     try {
-      print('👤 [PartnerRepository] Fetching partner profile');
+      if (kDebugMode) print('👤 [PartnerRepository] Fetching partner profile');
       final response = await _dio.get('/partner/profile/');
-      print('✅ [PartnerRepository] Profile response status: ${response.statusCode}');
-      print('📦 [PartnerRepository] Profile response data: ${response.data}');
+      if (kDebugMode) print('✅ [PartnerRepository] Profile response status: ${response.statusCode}');
+      if (kDebugMode) print('📦 [PartnerRepository] Profile response data: ${response.data}');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('❌ [PartnerRepository] Fetch profile error: $e');
+      if (kDebugMode) print('❌ [PartnerRepository] Fetch profile error: $e');
       rethrow;
     }
   }
@@ -23,13 +24,13 @@ class PartnerRepository {
   /// Fetch dashboard data
   Future<Map<String, dynamic>?> fetchDashboard() async {
     try {
-      print('📊 [PartnerRepository] Fetching dashboard data');
+      if (kDebugMode) print('📊 [PartnerRepository] Fetching dashboard data');
       final response = await _dio.get('/partner/dashboard/');
-      print('✅ [PartnerRepository] Dashboard response status: ${response.statusCode}');
-      print('📦 [PartnerRepository] Dashboard response data: ${response.data}');
+      if (kDebugMode) print('✅ [PartnerRepository] Dashboard response status: ${response.statusCode}');
+      if (kDebugMode) print('📦 [PartnerRepository] Dashboard response data: ${response.data}');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('❌ [PartnerRepository] Fetch dashboard error: $e');
+      if (kDebugMode) print('❌ [PartnerRepository] Fetch dashboard error: $e');
       rethrow;
     }
   }
@@ -37,13 +38,13 @@ class PartnerRepository {
   /// Update partner profile
   Future<bool> updateProfile(Map<String, dynamic> profileData) async {
     try {
-      print('✏️ [PartnerRepository] Updating partner profile');
-      print('📦 [PartnerRepository] Profile data: $profileData');
+      if (kDebugMode) print('✏️ [PartnerRepository] Updating partner profile');
+      if (kDebugMode) print('📦 [PartnerRepository] Profile data: $profileData');
       await _dio.put('/partner/update/', data: profileData);
-      print('✅ [PartnerRepository] Profile updated successfully');
+      if (kDebugMode) print('✅ [PartnerRepository] Profile updated successfully');
       return true;
     } catch (e) {
-      print('❌ [PartnerRepository] Update profile error: $e');
+      if (kDebugMode) print('❌ [PartnerRepository] Update profile error: $e');
       return false;
     }
   }

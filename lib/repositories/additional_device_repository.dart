@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Repository for additional device operations
 class AdditionalDeviceRepository {
@@ -18,7 +19,7 @@ class AdditionalDeviceRepository {
       
       return [];
     } catch (e) {
-      print('Fetch additional devices error: $e');
+      if (kDebugMode) print('Fetch additional devices error: $e');
       rethrow;
     }
   }
@@ -29,7 +30,7 @@ class AdditionalDeviceRepository {
       final response = await _dio.post('/partner/additional-devices/create/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Create additional device error: $e');
+      if (kDebugMode) print('Create additional device error: $e');
       rethrow;
     }
   }
@@ -40,7 +41,7 @@ class AdditionalDeviceRepository {
       final response = await _dio.get('/partner/additional-devices/$id/');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Get additional device details error: $e');
+      if (kDebugMode) print('Get additional device details error: $e');
       rethrow;
     }
   }
@@ -51,7 +52,7 @@ class AdditionalDeviceRepository {
       final response = await _dio.put('/partner/additional-devices/$id/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Update additional device error: $e');
+      if (kDebugMode) print('Update additional device error: $e');
       rethrow;
     }
   }
@@ -62,7 +63,7 @@ class AdditionalDeviceRepository {
       await _dio.delete('/partner/additional-devices/$id/delete/');
       return true;
     } catch (e) {
-      print('Delete additional device error: $e');
+      if (kDebugMode) print('Delete additional device error: $e');
       return false;
     }
   }

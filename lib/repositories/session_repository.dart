@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Repository for session management operations
 class SessionRepository {
@@ -19,7 +20,7 @@ class SessionRepository {
       
       return [];
     } catch (e) {
-      print('Fetch active sessions error: $e');
+      if (kDebugMode) print('Fetch active sessions error: $e');
       rethrow;
     }
   }
@@ -33,7 +34,7 @@ class SessionRepository {
       );
       return true;
     } catch (e) {
-      print('Disconnect session error: $e');
+      if (kDebugMode) print('Disconnect session error: $e');
       return false;
     }
   }

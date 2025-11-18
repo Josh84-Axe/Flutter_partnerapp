@@ -17,12 +17,12 @@ class ApiClientFactory {
     // Print BASE_URL at initialization for debugging
     if (kDebugMode) {
       print('');
-      print('═══════════════════════════════════════════════════════════');
-      print('🌐 API CLIENT FACTORY INITIALIZED');
-      print('═══════════════════════════════════════════════════════════');
-      print('BASE_URL: $_baseUrl');
-      print('═══════════════════════════════════════════════════════════');
-      print('');
+      if (kDebugMode) print('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) print('🌐 API CLIENT FACTORY INITIALIZED');
+      if (kDebugMode) print('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) print('BASE_URL: $_baseUrl');
+      if (kDebugMode) print('═══════════════════════════════════════════════════════════');
+      if (kDebugMode) print('');
     }
   }
 

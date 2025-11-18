@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Repository for plan configuration resources (rate limit, data limit, shared users, validity, idle timeout)
 class PlanConfigRepository {
@@ -20,7 +21,7 @@ class PlanConfigRepository {
       
       return [];
     } catch (e) {
-      print('Fetch rate limits error: $e');
+      if (kDebugMode) print('Fetch rate limits error: $e');
       rethrow;
     }
   }
@@ -31,7 +32,7 @@ class PlanConfigRepository {
       final response = await _dio.post('/partner/rate-limit/create/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Create rate limit error: $e');
+      if (kDebugMode) print('Create rate limit error: $e');
       rethrow;
     }
   }
@@ -42,7 +43,7 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/rate-limit/$id/');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Get rate limit details error: $e');
+      if (kDebugMode) print('Get rate limit details error: $e');
       rethrow;
     }
   }
@@ -53,7 +54,7 @@ class PlanConfigRepository {
       await _dio.delete('/partner/rate-limit/$id/delete/');
       return true;
     } catch (e) {
-      print('Delete rate limit error: $e');
+      if (kDebugMode) print('Delete rate limit error: $e');
       return false;
     }
   }
@@ -72,7 +73,7 @@ class PlanConfigRepository {
       
       return [];
     } catch (e) {
-      print('Fetch data limits error: $e');
+      if (kDebugMode) print('Fetch data limits error: $e');
       rethrow;
     }
   }
@@ -83,7 +84,7 @@ class PlanConfigRepository {
       final response = await _dio.post('/partner/data-limit/create/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Create data limit error: $e');
+      if (kDebugMode) print('Create data limit error: $e');
       rethrow;
     }
   }
@@ -94,7 +95,7 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/data-limit/$id/');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Get data limit details error: $e');
+      if (kDebugMode) print('Get data limit details error: $e');
       rethrow;
     }
   }
@@ -105,7 +106,7 @@ class PlanConfigRepository {
       await _dio.delete('/partner/data-limit/$id/delete/');
       return true;
     } catch (e) {
-      print('Delete data limit error: $e');
+      if (kDebugMode) print('Delete data limit error: $e');
       return false;
     }
   }
@@ -124,7 +125,7 @@ class PlanConfigRepository {
       
       return [];
     } catch (e) {
-      print('Fetch shared users error: $e');
+      if (kDebugMode) print('Fetch shared users error: $e');
       rethrow;
     }
   }
@@ -135,7 +136,7 @@ class PlanConfigRepository {
       final response = await _dio.post('/partner/shared-users/create/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Create shared users error: $e');
+      if (kDebugMode) print('Create shared users error: $e');
       rethrow;
     }
   }
@@ -146,7 +147,7 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/shared-users/$id/');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Get shared users details error: $e');
+      if (kDebugMode) print('Get shared users details error: $e');
       rethrow;
     }
   }
@@ -157,7 +158,7 @@ class PlanConfigRepository {
       await _dio.delete('/partner/shared-users/$id/delete/');
       return true;
     } catch (e) {
-      print('Delete shared users error: $e');
+      if (kDebugMode) print('Delete shared users error: $e');
       return false;
     }
   }
@@ -176,7 +177,7 @@ class PlanConfigRepository {
       
       return [];
     } catch (e) {
-      print('Fetch validity periods error: $e');
+      if (kDebugMode) print('Fetch validity periods error: $e');
       rethrow;
     }
   }
@@ -187,7 +188,7 @@ class PlanConfigRepository {
       final response = await _dio.post('/partner/validity/create/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Create validity period error: $e');
+      if (kDebugMode) print('Create validity period error: $e');
       rethrow;
     }
   }
@@ -198,7 +199,7 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/validity/$id/');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Get validity period details error: $e');
+      if (kDebugMode) print('Get validity period details error: $e');
       rethrow;
     }
   }
@@ -209,7 +210,7 @@ class PlanConfigRepository {
       await _dio.delete('/partner/validity/$id/delete/');
       return true;
     } catch (e) {
-      print('Delete validity period error: $e');
+      if (kDebugMode) print('Delete validity period error: $e');
       return false;
     }
   }
@@ -228,7 +229,7 @@ class PlanConfigRepository {
       
       return [];
     } catch (e) {
-      print('Fetch idle timeouts error: $e');
+      if (kDebugMode) print('Fetch idle timeouts error: $e');
       rethrow;
     }
   }
@@ -239,7 +240,7 @@ class PlanConfigRepository {
       final response = await _dio.post('/partner/idle-timeout/create/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Create idle timeout error: $e');
+      if (kDebugMode) print('Create idle timeout error: $e');
       rethrow;
     }
   }
@@ -250,7 +251,7 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/idle-timeout/$id/');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Get idle timeout details error: $e');
+      if (kDebugMode) print('Get idle timeout details error: $e');
       rethrow;
     }
   }
@@ -261,7 +262,7 @@ class PlanConfigRepository {
       await _dio.delete('/partner/idle-timeout/$id/delete/');
       return true;
     } catch (e) {
-      print('Delete idle timeout error: $e');
+      if (kDebugMode) print('Delete idle timeout error: $e');
       return false;
     }
   }

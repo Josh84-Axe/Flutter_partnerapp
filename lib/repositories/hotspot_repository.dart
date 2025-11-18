@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Repository for hotspot operations (profiles and users)
 class HotspotRepository {
@@ -11,23 +12,23 @@ class HotspotRepository {
   /// Fetch list of hotspot profiles
   Future<List<dynamic>> fetchProfiles() async {
     try {
-      print('🔥 [HotspotRepository] Fetching hotspot profiles');
+      if (kDebugMode) print('🔥 [HotspotRepository] Fetching hotspot profiles');
       final response = await _dio.get('/partner/hotspot/profiles/list/');
-      print('✅ [HotspotRepository] Fetch profiles response: ${response.data}');
+      if (kDebugMode) print('✅ [HotspotRepository] Fetch profiles response: ${response.data}');
       
       final responseData = response.data;
       
       // API returns: {statusCode, error, message, data: [...], exception}
       if (responseData is Map && responseData['data'] is List) {
         final profiles = responseData['data'] as List;
-        print('✅ [HotspotRepository] Found ${profiles.length} profiles');
+        if (kDebugMode) print('✅ [HotspotRepository] Found ${profiles.length} profiles');
         return profiles;
       }
       
-      print('⚠️ [HotspotRepository] No profiles found');
+      if (kDebugMode) print('⚠️ [HotspotRepository] No profiles found');
       return [];
     } catch (e) {
-      print('❌ [HotspotRepository] Fetch hotspot profiles error: $e');
+      if (kDebugMode) print('❌ [HotspotRepository] Fetch hotspot profiles error: $e');
       rethrow;
     }
   }
@@ -36,16 +37,16 @@ class HotspotRepository {
   /// Required fields depend on backend schema
   Future<Map<String, dynamic>?> createProfile(Map<String, dynamic> profileData) async {
     try {
-      print('➕ [HotspotRepository] Creating hotspot profile');
-      print('📦 [HotspotRepository] Profile data: $profileData');
+      if (kDebugMode) print('➕ [HotspotRepository] Creating hotspot profile');
+      if (kDebugMode) print('📦 [HotspotRepository] Profile data: $profileData');
       final response = await _dio.post(
         '/partner/hotspot/profiles/create/',
         data: profileData,
       );
-      print('✅ [HotspotRepository] Create profile response: ${response.data}');
+      if (kDebugMode) print('✅ [HotspotRepository] Create profile response: ${response.data}');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('❌ [HotspotRepository] Create hotspot profile error: $e');
+      if (kDebugMode) print('❌ [HotspotRepository] Create hotspot profile error: $e');
       rethrow;
     }
   }
@@ -56,7 +57,7 @@ class HotspotRepository {
       final response = await _dio.get('/partner/hotspot/profiles/$profileSlug/detail/');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Get profile details error: $e');
+      if (kDebugMode) print('Get profile details error: $e');
       rethrow;
     }
   }
@@ -73,7 +74,7 @@ class HotspotRepository {
       );
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Update profile error: $e');
+      if (kDebugMode) print('Update profile error: $e');
       rethrow;
     }
   }
@@ -84,7 +85,7 @@ class HotspotRepository {
       await _dio.delete('/partner/hotspot/profiles/$profileSlug/delete/');
       return true;
     } catch (e) {
-      print('Delete profile error: $e');
+      if (kDebugMode) print('Delete profile error: $e');
       return false;
     }
   }
@@ -94,23 +95,23 @@ class HotspotRepository {
   /// Fetch list of hotspot users
   Future<List<dynamic>> fetchUsers() async {
     try {
-      print('👥 [HotspotRepository] Fetching hotspot users');
+      if (kDebugMode) print('👥 [HotspotRepository] Fetching hotspot users');
       final response = await _dio.get('/partner/hotspot/users/list/');
-      print('✅ [HotspotRepository] Fetch users response: ${response.data}');
+      if (kDebugMode) print('✅ [HotspotRepository] Fetch users response: ${response.data}');
       
       final responseData = response.data;
       
       // API returns: {statusCode, error, message, data: [...], exception}
       if (responseData is Map && responseData['data'] is List) {
         final users = responseData['data'] as List;
-        print('✅ [HotspotRepository] Found ${users.length} users');
+        if (kDebugMode) print('✅ [HotspotRepository] Found ${users.length} users');
         return users;
       }
       
-      print('⚠️ [HotspotRepository] No users found');
+      if (kDebugMode) print('⚠️ [HotspotRepository] No users found');
       return [];
     } catch (e) {
-      print('❌ [HotspotRepository] Fetch hotspot users error: $e');
+      if (kDebugMode) print('❌ [HotspotRepository] Fetch hotspot users error: $e');
       rethrow;
     }
   }
@@ -119,16 +120,16 @@ class HotspotRepository {
   /// Required fields: username, password, and router association
   Future<Map<String, dynamic>?> createUser(Map<String, dynamic> userData) async {
     try {
-      print('➕ [HotspotRepository] Creating hotspot user');
-      print('📦 [HotspotRepository] User data: $userData');
+      if (kDebugMode) print('➕ [HotspotRepository] Creating hotspot user');
+      if (kDebugMode) print('📦 [HotspotRepository] User data: $userData');
       final response = await _dio.post(
         '/partner/hotspot/users/create/',
         data: userData,
       );
-      print('✅ [HotspotRepository] Create user response: ${response.data}');
+      if (kDebugMode) print('✅ [HotspotRepository] Create user response: ${response.data}');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('❌ [HotspotRepository] Create hotspot user error: $e');
+      if (kDebugMode) print('❌ [HotspotRepository] Create hotspot user error: $e');
       rethrow;
     }
   }
@@ -139,7 +140,7 @@ class HotspotRepository {
       final response = await _dio.get('/partner/hotspot/users/$username/read/');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Get user details error: $e');
+      if (kDebugMode) print('Get user details error: $e');
       rethrow;
     }
   }
@@ -156,7 +157,7 @@ class HotspotRepository {
       );
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Update user error: $e');
+      if (kDebugMode) print('Update user error: $e');
       rethrow;
     }
   }

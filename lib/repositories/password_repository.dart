@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Repository for password management operations
 class PasswordRepository {
@@ -15,7 +16,7 @@ class PasswordRepository {
       );
       return true;
     } catch (e) {
-      print('Change password error: $e');
+      if (kDebugMode) print('Change password error: $e');
       return false;
     }
   }
@@ -29,7 +30,7 @@ class PasswordRepository {
       );
       return true;
     } catch (e) {
-      print('Request password reset OTP error: $e');
+      if (kDebugMode) print('Request password reset OTP error: $e');
       return false;
     }
   }
@@ -43,7 +44,7 @@ class PasswordRepository {
       );
       return true;
     } catch (e) {
-      print('Verify password reset OTP error: $e');
+      if (kDebugMode) print('Verify password reset OTP error: $e');
       return false;
     }
   }
@@ -57,7 +58,7 @@ class PasswordRepository {
       );
       return true;
     } catch (e) {
-      print('Reset password error: $e');
+      if (kDebugMode) print('Reset password error: $e');
       return false;
     }
   }

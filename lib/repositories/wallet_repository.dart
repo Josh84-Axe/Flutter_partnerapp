@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Repository for wallet and transaction operations
 class WalletRepository {
@@ -9,10 +10,10 @@ class WalletRepository {
   /// Fetch wallet balance
   Future<Map<String, dynamic>?> fetchBalance() async {
     try {
-      print('💰 [WalletRepository] Fetching wallet balance');
+      if (kDebugMode) print('💰 [WalletRepository] Fetching wallet balance');
       final response = await _dio.get('/partner/wallet/balance/');
-      print('✅ [WalletRepository] Fetch balance response status: ${response.statusCode}');
-      print('📦 [WalletRepository] Fetch balance response data: ${response.data}');
+      if (kDebugMode) print('✅ [WalletRepository] Fetch balance response status: ${response.statusCode}');
+      if (kDebugMode) print('📦 [WalletRepository] Fetch balance response data: ${response.data}');
       
       final responseData = response.data;
       
@@ -23,7 +24,7 @@ class WalletRepository {
       
       return responseData as Map<String, dynamic>?;
     } catch (e) {
-      print('❌ [WalletRepository] Fetch balance error: $e');
+      if (kDebugMode) print('❌ [WalletRepository] Fetch balance error: $e');
       rethrow;
     }
   }
@@ -31,28 +32,28 @@ class WalletRepository {
   /// Fetch available plans
   Future<List<dynamic>> fetchPlans() async {
     try {
-      print('📋 [WalletRepository] Fetching plans');
+      if (kDebugMode) print('📋 [WalletRepository] Fetching plans');
       final response = await _dio.get('/partner/plans/');
-      print('✅ [WalletRepository] Fetch plans response: ${response.data}');
+      if (kDebugMode) print('✅ [WalletRepository] Fetch plans response: ${response.data}');
       
       final responseData = response.data;
       
       // API wraps data in {statusCode, error, message, data: [...]}
       if (responseData is Map && responseData['data'] is List) {
         final plans = responseData['data'] as List;
-        print('✅ [WalletRepository] Found ${plans.length} plans');
+        if (kDebugMode) print('✅ [WalletRepository] Found ${plans.length} plans');
         return plans;
       }
       
       if (responseData is List) {
-        print('✅ [WalletRepository] Found ${responseData.length} plans');
+        if (kDebugMode) print('✅ [WalletRepository] Found ${responseData.length} plans');
         return responseData;
       }
       
-      print('⚠️ [WalletRepository] No plans found');
+      if (kDebugMode) print('⚠️ [WalletRepository] No plans found');
       return [];
     } catch (e) {
-      print('❌ [WalletRepository] Fetch plans error: $e');
+      if (kDebugMode) print('❌ [WalletRepository] Fetch plans error: $e');
       rethrow;
     }
   }
@@ -60,19 +61,19 @@ class WalletRepository {
   /// Fetch all transactions (no filters)
   Future<List<dynamic>> fetchAllTransactions() async {
     try {
-      print('💳 [WalletRepository] Fetching all transactions');
+      if (kDebugMode) print('💳 [WalletRepository] Fetching all transactions');
       final response = await _dio.get('/partner/wallet/all-transactions/');
       final data = response.data;
       
       if (data is List) {
-        print('✅ [WalletRepository] Found ${data.length} transactions');
+        if (kDebugMode) print('✅ [WalletRepository] Found ${data.length} transactions');
         return data;
       }
       
-      print('⚠️ [WalletRepository] No transactions found');
+      if (kDebugMode) print('⚠️ [WalletRepository] No transactions found');
       return [];
     } catch (e) {
-      print('❌ [WalletRepository] Fetch all transactions error: $e');
+      if (kDebugMode) print('❌ [WalletRepository] Fetch all transactions error: $e');
       rethrow;
     }
   }
@@ -95,12 +96,12 @@ class WalletRepository {
       if (startDate != null) queryParams['start_date'] = startDate;
       if (endDate != null) queryParams['end_date'] = endDate;
 
-      print('💳 [WalletRepository] Fetching transactions with filters: $queryParams');
+      if (kDebugMode) print('💳 [WalletRepository] Fetching transactions with filters: $queryParams');
       final response = await _dio.get(
         '/partner/wallet/transactions/',
         queryParameters: queryParams,
       );
-      print('✅ [WalletRepository] Fetch transactions response: ${response.data}');
+      if (kDebugMode) print('✅ [WalletRepository] Fetch transactions response: ${response.data}');
       
       final responseData = response.data;
       
@@ -108,25 +109,25 @@ class WalletRepository {
       if (responseData is Map) {
         if (responseData['data'] is Map && responseData['data']['paginate_data'] is List) {
           final transactions = responseData['data']['paginate_data'] as List;
-          print('✅ [WalletRepository] Found ${transactions.length} transactions');
+          if (kDebugMode) print('✅ [WalletRepository] Found ${transactions.length} transactions');
           return transactions;
         }
         if (responseData['data'] is List) {
           final transactions = responseData['data'] as List;
-          print('✅ [WalletRepository] Found ${transactions.length} transactions');
+          if (kDebugMode) print('✅ [WalletRepository] Found ${transactions.length} transactions');
           return transactions;
         }
       }
       
       if (responseData is List) {
-        print('✅ [WalletRepository] Found ${responseData.length} transactions');
+        if (kDebugMode) print('✅ [WalletRepository] Found ${responseData.length} transactions');
         return responseData;
       }
       
-      print('⚠️ [WalletRepository] No transactions found');
+      if (kDebugMode) print('⚠️ [WalletRepository] No transactions found');
       return [];
     } catch (e) {
-      print('❌ [WalletRepository] Fetch transactions error: $e');
+      if (kDebugMode) print('❌ [WalletRepository] Fetch transactions error: $e');
       rethrow;
     }
   }
@@ -147,24 +148,24 @@ class WalletRepository {
       if (startDate != null) queryParams['start_date'] = startDate;
       if (endDate != null) queryParams['end_date'] = endDate;
 
-      print('💸 [WalletRepository] Fetching withdrawals with filters: $queryParams');
+      if (kDebugMode) print('💸 [WalletRepository] Fetching withdrawals with filters: $queryParams');
       final response = await _dio.get(
         '/partner/withdrawals/',
         queryParameters: queryParams,
       );
-      print('✅ [WalletRepository] Fetch withdrawals response: ${response.data}');
+      if (kDebugMode) print('✅ [WalletRepository] Fetch withdrawals response: ${response.data}');
       
       final data = response.data;
       
       if (data is List) {
-        print('✅ [WalletRepository] Found ${data.length} withdrawals');
+        if (kDebugMode) print('✅ [WalletRepository] Found ${data.length} withdrawals');
         return data;
       }
       
-      print('⚠️ [WalletRepository] No withdrawals found');
+      if (kDebugMode) print('⚠️ [WalletRepository] No withdrawals found');
       return [];
     } catch (e) {
-      print('❌ [WalletRepository] Fetch withdrawals error: $e');
+      if (kDebugMode) print('❌ [WalletRepository] Fetch withdrawals error: $e');
       rethrow;
     }
   }
@@ -172,16 +173,16 @@ class WalletRepository {
   /// Create withdrawal request
   Future<Map<String, dynamic>?> createWithdrawal(Map<String, dynamic> requestData) async {
     try {
-      print('💸 [WalletRepository] Creating withdrawal request');
-      print('📦 [WalletRepository] Withdrawal data: $requestData');
+      if (kDebugMode) print('💸 [WalletRepository] Creating withdrawal request');
+      if (kDebugMode) print('📦 [WalletRepository] Withdrawal data: $requestData');
       final response = await _dio.post(
         '/partner/withdrawals/create/',
         data: requestData,
       );
-      print('✅ [WalletRepository] Create withdrawal response: ${response.data}');
+      if (kDebugMode) print('✅ [WalletRepository] Create withdrawal response: ${response.data}');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('❌ [WalletRepository] Create withdrawal error: $e');
+      if (kDebugMode) print('❌ [WalletRepository] Create withdrawal error: $e');
       rethrow;
     }
   }
