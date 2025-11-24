@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../utils/app_theme.dart';
+import '../utils/currency_utils.dart';
 
 class MetricCard extends StatelessWidget {
   final String title;
@@ -20,6 +20,9 @@ class MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final defaultColor = accentColor ?? colorScheme.primary;
+    
     return Card(
       elevation: 4,
       child: Padding(
@@ -32,12 +35,14 @@ class MetricCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: (accentColor ?? AppTheme.deepGreen).withOpacity(0.1),
+                    color: accentColor != null 
+                        ? accentColor!.withValues(alpha: 0.1)
+                        : colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     icon,
-                    color: accentColor ?? AppTheme.deepGreen,
+                    color: defaultColor,
                     size: 24,
                   ),
                 ),
@@ -59,7 +64,7 @@ class MetricCard extends StatelessWidget {
               Text(
                 value,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: accentColor ?? AppTheme.deepGreen,
+                      color: defaultColor,
                       fontWeight: FontWeight.bold,
                     ),
               ),
@@ -69,7 +74,11 @@ class MetricCard extends StatelessWidget {
     );
   }
 
-  static String formatCurrency(double amount) {
+  static String formatCurrency(double amount, [String? country]) {
+    if (country != null) {
+      return CurrencyUtils.formatPrice(amount, country);
+    }
+    // Fallback to USD if no country provided
     final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
     return formatter.format(amount);
   }
