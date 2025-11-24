@@ -40,11 +40,25 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
   void _verifyCode() {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final code = _controllers.map((c) => c.text).join();
+    final type = args?['type'] as String?;
+    final email = args?['email'] as String?;
     
     if (code.length == 6) {
-      Navigator.of(context).pop();
-      if (args != null && args['onVerified'] != null) {
-        args['onVerified']();
+      if (type == 'password_reset' && email != null) {
+        // Navigate to SetNewPasswordScreen with email and OTP
+        Navigator.of(context).pushReplacementNamed(
+          '/set-new-password',
+          arguments: {
+            'email': email,
+            'otp': code,
+          },
+        );
+      } else {
+        // Original behavior for other OTP types
+        Navigator.of(context).pop();
+        if (args != null && args['onVerified'] != null) {
+          args['onVerified']();
+        }
       }
     }
   }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:provider/provider.dart';
+import '../providers/app_state.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -18,9 +20,59 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState!.validate()) {
-      Navigator.of(context).pushReplacementNamed('/reset-email-sent');
+      final appState = context.read<AppState>();
+      
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+      
+      try {
+        final success = await appState.requestPasswordReset(_emailController.text.trim());
+        
+        // Close loading dialog
+        if (mounted) Navigator.of(context).pop();
+        
+        if (success) {
+          // Navigate to OTP validation screen
+          if (mounted) {
+            Navigator.of(context).pushReplacementNamed(
+              '/otp-validation',
+              arguments: {
+                'email': _emailController.text.trim(),
+                'type': 'password_reset',
+              },
+            );
+          }
+        } else {
+          // Show error message
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('failed_to_send_reset_link'.tr()),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        // Close loading dialog
+        if (mounted) Navigator.of(context).pop();
+        
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('error_occurred'.tr()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 

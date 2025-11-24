@@ -474,6 +474,52 @@ class AppState with ChangeNotifier {
     notifyListeners();
   }
   
+  /// Request password reset - sends OTP to email
+  Future<bool> requestPasswordReset(String email) async {
+    try {
+      if (kDebugMode) print('🔑 [AppState] Requesting password reset for: $email');
+      _initializeRepositories();
+      final success = await _authRepository!.requestPasswordReset(email);
+      if (success) {
+        if (kDebugMode) print('✅ [AppState] Password reset OTP sent successfully');
+        // Store email for later use in OTP verification
+        _registrationEmail = email;
+      }
+      return success;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Request password reset error: $e');
+      _setError(e.toString());
+      return false;
+    }
+  }
+  
+  /// Confirm password reset with OTP and new password
+  Future<bool> confirmPasswordReset({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    try {
+      if (kDebugMode) print('🔑 [AppState] Confirming password reset for: $email');
+      _initializeRepositories();
+      final success = await _authRepository!.confirmPasswordReset(
+        email: email,
+        otp: otp,
+        newPassword: newPassword,
+      );
+      if (success) {
+        if (kDebugMode) print('✅ [AppState] Password reset successful');
+        // Clear stored email
+        _registrationEmail = null;
+      }
+      return success;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Confirm password reset error: $e');
+      _setError(e.toString());
+      return false;
+    }
+  }
+  
   Future<void> loadDashboardData() async {
     await Future.wait([
       loadUsers(),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:provider/provider.dart';
+import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 
 class SetNewPasswordScreen extends StatefulWidget {
@@ -42,9 +44,71 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
     });
   }
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState!.validate()) {
-      Navigator.of(context).pushReplacementNamed('/password-success');
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final email = args?['email'] as String?;
+      final otp = args?['otp'] as String?;
+      
+      if (email == null || otp == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('error_occurred'.tr()),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      
+      final appState = context.read<AppState>();
+      
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+      
+      try {
+        final success = await appState.confirmPasswordReset(
+          email: email,
+          otp: otp,
+          newPassword: _passwordController.text.trim(),
+        );
+        
+        // Close loading dialog
+        if (mounted) Navigator.of(context).pop();
+        
+        if (success) {
+          // Navigate to success screen
+          if (mounted) {
+            Navigator.of(context).pushReplacementNamed('/password-success');
+          }
+        } else {
+          // Show error message
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('failed_to_reset_password'.tr()),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        // Close loading dialog
+        if (mounted) Navigator.of(context).pop();
+        
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('error_occurred'.tr()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
