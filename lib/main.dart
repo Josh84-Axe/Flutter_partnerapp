@@ -182,8 +182,7 @@ class HotspotPartnerApp extends StatelessWidget {
         '/about': (context) => const AboutAppScreen(),
         '/empty-state': (context) => const EmptyStateScreen(),
         '/email-verification': (context) {
-          final email = ModalRoute.of(context)?.settings.arguments as String? ?? 'sientey@hotmail.com';
-          return EmailVerificationScreen(email: email);
+          return const EmailVerificationScreen();
         },
         '/hotspot-users-management': (context) => const HotspotUsersManagementScreen(),
         '/plan-assignment': (context) => const PlanAssignmentScreen(),
