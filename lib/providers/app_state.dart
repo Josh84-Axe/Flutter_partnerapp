@@ -122,6 +122,8 @@ class AppState with ChangeNotifier {
   List<dynamic> _sharedUsers = [];
   List<dynamic> _rateLimits = [];
   List<dynamic> _idleTimeouts = [];
+  List<dynamic> _validityPeriods = [];
+  List<dynamic> _dataLimits = [];
   
   final List<NotificationModel> _notifications = [];
   final List<ProfileModel> _profiles = [];
@@ -149,6 +151,8 @@ class AppState with ChangeNotifier {
   List<dynamic> get sharedUsers => _sharedUsers;
   List<dynamic> get rateLimits => _rateLimits;
   List<dynamic> get idleTimeouts => _idleTimeouts;
+  List<dynamic> get validityPeriods => _validityPeriods;
+  List<dynamic> get dataLimits => _dataLimits;
   
   List<NotificationModel> get notifications => _notifications;
   List<ProfileModel> get profiles => _profiles;
@@ -990,6 +994,30 @@ class AppState with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       if (kDebugMode) print('Fetch idle timeouts error: $e');
+    }
+  }
+  
+  /// Fetch validity periods
+  Future<void> fetchValidityPeriods() async {
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      final periods = await _planConfigRepository!.fetchValidityPeriods();
+      _validityPeriods = periods;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('Fetch validity periods error: $e');
+    }
+  }
+  
+  /// Fetch data limits
+  Future<void> fetchDataLimits() async {
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      final limits = await _planConfigRepository!.fetchDataLimits();
+      _dataLimits = limits;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('Fetch data limits error: $e');
     }
   }
   

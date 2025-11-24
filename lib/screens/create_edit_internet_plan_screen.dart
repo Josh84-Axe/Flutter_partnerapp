@@ -26,6 +26,8 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppState>().fetchSharedUsers();
+      context.read<AppState>().fetchValidityPeriods();
+      context.read<AppState>().fetchDataLimits();
       context.read<AppState>().loadHotspotProfiles();
     });
     
@@ -89,10 +91,13 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                       labelText: 'validity'.tr(),
                       border: const OutlineInputBorder(),
                     ),
-                    items: HotspotConfigurationService.getValidityOptions().isEmpty
+                    items: appState.validityPeriods.isEmpty
                         ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
-                        : HotspotConfigurationService.getValidityOptions()
-                            .map((v) => DropdownMenuItem(value: v, child: Text(v)))
+                        : appState.validityPeriods
+                            .map((v) => DropdownMenuItem(
+                                  value: v['id']?.toString() ?? v['name']?.toString(),
+                                  child: Text(v['name']?.toString() ?? v['value']?.toString() ?? ''),
+                                ))
                             .toList(),
                     onChanged: (value) => setState(() => _selectedValidity = value),
                   ),
@@ -103,10 +108,13 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                       labelText: 'data_limit'.tr(),
                       border: const OutlineInputBorder(),
                     ),
-                    items: HotspotConfigurationService.getDataLimits().isEmpty
+                    items: appState.dataLimits.isEmpty
                         ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
-                        : HotspotConfigurationService.getDataLimits()
-                            .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                        : appState.dataLimits
+                            .map((d) => DropdownMenuItem(
+                                  value: d['id']?.toString() ?? d['name']?.toString(),
+                                  child: Text(d['name']?.toString() ?? d['value']?.toString() ?? ''),
+                                ))
                             .toList(),
                     onChanged: (value) => setState(() => _selectedDataLimit = value),
                   ),
