@@ -811,6 +811,22 @@ class AppState with ChangeNotifier {
     }
   }
   
+  /// Delete a plan
+  Future<void> deletePlan(String planId) async {
+    _setLoading(true);
+    try {
+      if (_planRepository == null) _initializeRepositories();
+      
+      await _planRepository!.deletePlan(planId);
+      await loadPlans(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
   Future<void> assignPlan(String userId, String planId) async {
     _setLoading(true);
     try {
@@ -961,6 +977,21 @@ class AppState with ChangeNotifier {
     try {
       if (_hotspotRepository == null) _initializeRepositories();
       await _hotspotRepository!.deleteUser(username);
+      await loadHotspotUsers(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Update a hotspot user
+  Future<void> updateHotspotUser(String username, Map<String, dynamic> userData) async {
+    _setLoading(true);
+    try {
+      if (_hotspotRepository == null) _initializeRepositories();
+      await _hotspotRepository!.updateUser(username, userData);
       await loadHotspotUsers(); // Reload list
       _setLoading(false);
     } catch (e) {
