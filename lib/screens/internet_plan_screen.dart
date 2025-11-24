@@ -5,6 +5,9 @@ import '../providers/app_state.dart';
 import '../models/plan_model.dart';
 import '../utils/app_theme.dart';
 import '../utils/currency_utils.dart';
+import '../utils/permissions.dart';
+import '../utils/permission_mapping.dart';
+import '../widgets/permission_denied_dialog.dart';
 
 class InternetPlanScreen extends StatefulWidget {
   const InternetPlanScreen({super.key});
@@ -15,6 +18,24 @@ class InternetPlanScreen extends StatefulWidget {
 
 class _InternetPlanScreenState extends State<InternetPlanScreen> {
   void _navigateToCreateEdit({PlanModel? plan}) {
+    final user = context.read<AppState>().currentUser;
+    if (user == null) return;
+    
+    // Check permission based on whether creating or editing
+    final hasPermission = plan == null
+        ? Permissions.canCreatePlans(user.role, user.permissions)
+        : Permissions.canEditPlans(user.role, user.permissions);
+    
+    if (!hasPermission) {
+      PermissionDeniedDialog.show(
+        context,
+        requiredPermission: plan == null 
+            ? PermissionConstants.createPlans 
+            : PermissionConstants.editPlans,
+      );
+      return;
+    }
+    
     Navigator.of(context).pushNamed(
       '/create-edit-plan',
       arguments: plan?.toJson(),
@@ -22,6 +43,17 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
   }
 
   void _showDeleteDialog(PlanModel plan) {
+    final user = context.read<AppState>().currentUser;
+    if (user == null) return;
+    
+    if (!Permissions.canDeletePlans(user.role, user.permissions)) {
+      PermissionDeniedDialog.show(
+        context,
+        requiredPermission: PermissionConstants.deletePlans,
+      );
+      return;
+    }
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -33,11 +65,22 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
             child: Text('cancel'.tr()),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('plan_deleted_successfully'.tr())),
-              );
+              try {
+                await context.read<AppState>().deletePlan(plan.id);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('plan_deleted_successfully'.tr())),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('error_deleting_plan'.tr())),
+                  );
+                }
+              }
             },
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
@@ -110,23 +153,38 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          IconButton(
-                            onPressed: () => _navigateToCreateEdit(plan: plan),
-                            icon: const Icon(Icons.edit),
-                            style: IconButton.styleFrom(
-                              foregroundColor: colorScheme.primary,
-                              backgroundColor: colorScheme.primaryContainer,
+                          if (Permissions.canEditPlans(
+                            appState.currentUser?.role ?? '',
+                            appState.currentUser?.permissions,
+                          ))
+                            IconButton(
+                              onPressed: () => _navigateToCreateEdit(plan: plan),
+                              icon: const Icon(Icons.edit),
+                              style: IconButton.styleFrom(
+                                foregroundColor: colorScheme.primary,
+                                backgroundColor: colorScheme.primaryContainer,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            onPressed: () => _showDeleteDialog(plan),
-                            icon: const Icon(Icons.delete),
-                            style: IconButton.styleFrom(
-                              foregroundColor: colorScheme.error,
-                              backgroundColor: colorScheme.errorContainer,
+                          if (Permissions.canEditPlans(
+                            appState.currentUser?.role ?? '',
+                            appState.currentUser?.permissions,
+                          ) && Permissions.canDeletePlans(
+                            appState.currentUser?.role ?? '',
+                            appState.currentUser?.permissions,
+                          ))
+                            const SizedBox(width: 8),
+                          if (Permissions.canDeletePlans(
+                            appState.currentUser?.role ?? '',
+                            appState.currentUser?.permissions,
+                          ))
+                            IconButton(
+                              onPressed: () => _showDeleteDialog(plan),
+                              icon: const Icon(Icons.delete),
+                              style: IconButton.styleFrom(
+                                foregroundColor: colorScheme.error,
+                                backgroundColor: colorScheme.errorContainer,
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ],
@@ -137,11 +195,16 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _navigateToCreateEdit(),
-        icon: const Icon(Icons.add),
-        label: Text('new_plan'.tr()),
-      ),
+      floatingActionButton: Permissions.canCreatePlans(
+        appState.currentUser?.role ?? '',
+        appState.currentUser?.permissions,
+      )
+          ? FloatingActionButton.extended(
+              onPressed: () => _navigateToCreateEdit(),
+              icon: const Icon(Icons.add),
+              label: Text('new_plan'.tr()),
+            )
+          : null,
     );
   }
 }
