@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -5,9 +6,7 @@ import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
-  final String email;
-
-  const EmailVerificationScreen({super.key, required this.email});
+  const EmailVerificationScreen({super.key});
 
   @override
   State<EmailVerificationScreen> createState() => _EmailVerificationScreenState();
@@ -15,176 +14,177 @@ class EmailVerificationScreen extends StatefulWidget {
 
 class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   final _otpController = TextEditingController();
-  bool _isLoading = false;
-  String? _errorMessage;
+  final _formKey = GlobalKey<FormState>();
+  Timer? _resendTimer;
+  int _resendCountdown = 60;
+  bool _canResend = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startResendTimer();
+  }
+
+  void _startResendTimer() {
+    setState(() {
+      _resendCountdown = 60;
+      _canResend = false;
+    });
+    _resendTimer?.cancel();
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_resendCountdown > 0) {
+        setState(() {
+          _resendCountdown--;
+        });
+      } else {
+        setState(() {
+          _canResend = true;
+        });
+        timer.cancel();
+      }
+    });
+  }
 
   @override
   void dispose() {
     _otpController.dispose();
+    _resendTimer?.cancel();
     super.dispose();
   }
 
-  Future<void> _verifyEmail() async {
-    if (_otpController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'otp_required'.tr();
-      });
-      return;
-    }
+  Future<void> _verifyOtp() async {
+    if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    final appState = context.read<AppState>();
+    final success = await appState.confirmRegistration(_otpController.text.trim());
 
-    try {
-      // TODO: Call AuthRepository.confirmRegistration() when wired
-      await Future.delayed(const Duration(seconds: 1));
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('email_verified_success'.tr()),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.of(context).pushReplacementNamed('/login');
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('email_verified_success'.tr()),
+          backgroundColor: Colors.green,
+        ),
+      );
+      // Navigate to dashboard or login
+      Navigator.of(context).pushReplacementNamed('/dashboard'); 
     }
   }
 
-  Future<void> _resendOtp() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _resendCode() async {
+    if (!_canResend) return;
 
-    try {
-      // TODO: Call AuthRepository.resendVerifyEmailOtp() when wired
-      await Future.delayed(const Duration(seconds: 1));
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('otp_resent_success'.tr()),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+    final appState = context.read<AppState>();
+    final success = await appState.resendVerifyEmailOtp();
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('otp_resent_success'.tr())),
+      );
+      _startResendTimer();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final appState = context.watch<AppState>();
+    final email = appState.registrationEmail ?? 'your email';
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('email_verification'.tr()),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        title: Text('verify_email'.tr()),
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 32),
-              Icon(
-                Icons.email_outlined,
-                size: 80,
-                color: colorScheme.primary,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'verify_your_email'.tr(),
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 24),
+                Icon(
+                  Icons.mark_email_read_outlined,
+                  size: 80,
+                  color: Theme.of(context).primaryColor,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'enter_verification_code'.tr(),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'code_sent_to'.tr(args: [email]),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                TextFormField(
+                  controller: _otpController,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 24, letterSpacing: 8),
+                  maxLength: 6,
+                  decoration: InputDecoration(
+                    hintText: '000000',
+                    counterText: '',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '${'verification_code_sent'.tr()} ${widget.email}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textLight,
+                    filled: true,
+                    fillColor: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[800]
+                        : Colors.grey[100],
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'enter_otp'.tr();
+                    }
+                    if (value.length < 6) {
+                      return 'otp_length_error'.tr();
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+                if (appState.error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      appState.error!,
+                      style: const TextStyle(color: AppTheme.errorRed),
+                      textAlign: TextAlign.center,
                     ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
-              TextField(
-                controller: _otpController,
-                decoration: InputDecoration(
-                  labelText: 'verification_code'.tr(),
-                  hintText: 'enter_6_digit_code'.tr(),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                FilledButton(
+                  onPressed: appState.isLoading ? null : _verifyOtp,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  errorText: _errorMessage,
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  child: appState.isLoading
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text('verify'.tr()),
                 ),
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 8,
-                ),
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _isLoading ? null : _verifyEmail,
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: colorScheme.primary,
-                ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : Text('verify_email'.tr()),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'didnt_receive_code'.tr(),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                const SizedBox(height: 24),
+                TextButton(
+                  onPressed: _canResend && !appState.isLoading ? _resendCode : null,
+                  child: Text(
+                    _canResend
+                        ? 'resend_code'.tr()
+                        : 'resend_in'.tr(args: [_resendCountdown.toString()]),
                   ),
-                  TextButton(
-                    onPressed: _isLoading ? null : _resendOtp,
-                    child: Text('resend'.tr()),
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

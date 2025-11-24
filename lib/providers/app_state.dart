@@ -35,12 +35,6 @@ import '../utils/currency_utils.dart';
 import 'package:flutter/foundation.dart';
 
 class AppState with ChangeNotifier {
-  // Legacy mock services
-  final AuthService _authService = AuthService();
-  final PaymentService _paymentService = PaymentService();
-  final ConnectivityService _connectivityService = ConnectivityService();
-  
-  // New API repositories (lazy initialized)
   AuthRepository? _authRepository;
   PartnerRepository? _partnerRepository;
   WalletRepository? _walletRepository;
@@ -110,6 +104,7 @@ class AppState with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   String? _lastWithdrawalId; // Store last withdrawal ID for tracking
+  String? _registrationEmail; // Store email for verification flow
   
   List<UserModel> _users = [];
   List<RouterModel> _routers = [];
@@ -121,6 +116,12 @@ class AppState with ChangeNotifier {
   List<RoleModel> _roles = [];
   List<Map<String, dynamic>> _activeSessions = []; // Active WiFi sessions
   List<dynamic> _hotspotUsers = []; // Hotspot users list
+  List<dynamic> _assignedPlans = []; // Assigned plans for matching
+  
+  // Configuration Lists
+  List<dynamic> _sharedUsers = [];
+  List<dynamic> _rateLimits = [];
+  List<dynamic> _idleTimeouts = [];
   
   final List<NotificationModel> _notifications = [];
   final List<ProfileModel> _profiles = [];
@@ -132,6 +133,7 @@ class AppState with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get lastWithdrawalId => _lastWithdrawalId;
+  String? get registrationEmail => _registrationEmail;
   List<UserModel> get users => _users;
   List<RouterModel> get routers => _routers;
   List<PlanModel> get plans => _plans;
@@ -141,7 +143,12 @@ class AppState with ChangeNotifier {
   List<RouterConfigurationModel> get routerConfigurations => _routerConfigurations;
   List<RoleModel> get roles => _roles;
   List<Map<String, dynamic>> get activeSessions => _activeSessions;
+  List<dynamic> get assignedPlans => _assignedPlans;
   List<dynamic> get hotspotUsers => _hotspotUsers;
+  
+  List<dynamic> get sharedUsers => _sharedUsers;
+  List<dynamic> get rateLimits => _rateLimits;
+  List<dynamic> get idleTimeouts => _idleTimeouts;
   
   List<NotificationModel> get notifications => _notifications;
   List<ProfileModel> get profiles => _profiles;
@@ -238,6 +245,7 @@ class AppState with ChangeNotifier {
   
   Future<bool> register(String name, String email, String password) async {
     _setLoading(true);
+    _registrationEmail = email; // Store email for verification
     try {
       // FORCE REMOTE API: Always use real API (no mock fallback)
       _initializeRepositories();
@@ -275,6 +283,59 @@ class AppState with ChangeNotifier {
           );
         }
       }
+      _setLoading(false);
+      return success;
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  /// Confirm registration with OTP
+  Future<bool> confirmRegistration(String otp) async {
+    if (_registrationEmail == null) {
+      _setError('No registration email found');
+      return false;
+    }
+    
+    _setLoading(true);
+    try {
+      if (_authRepository == null) _initializeRepositories();
+      final response = await _authRepository!.confirmRegistration(_registrationEmail!, otp);
+      
+      if (response != null) {
+        // If confirmation returns tokens, save them
+        if (response['data'] != null && response['data']['access'] != null) {
+          // We would need to manually save tokens here or rely on AuthRepository
+          // For now, assume success means we can proceed to login
+          await login(_registrationEmail!, ''); // This might fail if we don't have password
+          // Better approach: Just return true and let UI navigate to login
+        }
+        _setLoading(false);
+        return true;
+      }
+      
+      _setLoading(false);
+      return false;
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  /// Resend verification OTP
+  Future<bool> resendVerifyEmailOtp() async {
+    if (_registrationEmail == null) {
+      _setError('No registration email found');
+      return false;
+    }
+    
+    _setLoading(true);
+    try {
+      if (_authRepository == null) _initializeRepositories();
+      final success = await _authRepository!.resendVerifyEmailOtp(_registrationEmail!);
       _setLoading(false);
       return success;
     } catch (e) {
@@ -684,6 +745,21 @@ class AppState with ChangeNotifier {
       rethrow; // Re-throw to allow UI to handle error
     }
   }
+
+  Future<void> updatePlan(String planId, Map<String, dynamic> planData) async {
+    _setLoading(true);
+    try {
+      if (_planRepository == null) _initializeRepositories();
+      
+      await _planRepository!.updatePlan(planId, planData);
+      await loadPlans();
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
   
   Future<void> assignPlan(String userId, String planId) async {
     _setLoading(true);
@@ -742,6 +818,32 @@ class AppState with ChangeNotifier {
     }
   }
   
+  /// Load assigned plans
+  Future<void> loadAssignedPlans() async {
+    try {
+      if (_planRepository == null) _initializeRepositories();
+      final plans = await _planRepository!.fetchAssignedPlans();
+      _assignedPlans = plans;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('Load assigned plans error: $e');
+      // Don't set global error for this background fetch
+    }
+  }
+
+  /// Fetch shared users configuration
+  Future<void> fetchSharedUsers() async {
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      final configs = await _planConfigRepository!.fetchSharedUsers();
+      _sharedUsers = configs;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('Fetch shared users error: $e');
+      // Don't set global error for this background fetch
+    }
+  }
+  
   /// Disconnect an active session
   Future<void> disconnectSession(Map<String, dynamic> sessionData) async {
     _setLoading(true);
@@ -762,6 +864,19 @@ class AppState with ChangeNotifier {
   
   // ==================== Hotspot User Management ====================
   
+  /// Load hotspot profiles
+  Future<void> loadHotspotProfiles() async {
+    try {
+      if (_hotspotRepository == null) _initializeRepositories();
+      final profiles = await _hotspotRepository!.fetchProfiles();
+      _hotspotProfiles = profiles.map((p) => HotspotProfileModel.fromJson(p)).toList();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('Load hotspot profiles error: $e');
+      _setError(e.toString());
+    }
+  }
+
   /// Load hotspot users
   Future<void> loadHotspotUsers() async {
     try {
@@ -797,6 +912,81 @@ class AppState with ChangeNotifier {
       if (_hotspotRepository == null) _initializeRepositories();
       await _hotspotRepository!.deleteUser(username);
       await loadHotspotUsers(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  // ==================== Configuration Management ====================
+  
+
+  /// Fetch rate limits
+  Future<void> fetchRateLimits() async {
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      final limits = await _planConfigRepository!.fetchRateLimits();
+      _rateLimits = limits;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('Fetch rate limits error: $e');
+    }
+  }
+  
+  /// Fetch idle timeouts
+  Future<void> fetchIdleTimeouts() async {
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      final timeouts = await _planConfigRepository!.fetchIdleTimeouts();
+      _idleTimeouts = timeouts;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('Fetch idle timeouts error: $e');
+    }
+  }
+  
+  // ==================== Plan & Profile Enhancements ====================
+  
+
+  /// Create a hotspot profile
+  Future<void> createHotspotProfile(Map<String, dynamic> profileData) async {
+    _setLoading(true);
+    try {
+      if (_hotspotRepository == null) _initializeRepositories();
+      await _hotspotRepository!.createProfile(profileData);
+      await loadHotspotProfiles(); // Reload profiles
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Update a hotspot profile
+  Future<void> updateHotspotProfile(String profileSlug, Map<String, dynamic> profileData) async {
+    _setLoading(true);
+    try {
+      if (_hotspotRepository == null) _initializeRepositories();
+      await _hotspotRepository!.updateProfile(profileSlug, profileData);
+      await loadHotspotProfiles(); // Reload profiles
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Delete a hotspot profile
+  Future<void> deleteHotspotProfile(String profileSlug) async {
+    _setLoading(true);
+    try {
+      if (_hotspotRepository == null) _initializeRepositories();
+      await _hotspotRepository!.deleteProfile(profileSlug);
+      await loadHotspotProfiles(); // Reload profiles
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());

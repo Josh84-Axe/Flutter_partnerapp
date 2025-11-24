@@ -186,4 +186,25 @@ class WalletRepository {
       rethrow;
     }
   }
+
+  /// Fetch transaction details by ID
+  Future<Map<String, dynamic>?> fetchTransactionDetails(String transactionId) async {
+    try {
+      if (kDebugMode) print('💳 [WalletRepository] Fetching transaction details for ID: $transactionId');
+      final response = await _dio.get('/partner/wallet/transactions/$transactionId/details/');
+      if (kDebugMode) print('✅ [WalletRepository] Transaction details response: ${response.data}');
+      
+      final responseData = response.data;
+      
+      // API wraps data in {statusCode, error, message, data: {...}}
+      if (responseData is Map && responseData['data'] is Map) {
+        return responseData['data'] as Map<String, dynamic>;
+      }
+      
+      return responseData as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('❌ [WalletRepository] Fetch transaction details error: $e');
+      rethrow;
+    }
+  }
 }

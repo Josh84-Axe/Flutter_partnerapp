@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../utils/app_theme.dart';
 import '../models/hotspot_profile_model.dart';
 import '../providers/app_state.dart';
-import '../services/hotspot_configuration_service.dart';
 
 class CreateEditUserProfileScreen extends StatefulWidget {
   final HotspotProfileModel? profile;
@@ -30,6 +29,12 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
       _selectedRateLimit = widget.profile!.speedDescription;
       _selectedIdleTime = widget.profile!.idleTimeout;
     }
+    
+    // Fetch configurations
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppState>().fetchRateLimits();
+      context.read<AppState>().fetchIdleTimeouts();
+    });
   }
 
   @override
@@ -41,7 +46,6 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
     final appState = context.watch<AppState>();
     final isEdit = widget.profile != null;
 
@@ -80,7 +84,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _selectedRateLimit,
+              value: _selectedRateLimit,
               decoration: InputDecoration(
                 labelText: 'rate_limit'.tr(),
                 border: OutlineInputBorder(
@@ -92,15 +96,17 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                 ),
               ),
               hint: Text('select_rate_limit'.tr()),
-              items: HotspotConfigurationService.getRateLimits()
-                  .map((limit) => DropdownMenuItem(value: limit, child: Text(limit)))
-                  .toList(),
+              items: appState.rateLimits.isEmpty
+                  ? [DropdownMenuItem<String>(value: null, child: Text('loading'.tr()))]
+                  : appState.rateLimits
+                      .map<DropdownMenuItem<String>>((limit) => DropdownMenuItem(value: limit.toString(), child: Text(limit.toString())))
+                      .toList(),
               onChanged: (value) => setState(() => _selectedRateLimit = value),
               validator: (value) => value == null ? 'select_rate_limit'.tr() : null,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _selectedIdleTime,
+              value: _selectedIdleTime,
               decoration: InputDecoration(
                 labelText: 'idle_time'.tr(),
                 border: OutlineInputBorder(
@@ -112,15 +118,17 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                 ),
               ),
               hint: Text('select_idle_time'.tr()),
-              items: HotspotConfigurationService.getIdleTimeouts()
-                  .map((time) => DropdownMenuItem(value: time, child: Text(time)))
-                  .toList(),
+              items: appState.idleTimeouts.isEmpty
+                  ? [DropdownMenuItem<String>(value: null, child: Text('loading'.tr()))]
+                  : appState.idleTimeouts
+                      .map<DropdownMenuItem<String>>((time) => DropdownMenuItem(value: time.toString(), child: Text(time.toString())))
+                      .toList(),
               onChanged: (value) => setState(() => _selectedIdleTime = value),
               validator: (value) => value == null ? 'select_idle_time'.tr() : null,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _selectedRouter,
+              value: _selectedRouter,
               decoration: InputDecoration(
                 labelText: 'router'.tr(),
                 border: OutlineInputBorder(
@@ -141,6 +149,14 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
               validator: (value) => value == null ? 'select_router'.tr() : null,
             ),
             const SizedBox(height: 24),
+            if (appState.error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  appState.error!,
+                  style: TextStyle(color: AppTheme.errorRed),
+                ),
+              ),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -201,6 +217,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                           ),
                           FilledButton(
                             onPressed: () {
+                              // TODO: Implement delete profile in AppState
                               appState.hotspotProfiles.removeWhere((p) => p.id == widget.profile!.id);
                               Navigator.pop(context);
                               Navigator.pop(context);
@@ -227,12 +244,18 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
             Expanded(
               flex: 2,
               child: FilledButton(
-                onPressed: _saveProfile,
+                onPressed: appState.isLoading ? null : _saveProfile,
                 style: FilledButton.styleFrom(
                   backgroundColor: colorScheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: Text(isEdit ? 'save_profile'.tr() : 'create_profile'.tr()),
+                child: appState.isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : Text(isEdit ? 'save_profile'.tr() : 'create_profile'.tr()),
               ),
             ),
           ],
@@ -241,28 +264,27 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
     );
   }
 
-  void _saveProfile() {
+  Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
     final appState = context.read<AppState>();
+    
+    final data = {
+      'name': _nameController.text,
+      'rate_limit': _selectedRateLimit,
+      'idle_timeout': _selectedIdleTime,
+      // Add other fields as needed by the API
+    };
 
-    final profile = HotspotProfileModel(
-      id: widget.profile?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      name: _nameController.text,
-      downloadSpeedMbps: 50,
-      uploadSpeedMbps: 50,
-      idleTimeout: _selectedIdleTime!,
-    );
-
-    if (widget.profile != null) {
-      final index = appState.hotspotProfiles.indexWhere((p) => p.id == widget.profile!.id);
-      if (index != -1) {
-        appState.hotspotProfiles[index] = profile;
+    try {
+      if (widget.profile != null) {
+        await appState.updateHotspotProfile(widget.profile!.id, data);
+      } else {
+        await appState.createHotspotProfile(data);
       }
-    } else {
-      appState.hotspotProfiles.add(profile);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      // Error is handled in AppState and displayed in UI
     }
-
-    Navigator.pop(context);
   }
 }

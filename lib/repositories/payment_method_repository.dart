@@ -10,7 +10,7 @@ class PaymentMethodRepository {
   /// Fetch list of payment methods
   Future<List<dynamic>> fetchPaymentMethods() async {
     try {
-      final response = await _dio.get('/partner/payment-methods/');
+      final response = await _dio.get('/partner/payment-methods/list/');
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {

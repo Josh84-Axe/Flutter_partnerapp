@@ -13,43 +13,26 @@ class HotspotUsersManagementScreen extends StatefulWidget {
 
 class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScreen> {
   String _searchQuery = '';
-  List<Map<String, dynamic>> _hotspotUsers = [];
-  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadHotspotUsers();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
   }
 
-  Future<void> _loadHotspotUsers() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // TODO: Load hotspot users from HotspotRepository.fetchUsers()
-      // For now, use empty list
-      setState(() {
-        _hotspotUsers = [];
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('error_loading_users'.tr())),
-        );
-      }
-    }
+  Future<void> _loadData() async {
+    final appState = context.read<AppState>();
+    await appState.loadHotspotUsers();
+    await appState.loadHotspotProfiles();
   }
 
   void _showCreateUserDialog() {
     final usernameController = TextEditingController();
     final passwordController = TextEditingController();
     String? selectedProfile;
+    final formKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
@@ -57,44 +40,50 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
         builder: (context, setState) => AlertDialog(
           title: Text('create_hotspot_user'.tr()),
           content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: usernameController,
-                  decoration: InputDecoration(
-                    labelText: 'username'.tr(),
-                    hintText: 'enter_username'.tr(),
-                    border: const OutlineInputBorder(),
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'username'.tr(),
+                      hintText: 'enter_username'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) => value?.isEmpty ?? true ? 'required_field'.tr() : null,
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: passwordController,
-                  decoration: InputDecoration(
-                    labelText: 'password'.tr(),
-                    hintText: 'enter_password'.tr(),
-                    border: const OutlineInputBorder(),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'password'.tr(),
+                      hintText: 'enter_password'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    obscureText: true,
+                    validator: (value) => value?.isEmpty ?? true ? 'required_field'.tr() : null,
                   ),
-                  obscureText: true,
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: selectedProfile,
-                  decoration: InputDecoration(
-                    labelText: 'hotspot_profile'.tr(),
-                    border: const OutlineInputBorder(),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: selectedProfile,
+                    decoration: InputDecoration(
+                      labelText: 'hotspot_profile'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    hint: Text('select_profile'.tr()),
+                    items: context.watch<AppState>().hotspotProfiles.map((profile) {
+                      return DropdownMenuItem(
+                        value: profile.id,
+                        child: Text(profile.name),
+                      );
+                    }).toList(),
+                    onChanged: (value) => setState(() => selectedProfile = value),
+                    validator: (value) => value == null ? 'required_field'.tr() : null,
                   ),
-                  hint: Text('select_profile'.tr()),
-                  items: context.watch<AppState>().hotspotProfiles.map((profile) {
-                    return DropdownMenuItem(
-                      value: profile.id,
-                      child: Text(profile.name),
-                    );
-                  }).toList(),
-                  onChanged: (value) => setState(() => selectedProfile = value),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           actions: [
@@ -104,26 +93,29 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
             ),
             FilledButton(
               onPressed: () async {
-                if (usernameController.text.isEmpty ||
-                    passwordController.text.isEmpty ||
-                    selectedProfile == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('fill_required_fields'.tr())),
-                  );
-                  return;
-                }
-
-                // TODO: Create hotspot user using HotspotRepository.createUser()
-                Navigator.pop(context);
-                _loadHotspotUsers();
-                
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('hotspot_user_created'.tr()),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
+                if (formKey.currentState?.validate() ?? false) {
+                  try {
+                    await context.read<AppState>().createHotspotUser({
+                      'username': usernameController.text,
+                      'password': passwordController.text,
+                      'profile': selectedProfile,
+                    });
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('hotspot_user_created'.tr()),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e')),
+                      );
+                    }
+                  }
                 }
               },
               child: Text('create'.tr()),
@@ -134,16 +126,62 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
     );
   }
 
+  Future<void> _confirmDeleteUser(Map<String, dynamic> user) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('delete_user'.tr()),
+        content: Text('delete_user_confirmation'.tr(args: [user['username'] ?? ''])),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('delete'.tr(), style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        await context.read<AppState>().deleteHotspotUser(user['username']);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('user_deleted'.tr())),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<AppState>();
     final colorScheme = Theme.of(context).colorScheme;
-    final filteredUsers = _hotspotUsers.where((user) {
-      return user['username']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false;
+    
+    final filteredUsers = appState.hotspotUsers.where((user) {
+      final username = user['username']?.toString().toLowerCase() ?? '';
+      return username.contains(_searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
       appBar: AppBar(
         title: Text('hotspot_users'.tr()),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadData,
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -169,7 +207,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
             ),
           ),
           Expanded(
-            child: _isLoading
+            child: appState.isLoading && appState.hotspotUsers.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : filteredUsers.isEmpty
                     ? Center(
@@ -214,22 +252,14 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
                                 ),
                               ),
                               title: Text(user['username']?.toString() ?? ''),
-                              subtitle: Text(user['profile']?.toString() ?? ''),
+                              subtitle: Text(user['profile']?.toString() ?? 'No Profile'),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onPressed: () {
-                                      // TODO: Edit user
-                                    },
-                                  ),
-                                  IconButton(
                                     icon: const Icon(Icons.delete),
                                     color: AppTheme.errorRed,
-                                    onPressed: () {
-                                      // TODO: Delete user
-                                    },
+                                    onPressed: () => _confirmDeleteUser(user),
                                   ),
                                 ],
                               ),

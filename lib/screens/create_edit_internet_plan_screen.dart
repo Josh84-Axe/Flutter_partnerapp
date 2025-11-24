@@ -24,6 +24,11 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppState>().fetchSharedUsers();
+      context.read<AppState>().loadHotspotProfiles();
+    });
+    
     if (widget.planData != null) {
       _nameController.text = widget.planData!['name'] ?? '';
       _priceController.text = widget.planData!['price']?.toString() ?? '';
@@ -79,7 +84,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    initialValue: _selectedValidity,
+                    value: _selectedValidity,
                     decoration: InputDecoration(
                       labelText: 'validity'.tr(),
                       border: const OutlineInputBorder(),
@@ -89,13 +94,11 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                         : HotspotConfigurationService.getValidityOptions()
                             .map((v) => DropdownMenuItem(value: v, child: Text(v)))
                             .toList(),
-                    onChanged: HotspotConfigurationService.getValidityOptions().isEmpty
-                        ? null
-                        : (value) => setState(() => _selectedValidity = value),
+                    onChanged: (value) => setState(() => _selectedValidity = value),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    initialValue: _selectedDataLimit,
+                    value: _selectedDataLimit,
                     decoration: InputDecoration(
                       labelText: 'data_limit'.tr(),
                       border: const OutlineInputBorder(),
@@ -105,29 +108,28 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                         : HotspotConfigurationService.getDataLimits()
                             .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                             .toList(),
-                    onChanged: HotspotConfigurationService.getDataLimits().isEmpty
-                        ? null
-                        : (value) => setState(() => _selectedDataLimit = value),
+                    onChanged: (value) => setState(() => _selectedDataLimit = value),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    initialValue: _selectedAdditionalDevices,
+                    value: _selectedAdditionalDevices,
                     decoration: InputDecoration(
                       labelText: 'additional_devices_allowed'.tr(),
                       border: const OutlineInputBorder(),
                     ),
-                    items: HotspotConfigurationService.getDeviceAllowed().isEmpty
+                    items: appState.sharedUsers.isEmpty
                         ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
-                        : HotspotConfigurationService.getDeviceAllowed()
-                            .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                        : appState.sharedUsers
+                            .map((d) => DropdownMenuItem(
+                                  value: d['value']?.toString() ?? d['name']?.toString(), 
+                                  child: Text(d['name']?.toString() ?? d['value']?.toString() ?? '')
+                                ))
                             .toList(),
-                    onChanged: HotspotConfigurationService.getDeviceAllowed().isEmpty
-                        ? null
-                        : (value) => setState(() => _selectedAdditionalDevices = value),
+                    onChanged: (value) => setState(() => _selectedAdditionalDevices = value),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    initialValue: _selectedHotspotProfile,
+                    value: _selectedHotspotProfile,
                     decoration: InputDecoration(
                       labelText: 'hotspot_user_profile'.tr(),
                       border: const OutlineInputBorder(),
@@ -137,9 +139,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                         : appState.hotspotProfiles
                             .map((p) => DropdownMenuItem(value: p.id, child: Text(p.name)))
                             .toList(),
-                    onChanged: appState.hotspotProfiles.isEmpty
-                        ? null
-                        : (value) => setState(() => _selectedHotspotProfile = value),
+                    onChanged: (value) => setState(() => _selectedHotspotProfile = value),
                   ),
                 ],
               ),
@@ -195,12 +195,17 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
       'speedMbps': 50,
       'isActive': true,
       'deviceAllowed': _selectedAdditionalDevices != null
-          ? HotspotConfigurationService.extractNumericValue(_selectedAdditionalDevices!)
+          ? int.tryParse(_selectedAdditionalDevices!) ?? 1
           : 1,
       'userProfile': _selectedHotspotProfile ?? 'Basic',
     };
 
-    context.read<AppState>().createPlan(data);
+    if (widget.planData != null && widget.planData!['id'] != null) {
+      context.read<AppState>().updatePlan(widget.planData!['id'], data);
+    } else {
+      context.read<AppState>().createPlan(data);
+    }
+    
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(widget.planData != null ? 'plan_updated'.tr() : 'plan_created'.tr())),
