@@ -16,6 +16,15 @@ void main() {
     // Mock Google Fonts to use default fonts in tests
     GoogleFonts.config.allowRuntimeFetching = false;
     
+    // Set fallback font family to prevent font loading errors
+    const fallbackFontFamily = 'Roboto';
+    
+    // Mock SharedPreferences to avoid platform channel calls
+    // Set onboarding_completed to true to skip splash/onboarding flow in tests
+    SharedPreferences.setMockInitialValues({
+      'onboarding_completed': true,
+    });
+    
     // Mock SharedPreferences to avoid platform channel calls
     // Set onboarding_completed to true to skip splash/onboarding flow in tests
     SharedPreferences.setMockInitialValues({
@@ -30,6 +39,15 @@ void main() {
         if (call.method == 'getCorePalette') {
           return null; // No dynamic colors available in test environment
         }
+        return null;
+      },
+    );
+
+    // Mock flutter_secure_storage
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'),
+      (MethodCall methodCall) async {
         return null;
       },
     );
