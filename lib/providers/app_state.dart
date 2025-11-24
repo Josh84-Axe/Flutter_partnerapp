@@ -109,6 +109,7 @@ class AppState with ChangeNotifier {
   String? _partnerCountry; // Store partner country for currency display
   bool _isLoading = false;
   String? _error;
+  String? _lastWithdrawalId; // Store last withdrawal ID for tracking
   
   List<UserModel> _users = [];
   List<RouterModel> _routers = [];
@@ -118,6 +119,8 @@ class AppState with ChangeNotifier {
   List<HotspotProfileModel> _hotspotProfiles = [];
   List<RouterConfigurationModel> _routerConfigurations = [];
   List<RoleModel> _roles = [];
+  List<Map<String, dynamic>> _activeSessions = []; // Active WiFi sessions
+  List<dynamic> _hotspotUsers = []; // Hotspot users list
   
   final List<NotificationModel> _notifications = [];
   final List<ProfileModel> _profiles = [];
@@ -128,6 +131,7 @@ class AppState with ChangeNotifier {
   String? get partnerCountry => _partnerCountry;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String? get lastWithdrawalId => _lastWithdrawalId;
   List<UserModel> get users => _users;
   List<RouterModel> get routers => _routers;
   List<PlanModel> get plans => _plans;
@@ -136,6 +140,8 @@ class AppState with ChangeNotifier {
   List<HotspotProfileModel> get hotspotProfiles => _hotspotProfiles;
   List<RouterConfigurationModel> get routerConfigurations => _routerConfigurations;
   List<RoleModel> get roles => _roles;
+  List<Map<String, dynamic>> get activeSessions => _activeSessions;
+  List<dynamic> get hotspotUsers => _hotspotUsers;
   
   List<NotificationModel> get notifications => _notifications;
   List<ProfileModel> get profiles => _profiles;
@@ -699,10 +705,18 @@ class AppState with ChangeNotifier {
     try {
       // FORCE REMOTE API: Use WalletRepository instead of mock PaymentService
       if (_walletRepository == null) _initializeRepositories();
-      await _walletRepository!.createWithdrawal({
+      final response = await _walletRepository!.createWithdrawal({
         'amount': amount,
         'payment_method': method,
       });
+      
+      // Store the withdrawal ID from the API response for tracking
+      if (response != null && response['data'] != null && response['data']['id'] != null) {
+        _lastWithdrawalId = response['data']['id'].toString();
+      } else if (response != null && response['id'] != null) {
+        _lastWithdrawalId = response['id'].toString();
+      }
+      
       await loadTransactions();
       await loadWalletBalance();
       _setLoading(false);
@@ -710,6 +724,84 @@ class AppState with ChangeNotifier {
       _setError(e.toString());
       _setLoading(false);
       rethrow; // Re-throw to allow UI to handle error
+    }
+  }
+  
+  // ==================== Active Sessions Management ====================
+  
+  /// Load active WiFi sessions from API
+  Future<void> loadActiveSessions() async {
+    try {
+      if (_sessionRepository == null) _initializeRepositories();
+      final sessions = await _sessionRepository!.fetchActiveSessions();
+      _activeSessions = sessions.map((s) => s as Map<String, dynamic>).toList();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('Load active sessions error: $e');
+      _setError(e.toString());
+    }
+  }
+  
+  /// Disconnect an active session
+  Future<void> disconnectSession(Map<String, dynamic> sessionData) async {
+    _setLoading(true);
+    try {
+      if (_sessionRepository == null) _initializeRepositories();
+      final success = await _sessionRepository!.disconnectSession(sessionData);
+      if (success) {
+        await loadActiveSessions(); // Reload sessions after disconnect
+      }
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Disconnect session error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  // ==================== Hotspot User Management ====================
+  
+  /// Load hotspot users
+  Future<void> loadHotspotUsers() async {
+    try {
+      if (_hotspotRepository == null) _initializeRepositories();
+      final users = await _hotspotRepository!.fetchUsers();
+      _hotspotUsers = users;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('Load hotspot users error: $e');
+      _setError(e.toString());
+    }
+  }
+  
+  /// Create a new hotspot user
+  Future<void> createHotspotUser(Map<String, dynamic> userData) async {
+    _setLoading(true);
+    try {
+      if (_hotspotRepository == null) _initializeRepositories();
+      await _hotspotRepository!.createUser(userData);
+      await loadHotspotUsers(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Delete a hotspot user
+  Future<void> deleteHotspotUser(String username) async {
+    _setLoading(true);
+    try {
+      if (_hotspotRepository == null) _initializeRepositories();
+      await _hotspotRepository!.deleteUser(username);
+      await loadHotspotUsers(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
     }
   }
   

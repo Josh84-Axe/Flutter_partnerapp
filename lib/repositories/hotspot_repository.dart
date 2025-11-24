@@ -161,4 +161,16 @@ class HotspotRepository {
       rethrow;
     }
   }
+  /// Delete hotspot user
+  Future<bool> deleteUser(String username) async {
+    try {
+      if (kDebugMode) print('🗑️ [HotspotRepository] Deleting hotspot user: $username');
+      await _dio.delete('/partner/hotspot/users/$username/delete/');
+      if (kDebugMode) print('✅ [HotspotRepository] User deleted successfully');
+      return true;
+    } catch (e) {
+      if (kDebugMode) print('❌ [HotspotRepository] Delete user error: $e');
+      rethrow;
+    }
+  }
 }
