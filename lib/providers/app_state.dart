@@ -32,6 +32,7 @@ import '../repositories/payment_method_repository.dart';
 import '../repositories/additional_device_repository.dart';
 import '../utils/country_utils.dart';
 import '../utils/currency_utils.dart';
+import '../services/cache_service.dart';
 import 'package:flutter/foundation.dart';
 
 class AppState with ChangeNotifier {
@@ -49,6 +50,9 @@ class AppState with ChangeNotifier {
   CollaboratorRepository? _collaboratorRepository;
   PaymentMethodRepository? _paymentMethodRepository;
   AdditionalDeviceRepository? _additionalDeviceRepository;
+  
+  // Cache service for local data persistence
+  final CacheService _cacheService = CacheService();
   
   // Feature flag to toggle between mock and real API
   bool _useRemoteApi = ApiConfig.useRemoteApi;
@@ -259,7 +263,13 @@ class AppState with ChangeNotifier {
             }
           }
         }
-        await loadDashboardData();
+        // Load dashboard data in background - don't block login if it fails
+        try {
+          await loadDashboardData();
+        } catch (e) {
+          if (kDebugMode) print('⚠️ [AppState] Dashboard data load failed (non-blocking): $e');
+          // Don't fail login if dashboard data fails to load
+        }
       }
       _setLoading(false);
       return success;
@@ -457,6 +467,11 @@ class AppState with ChangeNotifier {
     // FORCE REMOTE API: Always use real API (no mock fallback)
     _initializeRepositories();
     await _authRepository!.logout();
+    
+    // Clear cached data on logout
+    await _cacheService.clearAllCache();
+    if (kDebugMode) print('🗑️ [AppState] Cleared all cache on logout');
+    
     _currentUser = null;
     _users = [];
     _routers = [];
@@ -534,7 +549,13 @@ class AppState with ChangeNotifier {
               if (kDebugMode) print('❌ [AppState] Error parsing subscription: $e');
             }
           }
-          await loadDashboardData();
+          // Load dashboard data in background - don't block auth check if it fails
+          try {
+            await loadDashboardData();
+          } catch (e) {
+            if (kDebugMode) print('⚠️ [AppState] Dashboard data load failed (non-blocking): $e');
+            // Don't fail auth check if dashboard data fails to load
+          }
         }
       } catch (e) {
         // Token is invalid, clear it
@@ -552,30 +573,60 @@ class AppState with ChangeNotifier {
   Future<void> loadDashboardData() async {
     if (kDebugMode) print('📊 [AppState] Loading dashboard data...');
     
-    await Future.wait([
-      loadUsers(),
-      loadRouters(),
-      loadPlans(),
-      loadTransactions(),
-      loadWalletBalance(),
-      loadNotifications(),
-      loadSubscription(),
-      loadHotspotProfiles(), // Load hotspot profiles for plan creation
-    ]);
+    // OPTIMIZATION: Load critical data first (blocking), then non-critical data in background
+    
+    // Phase 1: Load CRITICAL data that must be available immediately
+    // These are wrapped individually so one failure doesn't block others
+    final criticalFutures = [
+      loadPlans().catchError((e) {
+        if (kDebugMode) print('⚠️ Failed to load plans: $e');
+      }),
+      loadWalletBalance().catchError((e) {
+        if (kDebugMode) print('⚠️ Failed to load wallet balance: $e');
+      }),
+      loadSubscription().catchError((e) {
+        if (kDebugMode) print('⚠️ Failed to load subscription: $e');
+      }),
+    ];
+    
+    // Wait for critical data (with individual error handling)
+    await Future.wait(criticalFutures);
+    
+    // Phase 2: Load NON-CRITICAL data in background (don't block UI)
+    // These load asynchronously without blocking the dashboard from appearing
+    Future.wait([
+      loadUsers().catchError((e) {
+        if (kDebugMode) print('⚠️ Failed to load users: $e');
+      }),
+      loadRouters().catchError((e) {
+        if (kDebugMode) print('⚠️ Failed to load routers: $e');
+      }),
+      loadTransactions().catchError((e) {
+        if (kDebugMode) print('⚠️ Failed to load transactions: $e');
+      }),
+      loadNotifications().catchError((e) {
+        if (kDebugMode) print('⚠️ Failed to load notifications: $e');
+      }),
+      loadHotspotProfiles().catchError((e) {
+        if (kDebugMode) print('⚠️ Failed to load hotspot profiles: $e');
+      }),
+    ]).then((_) {
+      if (kDebugMode) print('✅ [AppState] Background data loaded');
+    });
     
     // Load real data from API instead of using placeholders
     _roles = [];
     
     if (kDebugMode) {
-      print('✅ [AppState] Dashboard data loaded:');
-      print('   Users: ${_users.length}');
-      print('   Routers: ${_routers.length}');
+      print('✅ [AppState] Critical dashboard data loaded:');
       print('   Plans: ${_plans.length}');
-      print('   Hotspot Profiles: ${_hotspotProfiles.length}');
+      print('   Wallet Balance: $_walletBalance');
     }
     
-    // Load dynamic configurations
-    await loadAllConfigurations();
+    // Load dynamic configurations in background
+    loadAllConfigurations().catchError((e) {
+      if (kDebugMode) print('⚠️ Failed to load configurations: $e');
+    });
   }
 
   Future<void> loadAllConfigurations() async {
@@ -783,7 +834,30 @@ class AppState with ChangeNotifier {
   
   Future<void> loadPlans() async {
     try {
-      // FORCE REMOTE API: Always use real API (no mock fallback)
+      // CACHE-FIRST: Try to load from cache first
+      final cachedData = await _cacheService.getData('plans', isCritical: true);
+      if (cachedData != null && cachedData is List) {
+        _plans = cachedData.map<PlanModel>((data) {
+          final validityMinutes = (data['validity'] as num?)?.toInt() ?? 0;
+          final validityDays = validityMinutes > 0 ? (validityMinutes / 1440).ceil() : 1;
+          
+          return PlanModel(
+            id: data['id']?.toString() ?? '',
+            name: data['name']?.toString() ?? 'Plan',
+            price: double.tryParse(data['price']?.toString() ?? '0') ?? 0.0,
+            dataLimitGB: (data['data_limit'] as num?)?.toInt() ?? 0,
+            validityDays: validityDays,
+            speedMbps: 10,
+            isActive: data['is_active'] == true,
+            deviceAllowed: (data['shared_users'] as num?)?.toInt() ?? 1,
+            userProfile: data['profile_name']?.toString() ?? 'Basic',
+          );
+        }).toList();
+        notifyListeners();
+        if (kDebugMode) print('📦 [AppState] Loaded ${_plans.length} plans from cache');
+      }
+      
+      // FORCE REMOTE API: Always fetch fresh data in background
       if (_walletRepository == null) _initializeRepositories();
       
       // Fetch plans from API
@@ -805,8 +879,13 @@ class AppState with ChangeNotifier {
           userProfile: data['profile_name']?.toString() ?? 'Basic',
         );
       }).toList();
+      
+      // Save fresh data to cache
+      await _cacheService.saveData('plans', plansData, isCritical: true);
+      
       notifyListeners();
     } catch (e) {
+      if (kDebugMode) print('⚠️ [AppState] Load plans error: $e');
       _setError(e.toString());
     }
   }
