@@ -16,7 +16,10 @@ import 'feature/launch/onboarding_screen.dart';
 import 'feature/auth/login_screen_m3.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/language_screen.dart';
-import 'screens/forgot_password_screen.dart';
+import 'feature/auth/forgot_password_screen.dart';
+import 'feature/auth/verify_password_reset_otp_screen.dart';
+import 'feature/auth/reset_password_screen.dart';
+import 'screens/forgot_password_screen.dart'; // Old screen
 import 'screens/reset_email_sent_screen.dart';
 import 'screens/set_new_password_screen.dart';
 import 'screens/password_success_screen.dart';
@@ -230,6 +233,21 @@ class HotspotPartnerApp extends StatelessWidget {
             builder: (context) => RouterAssignScreen(
               userId: args['userId'] as String,
               userName: args['userName'] as String,
+            ),
+          );
+        }
+        if (settings.name == '/verify-password-reset-otp') {
+          final email = settings.arguments as String;
+          return MaterialPageRoute(
+            builder: (context) => VerifyPasswordResetOtpScreen(email: email),
+          );
+        }
+        if (settings.name == '/reset-password') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => ResetPasswordScreen(
+              email: args['email'] as String,
+              otp: args['otp'] as String,
             ),
           );
         }

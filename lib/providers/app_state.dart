@@ -456,6 +456,36 @@ class AppState with ChangeNotifier {
     notifyListeners();
   }
   
+  /// Request password reset - sends OTP to email
+  Future<bool> requestPasswordReset(String email) async {
+    try {
+      _initializeRepositories();
+      return await _authRepository!.requestPasswordReset(email);
+    } catch (e) {
+      if (kDebugMode) print('Request password reset error: $e');
+      return false;
+    }
+  }
+  
+  /// Confirm password reset with OTP and new password
+  Future<bool> confirmPasswordReset({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    try {
+      _initializeRepositories();
+      return await _authRepository!.confirmPasswordReset(
+        email: email,
+        otp: otp,
+        newPassword: newPassword,
+      );
+    } catch (e) {
+      if (kDebugMode) print('Confirm password reset error: $e');
+      return false;
+    }
+  }
+  
   Future<void> checkAuthStatus() async {
     // FORCE REMOTE API: Always use real API (no mock fallback)
     _initializeRepositories();

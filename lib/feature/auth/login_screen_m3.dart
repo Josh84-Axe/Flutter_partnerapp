@@ -167,7 +167,20 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
               enabled: !_isLoading,
               onSubmitted: (_) => _handleLogin(),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
+            // Forgot Password link
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _isLoading
+                    ? null
+                    : () {
+                        Navigator.of(context).pushNamed('/forgot-password');
+                      },
+                child: const Text('Forgot Password?'),
+              ),
+            ),
+            const SizedBox(height: 16),
             // Login button
             FilledButton(
               onPressed: _isLoading ? null : _handleLogin,
