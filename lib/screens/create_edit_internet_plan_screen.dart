@@ -209,7 +209,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
       'name': _nameController.text,
       'price': double.tryParse(_priceController.text) ?? 0,
       'dataLimitGB': _selectedDataLimit != null
-          ? (_selectedDataLimit is String && HotspotConfigurationService.isUnlimited(_selectedDataLimit)
+          ? (_selectedDataLimit is String && HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
               ? 999999
               : extractValue(_selectedDataLimit))
           : 10,
