@@ -15,8 +15,15 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/rate-limit/list/');
       final responseData = response.data;
       
-      if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+      // Handle nested data structure: { data: { results: [...] } }
+      if (responseData is Map) {
+        if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          return responseData['data']['results'] as List;
+        } else if (responseData['data'] is List) {
+          return responseData['data'] as List;
+        } else if (responseData['results'] is List) {
+          return responseData['results'] as List;
+        }
       }
       
       return [];
@@ -33,6 +40,17 @@ class PlanConfigRepository {
       return response.data as Map<String, dynamic>?;
     } catch (e) {
       if (kDebugMode) print('Create rate limit error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update rate limit
+  Future<Map<String, dynamic>?> updateRateLimit(int id, Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.put('/partner/rate-limit/$id/update/', data: data);
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('Update rate limit error: $e');
       rethrow;
     }
   }
@@ -67,8 +85,15 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/data-limit/list/');
       final responseData = response.data;
       
-      if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+      // Handle nested data structure: { data: { results: [...] } }
+      if (responseData is Map) {
+        if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          return responseData['data']['results'] as List;
+        } else if (responseData['data'] is List) {
+          return responseData['data'] as List;
+        } else if (responseData['results'] is List) {
+          return responseData['results'] as List;
+        }
       }
       
       return [];
@@ -85,6 +110,17 @@ class PlanConfigRepository {
       return response.data as Map<String, dynamic>?;
     } catch (e) {
       if (kDebugMode) print('Create data limit error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update data limit
+  Future<Map<String, dynamic>?> updateDataLimit(int id, Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.put('/partner/data-limit/$id/update/', data: data);
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('Update data limit error: $e');
       rethrow;
     }
   }
@@ -119,8 +155,15 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/shared-users/list/');
       final responseData = response.data;
       
-      if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+      // Handle nested data structure: { data: { results: [...] } }
+      if (responseData is Map) {
+        if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          return responseData['data']['results'] as List;
+        } else if (responseData['data'] is List) {
+          return responseData['data'] as List;
+        } else if (responseData['results'] is List) {
+          return responseData['results'] as List;
+        }
       }
       
       return [];
@@ -137,6 +180,17 @@ class PlanConfigRepository {
       return response.data as Map<String, dynamic>?;
     } catch (e) {
       if (kDebugMode) print('Create shared users error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update shared users configuration
+  Future<Map<String, dynamic>?> updateSharedUsers(int id, Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.put('/partner/shared-users/$id/update/', data: data);
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('Update shared users error: $e');
       rethrow;
     }
   }
@@ -171,8 +225,15 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/validity/list/');
       final responseData = response.data;
       
-      if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+      // Handle nested data structure: { data: { results: [...] } }
+      if (responseData is Map) {
+        if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          return responseData['data']['results'] as List;
+        } else if (responseData['data'] is List) {
+          return responseData['data'] as List;
+        } else if (responseData['results'] is List) {
+          return responseData['results'] as List;
+        }
       }
       
       return [];
@@ -189,6 +250,17 @@ class PlanConfigRepository {
       return response.data as Map<String, dynamic>?;
     } catch (e) {
       if (kDebugMode) print('Create validity period error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update validity period
+  Future<Map<String, dynamic>?> updateValidityPeriod(int id, Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.put('/partner/validity/$id/update/', data: data);
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('Update validity period error: $e');
       rethrow;
     }
   }
@@ -223,8 +295,15 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/idle-timeout/list/');
       final responseData = response.data;
       
-      if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+      // Handle nested data structure: { data: { results: [...] } }
+      if (responseData is Map) {
+        if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          return responseData['data']['results'] as List;
+        } else if (responseData['data'] is List) {
+          return responseData['data'] as List;
+        } else if (responseData['results'] is List) {
+          return responseData['results'] as List;
+        }
       }
       
       return [];
@@ -241,6 +320,17 @@ class PlanConfigRepository {
       return response.data as Map<String, dynamic>?;
     } catch (e) {
       if (kDebugMode) print('Create idle timeout error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update idle timeout
+  Future<Map<String, dynamic>?> updateIdleTimeout(int id, Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.put('/partner/idle-timeout/$id/update/', data: data);
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('Update idle timeout error: $e');
       rethrow;
     }
   }

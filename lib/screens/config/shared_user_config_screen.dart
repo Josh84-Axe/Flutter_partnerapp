@@ -125,6 +125,74 @@ class _SharedUserConfigScreenState extends State<SharedUserConfigScreen> {
     );
   }
 
+  void _showEditDialog(dynamic item) {
+    final id = item['id'] as int;
+    final currentValue = item['value']?.toString() ?? '';
+    final currentLabel = item['label']?.toString() ?? '';
+    
+    final valueController = TextEditingController(text: currentValue);
+    final labelController = TextEditingController(text: currentLabel);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Shared Users Config'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: valueController,
+              decoration: const InputDecoration(
+                labelText: 'Number of Users',
+                hintText: 'e.g., 3',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: labelController,
+              decoration: const InputDecoration(
+                labelText: 'Label',
+                hintText: 'e.g., 3 users',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (valueController.text.isNotEmpty && labelController.text.isNotEmpty) {
+                try {
+                  await context.read<AppState>().updateSharedUsersConfig(id, {
+                    'value': int.tryParse(valueController.text) ?? 1,
+                    'label': labelController.text,
+                  });
+                  if (mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Shared users config updated')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
+                  }
+                }
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -168,6 +236,11 @@ class _SharedUserConfigScreenState extends State<SharedUserConfigScreen> {
                                         ),
                                       ],
                                     ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => _showEditDialog(config),
+                                    icon: const Icon(Icons.edit),
+                                    color: colorScheme.primary,
                                   ),
                                   IconButton(
                                     onPressed: () => _showDeleteDialog(config),

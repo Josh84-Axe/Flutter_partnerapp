@@ -907,45 +907,6 @@ class AppState with ChangeNotifier {
       _setLoading(false);
       rethrow; // Re-throw to allow UI to handle error
     }
-  }
-
-  Future<void> updatePlan(String planId, Map<String, dynamic> planData) async {
-    _setLoading(true);
-    try {
-      if (_planRepository == null) _initializeRepositories();
-      
-      await _planRepository!.updatePlan(planId, planData);
-      await loadPlans();
-      _setLoading(false);
-    } catch (e) {
-      _setError(e.toString());
-      _setLoading(false);
-      rethrow;
-    }
-  }
-  
-  /// Delete a plan
-  Future<void> deletePlan(String planId) async {
-    _setLoading(true);
-    try {
-      if (_planRepository == null) _initializeRepositories();
-      
-      await _planRepository!.deletePlan(planId);
-      await loadPlans(); // Reload list
-      _setLoading(false);
-    } catch (e) {
-      _setError(e.toString());
-      _setLoading(false);
-      rethrow;
-    }
-  }
-  
-  Future<void> assignPlan(String userId, String planId) async {
-    _setLoading(true);
-    try {
-      // FORCE REMOTE API: Always use real API (no mock fallback)
-      if (_planRepository == null) _initializeRepositories();
-      
       await _planRepository!.assignPlan({'customer_id': userId, 'plan_id': planId});
       _setLoading(false);
     } catch (e) {

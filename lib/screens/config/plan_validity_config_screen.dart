@@ -114,6 +114,61 @@ class _PlanValidityConfigScreenState extends State<PlanValidityConfigScreen> {
     );
   }
 
+  void _showEditDialog(dynamic item) {
+    final id = item['id'] as int;
+    final currentValue = item['value']?.toString() ?? '';
+    final valueController = TextEditingController(text: currentValue);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Validity Period'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: valueController,
+              decoration: const InputDecoration(
+                labelText: 'Validity Period',
+                hintText: 'e.g., 1d or 30m',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (valueController.text.isNotEmpty) {
+                try {
+                  await context.read<AppState>().updateValidityPeriod(id, {
+                    'value': valueController.text,
+                  });
+                  if (mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Validity period updated')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
+                  }
+                }
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -157,6 +212,11 @@ class _PlanValidityConfigScreenState extends State<PlanValidityConfigScreen> {
                                         ),
                                       ],
                                     ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => _showEditDialog(config),
+                                    icon: const Icon(Icons.edit),
+                                    color: colorScheme.primary,
                                   ),
                                   IconButton(
                                     onPressed: () => _showDeleteDialog(config),
