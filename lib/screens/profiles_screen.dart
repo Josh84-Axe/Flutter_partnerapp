@@ -18,7 +18,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadProfiles();
+      context.read<AppState>().loadHotspotProfiles();
     });
   }
 
@@ -32,7 +32,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final colorScheme = Theme.of(context).colorScheme;
-    final profiles = appState.profiles.where((profile) {
+    final profiles = appState.hotspotProfiles.where((profile) {
       if (_searchQuery.isEmpty) return true;
       return profile.name.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
@@ -60,77 +60,104 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: profiles.length,
-              itemBuilder: (context, index) {
-                final profile = profiles[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        Icons.person,
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                    title: Text(profile.name),
-                    subtitle: Text(
-                      '${profile.downloadSpeed} Mbps ↓ / ${profile.uploadSpeed} Mbps ↑ • ${profile.idleTimeout}min idle',
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            Navigator.of(context).pushNamed(
-                              '/profile-editor',
-                              arguments: profile,
-                            );
-                          },
+            child: appState.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : profiles.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No hotspot profiles found.\nCreate one to get started!',
+                          textAlign: TextAlign.center,
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          color: colorScheme.error,
-                          onPressed: () async {
-                            final confirmed = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Delete Profile'),
-                                content: Text(
-                                  'Are you sure you want to delete ${profile.name}?',
+                      )
+                    : ListView.builder(
+                        itemCount: profiles.length,
+                        itemBuilder: (context, index) {
+                          final profile = profiles[index];
+                          return Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            child: ListTile(
+                              leading: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.of(context).pop(false),
-                                    child: const Text('Cancel'),
+                                child: Icon(
+                                  Icons.speed,
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                              title: Text(profile.name),
+                              subtitle: Text(
+                                '${profile.downloadSpeedMbps} Mbps ↓ / ${profile.uploadSpeedMbps} Mbps ↑ • ${profile.idleTimeout} idle',
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () {
+                                      Navigator.of(context).pushNamed(
+                                        '/profile-editor',
+                                        arguments: profile,
+                                      );
+                                    },
                                   ),
-                                  TextButton(
-                                    onPressed: () => Navigator.of(context).pop(true),
-                                    child: Text(
-                                      'Delete',
-                                      style: TextStyle(color: colorScheme.error),
-                                    ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    color: colorScheme.error,
+                                    onPressed: () async {
+                                      final confirmed = await showDialog<bool>(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text('Delete Profile'),
+                                          content: Text(
+                                            'Are you sure you want to delete ${profile.name}?',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.of(context).pop(false),
+                                              child: const Text('Cancel'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () => Navigator.of(context).pop(true),
+                                              child: Text(
+                                                'Delete',
+                                                style: TextStyle(color: colorScheme.error),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (confirmed == true && context.mounted) {
+                                        try {
+                                          await appState.deleteHotspotProfile(profile.id);
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text('Profile deleted successfully'),
+                                              ),
+                                            );
+                                          }
+                                        } catch (e) {
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text('Error deleting profile: $e'),
+                                                backgroundColor: colorScheme.error,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      }
+                                    },
                                   ),
                                 ],
                               ),
-                            );
-                            if (confirmed == true && context.mounted) {
-                              appState.deleteProfile(profile.id);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+                            ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),
