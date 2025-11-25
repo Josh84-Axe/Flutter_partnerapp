@@ -157,9 +157,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onTap: () => Navigator.of(context).pushNamed('/internet-plan'),
                 ),
                 QuickActionButton(
-                  icon: Icons.people,
-                  label: 'hotspot_users'.tr(),
-                  onTap: () => Navigator.of(context).pushNamed('/hotspot-user'),
+                  icon: Icons.devices,
+                  label: 'active_sessions'.tr(),
+                  onTap: () => Navigator.of(context).pushNamed('/active-sessions'),
                 ),
                 QuickActionButton(
                   icon: Icons.bar_chart,

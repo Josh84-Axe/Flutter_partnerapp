@@ -16,12 +16,17 @@ class SubscriptionModel {
   });
 
   factory SubscriptionModel.fromJson(Map<String, dynamic> json) {
+    // Handle API response structure where plan details are nested
+    final plan = json['plan'] as Map<String, dynamic>?;
+    
     return SubscriptionModel(
-      id: json['id'],
-      tier: json['tier'],
-      renewalDate: DateTime.parse(json['renewalDate']),
-      isActive: json['isActive'] ?? true,
-      monthlyFee: (json['monthlyFee'] as num).toDouble(),
+      id: plan?['id']?.toString() ?? json['id']?.toString() ?? '',
+      tier: plan?['name']?.toString() ?? json['tier']?.toString() ?? 'Unknown',
+      renewalDate: json['end_date'] != null 
+          ? DateTime.parse(json['end_date']) 
+          : (json['renewalDate'] != null ? DateTime.parse(json['renewalDate']) : DateTime.now()),
+      isActive: json['active'] ?? json['isActive'] ?? false,
+      monthlyFee: (plan?['price'] as num?)?.toDouble() ?? (json['monthlyFee'] as num?)?.toDouble() ?? 0.0,
       features: json['features'] ?? {},
     );
   }

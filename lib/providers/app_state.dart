@@ -248,6 +248,16 @@ class AppState with ChangeNotifier {
           _partnerCurrencyCode = CurrencyUtils.getCurrencyCode(_partnerCountry);
           _partnerCurrencySymbol = CurrencyUtils.getCurrencySymbol(_partnerCountry);
           if (kDebugMode) print('💱 [AppState] Currency: $_partnerCurrencyCode ($_partnerCurrencySymbol)');
+          
+          // Parse subscription data if available
+          if (data['subscription'] != null) {
+            try {
+              if (kDebugMode) print('📦 [AppState] Parsing subscription data');
+              _subscription = SubscriptionModel.fromJson(data['subscription']);
+            } catch (e) {
+              if (kDebugMode) print('❌ [AppState] Error parsing subscription: $e');
+            }
+          }
         }
         await loadDashboardData();
       }
@@ -514,6 +524,16 @@ class AppState with ChangeNotifier {
             isActive: true,
             createdAt: DateTime.now(),
           );
+          
+          // Parse subscription data if available
+          if (data['subscription'] != null) {
+            try {
+              if (kDebugMode) print('📦 [AppState] Parsing subscription data (checkAuthStatus)');
+              _subscription = SubscriptionModel.fromJson(data['subscription']);
+            } catch (e) {
+              if (kDebugMode) print('❌ [AppState] Error parsing subscription: $e');
+            }
+          }
           await loadDashboardData();
         }
       } catch (e) {
@@ -525,51 +545,9 @@ class AppState with ChangeNotifier {
     notifyListeners();
   }
   
-  /// Request password reset - sends OTP to email
-  Future<bool> requestPasswordReset(String email) async {
-    try {
-      if (kDebugMode) print('🔑 [AppState] Requesting password reset for: $email');
-      _initializeRepositories();
-      final success = await _authRepository!.requestPasswordReset(email);
-      if (success) {
-        if (kDebugMode) print('✅ [AppState] Password reset OTP sent successfully');
-        // Store email for later use in OTP verification
-        _registrationEmail = email;
-      }
-      return success;
-    } catch (e) {
-      if (kDebugMode) print('❌ [AppState] Request password reset error: $e');
-      _setError(e.toString());
-      return false;
-    }
-  }
+
   
-  /// Confirm password reset with OTP and new password
-  Future<bool> confirmPasswordReset({
-    required String email,
-    required String otp,
-    required String newPassword,
-  }) async {
-    try {
-      if (kDebugMode) print('🔑 [AppState] Confirming password reset for: $email');
-      _initializeRepositories();
-      final success = await _authRepository!.confirmPasswordReset(
-        email: email,
-        otp: otp,
-        newPassword: newPassword,
-      );
-      if (success) {
-        if (kDebugMode) print('✅ [AppState] Password reset successful');
-        // Clear stored email
-        _registrationEmail = null;
-      }
-      return success;
-    } catch (e) {
-      if (kDebugMode) print('❌ [AppState] Confirm password reset error: $e');
-      _setError(e.toString());
-      return false;
-    }
-  }
+
   
   Future<void> loadDashboardData() async {
     if (kDebugMode) print('📊 [AppState] Loading dashboard data...');
@@ -680,9 +658,13 @@ class AppState with ChangeNotifier {
 
   Future<void> loadSubscription() async {
     try {
-      // TODO: Replace with real API call when subscription endpoint is available
-      // For now, set to null to show "No subscription" instead of mock data
-      _subscription = null;
+      // Subscription is now loaded during login/checkAuthStatus from profile data
+      // If it's null, it means no subscription was found in the profile
+      if (_subscription == null) {
+        if (kDebugMode) print('ℹ️ [AppState] No subscription data found in profile');
+      } else {
+        if (kDebugMode) print('✅ [AppState] Subscription already loaded: ${_subscription!.tier}');
+      }
       notifyListeners();
     } catch (e) {
       _setError(e.toString());

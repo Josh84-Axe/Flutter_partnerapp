@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-class SubscriptionPlanCard extends StatelessWidget {
+import 'dart:async';
+
+class SubscriptionPlanCard extends StatefulWidget {
   final String planName;
   final DateTime renewalDate;
   final bool isLoading;
@@ -12,6 +14,42 @@ class SubscriptionPlanCard extends StatelessWidget {
     required this.renewalDate,
     this.isLoading = false,
   });
+
+  @override
+  State<SubscriptionPlanCard> createState() => _SubscriptionPlanCardState();
+}
+
+class _SubscriptionPlanCardState extends State<SubscriptionPlanCard> {
+  late Timer _timer;
+  late Duration _timeLeft;
+
+  @override
+  void initState() {
+    super.initState();
+    _calculateTimeLeft();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _calculateTimeLeft();
+    });
+  }
+
+  void _calculateTimeLeft() {
+    final now = DateTime.now();
+    if (widget.renewalDate.isAfter(now)) {
+      setState(() {
+        _timeLeft = widget.renewalDate.difference(now);
+      });
+    } else {
+      setState(() {
+        _timeLeft = Duration.zero;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,15 +73,47 @@ class SubscriptionPlanCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    planName,
+                    widget.planName,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _timeLeft.inDays < 3 
+                          ? colorScheme.errorContainer 
+                          : colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.timer_outlined,
+                          size: 16,
+                          color: _timeLeft.inDays < 3 
+                              ? colorScheme.onErrorContainer 
+                              : colorScheme.onPrimaryContainer,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _formatTimeLeft(),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: _timeLeft.inDays < 3 
+                                ? colorScheme.onErrorContainer 
+                                : colorScheme.onPrimaryContainer,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'renews'.tr(namedArgs: {
-                      'date': DateFormat('MMM d, yyyy').format(renewalDate)
+                      'date': DateFormat('MMM d, yyyy').format(widget.renewalDate)
                     }),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurfaceVariant,
@@ -68,5 +138,17 @@ class SubscriptionPlanCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatTimeLeft() {
+    if (_timeLeft.inDays > 0) {
+      return '${_timeLeft.inDays} days left';
+    } else if (_timeLeft.inHours > 0) {
+      return '${_timeLeft.inHours} hours left';
+    } else if (_timeLeft.inMinutes > 0) {
+      return '${_timeLeft.inMinutes} mins left';
+    } else {
+      return 'Expired';
+    }
   }
 }
