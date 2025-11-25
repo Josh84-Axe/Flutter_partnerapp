@@ -544,10 +544,10 @@ class AppState with ChangeNotifier {
       loadWalletBalance(),
       loadNotifications(),
       loadSubscription(),
+      loadHotspotProfiles(), // Load hotspot profiles for plan creation
     ]);
     
     // Load real data from API instead of using placeholders
-    _hotspotProfiles = [];
     _roles = [];
     
     // Load dynamic configurations
