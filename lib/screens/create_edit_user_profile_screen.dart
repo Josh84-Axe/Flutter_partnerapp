@@ -32,8 +32,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
     
     // Fetch configurations
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().fetchRateLimits();
-      context.read<AppState>().fetchIdleTimeouts();
+      context.read<AppState>().loadAllConfigurations();
     });
   }
 

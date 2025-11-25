@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
-import '../../models/config_item_model.dart';
+import '../../providers/app_state.dart';
 
 class DataLimitConfigScreen extends StatefulWidget {
   const DataLimitConfigScreen({super.key});
@@ -10,54 +11,29 @@ class DataLimitConfigScreen extends StatefulWidget {
 }
 
 class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
-  final List<ConfigItem> _configs = [
-    ConfigItem(
-      id: '1',
-      name: 'Basic',
-      description: '10 GB',
-    ),
-    ConfigItem(
-      id: '2',
-      name: 'Standard',
-      description: '50 GB',
-    ),
-    ConfigItem(
-      id: '3',
-      name: 'Premium',
-      description: '100 GB',
-    ),
-    ConfigItem(
-      id: '4',
-      name: 'Unlimited',
-      description: 'No data cap',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppState>().loadAllConfigurations();
+    });
+  }
 
-  void _showAddEditDialog({ConfigItem? item}) {
-    final nameController = TextEditingController(text: item?.name ?? '');
-    final descController = TextEditingController(text: item?.description ?? '');
-    final isEdit = item != null;
+  void _showAddDialog() {
+    final valueController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isEdit ? 'Edit Data Limit' : 'Add New Data Limit'),
+        title: const Text('Add New Data Limit'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: nameController,
+              controller: valueController,
               decoration: const InputDecoration(
-                labelText: 'Setting Name',
-                hintText: 'e.g., Basic',
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: descController,
-              decoration: const InputDecoration(
-                labelText: 'Data Limit',
-                hintText: 'e.g., 10 GB',
+                labelText: 'Data Limit Value',
+                hintText: 'e.g., 10GB',
               ),
             ),
           ],
@@ -68,28 +44,25 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
-              if (nameController.text.isNotEmpty && descController.text.isNotEmpty) {
-                setState(() {
-                  if (isEdit) {
-                    final index = _configs.indexWhere((c) => c.id == item.id);
-                    _configs[index] = ConfigItem(
-                      id: item.id,
-                      name: nameController.text,
-                      description: descController.text,
+            onPressed: () async {
+              if (valueController.text.isNotEmpty) {
+                try {
+                  await context.read<AppState>().createDataLimit({
+                    'value': valueController.text,
+                  });
+                  if (mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Data limit added')),
                     );
-                  } else {
-                    _configs.add(ConfigItem(
-                      id: DateTime.now().millisecondsSinceEpoch.toString(),
-                      name: nameController.text,
-                      description: descController.text,
-                    ));
                   }
-                });
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(isEdit ? 'Configuration updated' : 'Configuration added')),
-                );
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
+                  }
+                }
               }
             },
             child: const Text('Save'),
@@ -99,26 +72,37 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
     );
   }
 
-  void _showDeleteDialog(ConfigItem item) {
+  void _showDeleteDialog(dynamic item) {
+    final id = item['id'] as int;
+    final value = item['value']?.toString() ?? 'Unknown';
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Configuration'),
-        content: Text('Are you sure you want to delete "${item.name}"?'),
+        content: Text('Are you sure you want to delete "$value"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
-              setState(() {
-                _configs.removeWhere((c) => c.id == item.id);
-              });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Configuration deleted')),
-              );
+            onPressed: () async {
+              try {
+                await context.read<AppState>().deleteDataLimit(id);
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Configuration deleted')),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e')),
+                  );
+                }
+              }
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.errorRed,
@@ -133,6 +117,8 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appState = context.watch<AppState>();
+    final configs = appState.dataLimits;
 
     return Scaffold(
       appBar: AppBar(
@@ -141,67 +127,51 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _configs.length,
-              itemBuilder: (context, index) {
-                final config = _configs[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                config.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                config.description,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: AppTheme.textLight,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              onPressed: () => _showAddEditDialog(item: config),
-                              icon: const Icon(Icons.edit),
-                              style: IconButton.styleFrom(
-                                foregroundColor: colorScheme.primary,
-                                backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+            child: appState.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : configs.isEmpty
+                    ? const Center(child: Text('No data limits configured'))
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: configs.length,
+                        itemBuilder: (context, index) {
+                          final config = configs[index];
+                          final value = config['value']?.toString() ?? 'Unknown';
+                          
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          value,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => _showDeleteDialog(config),
+                                    icon: const Icon(Icons.delete),
+                                    style: IconButton.styleFrom(
+                                      foregroundColor: AppTheme.errorRed,
+                                      backgroundColor: AppTheme.errorRed.withValues(alpha: 0.1),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            IconButton(
-                              onPressed: () => _showDeleteDialog(config),
-                              icon: const Icon(Icons.delete),
-                              style: IconButton.styleFrom(
-                                foregroundColor: AppTheme.errorRed,
-                                backgroundColor: AppTheme.errorRed.withValues(alpha: 0.1),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+                          );
+                        },
+                      ),
           ),
           Container(
             padding: const EdgeInsets.all(16),
@@ -219,7 +189,7 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: () => _showAddEditDialog(),
+                  onPressed: _showAddDialog,
                   icon: const Icon(Icons.add),
                   label: const Text('Add New Data Limit'),
                   style: FilledButton.styleFrom(

@@ -548,8 +548,67 @@ class AppState with ChangeNotifier {
     
     // Load real data from API instead of using placeholders
     _hotspotProfiles = [];
-    _routerConfigurations = [];
     _roles = [];
+    
+    // Load dynamic configurations
+    await loadAllConfigurations();
+  }
+
+  Future<void> loadAllConfigurations() async {
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      
+      await Future.wait([
+        _loadRateLimits(),
+        _loadDataLimits(),
+        _loadValidityPeriods(),
+        _loadIdleTimeouts(),
+        _loadSharedUsers(),
+      ]);
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('Error loading configurations: $e');
+    }
+  }
+
+  Future<void> _loadRateLimits() async {
+    try {
+      _rateLimits = await _planConfigRepository!.fetchRateLimits();
+    } catch (e) {
+      if (kDebugMode) print('Error loading rate limits: $e');
+    }
+  }
+
+  Future<void> _loadDataLimits() async {
+    try {
+      _dataLimits = await _planConfigRepository!.fetchDataLimits();
+    } catch (e) {
+      if (kDebugMode) print('Error loading data limits: $e');
+    }
+  }
+
+  Future<void> _loadValidityPeriods() async {
+    try {
+      _validityPeriods = await _planConfigRepository!.fetchValidityPeriods();
+    } catch (e) {
+      if (kDebugMode) print('Error loading validity periods: $e');
+    }
+  }
+
+  Future<void> _loadIdleTimeouts() async {
+    try {
+      _idleTimeouts = await _planConfigRepository!.fetchIdleTimeouts();
+    } catch (e) {
+      if (kDebugMode) print('Error loading idle timeouts: $e');
+    }
+  }
+
+  Future<void> _loadSharedUsers() async {
+    try {
+      _sharedUsers = await _planConfigRepository!.fetchSharedUsers();
+    } catch (e) {
+      if (kDebugMode) print('Error loading shared users: $e');
+    }
   }
 
   Future<void> loadNotifications() async {
@@ -1063,6 +1122,167 @@ class AppState with ChangeNotifier {
     }
   }
   
+  // ==================== Configuration CRUD Operations ====================
+  
+  /// Create rate limit
+  Future<void> createRateLimit(Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.createRateLimit(data);
+      await _loadRateLimits(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Create rate limit error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Delete rate limit
+  Future<void> deleteRateLimit(int id) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.deleteRateLimit(id);
+      await _loadRateLimits(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Delete rate limit error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Create data limit
+  Future<void> createDataLimit(Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.createDataLimit(data);
+      await _loadDataLimits(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Create data limit error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Delete data limit
+  Future<void> deleteDataLimit(int id) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.deleteDataLimit(id);
+      await _loadDataLimits(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Delete data limit error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Create validity period
+  Future<void> createValidityPeriod(Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.createValidityPeriod(data);
+      await _loadValidityPeriods(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Create validity period error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Delete validity period
+  Future<void> deleteValidityPeriod(int id) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.deleteValidityPeriod(id);
+      await _loadValidityPeriods(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Delete validity period error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Create idle timeout
+  Future<void> createIdleTimeout(Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.createIdleTimeout(data);
+      await _loadIdleTimeouts(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Create idle timeout error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Delete idle timeout
+  Future<void> deleteIdleTimeout(int id) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.deleteIdleTimeout(id);
+      await _loadIdleTimeouts(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Delete idle timeout error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Create shared users configuration
+  Future<void> createSharedUsersConfig(Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.createSharedUsers(data);
+      await _loadSharedUsers(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Create shared users error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Delete shared users configuration
+  Future<void> deleteSharedUsersConfig(int id) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.deleteSharedUsers(id);
+      await _loadSharedUsers(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Delete shared users error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
   // ==================== Plan & Profile Enhancements ====================
   
 

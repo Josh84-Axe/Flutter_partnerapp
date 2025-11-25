@@ -25,9 +25,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().fetchSharedUsers();
-      context.read<AppState>().fetchValidityPeriods();
-      context.read<AppState>().fetchDataLimits();
+      context.read<AppState>().loadAllConfigurations();
       context.read<AppState>().loadHotspotProfiles();
     });
     
@@ -80,58 +78,64 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                       labelText: 'price'.tr(),
                       hintText: 'price_hint'.tr(),
                       border: const OutlineInputBorder(),
-                      prefixText: '\$ ',
+                      prefixText: '${appState.currencySymbol} ',
                     ),
                     keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
+                  DropdownButtonFormField<dynamic>(
                     value: _selectedValidity,
                     decoration: InputDecoration(
                       labelText: 'validity'.tr(),
                       border: const OutlineInputBorder(),
                     ),
                     items: appState.validityPeriods.isEmpty
-                        ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
+                        ? (HotspotConfigurationService.getValidityOptions().isNotEmpty
+                            ? HotspotConfigurationService.getValidityOptions().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
+                            : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
                         : appState.validityPeriods
-                            .map((v) => DropdownMenuItem(
-                                  value: v['id']?.toString() ?? v['name']?.toString(),
-                                  child: Text(v['name']?.toString() ?? v['value']?.toString() ?? ''),
-                                ))
+                            .map((v) {
+                              final label = v is Map ? (v['name'] ?? 'Unknown') : v.toString();
+                              return DropdownMenuItem(value: v, child: Text(label));
+                            })
                             .toList(),
                     onChanged: (value) => setState(() => _selectedValidity = value),
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
+                  DropdownButtonFormField<dynamic>(
                     value: _selectedDataLimit,
                     decoration: InputDecoration(
                       labelText: 'data_limit'.tr(),
                       border: const OutlineInputBorder(),
                     ),
                     items: appState.dataLimits.isEmpty
-                        ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
+                        ? (HotspotConfigurationService.getDataLimits().isNotEmpty
+                            ? HotspotConfigurationService.getDataLimits().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
+                            : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
                         : appState.dataLimits
-                            .map((d) => DropdownMenuItem(
-                                  value: d['id']?.toString() ?? d['name']?.toString(),
-                                  child: Text(d['name']?.toString() ?? d['value']?.toString() ?? ''),
-                                ))
+                            .map((d) {
+                              final label = d is Map ? (d['name'] ?? 'Unknown') : d.toString();
+                              return DropdownMenuItem(value: d, child: Text(label));
+                            })
                             .toList(),
                     onChanged: (value) => setState(() => _selectedDataLimit = value),
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
+                  DropdownButtonFormField<dynamic>(
                     value: _selectedAdditionalDevices,
                     decoration: InputDecoration(
                       labelText: 'additional_devices_allowed'.tr(),
                       border: const OutlineInputBorder(),
                     ),
                     items: appState.sharedUsers.isEmpty
-                        ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
+                        ? (HotspotConfigurationService.getDeviceAllowed().isNotEmpty
+                            ? HotspotConfigurationService.getDeviceAllowed().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
+                            : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
                         : appState.sharedUsers
-                            .map((d) => DropdownMenuItem(
-                                  value: d['value']?.toString() ?? d['name']?.toString(), 
-                                  child: Text(d['name']?.toString() ?? d['value']?.toString() ?? '')
-                                ))
+                            .map((d) {
+                              final label = d is Map ? (d['name'] ?? 'Unknown') : d.toString();
+                              return DropdownMenuItem(value: d, child: Text(label));
+                            })
                             .toList(),
                     onChanged: (value) => setState(() => _selectedAdditionalDevices = value),
                   ),
@@ -191,19 +195,31 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
       return;
     }
 
+    // Helper to extract value from dynamic item (Map or String)
+    int extractValue(dynamic item) {
+      if (item is Map) {
+        return int.tryParse(item['value']?.toString() ?? '0') ?? 0;
+      } else if (item is String) {
+        return HotspotConfigurationService.extractNumericValue(item);
+      }
+      return 0;
+    }
+
     final data = {
       'name': _nameController.text,
       'price': double.tryParse(_priceController.text) ?? 0,
       'dataLimitGB': _selectedDataLimit != null
-          ? HotspotConfigurationService.extractNumericValue(_selectedDataLimit!)
+          ? (_selectedDataLimit is String && HotspotConfigurationService.isUnlimited(_selectedDataLimit)
+              ? 999999
+              : extractValue(_selectedDataLimit))
           : 10,
       'validityDays': _selectedValidity != null
-          ? HotspotConfigurationService.extractNumericValue(_selectedValidity!)
+          ? extractValue(_selectedValidity)
           : 30,
       'speedMbps': 50,
       'isActive': true,
       'deviceAllowed': _selectedAdditionalDevices != null
-          ? int.tryParse(_selectedAdditionalDevices!) ?? 1
+          ? extractValue(_selectedAdditionalDevices)
           : 1,
       'userProfile': _selectedHotspotProfile ?? 'Basic',
     };
