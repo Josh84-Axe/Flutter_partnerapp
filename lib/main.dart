@@ -162,6 +162,18 @@ class HotspotPartnerApp extends StatelessWidget {
         '/revenue-breakdown': (context) => const RevenueBreakdownScreen(),
         '/router-health': (context) => const RouterHealthScreen(),
         '/transaction-payment-history': (context) => const TransactionPaymentHistoryScreen(),
+        '/add-payout-method': (context) => const AddPayoutMethodScreen(),
+        '/assign-router': (context) => const AssignRouterScreen(),
+        '/security/password-2fa': (context) => const PasswordAndTwoFactorScreen(),
+        '/security/authenticators': (context) => const AuthenticatorsScreen(),
+        '/security/2fa-success': (context) => const TwoFactorSuccessScreen(),
+        '/partner-profile': (context) => const PartnerProfileScreen(),
+        '/otp-validation': (context) => const OtpValidationScreen(),
+        '/reporting': (context) => const ReportingScreen(),
+        '/report-preview': (context) => const ReportPreviewScreen(),
+        '/export-success': (context) => const ExportSuccessScreen(),
+        '/create-edit-user-profile': (context) {
+          final profile = ModalRoute.of(context)?.settings.arguments as HotspotProfileModel?;
           return CreateEditUserProfileScreen(profile: profile);
         },
         '/notification-settings': (context) => const NotificationSettingsScreen(),
