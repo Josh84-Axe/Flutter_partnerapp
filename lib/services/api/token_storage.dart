@@ -39,6 +39,9 @@ class TokenStorage {
         _secureStorage!.write(key: _accessTokenKey, value: accessToken),
         _secureStorage!.write(key: _refreshTokenKey, value: refreshToken),
       ]);
+      // Add a small delay to ensure tokens are persisted on desktop platforms
+      // FlutterSecureStorage on Windows/Linux/macOS has async write issues
+      await Future.delayed(const Duration(milliseconds: 100));
     }
     
     if (kDebugMode) print('TokenStorage: Tokens saved successfully');
