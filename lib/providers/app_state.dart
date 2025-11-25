@@ -101,6 +101,8 @@ class AppState with ChangeNotifier {
   
   UserModel? _currentUser;
   String? _partnerCountry; // Store partner country for currency display
+  String? _partnerCurrencyCode; // Store currency code
+  String? _partnerCurrencySymbol; // Store currency symbol
   bool _isLoading = false;
   String? _error;
   String? _lastWithdrawalId; // Store last withdrawal ID for tracking
@@ -228,12 +230,21 @@ class AppState with ChangeNotifier {
         if (profileData != null) {
           _currentUser = UserModel(
             id: profileData['id']?.toString() ?? '1',
-            name: profileData['first_name']?.toString() ?? 'Partner',
+            name: '${profileData['first_name'] ?? ''} ${profileData['last_name'] ?? ''}'.trim(),
             email: profileData['email']?.toString() ?? email,
-            role: 'Partner',
+            role: profileData['role'] is Map ? (profileData['role']['name']?.toString() ?? 'Partner') : 'Partner',
             isActive: true,
             createdAt: DateTime.now(),
           );
+          
+          // Extract country and set currency info
+          _partnerCountry = profileData['country']?.toString();
+          if (kDebugMode) print('🌍 [AppState] Partner country: $_partnerCountry');
+          
+          // Set currency info based on country (fallback mapping)
+          _partnerCurrencyCode = CurrencyUtils.getCurrencyCode(_partnerCountry);
+          _partnerCurrencySymbol = CurrencyUtils.getCurrencySymbol(_partnerCountry);
+          if (kDebugMode) print('💱 [AppState] Currency: $_partnerCurrencyCode ($_partnerCurrencySymbol)');
         }
         await loadDashboardData();
       }

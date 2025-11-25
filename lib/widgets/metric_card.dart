@@ -75,12 +75,7 @@ class MetricCard extends StatelessWidget {
   }
 
   static String formatCurrency(double amount, [String? country]) {
-    if (country != null) {
-      return CurrencyUtils.formatPrice(amount, country);
-    }
-    // Fallback to USD if no country provided
-    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-    return formatter.format(amount);
+    return CurrencyUtils.formatPrice(amount, country);
   }
 
   static String formatNumber(int number) {

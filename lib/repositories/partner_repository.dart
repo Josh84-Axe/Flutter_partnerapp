@@ -47,35 +47,7 @@ class PartnerRepository {
       return false;
     }
   }
-  /// Fetch currency symbol for a country
-  Future<String?> fetchCurrencySymbol(String country) async {
-    try {
-      if (kDebugMode) print('💱 [PartnerRepository] Fetching currency symbol for: $country');
-      final response = await _dio.get(
-        '/partner/currency/',
-        queryParameters: {'country': country},
-      );
-      return response.data['symbol']?.toString();
-    } catch (e) {
-      if (kDebugMode) print('❌ [PartnerRepository] Fetch currency symbol error: $e');
-      return null;
-    }
-  }
 
-  /// Fetch currency code for a country
-  Future<String?> fetchCurrencyCode(String country) async {
-    try {
-      if (kDebugMode) print('💱 [PartnerRepository] Fetching currency code for: $country');
-      final response = await _dio.get(
-        '/partner/currency-code/',
-        queryParameters: {'country': country},
-      );
-      return response.data['code']?.toString();
-    } catch (e) {
-      if (kDebugMode) print('❌ [PartnerRepository] Fetch currency code error: $e');
-      return null;
-    }
-  }
 
   /// Login with email and password
   Future<Map<String, dynamic>?> login(String email, String password) async {

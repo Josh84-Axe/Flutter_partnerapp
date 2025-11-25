@@ -159,7 +159,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          MetricCard.formatCurrency(appState.walletBalance, partnerCountry),
+                          appState.formatMoney(appState.walletBalance),
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -191,7 +191,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          MetricCard.formatCurrency(totalRevenue, partnerCountry),
+                          appState.formatMoney(totalRevenue),
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 color: AppTheme.successGreen,
                                 fontWeight: FontWeight.bold,

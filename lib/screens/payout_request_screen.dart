@@ -111,7 +111,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                           FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                         ],
                         decoration: InputDecoration(
-                          prefixText: '\$ ',
+                          prefixText: '${appState.currencySymbol} ',
                           hintText: '0.00',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),

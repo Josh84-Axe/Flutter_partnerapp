@@ -269,7 +269,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                         ),
                                       ),
                                       Text(
-                                        MetricCard.formatCurrency(plan.price),
+                                        appState.formatMoney(plan.price),
                                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                               color: Theme.of(context).colorScheme.primary,
                                               fontWeight: FontWeight.bold,
