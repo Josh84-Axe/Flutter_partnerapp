@@ -39,7 +39,6 @@ class _PlansScreenState extends State<PlansScreen> {
     final priceController = TextEditingController();
     dynamic selectedDataLimit;
     dynamic selectedValidity;
-    dynamic selectedSpeed;
     dynamic selectedDeviceAllowed;
     String selectedProfile = 'Basic';
 
@@ -99,21 +98,6 @@ class _PlansScreenState extends State<PlansScreen> {
                     onChanged: (value) => setState(() => selectedValidity = value),
                   ),
                   const SizedBox(height: 12),
-                  // Speed Dropdown
-                  DropdownButtonFormField<dynamic>(
-                    value: selectedSpeed,
-                    decoration: InputDecoration(labelText: 'speed'.tr()),
-                    items: appState.rateLimits.isEmpty
-                        ? (HotspotConfigurationService.getSpeedOptions().isNotEmpty
-                            ? HotspotConfigurationService.getSpeedOptions().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
-                            : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
-                        : appState.rateLimits.map((speed) {
-                            final label = speed is Map ? (speed['name'] ?? 'Unknown') : speed.toString();
-                            return DropdownMenuItem(value: speed, child: Text(label));
-                          }).toList(),
-                    onChanged: (value) => setState(() => selectedSpeed = value),
-                  ),
-                  const SizedBox(height: 12),
                   // Device Allowed Dropdown (Shared Users)
                   DropdownButtonFormField<dynamic>(
                     value: selectedDeviceAllowed,
@@ -149,7 +133,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 onPressed: () {
                   if (nameController.text.isEmpty || priceController.text.isEmpty ||
                       selectedDataLimit == null || selectedValidity == null ||
-                      selectedSpeed == null || selectedDeviceAllowed == null) {
+                      selectedDeviceAllowed == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('fill_all_fields'.tr())),
                     );
@@ -173,7 +157,6 @@ class _PlansScreenState extends State<PlansScreen> {
                         ? 999999
                         : extractValue(selectedDataLimit),
                     'validityDays': extractValue(selectedValidity),
-                    'speedMbps': extractValue(selectedSpeed),
                     'deviceAllowed': extractValue(selectedDeviceAllowed),
                     'userProfile': selectedProfile,
                   };
