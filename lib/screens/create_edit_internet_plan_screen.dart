@@ -216,7 +216,6 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
       'validityDays': _selectedValidity != null
           ? extractValue(_selectedValidity)
           : 30,
-      'speedMbps': 50,
       'isActive': true,
       'deviceAllowed': _selectedAdditionalDevices != null
           ? extractValue(_selectedAdditionalDevices)
