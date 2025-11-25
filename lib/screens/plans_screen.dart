@@ -25,6 +25,7 @@ class _PlansScreenState extends State<PlansScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppState>().loadPlans();
       context.read<AppState>().loadAllConfigurations();
+      context.read<AppState>().loadHotspotProfiles();
     });
   }
 
@@ -40,7 +41,7 @@ class _PlansScreenState extends State<PlansScreen> {
     dynamic selectedDataLimit;
     dynamic selectedValidity;
     dynamic selectedDeviceAllowed;
-    String selectedProfile = 'Basic';
+    String? selectedProfile;
 
     showDialog(
       context: context,
@@ -115,10 +116,15 @@ class _PlansScreenState extends State<PlansScreen> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     value: selectedProfile,
-                    decoration: InputDecoration(labelText: 'user_profile'.tr()),
-                    items: HotspotConfigurationService.getUserProfiles()
-                        .map((profile) => DropdownMenuItem(value: profile, child: Text(profile)))
-                        .toList(),
+                    decoration: InputDecoration(labelText: 'hotspot_profile'.tr()),
+                    items: appState.hotspotProfiles.isEmpty
+                        ? [DropdownMenuItem(value: 'Basic', child: Text('Basic'))]
+                        : appState.hotspotProfiles
+                            .map((profile) => DropdownMenuItem(
+                                  value: profile.id,
+                                  child: Text(profile.name),
+                                ))
+                            .toList(),
                     onChanged: (value) => setState(() => selectedProfile = value!),
                   ),
                 ],
