@@ -93,7 +93,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  MetricCard.formatCurrency(appState.walletBalance, partnerCountry),
+                  appState.formatMoney(appState.walletBalance),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 36,
@@ -175,7 +175,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                   style: const TextStyle(fontSize: 12),
                 ),
                 trailing: Text(
-                  '${isRevenue ? '+' : '-'}${MetricCard.formatCurrency(transaction.amount.abs(), partnerCountry)}',
+                  '${isRevenue ? '+' : '-'}${appState.formatMoney(transaction.amount.abs())}',
                   style: TextStyle(
                     color: isRevenue ? AppTheme.successGreen : AppTheme.errorRed,
                     fontWeight: FontWeight.bold,
@@ -234,19 +234,19 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                 children: [
                   _buildSummaryRow(
                     'Total Revenue',
-                    MetricCard.formatCurrency(totalRevenue, partnerCountry),
+                    appState.formatMoney(totalRevenue),
                     AppTheme.successGreen,
                   ),
                   const Divider(height: 24),
                   _buildSummaryRow(
                     'Total Payouts',
-                    MetricCard.formatCurrency(totalPayouts, partnerCountry),
+                    appState.formatMoney(totalPayouts),
                     AppTheme.errorRed,
                   ),
                   const Divider(height: 24),
                   _buildSummaryRow(
                     'Current Balance',
-                    MetricCard.formatCurrency(appState.walletBalance, partnerCountry),
+                    appState.formatMoney(appState.walletBalance),
                     colorScheme.primary,
                   ),
                 ],

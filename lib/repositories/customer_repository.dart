@@ -16,86 +16,21 @@ class CustomerRepository {
   }) async {
     try {
       final queryParams = <String, dynamic>{};
+      
       if (page != null) queryParams['page'] = page;
       if (pageSize != null) queryParams['page_size'] = pageSize;
       if (search != null && search.isNotEmpty) queryParams['search'] = search;
-
-      if (kDebugMode) print('👥 [CustomerRepository] Fetching customers (page: $page, pageSize: $pageSize, search: $search)');
+      
+      if (kDebugMode) print('👥 [CustomerRepository] Fetching customers with params: $queryParams');
       final response = await _dio.get(
-        '/partner/customers/paginate-list/',
+        '/partner/customers/list/',
         queryParameters: queryParams,
       );
       
-      if (kDebugMode) print('✅ [CustomerRepository] Fetch customers response status: ${response.statusCode}');
-      if (kDebugMode) print('📦 [CustomerRepository] Fetch customers response data: ${response.data}');
-      
-      final responseData = response.data;
-      
-      // API returns: {statusCode, error, message, data: {...}, exception}
-      if (responseData is Map && responseData['data'] != null) {
-        final data = responseData['data'] as Map<String, dynamic>;
-        final count = data['count'] ?? 0;
-        if (kDebugMode) print('✅ [CustomerRepository] Found $count customers');
-        return data;
-      }
-      
-      if (kDebugMode) print('⚠️ [CustomerRepository] No customer data found in response');
-      return null;
-    } catch (e) {
-      if (kDebugMode) print('❌ [CustomerRepository] Fetch customers error: $e');
-      rethrow;
-    }
-  }
-
-  /// Fetch all customers (no pagination)
-  Future<List<dynamic>> fetchAllCustomers() async {
-    try {
-      if (kDebugMode) print('👥 [CustomerRepository] Fetching all customers');
-      final response = await _dio.get('/partner/customers/all/list/');
-      if (kDebugMode) print('✅ [CustomerRepository] Fetch all customers response: ${response.data}');
-      
-      final responseData = response.data;
-      
-      // API returns: {statusCode, error, message, data: [...], exception}
-      if (responseData is Map && responseData['data'] is List) {
-        final customers = responseData['data'] as List;
-        if (kDebugMode) print('✅ [CustomerRepository] Found ${customers.length} customers');
-        return customers;
-      }
-      
-      if (kDebugMode) print('⚠️ [CustomerRepository] No customers found');
-      return [];
-    } catch (e) {
-      if (kDebugMode) print('❌ [CustomerRepository] Fetch all customers error: $e');
-      rethrow;
-    }
-  }
-
-  /// Block or unblock a customer
-  Future<bool> blockOrUnblockCustomer(String username, bool block) async {
-    try {
-      if (kDebugMode) print('🚫 [CustomerRepository] ${block ? "Blocking" : "Unblocking"} customer: $username');
-      await _dio.put(
-        '/partner/customers/$username/block-or-unblock/',
-        data: {'is_blocked': block},
-      );
-      if (kDebugMode) print('✅ [CustomerRepository] Customer ${block ? "blocked" : "unblocked"} successfully');
-      return true;
-    } catch (e) {
-      if (kDebugMode) print('❌ [CustomerRepository] Block/unblock customer error: $e');
-      return false;
-    }
-  }
-
-  /// Get customer data usage
-  Future<Map<String, dynamic>?> getCustomerDataUsage(String username) async {
-    try {
-      if (kDebugMode) print('📊 [CustomerRepository] Fetching data usage for customer: $username');
-      final response = await _dio.get('/partner/customers/$username/data-usage/');
-      if (kDebugMode) print('✅ [CustomerRepository] Data usage response: ${response.data}');
+      if (kDebugMode) print('✅ [CustomerRepository] Fetch customers response: ${response.data}');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      if (kDebugMode) print('❌ [CustomerRepository] Get customer data usage error: $e');
+      if (kDebugMode) print('❌ [CustomerRepository] Fetch customers error: $e');
       rethrow;
     }
   }

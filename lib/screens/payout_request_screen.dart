@@ -82,7 +82,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        MetricCard.formatCurrency(appState.walletBalance),
+                        appState.formatMoney(appState.walletBalance),
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -242,7 +242,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                               ),
                             ),
                             Text(
-                              MetricCard.formatCurrency(_finalAmount),
+                              appState.formatMoney(_finalAmount),
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -342,6 +342,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
   }
 
   Widget _buildSummaryRow(String label, double amount, {bool isNegative = false}) {
+    final appState = context.read<AppState>();
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -350,7 +351,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
           style: const TextStyle(color: AppTheme.textLight),
         ),
         Text(
-          '${isNegative ? '-' : ''}${MetricCard.formatCurrency(amount)}',
+          '${isNegative ? '-' : ''}${appState.formatMoney(amount)}',
           style: TextStyle(
             fontWeight: FontWeight.w600,
             color: isNegative ? AppTheme.errorRed : AppTheme.textDark,

@@ -12,7 +12,7 @@ class PlanConfigRepository {
   /// Fetch list of rate limits
   Future<List<dynamic>> fetchRateLimits() async {
     try {
-      final response = await _dio.get('/partner/rate-limit/');
+      final response = await _dio.get('/partner/rate-limit/list/');
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {
@@ -64,7 +64,7 @@ class PlanConfigRepository {
   /// Fetch list of data limits
   Future<List<dynamic>> fetchDataLimits() async {
     try {
-      final response = await _dio.get('/partner/data-limit/');
+      final response = await _dio.get('/partner/data-limit/list/');
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {
@@ -116,7 +116,7 @@ class PlanConfigRepository {
   /// Fetch list of shared users configurations
   Future<List<dynamic>> fetchSharedUsers() async {
     try {
-      final response = await _dio.get('/partner/shared-users/');
+      final response = await _dio.get('/partner/shared-users/list/');
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {
@@ -168,7 +168,7 @@ class PlanConfigRepository {
   /// Fetch list of validity periods
   Future<List<dynamic>> fetchValidityPeriods() async {
     try {
-      final response = await _dio.get('/partner/validity/');
+      final response = await _dio.get('/partner/validity/list/');
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {
@@ -220,7 +220,7 @@ class PlanConfigRepository {
   /// Fetch list of idle timeouts
   Future<List<dynamic>> fetchIdleTimeouts() async {
     try {
-      final response = await _dio.get('/partner/idle-timeout/');
+      final response = await _dio.get('/partner/idle-timeout/list/');
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {

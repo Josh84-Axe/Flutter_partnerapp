@@ -27,7 +27,7 @@ class TransactionRepository {
 
       if (kDebugMode) print('💳 [TransactionRepository] Fetching transactions with filters: $queryParams');
       final response = await _dio.get(
-        '/partner/transactions/',
+        '/partner/wallet/transactions/',
         queryParameters: queryParams,
       );
       if (kDebugMode) print('✅ [TransactionRepository] Fetch transactions response: ${response.data}');

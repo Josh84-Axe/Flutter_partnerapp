@@ -12,7 +12,7 @@ class CollaboratorRepository {
   /// Fetch list of collaborators
   Future<List<dynamic>> fetchCollaborators() async {
     try {
-      final response = await _dio.get('/partner/collaborators/');
+      final response = await _dio.get('/partner/collaborators/list/');
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {

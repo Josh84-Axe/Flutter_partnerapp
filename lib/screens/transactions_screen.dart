@@ -33,7 +33,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     String selectedMethod = 'bank_transfer';
     final appState = context.read<AppState>();
     final partnerCountry = appState.currentUser?.country;
-    final currencySymbol = CurrencyUtils.getCurrencySymbol(partnerCountry);
+    final currencySymbol = appState.currencySymbol;
 
     showDialog(
       context: context,
@@ -295,7 +295,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                 ],
                               ),
                               trailing: Text(
-                                '${isRevenue ? '+' : '-'}${MetricCard.formatCurrency(transaction.amount.abs(), partnerCountry)}',
+                                '${isRevenue ? '+' : '-'}${appState.formatMoney(transaction.amount.abs())}',
                                 style: TextStyle(
                                   color: isRevenue ? AppTheme.successGreen : AppTheme.errorRed,
                                   fontWeight: FontWeight.bold,

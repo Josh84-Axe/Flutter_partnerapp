@@ -33,75 +33,15 @@ class HotspotRepository {
     }
   }
 
-  /// Create a new hotspot profile
-  /// Required fields depend on backend schema
-  Future<Map<String, dynamic>?> createProfile(Map<String, dynamic> profileData) async {
-    try {
-      if (kDebugMode) print('➕ [HotspotRepository] Creating hotspot profile');
-      if (kDebugMode) print('📦 [HotspotRepository] Profile data: $profileData');
-      final response = await _dio.post(
-        '/partner/hotspot/profiles/create/',
-        data: profileData,
-      );
-      if (kDebugMode) print('✅ [HotspotRepository] Create profile response: ${response.data}');
-      return response.data as Map<String, dynamic>?;
-    } catch (e) {
-      if (kDebugMode) print('❌ [HotspotRepository] Create hotspot profile error: $e');
-      rethrow;
-    }
-  }
-
-  /// Get hotspot profile details
-  Future<Map<String, dynamic>?> getProfileDetails(String profileSlug) async {
-    try {
-      final response = await _dio.get('/partner/hotspot/profiles/$profileSlug/detail/');
-      return response.data as Map<String, dynamic>?;
-    } catch (e) {
-      if (kDebugMode) print('Get profile details error: $e');
-      rethrow;
-    }
-  }
-
-  /// Update hotspot profile
-  Future<Map<String, dynamic>?> updateProfile(
-    String profileSlug,
-    Map<String, dynamic> profileData,
-  ) async {
-    try {
-      final response = await _dio.put(
-        '/partner/hotspot/profiles/$profileSlug/update/',
-        data: profileData,
-      );
-      return response.data as Map<String, dynamic>?;
-    } catch (e) {
-      if (kDebugMode) print('Update profile error: $e');
-      rethrow;
-    }
-  }
-
-  /// Delete hotspot profile
-  Future<bool> deleteProfile(String profileSlug) async {
-    try {
-      await _dio.delete('/partner/hotspot/profiles/$profileSlug/delete/');
-      return true;
-    } catch (e) {
-      if (kDebugMode) print('Delete profile error: $e');
-      return false;
-    }
-  }
-
-  // ==================== Hotspot Users ====================
-
   /// Fetch list of hotspot users
   Future<List<dynamic>> fetchUsers() async {
     try {
       if (kDebugMode) print('👥 [HotspotRepository] Fetching hotspot users');
-      final response = await _dio.get('/partner/hotspot/users/list/');
+      final response = await _dio.get('/partner/hotspot/users/paginate-list/');
       if (kDebugMode) print('✅ [HotspotRepository] Fetch users response: ${response.data}');
       
       final responseData = response.data;
       
-      // API returns: {statusCode, error, message, data: [...], exception}
       if (responseData is Map && responseData['data'] is List) {
         final users = responseData['data'] as List;
         if (kDebugMode) print('✅ [HotspotRepository] Found ${users.length} users');
@@ -116,20 +56,68 @@ class HotspotRepository {
     }
   }
 
-  /// Create a new hotspot user
-  /// Required fields: username, password, and router association
+  /// Create hotspot profile
+  Future<Map<String, dynamic>?> createProfile(Map<String, dynamic> profileData) async {
+    try {
+      if (kDebugMode) print('➕ [HotspotRepository] Creating hotspot profile');
+      final response = await _dio.post(
+        '/partner/hotspot/profiles/create/',
+        data: profileData,
+      );
+      if (kDebugMode) print('✅ [HotspotRepository] Profile created successfully');
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('❌ [HotspotRepository] Create profile error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update hotspot profile
+  Future<Map<String, dynamic>?> updateProfile(
+    String profileSlug,
+    Map<String, dynamic> profileData,
+  ) async {
+    try {
+      if (kDebugMode) print('✏️ [HotspotRepository] Updating hotspot profile: $profileSlug');
+      final response = await _dio.put(
+        '/partner/hotspot/profiles/$profileSlug/update/',
+        data: profileData,
+      );
+      if (kDebugMode) print('✅ [HotspotRepository] Profile updated successfully');
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('❌ [HotspotRepository] Update profile error: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete hotspot profile
+  Future<bool> deleteProfile(String profileSlug) async {
+    try {
+      if (kDebugMode) print('🗑️ [HotspotRepository] Deleting hotspot profile: $profileSlug');
+      await _dio.delete('/partner/hotspot/profiles/$profileSlug/delete/');
+      if (kDebugMode) print('✅ [HotspotRepository] Profile deleted successfully');
+      return true;
+    } catch (e) {
+      if (kDebugMode) print('❌ [HotspotRepository] Delete profile error: $e');
+      rethrow;
+    }
+  }
+
+  // ==================== Hotspot Users ====================
+
+  /// Create hotspot user
   Future<Map<String, dynamic>?> createUser(Map<String, dynamic> userData) async {
     try {
       if (kDebugMode) print('➕ [HotspotRepository] Creating hotspot user');
-      if (kDebugMode) print('📦 [HotspotRepository] User data: $userData');
       final response = await _dio.post(
         '/partner/hotspot/users/create/',
         data: userData,
       );
-      if (kDebugMode) print('✅ [HotspotRepository] Create user response: ${response.data}');
+      if (kDebugMode) print('✅ [HotspotRepository] User created successfully');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      if (kDebugMode) print('❌ [HotspotRepository] Create hotspot user error: $e');
+      if (kDebugMode) print('❌ [HotspotRepository] Create user error: $e');
       rethrow;
     }
   }

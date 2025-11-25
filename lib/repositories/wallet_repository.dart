@@ -150,7 +150,7 @@ class WalletRepository {
 
       if (kDebugMode) print('💸 [WalletRepository] Fetching withdrawals with filters: $queryParams');
       final response = await _dio.get(
-        '/partner/withdrawals/',
+        '/partner/wallet/withdrawls/',
         queryParameters: queryParams,
       );
       if (kDebugMode) print('✅ [WalletRepository] Fetch withdrawals response: ${response.data}');
@@ -176,7 +176,7 @@ class WalletRepository {
       if (kDebugMode) print('💸 [WalletRepository] Creating withdrawal request');
       if (kDebugMode) print('📦 [WalletRepository] Withdrawal data: $requestData');
       final response = await _dio.post(
-        '/partner/withdrawals/create/',
+        '/partner/wallet/withdrawls/create/',
         data: requestData,
       );
       if (kDebugMode) print('✅ [WalletRepository] Create withdrawal response: ${response.data}');

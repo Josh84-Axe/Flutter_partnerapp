@@ -1,93 +1,25 @@
-/// Currency utility for mapping countries to their official currency symbols
+import 'package:intl/intl.dart';
+import '../providers/app_state.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+
+/// Currency utility for formatting prices
 class CurrencyUtils {
-  /// Map of country names to their official currency symbols
-  static const Map<String, String> countryCurrencyMap = {
-    // North America
-    'United States': '\$',
-    'Canada': 'CA\$',
-    'Mexico': 'MX\$',
-    
-    // Europe
-    'France': '€',
-    'Belgium': '€',
-    'Germany': '€',
-    'Spain': '€',
-    'Italy': '€',
-    'United Kingdom': '£',
-    'Switzerland': 'CHF',
-    'Netherlands': '€',
-    'Portugal': '€',
-    'Austria': '€',
-    'Ireland': '€',
-    'Greece': '€',
-    'Poland': 'zł',
-    'Sweden': 'kr',
-    'Norway': 'kr',
-    'Denmark': 'kr',
-    
-    // Africa
-    'Ivory Coast': 'CFA',
-    'Senegal': 'CFA',
-    'Nigeria': '₦',
-    'Ghana': 'GH₵',
-    'Kenya': 'KSh',
-    'South Africa': 'R',
-    'Egypt': 'E£',
-    'Morocco': 'MAD',
-    'Tunisia': 'DT',
-    'Algeria': 'DA',
-    'Cameroon': 'CFA',
-    'Mali': 'CFA',
-    'Burkina Faso': 'CFA',
-    'Niger': 'CFA',
-    'Benin': 'CFA',
-    'Togo': 'CFA',
-    'Guinea': 'GNF',
-    
-    // Asia
-    'China': '¥',
-    'Japan': '¥',
-    'India': '₹',
-    'South Korea': '₩',
-    'Singapore': 'S\$',
-    'Thailand': '฿',
-    'Malaysia': 'RM',
-    'Indonesia': 'Rp',
-    'Philippines': '₱',
-    'Vietnam': '₫',
-    
-    // Middle East
-    'United Arab Emirates': 'AED',
-    'Saudi Arabia': 'SAR',
-    'Qatar': 'QAR',
-    'Kuwait': 'KWD',
-    'Israel': '₪',
-    'Turkey': '₺',
-    
-    // South America
-    'Brazil': 'R\$',
-    'Argentina': 'AR\$',
-    'Chile': 'CL\$',
-    'Colombia': 'CO\$',
-    'Peru': 'S/',
-    
-    // Oceania
-    'Australia': 'A\$',
-    'New Zealand': 'NZ\$',
-  };
   
-  /// Get currency symbol for a given country
-  /// Returns '\$' as default if country is not found
+  /// Get currency symbol from AppState
+  /// Returns '\$' as default if not found
   static String getCurrencySymbol(String? country) {
-    if (country == null || country.isEmpty) {
-      return '\$'; // Default to USD
-    }
-    return countryCurrencyMap[country] ?? '\$';
+    // This is now handled by AppState, but we keep this static method
+    // for backward compatibility where context isn't available.
+    // Ideally, widgets should use context.read<AppState>().currencySymbol
+    return '\$'; 
   }
   
   /// Format price with currency symbol
   static String formatPrice(double price, String? country) {
-    final symbol = getCurrencySymbol(country);
-    return '$symbol${price.toStringAsFixed(2)}';
+    // We can't access AppState here without context.
+    // This method should be deprecated in favor of AppState.formatMoney
+    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    return formatter.format(price);
   }
 }

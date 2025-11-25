@@ -10,7 +10,7 @@ class AdditionalDeviceRepository {
   /// Fetch list of additional devices
   Future<List<dynamic>> fetchAdditionalDevices() async {
     try {
-      final response = await _dio.get('/partner/additional-devices/');
+      final response = await _dio.get('/partner/additional-devices/list/');
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {
