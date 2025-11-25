@@ -228,17 +228,20 @@ class AppState with ChangeNotifier {
         // Load profile to get user data
         final profileData = await _partnerRepository!.fetchProfile();
         if (profileData != null) {
+          // Unwrap data if nested
+          final data = profileData['data'] is Map ? profileData['data'] : profileData;
+          
           _currentUser = UserModel(
-            id: profileData['id']?.toString() ?? '1',
-            name: '${profileData['first_name'] ?? ''} ${profileData['last_name'] ?? ''}'.trim(),
-            email: profileData['email']?.toString() ?? email,
-            role: profileData['role'] is Map ? (profileData['role']['name']?.toString() ?? 'Partner') : 'Partner',
+            id: data['id']?.toString() ?? '1',
+            name: '${data['first_name'] ?? ''} ${data['last_name'] ?? ''}'.trim(),
+            email: data['email']?.toString() ?? email,
+            role: data['role'] is Map ? (data['role']['name']?.toString() ?? 'Partner') : 'Partner',
             isActive: true,
             createdAt: DateTime.now(),
           );
           
           // Extract country and set currency info
-          _partnerCountry = profileData['country']?.toString();
+          _partnerCountry = data['country']?.toString();
           if (kDebugMode) print('🌍 [AppState] Partner country: $_partnerCountry');
           
           // Set currency info based on country (fallback mapping)
@@ -464,16 +467,19 @@ class AppState with ChangeNotifier {
       try {
         final profileData = await _partnerRepository!.fetchProfile();
         if (profileData != null) {
+          // Unwrap data if nested
+          final data = profileData['data'] is Map ? profileData['data'] : profileData;
+          
           // Store partner country for currency display
-          _partnerCountry = profileData['country']?.toString() ?? 
-                          profileData['country_name']?.toString() ?? 
+          _partnerCountry = data['country']?.toString() ?? 
+                          data['country_name']?.toString() ?? 
                           'Togo'; // Default to Togo for West African partners
           if (kDebugMode) print('Partner country loaded: $_partnerCountry');
           
           _currentUser = UserModel(
-            id: profileData['id']?.toString() ?? '1',
-            name: '${profileData['first_name'] ?? ''} ${profileData['last_name'] ?? ''}'.trim(),
-            email: profileData['email']?.toString() ?? '',
+            id: data['id']?.toString() ?? '1',
+            name: '${data['first_name'] ?? ''} ${data['last_name'] ?? ''}'.trim(),
+            email: data['email']?.toString() ?? '',
             role: 'Partner',
             isActive: true,
             createdAt: DateTime.now(),
@@ -705,10 +711,25 @@ class AppState with ChangeNotifier {
       final response = await _customerRepository!.fetchCustomers(page: 1, pageSize: 20);
       if (kDebugMode) print('Users API response: $response');
       
-      if (response != null && response['results'] is List) {
-        final usersList = response['results'] as List;
-        if (kDebugMode) print('Found ${usersList.length} users');
-        _users = usersList.map((u) => UserModel.fromJson(u)).toList();
+      if (response != null) {
+        // Handle nested data structure: { data: { results: [...] } }
+        List<dynamic>? usersList;
+        
+        if (response['data'] is Map && response['data']['results'] is List) {
+          usersList = response['data']['results'] as List;
+        } else if (response['results'] is List) {
+          usersList = response['results'] as List;
+        } else if (response['data'] is List) {
+          usersList = response['data'] as List;
+        }
+        
+        if (usersList != null) {
+          if (kDebugMode) print('Found ${usersList.length} users');
+          _users = usersList.map((u) => UserModel.fromJson(u)).toList();
+        } else {
+          if (kDebugMode) print('No users list found in response');
+          _users = [];
+        }
       } else {
         if (kDebugMode) print('No users found or invalid response structure');
         _users = [];
