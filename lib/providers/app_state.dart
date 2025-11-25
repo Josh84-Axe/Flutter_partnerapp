@@ -903,7 +903,7 @@ class AppState with ChangeNotifier {
       // FORCE REMOTE API: Always use real API (no mock fallback)
       if (_planRepository == null) _initializeRepositories();
       
-      await _planRepository!.assignPlan({'user_id': userId, 'plan_id': planId});
+      await _planRepository!.assignPlan({'customer_id': userId, 'plan_id': planId});
       _setLoading(false);
     } catch (e) {
       _setError(e.toString());
