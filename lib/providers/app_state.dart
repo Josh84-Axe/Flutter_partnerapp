@@ -536,6 +536,8 @@ class AppState with ChangeNotifier {
   }
   
   Future<void> loadDashboardData() async {
+    if (kDebugMode) print('📊 [AppState] Loading dashboard data...');
+    
     await Future.wait([
       loadUsers(),
       loadRouters(),
@@ -550,11 +552,21 @@ class AppState with ChangeNotifier {
     // Load real data from API instead of using placeholders
     _roles = [];
     
+    if (kDebugMode) {
+      print('✅ [AppState] Dashboard data loaded:');
+      print('   Users: ${_users.length}');
+      print('   Routers: ${_routers.length}');
+      print('   Plans: ${_plans.length}');
+      print('   Hotspot Profiles: ${_hotspotProfiles.length}');
+    }
+    
     // Load dynamic configurations
     await loadAllConfigurations();
   }
 
   Future<void> loadAllConfigurations() async {
+    if (kDebugMode) print('⚙️  [AppState] Loading configurations...');
+    
     try {
       if (_planConfigRepository == null) _initializeRepositories();
       
@@ -565,9 +577,19 @@ class AppState with ChangeNotifier {
         _loadIdleTimeouts(),
         _loadSharedUsers(),
       ]);
+      
+      if (kDebugMode) {
+        print('✅ [AppState] Configurations loaded:');
+        print('   Rate Limits: ${_rateLimits.length}');
+        print('   Data Limits: ${_dataLimits.length}');
+        print('   Validity Periods: ${_validityPeriods.length}');
+        print('   Idle Timeouts: ${_idleTimeouts.length}');
+        print('   Shared Users: ${_sharedUsers.length}');
+      }
+      
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) print('Error loading configurations: $e');
+      if (kDebugMode) print('❌ [AppState] Error loading configurations: $e');
     }
   }
 

@@ -18,9 +18,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadDashboardData();
-    });
+    // Data is already loaded by login - no need to reload here
   }
 
   @override
