@@ -907,6 +907,45 @@ class AppState with ChangeNotifier {
       _setLoading(false);
       rethrow; // Re-throw to allow UI to handle error
     }
+  }
+
+  Future<void> updatePlan(String planId, Map<String, dynamic> planData) async {
+    _setLoading(true);
+    try {
+      if (_planRepository == null) _initializeRepositories();
+      
+      await _planRepository!.updatePlan(planId, planData);
+      await loadPlans();
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Delete a plan
+  Future<void> deletePlan(String planId) async {
+    _setLoading(true);
+    try {
+      if (_planRepository == null) _initializeRepositories();
+      
+      await _planRepository!.deletePlan(planId);
+      await loadPlans(); // Reload list
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  Future<void> assignPlan(String userId, String planId) async {
+    _setLoading(true);
+    try {
+      // FORCE REMOTE API: Always use real API (no mock fallback)
+      if (_planRepository == null) _initializeRepositories();
+      
       await _planRepository!.assignPlan({'customer_id': userId, 'plan_id': planId});
       _setLoading(false);
     } catch (e) {
@@ -1144,6 +1183,22 @@ class AppState with ChangeNotifier {
     }
   }
   
+  /// Update rate limit
+  Future<void> updateRateLimit(int id, Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.updateRateLimit(id, data);
+      await _loadRateLimits();
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Update rate limit error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
   /// Delete rate limit
   Future<void> deleteRateLimit(int id) async {
     _setLoading(true);
@@ -1170,6 +1225,22 @@ class AppState with ChangeNotifier {
       _setLoading(false);
     } catch (e) {
       if (kDebugMode) print('Create data limit error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Update data limit
+  Future<void> updateDataLimit(int id, Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.updateDataLimit(id, data);
+      await _loadDataLimits();
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Update data limit error: $e');
       _setError(e.toString());
       _setLoading(false);
       rethrow;
@@ -1208,6 +1279,22 @@ class AppState with ChangeNotifier {
     }
   }
   
+  /// Update validity period
+  Future<void> updateValidityPeriod(int id, Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.updateValidityPeriod(id, data);
+      await _loadValidityPeriods();
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Update validity period error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
   /// Delete validity period
   Future<void> deleteValidityPeriod(int id) async {
     _setLoading(true);
@@ -1240,6 +1327,22 @@ class AppState with ChangeNotifier {
     }
   }
   
+  /// Update idle timeout
+  Future<void> updateIdleTimeout(int id, Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.updateIdleTimeout(id, data);
+      await _loadIdleTimeouts();
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Update idle timeout error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
   /// Delete idle timeout
   Future<void> deleteIdleTimeout(int id) async {
     _setLoading(true);
@@ -1266,6 +1369,22 @@ class AppState with ChangeNotifier {
       _setLoading(false);
     } catch (e) {
       if (kDebugMode) print('Create shared users error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Update shared users configuration
+  Future<void> updateSharedUsersConfig(int id, Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      if (_planConfigRepository == null) _initializeRepositories();
+      await _planConfigRepository!.updateSharedUsers(id, data);
+      await _loadSharedUsers();
+      _setLoading(false);
+    } catch (e) {
+      if (kDebugMode) print('Update shared users error: $e');
       _setError(e.toString());
       _setLoading(false);
       rethrow;

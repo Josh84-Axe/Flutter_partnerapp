@@ -18,11 +18,21 @@ class HotspotRepository {
       
       final responseData = response.data;
       
-      // API returns: {statusCode, error, message, data: [...], exception}
-      if (responseData is Map && responseData['data'] is List) {
-        final profiles = responseData['data'] as List;
-        if (kDebugMode) print('✅ [HotspotRepository] Found ${profiles.length} profiles');
-        return profiles;
+      // Handle nested data structure: { data: { results: [...] } } or { data: [...] }
+      if (responseData is Map) {
+        if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          final profiles = responseData['data']['results'] as List;
+          if (kDebugMode) print('✅ [HotspotRepository] Found ${profiles.length} profiles (nested)');
+          return profiles;
+        } else if (responseData['data'] is List) {
+          final profiles = responseData['data'] as List;
+          if (kDebugMode) print('✅ [HotspotRepository] Found ${profiles.length} profiles (flat)');
+          return profiles;
+        } else if (responseData['results'] is List) {
+          final profiles = responseData['results'] as List;
+          if (kDebugMode) print('✅ [HotspotRepository] Found ${profiles.length} profiles (results)');
+          return profiles;
+        }
       }
       
       if (kDebugMode) print('⚠️ [HotspotRepository] No profiles found');
@@ -42,10 +52,21 @@ class HotspotRepository {
       
       final responseData = response.data;
       
-      if (responseData is Map && responseData['data'] is List) {
-        final users = responseData['data'] as List;
-        if (kDebugMode) print('✅ [HotspotRepository] Found ${users.length} users');
-        return users;
+      // Handle nested data structure: { data: { results: [...] } } or { data: [...] }
+      if (responseData is Map) {
+        if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          final users = responseData['data']['results'] as List;
+          if (kDebugMode) print('✅ [HotspotRepository] Found ${users.length} users (nested)');
+          return users;
+        } else if (responseData['data'] is List) {
+          final users = responseData['data'] as List;
+          if (kDebugMode) print('✅ [HotspotRepository] Found ${users.length} users (flat)');
+          return users;
+        } else if (responseData['results'] is List) {
+          final users = responseData['results'] as List;
+          if (kDebugMode) print('✅ [HotspotRepository] Found ${users.length} users (results)');
+          return users;
+        }
       }
       
       if (kDebugMode) print('⚠️ [HotspotRepository] No users found');
