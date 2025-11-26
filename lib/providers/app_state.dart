@@ -123,6 +123,7 @@ class AppState with ChangeNotifier {
   List<Map<String, dynamic>> _activeSessions = []; // Active WiFi sessions
   List<dynamic> _hotspotUsers = []; // Hotspot users list
   List<dynamic> _assignedPlans = []; // Assigned plans for matching
+  List<dynamic> _paymentMethods = []; // Payment methods for withdrawals
   
   // Configuration Lists
   List<dynamic> _sharedUsers = [];
@@ -709,15 +710,26 @@ class AppState with ChangeNotifier {
 
   Future<void> loadSubscription() async {
     try {
-      // Subscription is now loaded during login/checkAuthStatus from profile data
-      // If it's null, it means no subscription was found in the profile
-      if (_subscription == null) {
-        if (kDebugMode) print('ℹ️ [AppState] No subscription data found in profile');
+      if (_partnerRepository == null) _initializeRepositories();
+      
+      final subscriptionData = await _partnerRepository!.checkSubscriptionStatus();
+      
+      if (subscriptionData != null) {
+        if (kDebugMode) print('📦 [AppState] Subscription data received: $subscriptionData');
+        
+        // Handle API response structure
+        // The endpoint returns { "status": "success", "data": { ... } } or just the data map
+        final data = subscriptionData['data'] is Map ? subscriptionData['data'] : subscriptionData;
+        
+        _subscription = SubscriptionModel.fromJson(data);
+        if (kDebugMode) print('✅ [AppState] Subscription loaded: ${_subscription!.tier}');
       } else {
-        if (kDebugMode) print('✅ [AppState] Subscription already loaded: ${_subscription!.tier}');
+        if (kDebugMode) print('ℹ️ [AppState] No subscription data returned from check');
+        _subscription = null;
       }
       notifyListeners();
     } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Load subscription error: $e');
       _setError(e.toString());
     }
   }
@@ -1070,6 +1082,63 @@ class AppState with ChangeNotifier {
       _setError(e.toString());
       _setLoading(false);
       rethrow; // Re-throw to allow UI to handle error
+    }
+  }
+  
+  // ==================== Payment Method Management ====================
+  
+  /// Get payment methods list
+  List<dynamic> get paymentMethods => _paymentMethods;
+  
+  /// Load payment methods from API
+  Future<void> loadPaymentMethods() async {
+    try {
+      if (_paymentMethodRepository == null) _initializeRepositories();
+      
+      _paymentMethods = await _paymentMethodRepository!.fetchPaymentMethods();
+      if (kDebugMode) print('✅ [AppState] Loaded ${_paymentMethods.length} payment methods');
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Load payment methods error: $e');
+      _setError(e.toString());
+    }
+  }
+  
+  /// Create a new payment method
+  Future<Map<String, dynamic>?> createPaymentMethod(Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      if (_paymentMethodRepository == null) _initializeRepositories();
+      
+      final result = await _paymentMethodRepository!.createPaymentMethod(data);
+      await loadPaymentMethods(); // Reload list
+      _setLoading(false);
+      return result;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Create payment method error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+  
+  /// Delete a payment method
+  Future<bool> deletePaymentMethod(String slug) async {
+    _setLoading(true);
+    try {
+      if (_paymentMethodRepository == null) _initializeRepositories();
+      
+      final success = await _paymentMethodRepository!.deletePaymentMethod(slug);
+      if (success) {
+        await loadPaymentMethods(); // Reload list
+      }
+      _setLoading(false);
+      return success;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Delete payment method error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
     }
   }
   

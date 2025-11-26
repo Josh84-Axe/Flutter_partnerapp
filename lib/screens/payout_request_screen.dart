@@ -15,7 +15,7 @@ class PayoutRequestScreen extends StatefulWidget {
 
 class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
   final _amountController = TextEditingController();
-  String _selectedMethod = 'mobile_money';
+  String _selectedMethod = '';
   double _requestedAmount = 0.0;
   double _feeAmount = 0.0;
   double _finalAmount = 0.0;
@@ -24,6 +24,20 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
   void initState() {
     super.initState();
     _amountController.addListener(_calculateFees);
+    // Load payment methods when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final appState = context.read<AppState>();
+      appState.loadPaymentMethods().then((_) {
+        if (mounted && appState.paymentMethods.isNotEmpty && _selectedMethod.isEmpty) {
+          setState(() {
+            // Select first method by default
+            final firstMethod = appState.paymentMethods.first;
+            _selectedMethod = firstMethod['slug']?.toString() ?? firstMethod['id']?.toString() ?? '';
+            _calculateFees();
+          });
+        }
+      });
+    });
   }
 
   @override
@@ -34,9 +48,26 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
 
   void _calculateFees() {
     final amount = double.tryParse(_amountController.text) ?? 0.0;
+    
+    // Find the selected method type
+    String methodType = 'mobile_money'; // Default fallback
+    
+    if (_selectedMethod.isNotEmpty) {
+      final appState = context.read<AppState>();
+      // Find the method object that matches the selected slug
+      final selectedMethodObj = appState.paymentMethods.firstWhere(
+        (m) => (m['slug']?.toString() ?? m['id']?.toString()) == _selectedMethod,
+        orElse: () => null,
+      );
+      
+      if (selectedMethodObj != null) {
+        methodType = selectedMethodObj['method_type']?.toString() ?? 'mobile_money';
+      }
+    }
+
     setState(() {
       _requestedAmount = amount;
-      _feeAmount = _selectedMethod == 'mobile_money' ? amount * 0.02 : amount * 0.015;
+      _feeAmount = methodType == 'mobile_money' ? amount * 0.02 : amount * 0.015;
       _finalAmount = amount - _feeAmount;
     });
   }
@@ -138,33 +169,89 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'Payment Method',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: _buildMethodButton(
-                        'Mobile Money',
-                        'mobile_money',
-                        Icons.phone_android,
+                    const Text(
+                      'Payment Method',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildMethodButton(
-                        'Bank Transfer',
-                        'bank_transfer',
-                        Icons.account_balance,
-                      ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        final result = await Navigator.of(context).pushNamed('/add-payout-method');
+                        if (result == true && context.mounted) {
+                          // Reload payment methods after adding new one
+                          context.read<AppState>().loadPaymentMethods();
+                        }
+                      },
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('Add New'),
                     ),
                   ],
                 ),
+                const SizedBox(height: 12),
+                // Dynamic payment methods list
+                appState.paymentMethods.isEmpty
+                    ? Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.account_balance_wallet_outlined,
+                                size: 48,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No payment methods added',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Add a payment method to request payouts',
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              FilledButton.icon(
+                                onPressed: () async {
+                                  final result = await Navigator.of(context).pushNamed('/add-payout-method');
+                                  if (result == true && context.mounted) {
+                                    context.read<AppState>().loadPaymentMethods();
+                                  }
+                                },
+                                icon: const Icon(Icons.add),
+                                label: const Text('Add Payment Method'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : Column(
+                        children: appState.paymentMethods.map((method) {
+                          final methodType = method['method_type']?.toString() ?? '';
+                          final provider = method['provider']?.toString() ?? '';
+                          final accountNumber = method['account_number']?.toString() ?? '';
+                          final slug = method['slug']?.toString() ?? method['id']?.toString() ?? '';
+                          
+                          return _buildMethodCard(
+                            provider,
+                            accountNumber,
+                            methodType,
+                            slug,
+                          );
+                        }).toList(),
+                      ),
                 const SizedBox(height: 24),
                 Card(
                   child: Padding(
@@ -358,6 +445,84 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
           ),
         ),
       ],
+    );
+  }
+  
+  Widget _buildMethodCard(String provider, String accountNumber, String methodType, String slug) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isSelected = _selectedMethod == slug;
+    final icon = methodType == 'mobile_money' ? Icons.phone_android : Icons.account_balance;
+    
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: isSelected ? 2 : 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isSelected ? colorScheme.primary : AppTheme.textLight.withValues(alpha: 0.3),
+          width: isSelected ? 2 : 1,
+        ),
+      ),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedMethod = slug;
+            _calculateFees();
+          });
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isSelected 
+                      ? colorScheme.primary.withValues(alpha: 0.1)
+                      : Colors.grey.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  color: isSelected ? colorScheme.primary : AppTheme.textLight,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      provider,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: isSelected ? colorScheme.primary : AppTheme.textDark,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      accountNumber,
+                      style: TextStyle(
+                        color: AppTheme.textLight,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle,
+                  color: colorScheme.primary,
+                  size: 24,
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -102,14 +102,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 24),
             
             // Subscription Plan Card - load from API
-            if (appState.subscription != null)
-              SubscriptionPlanCard(
-                planName: appState.subscription!.tier,
-                renewalDate: appState.subscription!.renewalDate,
-                isLoading: appState.isLoading,
-              ),
-            if (appState.subscription != null)
-              const SizedBox(height: 16),
+            SubscriptionPlanCard(
+              planName: appState.subscription?.tier ?? 'Free Plan',
+              renewalDate: appState.subscription?.renewalDate ?? DateTime.now().add(const Duration(days: 30)),
+              isLoading: appState.isLoading,
+            ),
+            const SizedBox(height: 16),
             
             // Task 1: Total Revenue and Active Users moved below Subscription Plan
             Row(

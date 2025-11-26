@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_state.dart';
 
 class AddPayoutMethodScreen extends StatefulWidget {
   const AddPayoutMethodScreen({super.key});
@@ -325,7 +327,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
     );
   }
 
-  void _saveDetails() {
+  void _saveDetails() async {
     bool isValid = false;
     if (_selectedMethod == 'mobile') {
       isValid = _mobileMoneyFormKey.currentState?.validate() ?? false;
@@ -334,13 +336,46 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
     }
 
     if (isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Payout method saved successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context);
+      try {
+        // Prepare data for API
+        final Map<String, dynamic> paymentData = {};
+        
+        if (_selectedMethod == 'mobile') {
+          paymentData['method_type'] = 'mobile_money';
+          paymentData['provider'] = _mobileProviderController.text;
+          paymentData['account_number'] = _mobileNumberController.text;
+          paymentData['account_name'] = _mobileHolderNameController.text;
+        } else if (_selectedMethod == 'bank') {
+          paymentData['method_type'] = 'bank_transfer';
+          paymentData['provider'] = _bankNameController.text;
+          paymentData['account_number'] = _bankAccountNumberController.text;
+          paymentData['account_name'] = _bankHolderNameController.text;
+          paymentData['swift_code'] = _swiftIbanController.text;
+        }
+        
+        // Call API through AppState
+        final appState = context.read<AppState>();
+        await appState.createPaymentMethod(paymentData);
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Payment method added successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context, true); // Return true to indicate success
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to add payment method: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 }

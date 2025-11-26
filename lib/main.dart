@@ -194,6 +194,7 @@ class HotspotPartnerApp extends StatelessWidget {
         '/payment-methods': (context) => const PaymentMethodsScreen(),
         '/collaborators-management': (context) => const CollaboratorsManagementScreen(),
         '/assigned-plans-list': (context) => const AssignedPlansListScreen(),
+        '/active-sessions': (context) => const ActiveSessionsScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/router-details') {

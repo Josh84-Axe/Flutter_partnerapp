@@ -109,4 +109,16 @@ class PartnerRepository {
       return [];
     }
   }
+  /// Check subscription status
+  Future<Map<String, dynamic>?> checkSubscriptionStatus() async {
+    try {
+      if (kDebugMode) print('📦 [PartnerRepository] Checking subscription status');
+      final response = await _dio.get('/partner/subscription-plans/check/');
+      if (kDebugMode) print('✅ [PartnerRepository] Subscription status response: ${response.data}');
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('❌ [PartnerRepository] Check subscription status error: $e');
+      return null;
+    }
+  }
 }
