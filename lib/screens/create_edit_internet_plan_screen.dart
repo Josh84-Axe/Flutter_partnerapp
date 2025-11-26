@@ -210,13 +210,20 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
     String getProfileName(String? profileId) {
       if (profileId == null) return 'Basic';
       final appState = context.read<AppState>();
-      final profile = appState.hotspotProfiles.firstWhere(
-        (p) => p.id == profileId,
-        orElse: () => appState.hotspotProfiles.isNotEmpty 
-            ? appState.hotspotProfiles.first 
-            : null,
-      );
-      return profile?.name ?? 'Basic';
+      
+      // Check if profiles list is empty
+      if (appState.hotspotProfiles.isEmpty) return 'Basic';
+      
+      // Find the profile by ID
+      try {
+        final profile = appState.hotspotProfiles.firstWhere(
+          (p) => p.id == profileId,
+        );
+        return profile.name;
+      } catch (e) {
+        // Profile not found, return first profile name or 'Basic'
+        return appState.hotspotProfiles.first.name;
+      }
     }
 
     // Prepare data with correct API field names
