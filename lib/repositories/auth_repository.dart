@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../services/api/token_storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 /// Repository for authentication operations
 /// Uses Dio directly for API calls
@@ -39,21 +40,21 @@ class AuthRepository {
       // API wraps tokens in: {statusCode, error, message, data: {access, refresh}}
       final responseData = response.data as Map<String, dynamic>?;
       if (responseData == null) {
-        return {'success': false, 'message': 'Empty response from server'};
+        return {'success': false, 'message': 'error_empty_response'.tr()};
       }
 
       // Check API-level error
       if (responseData['error'] == true) {
         return {
           'success': false, 
-          'message': responseData['message'] ?? 'Login failed',
+          'message': responseData['message'] ?? 'error_login_failed'.tr(),
         };
       }
 
       // Extract tokens from nested data object
       final data = responseData['data'] as Map<String, dynamic>?;
       if (data == null) {
-        return {'success': false, 'message': 'Invalid response format: missing data'};
+        return {'success': false, 'message': 'error_invalid_format'.tr()};
       }
 
       final accessToken = data['access']?.toString();
@@ -69,24 +70,24 @@ class AuthRepository {
         return {'success': true, 'data': data};
       }
 
-      return {'success': false, 'message': 'Missing tokens in response'};
+      return {'success': false, 'message': 'error_missing_tokens'.tr()};
     } on DioException catch (e) {
       if (kDebugMode) print('❌ [AuthRepository] Login DioError: ${e.message}');
-      String errorMessage = 'Connection error';
+      String errorMessage = 'error_connection'.tr();
       
       if (e.response != null) {
         // Try to extract message from error response
         if (e.response?.data is Map) {
-          errorMessage = e.response?.data['message'] ?? e.response?.data['detail'] ?? 'Server error: ${e.response?.statusCode}';
+          errorMessage = e.response?.data['message'] ?? e.response?.data['detail'] ?? 'error_server'.tr(namedArgs: {'code': e.response?.statusCode.toString() ?? 'Unknown'});
         } else {
-          errorMessage = 'Server error: ${e.response?.statusCode}';
+          errorMessage = 'error_server'.tr(namedArgs: {'code': e.response?.statusCode.toString() ?? 'Unknown'});
         }
       }
       
       return {'success': false, 'message': errorMessage};
     } catch (e) {
       if (kDebugMode) print('❌ [AuthRepository] Login error: $e');
-      return {'success': false, 'message': 'Unexpected error: $e'};
+      return {'success': false, 'message': 'error_unexpected'.tr(namedArgs: {'error': e.toString()})};
     }
   }
 

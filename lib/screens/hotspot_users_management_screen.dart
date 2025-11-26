@@ -112,7 +112,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: $e')),
+                        SnackBar(content: Text('error_generic'.tr(namedArgs: {'error': e.toString()}))),
                       );
                     }
                   }
@@ -156,7 +156,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
+            SnackBar(content: Text('error_generic'.tr(namedArgs: {'error': e.toString()}))),
           );
         }
       }
@@ -252,7 +252,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
                                 ),
                               ),
                               title: Text(user['username']?.toString() ?? ''),
-                              subtitle: Text(user['profile']?.toString() ?? 'No Profile'),
+                              subtitle: Text(user['profile']?.toString() ?? 'no_profile'.tr()),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [

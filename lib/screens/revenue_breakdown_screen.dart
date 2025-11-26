@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_state.dart';
+import '../utils/currency_utils.dart';
 
 class RevenueBreakdownScreen extends StatelessWidget {
   const RevenueBreakdownScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final appState = context.watch<AppState>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Revenue Breakdown'),
+        title: Text('revenue_breakdown'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -20,9 +24,9 @@ class RevenueBreakdownScreen extends StatelessWidget {
         children: [
           _buildRevenueCard(
             context,
-            'Assigned Revenue',
-            '\$1,234.56',
-            'Total accrued from assigned plans',
+            'assigned_revenue'.tr(),
+            CurrencyUtils.formatPrice(1234.56, appState.partnerCountry),
+            'assigned_revenue_desc'.tr(),
             Icons.assignment_ind,
             colorScheme.primary,
             () => _showTransactionModal(context),
@@ -30,9 +34,9 @@ class RevenueBreakdownScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _buildRevenueCard(
             context,
-            'Online Revenue',
-            '\$789.01',
-            'Total accrued from online payments',
+            'online_revenue'.tr(),
+            CurrencyUtils.formatPrice(789.01, appState.partnerCountry),
+            'online_revenue_desc'.tr(),
             Icons.credit_card,
             colorScheme.primaryContainer,
             () => _showTransactionModal(context),
@@ -114,7 +118,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    'View Details',
+                    'view_details'.tr(),
                     style: TextStyle(
                       color: color,
                       fontWeight: FontWeight.w500,
@@ -168,7 +172,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Transaction History',
+                          'transaction_history'.tr(),
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -182,7 +186,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     TextField(
                       decoration: InputDecoration(
-                        hintText: 'Search transactions...',
+                        hintText: 'search_transactions'.tr(),
                         prefixIcon: const Icon(Icons.search),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
@@ -202,41 +206,41 @@ class RevenueBreakdownScreen extends StatelessWidget {
                   children: [
                     _buildTransactionItem(
                       context,
-                      'Plan Purchase - Pro',
+                      '${'plan_purchase'.tr()} - Pro',
                       'Oct 26, 2023 - John Doe',
-                      '+\$25.00',
+                      '+${CurrencyUtils.formatPrice(25.00, context.read<AppState>().partnerCountry)}',
                       Colors.green,
                       Icons.add,
                     ),
                     _buildTransactionItem(
                       context,
-                      'Plan Assignment - Basic',
+                      '${'plan_assignment'.tr()} - Basic',
                       'Oct 25, 2023 - Jane Smith',
-                      '+\$10.00',
+                      '+${CurrencyUtils.formatPrice(10.00, context.read<AppState>().partnerCountry)}',
                       Colors.green,
                       Icons.add,
                     ),
                     _buildTransactionItem(
                       context,
-                      'Refund - Pro Plan',
+                      '${'refund'.tr()} - Pro Plan',
                       'Oct 24, 2023 - Mike Johnson',
-                      '-\$25.00',
+                      '-${CurrencyUtils.formatPrice(25.00, context.read<AppState>().partnerCountry)}',
                       Colors.red,
                       Icons.remove,
                     ),
                     _buildTransactionItem(
                       context,
-                      'Plan Assignment - Business',
+                      '${'plan_assignment'.tr()} - Business',
                       'Oct 23, 2023 - Sarah Chen',
-                      '+\$50.00',
+                      '+${CurrencyUtils.formatPrice(50.00, context.read<AppState>().partnerCountry)}',
                       Colors.green,
                       Icons.add,
                     ),
                     _buildTransactionItem(
                       context,
-                      'Plan Purchase - Basic',
+                      '${'plan_purchase'.tr()} - Basic',
                       'Oct 22, 2023 - Alex Wilson',
-                      '+\$15.00',
+                      '+${CurrencyUtils.formatPrice(15.00, context.read<AppState>().partnerCountry)}',
                       Colors.green,
                       Icons.add,
                     ),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_state.dart';
+import '../utils/currency_utils.dart';
 import '../utils/app_theme.dart';
 import '../models/notification_model.dart';
 
@@ -11,48 +14,59 @@ class NotificationRouterScreen extends StatefulWidget {
 }
 
 class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
-  final List<NotificationModel> _notifications = [
-    NotificationModel(
-      id: '1',
-      type: 'critical',
-      title: 'Critical: Router Offline!',
-      message: 'Lobby Router (192.168.1.1) is currently offline. Please check its status.',
-      timestamp: DateTime.now().subtract(const Duration(hours: 2, minutes: 40)),
-      isRead: false,
-    ),
-    NotificationModel(
-      id: '2',
-      type: 'user',
-      title: 'New User Registered',
-      message: 'Alex Morgan has joined your network.',
-      timestamp: DateTime.now().subtract(const Duration(hours: 7, minutes: 30)),
-      isRead: false,
-    ),
-    NotificationModel(
-      id: '3',
-      type: 'payment',
-      title: 'Payment Received',
-      message: 'Received \$250 from UserX.',
-      timestamp: DateTime.now().subtract(const Duration(hours: 6, minutes: 15)),
-      isRead: false,
-    ),
-    NotificationModel(
-      id: '4',
-      type: 'system',
-      title: 'System Update',
-      message: 'A new platform update is available.',
-      timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 8, minutes: 45)),
-      isRead: false,
-    ),
-    NotificationModel(
-      id: '5',
-      type: 'report',
-      title: 'User Activity Report',
-      message: 'Your weekly report is ready to view.',
-      timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 4, minutes: 10)),
-      isRead: false,
-    ),
-  ];
+  List<NotificationModel> _notifications = [];
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final appState = context.read<AppState>();
+      _notifications = [
+        NotificationModel(
+          id: '1',
+          type: 'critical',
+          title: 'Critical: Router Offline!',
+          message: 'Lobby Router (192.168.1.1) is currently offline. Please check its status.',
+          timestamp: DateTime.now().subtract(const Duration(hours: 2, minutes: 40)),
+          isRead: false,
+        ),
+        NotificationModel(
+          id: '2',
+          type: 'user',
+          title: 'New User Registered',
+          message: 'Alex Morgan has joined your network.',
+          timestamp: DateTime.now().subtract(const Duration(hours: 7, minutes: 30)),
+          isRead: false,
+        ),
+        NotificationModel(
+          id: '3',
+          type: 'payment',
+          title: 'Payment Received',
+          message: 'Received ${CurrencyUtils.formatPrice(250, appState.partnerCountry)} from UserX.',
+          timestamp: DateTime.now().subtract(const Duration(hours: 6, minutes: 15)),
+          isRead: false,
+        ),
+        NotificationModel(
+          id: '4',
+          type: 'system',
+          title: 'System Update',
+          message: 'A new platform update is available.',
+          timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 8, minutes: 45)),
+          isRead: false,
+        ),
+        NotificationModel(
+          id: '5',
+          type: 'report',
+          title: 'User Activity Report',
+          message: 'Your weekly report is ready to view.',
+          timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 4, minutes: 10)),
+          isRead: false,
+        ),
+      ];
+      _initialized = true;
+    }
+  }
 
   void _dismissNotification(String id) {
     setState(() {

@@ -142,13 +142,13 @@ class _SubscriptionPlanCardState extends State<SubscriptionPlanCard> {
 
   String _formatTimeLeft() {
     if (_timeLeft.inDays > 0) {
-      return '${_timeLeft.inDays} days left';
+      return 'days_left'.tr(namedArgs: {'count': _timeLeft.inDays.toString()});
     } else if (_timeLeft.inHours > 0) {
-      return '${_timeLeft.inHours} hours left';
+      return 'hours_left'.tr(namedArgs: {'count': _timeLeft.inHours.toString()});
     } else if (_timeLeft.inMinutes > 0) {
-      return '${_timeLeft.inMinutes} mins left';
+      return 'mins_left'.tr(namedArgs: {'count': _timeLeft.inMinutes.toString()});
     } else {
-      return 'Expired';
+      return 'expired'.tr();
     }
   }
 }

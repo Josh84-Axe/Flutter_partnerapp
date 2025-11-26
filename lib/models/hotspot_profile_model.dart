@@ -1,3 +1,5 @@
+import 'package:easy_localization/easy_localization.dart';
+
 class HotspotProfileModel {
   final String id;
   final String name;
@@ -13,7 +15,7 @@ class HotspotProfileModel {
     required this.idleTimeout,
   });
 
-  String get speedDescription => '$downloadSpeedMbps Mbps / $uploadSpeedMbps Mbps • Idle $idleTimeout';
+  String get speedDescription => '$downloadSpeedMbps Mbps / $uploadSpeedMbps Mbps • ${'idle_timeout'.tr()} $idleTimeout';
 
   factory HotspotProfileModel.fromJson(Map<String, dynamic> json) {
     // Parse rate_limit_value (e.g., "5m/5m" or "2m/2m")

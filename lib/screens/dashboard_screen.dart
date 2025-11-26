@@ -283,7 +283,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     trailing: TextButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Unassign ${user.name}\'s plan')),
+                          SnackBar(content: Text('unassign_user_plan_message'.tr(namedArgs: {'name': user.name}))),
                         );
                       },
                       child: Text('unassign'.tr()),

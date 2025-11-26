@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
+import '../../providers/app_state.dart';
+import '../../utils/currency_utils.dart';
 import '../../utils/app_theme.dart';
 import '../../models/config_item_model.dart';
 
@@ -16,23 +19,34 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
   final _deviceCountController = TextEditingController();
   final _priceController = TextEditingController();
 
-  final List<ConfigItem> _configs = [
-    ConfigItem(
-      id: '1',
-      name: 'no_extra_devices'.tr(),
-      description: '0 additional devices - \$0.00',
-    ),
-    ConfigItem(
-      id: '2',
-      name: 'extra_device'.tr(namedArgs: {'count': '1'}),
-      description: '1 additional device - \$5.00',
-    ),
-    ConfigItem(
-      id: '3',
-      name: 'extra_devices'.tr(namedArgs: {'count': '3'}),
-      description: 'Up to 3 devices - \$12.00',
-    ),
-  ];
+  List<ConfigItem> _configs = [];
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final appState = context.read<AppState>();
+      _configs = [
+        ConfigItem(
+          id: '1',
+          name: 'no_extra_devices'.tr(),
+          description: '0 additional devices - ${CurrencyUtils.formatPrice(0, appState.partnerCountry)}',
+        ),
+        ConfigItem(
+          id: '2',
+          name: 'extra_device'.tr(namedArgs: {'count': '1'}),
+          description: '1 additional device - ${CurrencyUtils.formatPrice(5, appState.partnerCountry)}',
+        ),
+        ConfigItem(
+          id: '3',
+          name: 'extra_devices'.tr(namedArgs: {'count': '3'}),
+          description: 'Up to 3 devices - ${CurrencyUtils.formatPrice(12, appState.partnerCountry)}',
+        ),
+      ];
+      _initialized = true;
+    }
+  }
 
   ConfigItem? _editingConfig;
 
@@ -50,7 +64,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
       _nameController.text = config.name;
       final deviceMatch = RegExp(r'(\d+) additional').firstMatch(config.description);
       _deviceCountController.text = deviceMatch?.group(1) ?? '0';
-      final priceMatch = RegExp(r'\$(\d+\.?\d*)').firstMatch(config.description);
+      final priceMatch = RegExp(r'(\d+\.?\d*)').allMatches(config.description).lastOrNull;
       _priceController.text = priceMatch?.group(1) ?? '';
     });
   }
@@ -94,7 +108,9 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
 
     final deviceCount = _deviceCountController.text;
     final price = _priceController.text;
-    final description = '$deviceCount additional ${int.parse(deviceCount) == 1 ? "device" : "devices"} - \$$price';
+    final appState = context.read<AppState>();
+    final formattedPrice = CurrencyUtils.formatPrice(double.tryParse(price) ?? 0, appState.partnerCountry);
+    final description = '$deviceCount additional ${int.parse(deviceCount) == 1 ? "device" : "devices"} - $formattedPrice';
 
     final newConfig = ConfigItem(
       id: _editingConfig?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
@@ -285,7 +301,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                           decoration: InputDecoration(
                             labelText: 'price'.tr(),
                             hintText: '0.00',
-                            prefixText: '\$ ',
+                            prefixText: '${CurrencyUtils.getCurrencySymbol(context.read<AppState>().partnerCountry)} ',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),

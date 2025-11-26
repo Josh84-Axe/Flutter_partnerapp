@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
+import '../utils/currency_utils.dart';
 
 class SubscriptionManagementScreen extends StatelessWidget {
   const SubscriptionManagementScreen({super.key});
@@ -60,7 +61,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildFeatureRow(context, 'Monthly Fee', '\$${subscription?.monthlyFee.toStringAsFixed(2) ?? '29.99'}'),
+                  _buildFeatureRow(context, 'Monthly Fee', CurrencyUtils.formatPrice(subscription?.monthlyFee ?? 29.99, appState.partnerCountry)),
                   _buildFeatureRow(context, 'Max Routers', '${subscription?.features['maxRouters'] ?? 5}'),
                   _buildFeatureRow(context, 'Max Users', '${subscription?.features['maxUsers'] ?? 100}'),
                   _buildFeatureRow(context, 'Support', subscription?.features['support'] ?? '24/7'),
@@ -159,7 +160,7 @@ class SubscriptionManagementScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '\$${price.toStringAsFixed(2)}/month',
+              '${CurrencyUtils.formatPrice(price, context.read<AppState>().partnerCountry)}/month',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: colorScheme.primary,
