@@ -220,16 +220,16 @@ class AppState with ChangeNotifier {
     _setLoading(true);
     try {
       // FORCE REMOTE API: Always use real API for login (ignore _useRemoteApi flag)
-      // This is a temporary fix to bypass the mock data issue
       if (kDebugMode) print('🔐 [AppState] FORCING remote API login (ignoring _useRemoteApi flag)');
       
       // Use real API
       _initializeRepositories();
-      final success = await _authRepository!.login(
+      final result = await _authRepository!.login(
         email: email,
         password: password,
       );
-      if (success) {
+      
+      if (result['success'] == true) {
         // Load profile to get user data
         final profileData = await _partnerRepository!.fetchProfile();
         if (profileData != null) {
@@ -269,11 +269,14 @@ class AppState with ChangeNotifier {
           await loadDashboardData();
         } catch (e) {
           if (kDebugMode) print('⚠️ [AppState] Dashboard data load failed (non-blocking): $e');
-          // Don't fail login if dashboard data fails to load
         }
+        _setLoading(false);
+        return true;
+      } else {
+        _setError(result['message'] ?? 'Login failed');
+        _setLoading(false);
+        return false;
       }
-      _setLoading(false);
-      return success;
     } catch (e) {
       if (kDebugMode) print('🔐 [AppState] Login error: $e');
       _setError(e.toString());

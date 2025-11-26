@@ -16,7 +16,9 @@ class AuthRepository {
 
   /// Login with email and password
   /// Returns true if login successful, false otherwise
-  Future<bool> login({
+  /// Login with email and password
+  /// Returns Map with success status and optional message/data
+  Future<Map<String, dynamic>> login({
     required String email,
     required String password,
   }) async {
@@ -37,43 +39,54 @@ class AuthRepository {
       // API wraps tokens in: {statusCode, error, message, data: {access, refresh}}
       final responseData = response.data as Map<String, dynamic>?;
       if (responseData == null) {
-        if (kDebugMode) print('❌ [AuthRepository] Login error: Response data is null');
-        return false;
+        return {'success': false, 'message': 'Empty response from server'};
+      }
+
+      // Check API-level error
+      if (responseData['error'] == true) {
+        return {
+          'success': false, 
+          'message': responseData['message'] ?? 'Login failed',
+        };
       }
 
       // Extract tokens from nested data object
       final data = responseData['data'] as Map<String, dynamic>?;
       if (data == null) {
-        if (kDebugMode) print('❌ [AuthRepository] Login error: No data object in response');
-        return false;
+        return {'success': false, 'message': 'Invalid response format: missing data'};
       }
 
       final accessToken = data['access']?.toString();
       final refreshToken = data['refresh']?.toString();
 
       if (accessToken != null && refreshToken != null) {
-        if (kDebugMode) print('✅ [AuthRepository] Login successful - saving tokens (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
+        if (kDebugMode) print('✅ [AuthRepository] Login successful - saving tokens');
         await _tokenStorage.saveTokens(
           accessToken: accessToken,
           refreshToken: refreshToken,
         );
         
-        // Verify tokens were saved
-        final savedToken = await _tokenStorage.getAccessToken();
-        if (savedToken != null) {
-          if (kDebugMode) print('✅ [AuthRepository] Tokens saved successfully (verified: ${savedToken.substring(0, 8)}...)');
-        } else {
-          if (kDebugMode) print('❌ [AuthRepository] ERROR: Tokens not saved correctly!');
-        }
-        
-        return true;
+        return {'success': true, 'data': data};
       }
 
-      if (kDebugMode) print('❌ [AuthRepository] Login error: Missing access or refresh token in response');
-      return false;
+      return {'success': false, 'message': 'Missing tokens in response'};
+    } on DioException catch (e) {
+      if (kDebugMode) print('❌ [AuthRepository] Login DioError: ${e.message}');
+      String errorMessage = 'Connection error';
+      
+      if (e.response != null) {
+        // Try to extract message from error response
+        if (e.response?.data is Map) {
+          errorMessage = e.response?.data['message'] ?? e.response?.data['detail'] ?? 'Server error: ${e.response?.statusCode}';
+        } else {
+          errorMessage = 'Server error: ${e.response?.statusCode}';
+        }
+      }
+      
+      return {'success': false, 'message': errorMessage};
     } catch (e) {
       if (kDebugMode) print('❌ [AuthRepository] Login error: $e');
-      return false;
+      return {'success': false, 'message': 'Unexpected error: $e'};
     }
   }
 

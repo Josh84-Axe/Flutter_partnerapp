@@ -54,9 +54,10 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
 
       // Check if login was successful
       if (!success) {
-        if (kDebugMode) print('🔐 [LoginScreenM3] Login failed - showing error');
+        final error = context.read<AppState>().error;
+        if (kDebugMode) print('🔐 [LoginScreenM3] Login failed - showing error: $error');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login failed - invalid credentials')),
+          SnackBar(content: Text(error ?? 'Login failed - invalid credentials')),
         );
         return;
       }
