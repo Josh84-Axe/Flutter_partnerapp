@@ -38,22 +38,19 @@ jobs:
           projectName: wifi-4u-partner
           directory: build/web
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: fix-token-storage-windows  # Deploy to preview environment
+          branch: main  # Deploy to production for consistent URL (d1d483bd.wifi-4u-partner.pages.dev)
       
       - name: Comment deployment URL
         uses: actions/github-script@v7
         with:
           script: |
-            // Cloudflare Pages sanitizes branch names: replaces / with -
-            const branchName = context.ref.replace('refs/heads/', '');
-            const sanitizedBranch = branchName.replace(/\//g, '-');
-            const deploymentUrl = `https://${sanitizedBranch}.wifi-4u-partner.pages.dev`;
+            // Production URL (whitelisted in CORS)
+            const deploymentUrl = 'https://d1d483bd.wifi-4u-partner.pages.dev';
             
             // Log deployment info
             console.log(`🚀 Deployment successful!`);
-            console.log(`Branch: ${branchName}`);
-            console.log(`Sanitized: ${sanitizedBranch}`);
-            console.log(`Preview URL: ${deploymentUrl}`);
+            console.log(`Production URL: ${deploymentUrl}`);
+            console.log(`This URL is whitelisted in backend CORS configuration`);
             
             // Post as commit status
             github.rest.repos.createCommitStatus({
@@ -62,6 +59,6 @@ jobs:
               sha: context.sha,
               state: 'success',
               target_url: deploymentUrl,
-              description: `Deployed to ${sanitizedBranch}`,
+              description: 'Deployed to production',
               context: 'cloudflare-pages/deploy'
             });
