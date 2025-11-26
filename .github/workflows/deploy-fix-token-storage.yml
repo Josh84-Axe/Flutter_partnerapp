@@ -31,6 +31,7 @@ jobs:
         run: flutter build web --release
       
       - name: Deploy to Cloudflare Pages
+        id: deployment
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -38,19 +39,21 @@ jobs:
           projectName: wifi-4u-partner
           directory: build/web
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main  # Deploy to production for consistent URL (d1d483bd.wifi-4u-partner.pages.dev)
+          branch: fix-token-storage-windows
+          wranglerVersion: '3'
       
       - name: Comment deployment URL
         uses: actions/github-script@v7
         with:
           script: |
-            // Production URL (whitelisted in CORS)
-            const deploymentUrl = 'https://d1d483bd.wifi-4u-partner.pages.dev';
+            // Production URL after setting fix/token-storage-windows as production branch in Cloudflare
+            const deploymentUrl = 'https://wifi-4u-partner.pages.dev';
             
             // Log deployment info
             console.log(`🚀 Deployment successful!`);
             console.log(`Production URL: ${deploymentUrl}`);
-            console.log(`This URL is whitelisted in backend CORS configuration`);
+            console.log(`Note: Ensure 'fix/token-storage-windows' is set as production branch in Cloudflare Pages settings`);
+            console.log(`Backend CORS should whitelist: ${deploymentUrl}`);
             
             // Post as commit status
             github.rest.repos.createCommitStatus({
