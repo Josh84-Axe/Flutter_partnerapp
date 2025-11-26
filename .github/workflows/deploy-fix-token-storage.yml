@@ -46,13 +46,13 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            // Production URL after setting fix/token-storage-windows as production branch in Cloudflare
-            const deploymentUrl = 'https://wifi-4u-partner.pages.dev';
+            // Production URL using custom domain (stable and CORS-whitelisted)
+            const deploymentUrl = 'https://partner.wifi-4u.net';
             
             // Log deployment info
             console.log(`🚀 Deployment successful!`);
             console.log(`Production URL: ${deploymentUrl}`);
-            console.log(`Note: Ensure 'fix/token-storage-windows' is set as production branch in Cloudflare Pages settings`);
+            console.log(`Custom domain is configured in Cloudflare Pages`);
             console.log(`Backend CORS should whitelist: ${deploymentUrl}`);
             
             // Post as commit status
