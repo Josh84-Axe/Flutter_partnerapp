@@ -873,10 +873,10 @@ class AppState with ChangeNotifier {
       }
       
       // FORCE REMOTE API: Always fetch fresh data in background
-      if (_walletRepository == null) _initializeRepositories();
+      if (_planRepository == null) _initializeRepositories();
       
-      // Fetch plans from API
-      final plansData = await _walletRepository!.fetchPlans();
+      // Fetch plans from API using PlanRepository (not WalletRepository)
+      final plansData = await _planRepository!.fetchPlans();
       _plans = plansData.map<PlanModel>((data) {
         // API returns 'validity' in minutes, convert to days
         final validityMinutes = (data['validity'] as num?)?.toInt() ?? 0;

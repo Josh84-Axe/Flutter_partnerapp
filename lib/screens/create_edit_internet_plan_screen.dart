@@ -32,10 +32,11 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
     if (widget.planData != null) {
       _nameController.text = widget.planData!['name'] ?? '';
       _priceController.text = widget.planData!['price']?.toString() ?? '';
-      _selectedValidity = widget.planData!['validity'];
-      _selectedDataLimit = widget.planData!['dataLimit'];
-      _selectedAdditionalDevices = widget.planData!['additionalDevices'];
-      _selectedHotspotProfile = widget.planData!['hotspotProfile'];
+      // Use correct field names from PlanModel.toJson()
+      _selectedValidity = widget.planData!['validityDays'];
+      _selectedDataLimit = widget.planData!['dataLimitGB'];
+      _selectedAdditionalDevices = widget.planData!['deviceAllowed'];
+      _selectedHotspotProfile = widget.planData!['userProfile'];
     }
   }
 
@@ -205,25 +206,46 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
       return 0;
     }
 
+    // Get profile name from selected profile ID
+    String getProfileName(String? profileId) {
+      if (profileId == null) return 'Basic';
+      final appState = context.read<AppState>();
+      final profile = appState.hotspotProfiles.firstWhere(
+        (p) => p.id == profileId,
+        orElse: () => appState.hotspotProfiles.isNotEmpty 
+            ? appState.hotspotProfiles.first 
+            : null,
+      );
+      return profile?.name ?? 'Basic';
+    }
+
+    // Prepare data with correct API field names
     final data = {
       'name': _nameController.text,
       'price': double.tryParse(_priceController.text) ?? 0,
-      'dataLimitGB': _selectedDataLimit != null
+      // API expects 'data_limit' (not 'dataLimitGB')
+      'data_limit': _selectedDataLimit != null
           ? (_selectedDataLimit is String && HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
               ? 999999
               : extractValue(_selectedDataLimit))
           : 10,
-      'validityDays': _selectedValidity != null
+      // API expects 'validity' in MINUTES (not days)
+      'validity': (_selectedValidity != null
           ? extractValue(_selectedValidity)
-          : 30,
-      'isActive': true,
-      'deviceAllowed': _selectedAdditionalDevices != null
+          : 30) * 1440,  // Convert days to minutes
+      // API expects 'is_active' (not 'isActive')
+      'is_active': true,
+      // API expects 'shared_users' (not 'deviceAllowed')
+      'shared_users': _selectedAdditionalDevices != null
           ? extractValue(_selectedAdditionalDevices)
           : 1,
-      'userProfile': _selectedHotspotProfile ?? 'Basic',
+      // API expects both 'profile' (ID) and 'profile_name'
+      'profile': _selectedHotspotProfile ?? 'Basic',
+      'profile_name': getProfileName(_selectedHotspotProfile),
     };
 
     if (widget.planData != null && widget.planData!['id'] != null) {
+      // For update, use the plan ID (API may use slug or id)
       context.read<AppState>().updatePlan(widget.planData!['id'], data);
     } else {
       context.read<AppState>().createPlan(data);
