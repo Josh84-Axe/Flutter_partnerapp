@@ -150,28 +150,6 @@ class _PlansScreenState extends State<PlansScreen> {
                                           Icons.devices,
                                           '${plan.deviceAllowed} ${'devices'.tr()}',
                                           colorScheme,
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: OutlinedButton.icon(
-                                            onPressed: () => _navigateToEditPlan(plan.toJson()),
-                                            icon: const Icon(Icons.edit, size: 18),
-                                            label: Text('edit'.tr()),
-                                            style: OutlinedButton.styleFrom(
-                                              padding: const EdgeInsets.symmetric(vertical: 12),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: FilledButton.icon(
-                                            onPressed: () {
-                                              Navigator.of(context).pushNamed(
-                                                '/assign-user',
                                                 arguments: {'planId': plan.id, 'planName': plan.name},
                                               );
                                             },

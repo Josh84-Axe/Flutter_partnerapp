@@ -240,7 +240,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                   const SizedBox(height: 16),
                                   const Divider(),
                                   const SizedBox(height: 12),
-                                  ...plan.features.entries.map((entry) {
+                                  ...plan.features.map((feature) {
                                     return Padding(
                                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                                       child: Row(
@@ -252,7 +252,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                           const SizedBox(width: 12),
                                           Expanded(
                                             child: Text(
-                                              '${entry.key.replaceAll('_', ' ')}: ${entry.value}',
+                                              feature,
                                               style: Theme.of(context).textTheme.bodyMedium,
                                             ),
                                           ),

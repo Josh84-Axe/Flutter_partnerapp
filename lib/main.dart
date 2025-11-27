@@ -148,7 +148,7 @@ class HotspotPartnerApp extends StatelessWidget {
         '/config/data-limit': (context) => const DataLimitConfigScreen(),
         '/config/shared-users': (context) => const SharedUserConfigScreen(),
         '/config/additional-devices': (context) => const AdditionalDeviceConfigScreen(),
-        '/internet-plan': (context) => const InternetPlanScreen(),
+        '/internet-plan': (context) => const PlansScreen(),
         '/subscription-management': (context) => const SubscriptionManagementScreen(),
         '/router-settings': (context) => const RouterSettingsScreen(),
         '/add-router': (context) => const AddRouterScreen(),

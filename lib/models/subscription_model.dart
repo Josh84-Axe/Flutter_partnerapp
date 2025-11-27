@@ -4,7 +4,7 @@ class SubscriptionModel {
   final DateTime renewalDate;
   final bool isActive;
   final double monthlyFee;
-  final Map<String, dynamic> features;
+  final List<String> features;
 
   SubscriptionModel({
     required this.id,
@@ -19,6 +19,20 @@ class SubscriptionModel {
     // Handle API response structure where plan details are nested
     final plan = json['plan'] as Map<String, dynamic>?;
     
+    // Parse features list
+    List<String> parsedFeatures = [];
+    final featuresData = plan?['features'] ?? json['features'];
+    if (featuresData is List) {
+      parsedFeatures = featuresData.map((f) {
+        if (f is Map) {
+          return f['name']?.toString() ?? '';
+        } else if (f is String) {
+          return f;
+        }
+        return '';
+      }).where((s) => s.isNotEmpty).cast<String>().toList();
+    }
+
     return SubscriptionModel(
       id: plan?['id']?.toString() ?? json['id']?.toString() ?? '',
       tier: plan?['name']?.toString() ?? json['tier']?.toString() ?? 'Unknown',
@@ -27,7 +41,7 @@ class SubscriptionModel {
           : (json['renewalDate'] != null ? DateTime.parse(json['renewalDate']) : DateTime.now()),
       isActive: json['active'] ?? json['isActive'] ?? false,
       monthlyFee: (plan?['price'] as num?)?.toDouble() ?? (json['monthlyFee'] as num?)?.toDouble() ?? 0.0,
-      features: json['features'] ?? {},
+      features: parsedFeatures,
     );
   }
 
@@ -49,7 +63,7 @@ class SubscriptionPlanModel {
   final String name;
   final String description;
   final double price;
-  final Map<String, dynamic> features;
+  final List<String> features;
   final bool isPopular;
 
   SubscriptionPlanModel({
@@ -62,12 +76,25 @@ class SubscriptionPlanModel {
   });
 
   factory SubscriptionPlanModel.fromJson(Map<String, dynamic> json) {
+    // Parse features list
+    List<String> parsedFeatures = [];
+    if (json['features'] is List) {
+      parsedFeatures = (json['features'] as List).map((f) {
+        if (f is Map) {
+          return f['name']?.toString() ?? '';
+        } else if (f is String) {
+          return f;
+        }
+        return '';
+      }).where((s) => s.isNotEmpty).cast<String>().toList();
+    }
+
     return SubscriptionPlanModel(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Unknown Plan',
       description: json['description']?.toString() ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
-      features: json['features'] as Map<String, dynamic>? ?? {},
+      features: parsedFeatures,
       isPopular: json['is_popular'] == true || json['isPopular'] == true,
     );
   }
