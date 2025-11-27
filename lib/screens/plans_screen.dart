@@ -337,8 +337,10 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                     items: appState.dataLimits.isEmpty
                         ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
                         : appState.dataLimits.map((limit) {
-                            final label = limit is Map ? (limit['name'] ?? 'Unknown') : limit.toString();
-                            return DropdownMenuItem(value: limit, child: Text(label));
+                            return DropdownMenuItem(
+                              value: limit, 
+                              child: Text(_getLabel(limit, 'data_limit'))
+                            );
                           }).toList(),
                     onChanged: (value) => setState(() => _selectedDataLimit = value),
                     validator: (value) {
@@ -361,8 +363,10 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                     items: appState.validityPeriods.isEmpty
                         ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
                         : appState.validityPeriods.map((validity) {
-                            final label = validity is Map ? (validity['name'] ?? 'Unknown') : validity.toString();
-                            return DropdownMenuItem(value: validity, child: Text(label));
+                            return DropdownMenuItem(
+                              value: validity, 
+                              child: Text(_getLabel(validity, 'validity'))
+                            );
                           }).toList(),
                     onChanged: (value) => setState(() => _selectedValidity = value),
                     validator: (value) {
@@ -385,8 +389,10 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                     items: appState.sharedUsers.isEmpty
                         ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
                         : appState.sharedUsers.map((user) {
-                            final label = user is Map ? (user['name'] ?? 'Unknown') : user.toString();
-                            return DropdownMenuItem(value: user, child: Text(label));
+                            return DropdownMenuItem(
+                              value: user, 
+                              child: Text(_getLabel(user, 'shared_users'))
+                            );
                           }).toList(),
                     onChanged: (value) => setState(() => _selectedDeviceAllowed = value),
                     validator: (value) {
@@ -452,6 +458,32 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
               ),
             ),
     );
+  }
+
+  String _getLabel(dynamic item, String type) {
+    if (item is! Map) return item.toString();
+    
+    if (item['name'] != null) return item['name'].toString();
+    
+    switch (type) {
+      case 'data_limit':
+        if (item['gb'] != null) return '${item['gb']} GB';
+        if (item['value'] != null) return '${item['value']} GB';
+        if (item['limit'] != null) return '${item['limit']} GB';
+        break;
+      case 'validity':
+        if (item['days'] != null) return '${item['days']} Days';
+        if (item['value'] != null) return '${item['value']} Days';
+        break;
+      case 'shared_users':
+        if (item['count'] != null) return '${item['count']} Users';
+        if (item['limit'] != null) return '${item['limit']} Users';
+        if (item['value'] != null) return '${item['value']} Users';
+        break;
+    }
+    
+    // Fallback to printing the whole map if nothing matches, but cleaner
+    return item.values.first.toString();
   }
 
   Future<void> _savePlan() async {
