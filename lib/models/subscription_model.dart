@@ -33,6 +33,14 @@ class SubscriptionModel {
       }).where((s) => s.isNotEmpty).cast<String>().toList();
     }
 
+    // Helper to parse double from string or num
+    double parseDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
     return SubscriptionModel(
       id: plan?['id']?.toString() ?? json['id']?.toString() ?? '',
       tier: plan?['name']?.toString() ?? json['tier']?.toString() ?? 'Unknown',
@@ -40,7 +48,7 @@ class SubscriptionModel {
           ? DateTime.parse(json['end_date']) 
           : (json['renewalDate'] != null ? DateTime.parse(json['renewalDate']) : DateTime.now()),
       isActive: json['active'] ?? json['isActive'] ?? false,
-      monthlyFee: (plan?['price'] as num?)?.toDouble() ?? (json['monthlyFee'] as num?)?.toDouble() ?? 0.0,
+      monthlyFee: parseDouble(plan?['price'] ?? json['monthlyFee']),
       features: parsedFeatures,
     );
   }
@@ -89,11 +97,19 @@ class SubscriptionPlanModel {
       }).where((s) => s.isNotEmpty).cast<String>().toList();
     }
 
+    // Helper to parse double from string or num
+    double parseDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
     return SubscriptionPlanModel(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Unknown Plan',
       description: json['description']?.toString() ?? '',
-      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      price: parseDouble(json['price']),
       features: parsedFeatures,
       isPopular: json['is_popular'] == true || json['isPopular'] == true,
     );

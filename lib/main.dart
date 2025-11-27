@@ -211,7 +211,7 @@ class HotspotPartnerApp extends StatelessWidget {
         if (settings.name == '/create-edit-plan') {
           final planData = settings.arguments as Map<String, dynamic>?;
           return MaterialPageRoute(
-            builder: (context) => CreateEditInternetPlanScreen(planData: planData),
+            builder: (context) => CreateEditPlanScreen(planData: planData),
           );
         }
         if (settings.name == '/assign-user') {
