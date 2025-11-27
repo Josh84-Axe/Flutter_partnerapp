@@ -101,6 +101,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
     final partnerCountry = appState.currentUser?.country;
 
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text('internet_plans'.tr()),
       ),
@@ -111,82 +112,82 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
           final plan = plans[index];
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
+            elevation: 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            color: Colors.white,
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              plan.name,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '${plan.dataLimitGB} GB | ${plan.speedMbps} Mbps | ${plan.validityDays} days',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: AppTheme.textLight,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              CurrencyUtils.formatPrice(plan.price, partnerCountry),
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                          ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          plan.name,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (Permissions.canEditPlans(
-                            appState.currentUser?.role ?? '',
-                            appState.currentUser?.permissions,
-                          ))
-                            IconButton(
-                              onPressed: () => _navigateToCreateEdit(plan: plan),
-                              icon: const Icon(Icons.edit),
-                              style: IconButton.styleFrom(
-                                foregroundColor: colorScheme.primary,
-                                backgroundColor: colorScheme.primaryContainer,
-                              ),
-                            ),
-                          if (Permissions.canEditPlans(
-                            appState.currentUser?.role ?? '',
-                            appState.currentUser?.permissions,
-                          ) && Permissions.canDeletePlans(
-                            appState.currentUser?.role ?? '',
-                            appState.currentUser?.permissions,
-                          ))
-                            const SizedBox(width: 8),
-                          if (Permissions.canDeletePlans(
-                            appState.currentUser?.role ?? '',
-                            appState.currentUser?.permissions,
-                          ))
-                            IconButton(
-                              onPressed: () => _showDeleteDialog(plan),
-                              icon: const Icon(Icons.delete),
-                              style: IconButton.styleFrom(
-                                foregroundColor: colorScheme.error,
-                                backgroundColor: colorScheme.errorContainer,
-                              ),
-                            ),
-                        ],
-                      ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${plan.dataLimitGB} GB | ${plan.speedMbps} Mbps | ${plan.validityDays} days',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          CurrencyUtils.formatPrice(plan.price, partnerCountry),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (Permissions.canEditPlans(
+                        appState.currentUser?.role ?? '',
+                        appState.currentUser?.permissions,
+                      ))
+                        IconButton(
+                          onPressed: () => _navigateToCreateEdit(plan: plan),
+                          icon: const Icon(Icons.edit, size: 20),
+                          style: IconButton.styleFrom(
+                            backgroundColor: const Color(0xFF7FD99A),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.all(12),
+                          ),
+                        ),
+                      if (Permissions.canEditPlans(
+                        appState.currentUser?.role ?? '',
+                        appState.currentUser?.permissions,
+                      ) && Permissions.canDeletePlans(
+                        appState.currentUser?.role ?? '',
+                        appState.currentUser?.permissions,
+                      ))
+                        const SizedBox(width: 8),
+                      if (Permissions.canDeletePlans(
+                        appState.currentUser?.role ?? '',
+                        appState.currentUser?.permissions,
+                      ))
+                        IconButton(
+                          onPressed: () => _showDeleteDialog(plan),
+                          icon: const Icon(Icons.delete, size: 20),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.red.shade100,
+                            foregroundColor: Colors.red,
+                            padding: const EdgeInsets.all(12),
+                          ),
+                        ),
                     ],
                   ),
                 ],
@@ -199,10 +200,10 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
         appState.currentUser?.role ?? '',
         appState.currentUser?.permissions,
       )
-          ? FloatingActionButton.extended(
+          ? FloatingActionButton(
               onPressed: () => _navigateToCreateEdit(),
-              icon: const Icon(Icons.add),
-              label: Text('new_plan'.tr()),
+              backgroundColor: const Color(0xFF7FD99A),
+              child: const Icon(Icons.add, color: Colors.white),
             )
           : null,
     );

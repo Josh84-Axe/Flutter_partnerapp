@@ -43,6 +43,7 @@ class _PlansScreenState extends State<PlansScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text('internet_plans'.tr()),
         actions: [
@@ -69,6 +70,7 @@ class _PlansScreenState extends State<PlansScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 filled: true,
+                fillColor: Colors.white,
               ),
               onChanged: (value) => setState(() => _searchQuery = value),
             ),
@@ -99,83 +101,83 @@ class _PlansScreenState extends State<PlansScreen> {
                           final plan = filteredPlans[index];
                           return Card(
                             margin: const EdgeInsets.only(bottom: 16),
-                            elevation: 2,
+                            elevation: 1,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: () => _navigateToEditPlan(plan.toJson()),
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            plan.name,
-                                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        Text(
-                                          CurrencyUtils.formatPrice(plan.price, appState.partnerCountry),
-                                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                            color: colorScheme.primary,
+                            color: Colors.white,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Plan name and price
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          plan.name,
+                                          style: const TextStyle(
+                                            fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                      ],
+                                      ),
+                                      Text(
+                                        CurrencyUtils.formatPrice(plan.price, appState.partnerCountry),
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  
+                                  // Info chips
+                                  _buildInfoChip(
+                                    Icons.cloud_download,
+                                    'Data Limit',
+                                    '${plan.dataLimitGB} GB',
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _buildInfoChip(
+                                    Icons.devices,
+                                    'Device Allowed',
+                                    '${plan.deviceAllowed} devices',
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _buildInfoChip(
+                                    Icons.calendar_month,
+                                    'Validity',
+                                    '${plan.validityDays} days',
+                                  ),
+                                  const SizedBox(height: 16),
+                                  
+                                  // Assign button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: FilledButton.icon(
+                                      onPressed: () {
+                                        Navigator.of(context).pushNamed(
+                                          '/assign-user',
+                                          arguments: {'planId': plan.id, 'planName': plan.name},
+                                        );
+                                      },
+                                      icon: const Icon(Icons.person_add, size: 18),
+                                      label: Text('assign_to_user'.tr()),
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: const Color(0xFF2D5F3F),
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
                                     ),
-                                    const SizedBox(height: 16),
-                                    Wrap(
-                                      spacing: 12,
-                                      runSpacing: 8,
-                                      children: [
-                                        _buildInfoChip(
-                                          Icons.cloud_download,
-                                          '${plan.dataLimitGB} GB',
-                                          colorScheme,
-                                        ),
-                                        _buildInfoChip(
-                                          Icons.calendar_month,
-                                          '${plan.validityDays} ${'days'.tr()}',
-                                          colorScheme,
-                                        ),
-                                        _buildInfoChip(
-                                          Icons.devices,
-                                          '${plan.deviceAllowed} ${'devices'.tr()}',
-                                          colorScheme,
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: FilledButton.icon(
-                                            onPressed: () {
-                                              Navigator.of(context).pushNamed(
-                                                '/assign-user',
-                                                arguments: {'planId': plan.id, 'planName': plan.name},
-                                              );
-                                            },
-                                            icon: const Icon(Icons.person_add, size: 18),
-                                            label: Text('assign_to_user'.tr()),
-                                            style: FilledButton.styleFrom(
-                                              padding: const EdgeInsets.symmetric(vertical: 12),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -184,33 +186,50 @@ class _PlansScreenState extends State<PlansScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToEditPlan(null),
-        icon: const Icon(Icons.add),
-        label: Text('new_plan'.tr()),
+        backgroundColor: const Color(0xFF7FD99A),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String label, ColorScheme colorScheme) {
+  Widget _buildInfoChip(IconData icon, String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFF7FD99A).withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: colorScheme.primary),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onPrimaryContainer,
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF7FD99A),
+              borderRadius: BorderRadius.circular(8),
             ),
+            child: Icon(icon, size: 20, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ],
       ),
