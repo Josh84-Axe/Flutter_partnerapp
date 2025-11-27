@@ -669,41 +669,56 @@ class AppState with ChangeNotifier {
 
   Future<void> _loadRateLimits() async {
     try {
+      if (kDebugMode) print('🔄 [AppState] Loading rate limits...');
       _rateLimits = await _planConfigRepository!.fetchRateLimits();
+      if (kDebugMode) print('✅ [AppState] Rate limits loaded: ${_rateLimits.length} items');
+      if (kDebugMode && _rateLimits.isNotEmpty) print('   Sample: ${_rateLimits.first}');
     } catch (e) {
-      if (kDebugMode) print('Error loading rate limits: $e');
+      if (kDebugMode) print('❌ [AppState] Error loading rate limits: $e');
     }
   }
 
   Future<void> _loadDataLimits() async {
     try {
+      if (kDebugMode) print('🔄 [AppState] Loading data limits...');
       _dataLimits = await _planConfigRepository!.fetchDataLimits();
+      if (kDebugMode) print('✅ [AppState] Data limits loaded: ${_dataLimits.length} items');
+      if (kDebugMode && _dataLimits.isNotEmpty) print('   Sample: ${_dataLimits.first}');
     } catch (e) {
-      if (kDebugMode) print('Error loading data limits: $e');
+      if (kDebugMode) print('❌ [AppState] Error loading data limits: $e');
     }
   }
 
   Future<void> _loadValidityPeriods() async {
     try {
+      if (kDebugMode) print('🔄 [AppState] Loading validity periods...');
       _validityPeriods = await _planConfigRepository!.fetchValidityPeriods();
+      if (kDebugMode) print('✅ [AppState] Validity periods loaded: ${_validityPeriods.length} items');
+      if (kDebugMode && _validityPeriods.isNotEmpty) print('   Sample: ${_validityPeriods.first}');
     } catch (e) {
-      if (kDebugMode) print('Error loading validity periods: $e');
+      if (kDebugMode) print('❌ [AppState] Error loading validity periods: $e');
     }
   }
 
   Future<void> _loadIdleTimeouts() async {
     try {
+      if (kDebugMode) print('🔄 [AppState] Loading idle timeouts...');
       _idleTimeouts = await _planConfigRepository!.fetchIdleTimeouts();
+      if (kDebugMode) print('✅ [AppState] Idle timeouts loaded: ${_idleTimeouts.length} items');
+      if (kDebugMode && _idleTimeouts.isNotEmpty) print('   Sample: ${_idleTimeouts.first}');
     } catch (e) {
-      if (kDebugMode) print('Error loading idle timeouts: $e');
+      if (kDebugMode) print('❌ [AppState] Error loading idle timeouts: $e');
     }
   }
 
   Future<void> _loadSharedUsers() async {
     try {
+      if (kDebugMode) print('🔄 [AppState] Loading shared users...');
       _sharedUsers = await _planConfigRepository!.fetchSharedUsers();
+      if (kDebugMode) print('✅ [AppState] Shared users loaded: ${_sharedUsers.length} items');
+      if (kDebugMode && _sharedUsers.isNotEmpty) print('   Sample: ${_sharedUsers.first}');
     } catch (e) {
-      if (kDebugMode) print('Error loading shared users: $e');
+      if (kDebugMode) print('❌ [AppState] Error loading shared users: $e');
     }
   }
 

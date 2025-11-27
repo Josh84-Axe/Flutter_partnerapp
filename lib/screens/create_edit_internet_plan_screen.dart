@@ -188,7 +188,8 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
     );
   }
 
-  void _savePlan() {
+  void _savePlan() async {
+    // Validate required text fields
     if (_nameController.text.isEmpty || _priceController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('fill_required_fields'.tr())),
@@ -196,13 +197,54 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
       return;
     }
 
+    // Validate dropdown selections
+    if (_selectedValidity == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select a validity period')),
+      );
+      return;
+    }
+
+    if (_selectedDataLimit == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select a data limit')),
+      );
+      return;
+    }
+
+    if (_selectedAdditionalDevices == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select additional devices')),
+      );
+      return;
+    }
+
     // Helper to extract value from dynamic item (Map or String)
-    int extractValue(dynamic item) {
+    int extractValue(dynamic item, String context) {
+      if (kDebugMode) print('🔍 [CreatePlan] Extracting value from $context: $item (type: ${item.runtimeType})');
+      
       if (item is Map) {
-        return int.tryParse(item['value']?.toString() ?? '0') ?? 0;
+        // Try multiple possible field names
+        final value = int.tryParse(
+          item['value']?.toString() ?? 
+          item['days']?.toString() ?? 
+          item['gb']?.toString() ?? 
+          item['count']?.toString() ?? 
+          item['limit']?.toString() ??
+          '0'
+        ) ?? 0;
+        if (kDebugMode) print('   Extracted from Map: $value');
+        return value;
       } else if (item is String) {
-        return HotspotConfigurationService.extractNumericValue(item);
+        final value = HotspotConfigurationService.extractNumericValue(item);
+        if (kDebugMode) print('   Extracted from String: $value');
+        return value;
+      } else if (item is int) {
+        if (kDebugMode) print('   Direct int value: $item');
+        return item;
       }
+      
+      if (kDebugMode) print('   ⚠️ Could not extract value, returning 0');
       return 0;
     }
 
@@ -212,55 +254,91 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
       final appState = context.read<AppState>();
       
       // Check if profiles list is empty
-      if (appState.hotspotProfiles.isEmpty) return 'Basic';
+      if (appState.hotspotProfiles.isEmpty) {
+        if (kDebugMode) print('⚠️ [CreatePlan] No hotspot profiles loaded, using "Basic"');
+        return 'Basic';
+      }
       
       // Find the profile by ID
       try {
         final profile = appState.hotspotProfiles.firstWhere(
           (p) => p.id == profileId,
         );
+        if (kDebugMode) print('✅ [CreatePlan] Found profile: ${profile.name}');
         return profile.name;
       } catch (e) {
         // Profile not found, return first profile name or 'Basic'
-        return appState.hotspotProfiles.first.name;
+        if (kDebugMode) print('⚠️ [CreatePlan] Profile not found, using first available or "Basic"');
+        return appState.hotspotProfiles.isNotEmpty ? appState.hotspotProfiles.first.name : 'Basic';
       }
     }
+
+    // Extract values with context for debugging
+    final dataLimitValue = _selectedDataLimit is String && HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
+        ? 999999
+        : extractValue(_selectedDataLimit, 'data_limit');
+    
+    final validityDays = extractValue(_selectedValidity, 'validity');
+    final validityMinutes = validityDays * 1440; // Convert days to minutes
+    
+    final sharedUsersValue = extractValue(_selectedAdditionalDevices, 'shared_users');
 
     // Prepare data with correct API field names
     final data = {
       'name': _nameController.text,
       'price': double.tryParse(_priceController.text) ?? 0,
-      // API expects 'data_limit' (not 'dataLimitGB')
-      'data_limit': _selectedDataLimit != null
-          ? (_selectedDataLimit is String && HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
-              ? 999999
-              : extractValue(_selectedDataLimit))
-          : 10,
-      // API expects 'validity' in MINUTES (not days)
-      'validity': (_selectedValidity != null
-          ? extractValue(_selectedValidity)
-          : 30) * 1440,  // Convert days to minutes
-      // API expects 'is_active' (not 'isActive')
+      'data_limit': dataLimitValue,
+      'validity': validityMinutes,
       'is_active': true,
-      // API expects 'shared_users' (not 'deviceAllowed')
-      'shared_users': _selectedAdditionalDevices != null
-          ? extractValue(_selectedAdditionalDevices)
-          : 1,
-      // API expects both 'profile' (ID) and 'profile_name'
+      'shared_users': sharedUsersValue,
       'profile': _selectedHotspotProfile ?? 'Basic',
       'profile_name': getProfileName(_selectedHotspotProfile),
     };
 
-    if (widget.planData != null && widget.planData!['id'] != null) {
-      // For update, use the plan ID (API may use slug or id)
-      context.read<AppState>().updatePlan(widget.planData!['id'], data);
-    } else {
-      context.read<AppState>().createPlan(data);
+    if (kDebugMode) {
+      print('📦 [CreatePlan] Prepared plan data:');
+      print('   Name: ${data['name']}');
+      print('   Price: ${data['price']}');
+      print('   Data Limit: ${data['data_limit']} GB');
+      print('   Validity: ${data['validity']} minutes ($validityDays days)');
+      print('   Shared Users: ${data['shared_users']}');
+      print('   Profile: ${data['profile']}');
+      print('   Profile Name: ${data['profile_name']}');
     }
-    
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(widget.planData != null ? 'plan_updated'.tr() : 'plan_created'.tr())),
-    );
+
+    try {
+      if (widget.planData != null && widget.planData!['id'] != null) {
+        // Update existing plan
+        if (kDebugMode) print('🔄 [CreatePlan] Updating plan: ${widget.planData!['id']}');
+        await context.read<AppState>().updatePlan(widget.planData!['id'], data);
+        if (kDebugMode) print('✅ [CreatePlan] Plan updated successfully');
+      } else {
+        // Create new plan
+        if (kDebugMode) print('➕ [CreatePlan] Creating new plan');
+        await context.read<AppState>().createPlan(data);
+        if (kDebugMode) print('✅ [CreatePlan] Plan created successfully');
+      }
+      
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.planData != null ? 'plan_updated'.tr() : 'plan_created'.tr()),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) print('❌ [CreatePlan] Error saving plan: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
   }
 }
