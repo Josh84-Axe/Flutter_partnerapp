@@ -637,7 +637,6 @@
   "plan_purchase": "Plan Purchase",
   "plan_assignment": "Plan Assignment",
   "refund": "Refund",
-```
   "password_reset_success_message": "Your password has been successfully reset. You can now log in with your new password.",
   "go_to_login": "Go to Login",
   "forgot_password": "Forgot Password",
@@ -864,4 +863,3 @@
   "error_occurred": "An error occurred",
   "inactive": "Inactive"
 }
-```
