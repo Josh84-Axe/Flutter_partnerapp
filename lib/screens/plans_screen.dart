@@ -105,7 +105,7 @@ class _PlansScreenState extends State<PlansScreen> {
                             ),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
-                              onTap: () => _navigateToEditPlan(plan.toMap()),
+                              onTap: () => _navigateToEditPlan(plan.toJson()),
                               child: Padding(
                                 padding: const EdgeInsets.all(20.0),
                                 child: Column(
@@ -158,7 +158,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                       children: [
                                         Expanded(
                                           child: OutlinedButton.icon(
-                                            onPressed: () => _navigateToEditPlan(plan.toMap()),
+                                            onPressed: () => _navigateToEditPlan(plan.toJson()),
                                             icon: const Icon(Icons.edit, size: 18),
                                             label: Text('edit'.tr()),
                                             style: OutlinedButton.styleFrom(
