@@ -150,6 +150,17 @@ class _PlansScreenState extends State<PlansScreen> {
                                           Icons.devices,
                                           '${plan.deviceAllowed} ${'devices'.tr()}',
                                           colorScheme,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: FilledButton.icon(
+                                            onPressed: () {
+                                              Navigator.of(context).pushNamed(
+                                                '/assign-user',
                                                 arguments: {'planId': plan.id, 'planName': plan.name},
                                               );
                                             },
@@ -162,6 +173,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                         ),
                                       ],
                                     ),
+
                                   ],
                                 ),
                               ),
