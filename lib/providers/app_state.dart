@@ -30,6 +30,7 @@ import '../repositories/transaction_repository.dart';
 import '../repositories/collaborator_repository.dart';
 import '../repositories/payment_method_repository.dart';
 import '../repositories/additional_device_repository.dart';
+import '../repositories/subscription_repository.dart';
 import '../utils/country_utils.dart';
 import '../utils/currency_utils.dart';
 import '../services/cache_service.dart';
@@ -50,6 +51,7 @@ class AppState with ChangeNotifier {
   CollaboratorRepository? _collaboratorRepository;
   PaymentMethodRepository? _paymentMethodRepository;
   AdditionalDeviceRepository? _additionalDeviceRepository;
+  SubscriptionRepository? _subscriptionRepository;
   
   // Cache service for local data persistence
   final CacheService _cacheService = CacheService();
@@ -100,6 +102,7 @@ class AppState with ChangeNotifier {
       _collaboratorRepository = CollaboratorRepository(dio: dio);
       _paymentMethodRepository = PaymentMethodRepository(dio: dio);
       _additionalDeviceRepository = AdditionalDeviceRepository(dio: dio);
+      _subscriptionRepository = SubscriptionRepository(dio: dio);
     }
   }
   
@@ -136,6 +139,7 @@ class AppState with ChangeNotifier {
   final List<ProfileModel> _profiles = [];
   LanguageModel _selectedLanguage = LanguageModel.availableLanguages.first;
   SubscriptionModel? _subscription;
+  List<SubscriptionPlanModel> _availableSubscriptionPlans = [];
   
   UserModel? get currentUser => _currentUser;
   String? get partnerCountry => _partnerCountry;
@@ -166,6 +170,7 @@ class AppState with ChangeNotifier {
   LanguageModel get selectedLanguage => _selectedLanguage;
   int get unreadNotificationCount => _notifications.where((n) => !n.isRead).length;
   SubscriptionModel? get subscription => _subscription;
+  List<SubscriptionPlanModel> get availableSubscriptionPlans => _availableSubscriptionPlans;
   
   // Currency formatting helpers
   String get currencySymbol => CurrencyUtils.getCurrencySymbol(_partnerCountry);
@@ -713,9 +718,9 @@ class AppState with ChangeNotifier {
 
   Future<void> loadSubscription() async {
     try {
-      if (_partnerRepository == null) _initializeRepositories();
+      if (_subscriptionRepository == null) _initializeRepositories();
       
-      final subscriptionData = await _partnerRepository!.checkSubscriptionStatus();
+      final subscriptionData = await _subscriptionRepository!.checkSubscriptionStatus();
       
       if (subscriptionData != null) {
         if (kDebugMode) print('📦 [AppState] Subscription data received: $subscriptionData');
@@ -734,6 +739,53 @@ class AppState with ChangeNotifier {
     } catch (e) {
       if (kDebugMode) print('❌ [AppState] Load subscription error: $e');
       _setError(e.toString());
+    }
+  }
+
+  /// Load available subscription plans
+  Future<void> loadAvailableSubscriptionPlans() async {
+    try {
+      if (_subscriptionRepository == null) _initializeRepositories();
+      
+      if (kDebugMode) print('📋 [AppState] Loading available subscription plans');
+      final plansData = await _subscriptionRepository!.fetchSubscriptionPlans();
+      
+      _availableSubscriptionPlans = plansData
+          .map<SubscriptionPlanModel>((data) => SubscriptionPlanModel.fromJson(data))
+          .toList();
+      
+      if (kDebugMode) print('✅ [AppState] Loaded ${_availableSubscriptionPlans.length} subscription plans');
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Load available subscription plans error: $e');
+      _setError(e.toString());
+    }
+  }
+
+  /// Purchase a subscription plan
+  Future<bool> purchaseSubscriptionPlan(String planId) async {
+    _setLoading(true);
+    try {
+      if (_subscriptionRepository == null) _initializeRepositories();
+      
+      if (kDebugMode) print('💳 [AppState] Purchasing subscription plan: $planId');
+      final result = await _subscriptionRepository!.purchaseSubscription(planId);
+      
+      if (result != null) {
+        if (kDebugMode) print('✅ [AppState] Subscription purchase successful');
+        // Reload subscription to get updated data
+        await loadSubscription();
+        _setLoading(false);
+        return true;
+      }
+      
+      _setLoading(false);
+      return false;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Purchase subscription error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
     }
   }
 

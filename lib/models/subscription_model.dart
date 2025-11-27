@@ -42,3 +42,44 @@ class SubscriptionModel {
     };
   }
 }
+
+/// Model for available subscription plans
+class SubscriptionPlanModel {
+  final String id;
+  final String name;
+  final String description;
+  final double price;
+  final Map<String, dynamic> features;
+  final bool isPopular;
+
+  SubscriptionPlanModel({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.price,
+    required this.features,
+    this.isPopular = false,
+  });
+
+  factory SubscriptionPlanModel.fromJson(Map<String, dynamic> json) {
+    return SubscriptionPlanModel(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Unknown Plan',
+      description: json['description']?.toString() ?? '',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      features: json['features'] as Map<String, dynamic>? ?? {},
+      isPopular: json['is_popular'] == true || json['isPopular'] == true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'price': price,
+      'features': features,
+      'isPopular': isPopular,
+    };
+  }
+}
