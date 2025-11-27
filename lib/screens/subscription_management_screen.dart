@@ -12,18 +12,27 @@ class SubscriptionManagementScreen extends StatefulWidget {
 }
 
 class _SubscriptionManagementScreenState extends State<SubscriptionManagementScreen> {
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
-    });
+    _loadData();
   }
 
   Future<void> _loadData() async {
-    final appState = context.read<AppState>();
-    await appState.loadSubscription();
-    await appState.loadAvailableSubscriptionPlans();
+    setState(() => _isLoading = true);
+    try {
+      final appState = context.read<AppState>();
+      await Future.wait([
+        appState.loadSubscription(),
+        appState.loadAvailableSubscriptionPlans(),
+      ]);
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -43,276 +52,279 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
           ),
         ],
       ),
-      body: appState.isLoading
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16.0),
-              children: [
-                if (subscription != null) ...[
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'current_plan'.tr(),
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                subscription.tier,
-                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: colorScheme.primary,
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: subscription.isActive 
-                                      ? colorScheme.primaryContainer 
-                                      : Colors.grey.shade200,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  subscription.isActive ? 'active'.tr() : 'inactive'.tr(),
-                                  style: TextStyle(
-                                    color: subscription.isActive 
-                                        ? colorScheme.primary 
-                                        : Colors.grey.shade700,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          _buildFeatureRow(
-                            context, 
-                            'monthly_fee'.tr(), 
-                            CurrencyUtils.formatPrice(subscription.monthlyFee, appState.partnerCountry)
-                          ),
-                          if (subscription.features.isNotEmpty) ...[
-                            ...subscription.features.entries.map((entry) {
-                              return _buildFeatureRow(
-                                context,
-                                entry.key.replaceAll('_', ' ').toUpperCase(),
-                                entry.value.toString(),
-                              );
-                            }),
-                          ],
-                          const SizedBox(height: 16),
-                          Text(
-                            '${'renewal_date'.tr()}: ${subscription.renewalDate.day}/${subscription.renewalDate.month}/${subscription.renewalDate.year}',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
+          : RefreshIndicator(
+              onRefresh: _loadData,
+              child: ListView(
+                padding: const EdgeInsets.all(16.0),
+                children: [
+                  // Current Subscription Section
+                  if (subscription != null) ...[
+                    Text(
+                      'current_plan'.tr(),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-                Text(
-                  'available_plans'.tr(),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                if (availablePlans.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32.0),
-                      child: Text(
-                        'no_subscription_plans_available'.tr(),
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey,
+                    const SizedBox(height: 12),
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    subscription.tier,
+                                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: subscription.isActive 
+                                        ? Colors.green.shade100 
+                                        : Colors.grey.shade200,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    subscription.isActive ? 'active'.tr() : 'inactive'.tr(),
+                                    style: TextStyle(
+                                      color: subscription.isActive 
+                                          ? Colors.green.shade900 
+                                          : Colors.grey.shade700,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildInfoRow(
+                              context,
+                              Icons.payments_outlined,
+                              'monthly_fee'.tr(),
+                              CurrencyUtils.formatPrice(subscription.monthlyFee, appState.partnerCountry),
+                            ),
+                            const SizedBox(height: 8),
+                            _buildInfoRow(
+                              context,
+                              Icons.calendar_today_outlined,
+                              'renewal_date'.tr(),
+                              DateFormat('MMM d, yyyy').format(subscription.renewalDate),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  )
-                else
-                  ...availablePlans.map((plan) {
-                    final isCurrentPlan = subscription?.id == plan.id;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: _buildPlanCard(
-                        context,
-                        plan,
-                        isCurrentPlan: isCurrentPlan,
-                      ),
-                    );
-                  }),
-              ],
-            ),
-    );
-  }
+                    const SizedBox(height: 32),
+                  ],
 
-  Widget _buildFeatureRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPlanCard(BuildContext context, plan, {bool isCurrentPlan = false}) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final appState = context.read<AppState>();
-    
-    return Card(
-      elevation: isCurrentPlan ? 4 : 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: isCurrentPlan ? BorderSide(color: colorScheme.primary, width: 2) : BorderSide.none,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    plan.name,
+                  // Available Plans Section
+                  Text(
+                    'available_plans'.tr(),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-                if (isCurrentPlan)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'current'.tr(),
-                      style: TextStyle(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
+                  const SizedBox(height: 12),
+                  
+                  if (availablePlans.isEmpty)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Icon(Icons.inbox_outlined, size: 64, color: Colors.grey.shade400),
+                              const SizedBox(height: 16),
+                              Text(
+                                'no_subscription_plans_available'.tr(),
+                                style: TextStyle(color: Colors.grey.shade600),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                if (plan.isPopular && !isCurrentPlan)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'popular'.tr(),
-                      style: TextStyle(
-                        color: Colors.orange.shade900,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-              ],
+                    )
+                  else
+                    ...availablePlans.map((plan) {
+                      final isCurrentPlan = subscription?.id == plan.id;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: Card(
+                          elevation: isCurrentPlan ? 4 : 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: isCurrentPlan 
+                                ? BorderSide(color: colorScheme.primary, width: 2) 
+                                : BorderSide.none,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        plan.name,
+                                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    if (isCurrentPlan)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.primaryContainer,
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          'current'.tr(),
+                                          style: TextStyle(
+                                            color: colorScheme.primary,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    if (plan.isPopular && !isCurrentPlan)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange.shade100,
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          'popular'.tr(),
+                                          style: TextStyle(
+                                            color: Colors.orange.shade900,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                if (plan.description.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    plan.description,
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 16),
+                                Text(
+                                  '${CurrencyUtils.formatPrice(plan.price, appState.partnerCountry)} / ${'month'.tr()}',
+                                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.primary,
+                                  ),
+                                ),
+                                if (plan.features.isNotEmpty) ...[
+                                  const SizedBox(height: 16),
+                                  const Divider(),
+                                  const SizedBox(height: 12),
+                                  ...plan.features.entries.map((entry) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.check_circle, 
+                                            color: colorScheme.primary, 
+                                            size: 20
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              '${entry.key.replaceAll('_', ' ')}: ${entry.value}',
+                                              style: Theme.of(context).textTheme.bodyMedium,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }),
+                                ],
+                                if (!isCurrentPlan) ...[
+                                  const SizedBox(height: 20),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () => _purchasePlan(plan.id, plan.name),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: colorScheme.primary,
+                                        foregroundColor: colorScheme.onPrimary,
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'upgrade'.tr(),
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                ],
+              ),
             ),
-            if (plan.description.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                plan.description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-            const SizedBox(height: 8),
-            Text(
-              '${CurrencyUtils.formatPrice(plan.price, appState.partnerCountry)}/${'month'.tr()}',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (plan.features.isNotEmpty)
-              ...plan.features.entries.map((entry) {
-                return _buildPlanFeature(
-                  context,
-                  '${entry.key.replaceAll('_', ' ')}: ${entry.value}',
-                );
-              }),
-            const SizedBox(height: 16),
-            if (!isCurrentPlan)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => _purchasePlan(plan.id),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.primary,
-                    foregroundColor: colorScheme.onPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text('upgrade'.tr()),
-                ),
-              ),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _buildPlanFeature(BuildContext context, String feature) {
-    final colorScheme = Theme.of(context).colorScheme;
-    
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          Icon(Icons.check_circle, color: colorScheme.primary, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              feature,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+  Widget _buildInfoRow(BuildContext context, IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Colors.grey.shade600),
+        const SizedBox(width: 12),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Colors.grey.shade600,
           ),
-        ],
-      ),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 
-  Future<void> _purchasePlan(String planId) async {
+  Future<void> _purchasePlan(String planId, String planName) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('confirm_purchase'.tr()),
-        content: Text('confirm_purchase_message'.tr()),
+        content: Text('${'confirm_purchase_message'.tr()}\n\n$planName'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -327,32 +339,30 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
     );
 
     if (confirmed == true && mounted) {
+      setState(() => _isLoading = true);
       try {
         final appState = context.read<AppState>();
         final success = await appState.purchaseSubscriptionPlan(planId);
         
         if (mounted) {
-          if (success) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('subscription_purchased_successfully'.tr()),
-                backgroundColor: Colors.green,
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                success 
+                    ? 'subscription_purchased_successfully'.tr() 
+                    : 'subscription_purchase_failed'.tr()
               ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('subscription_purchase_failed'.tr()),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
+              backgroundColor: success ? Colors.green : Colors.red,
+            ),
+          );
         }
       } catch (e) {
         if (mounted) {
+          setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('error_occurred'.tr()),
+              content: Text('${'error_occurred'.tr()}: ${e.toString()}'),
               backgroundColor: Colors.red,
             ),
           );

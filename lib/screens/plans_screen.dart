@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
-import '../utils/app_theme.dart';
-import '../utils/currency_helper.dart';
 import '../services/hotspot_configuration_service.dart';
-import '../widgets/metric_card.dart';
-import '../widgets/search_bar_widget.dart';
+import '../utils/currency_utils.dart';
 
 class PlansScreen extends StatefulWidget {
   const PlansScreen({super.key});
@@ -35,150 +33,6 @@ class _PlansScreenState extends State<PlansScreen> {
     super.dispose();
   }
 
-  void _showCreatePlanDialog() {
-    final nameController = TextEditingController();
-    final priceController = TextEditingController();
-    dynamic selectedDataLimit;
-    dynamic selectedValidity;
-    dynamic selectedDeviceAllowed;
-    String? selectedProfile;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          final appState = context.read<AppState>();
-          
-          return AlertDialog(
-            title: Text('create_internet_plan'.tr()),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(labelText: 'plan_name'.tr()),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: priceController,
-                    decoration: InputDecoration(
-                      labelText: 'price'.tr(),
-                      prefixText: '${appState.currencySymbol} ',
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 12),
-                  // Data Limit Dropdown
-                  DropdownButtonFormField<dynamic>(
-                    value: selectedDataLimit,
-                    decoration: InputDecoration(labelText: 'data_limit'.tr()),
-                    items: appState.dataLimits.isEmpty
-                        ? (HotspotConfigurationService.getDataLimits().isNotEmpty 
-                            ? HotspotConfigurationService.getDataLimits().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
-                            : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
-                        : appState.dataLimits.map((limit) {
-                            final label = limit is Map ? (limit['name'] ?? 'Unknown') : limit.toString();
-                            return DropdownMenuItem(value: limit, child: Text(label));
-                          }).toList(),
-                    onChanged: (value) => setState(() => selectedDataLimit = value),
-                  ),
-                  const SizedBox(height: 12),
-                  // Validity Dropdown
-                  DropdownButtonFormField<dynamic>(
-                    value: selectedValidity,
-                    decoration: InputDecoration(labelText: 'validity'.tr()),
-                    items: appState.validityPeriods.isEmpty
-                        ? (HotspotConfigurationService.getValidityOptions().isNotEmpty
-                            ? HotspotConfigurationService.getValidityOptions().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
-                            : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
-                        : appState.validityPeriods.map((validity) {
-                            final label = validity is Map ? (validity['name'] ?? 'Unknown') : validity.toString();
-                            return DropdownMenuItem(value: validity, child: Text(label));
-                          }).toList(),
-                    onChanged: (value) => setState(() => selectedValidity = value),
-                  ),
-                  const SizedBox(height: 12),
-                  // Device Allowed Dropdown (Shared Users)
-                  DropdownButtonFormField<dynamic>(
-                    value: selectedDeviceAllowed,
-                    decoration: InputDecoration(labelText: 'device_allowed'.tr()),
-                    items: appState.sharedUsers.isEmpty
-                        ? (HotspotConfigurationService.getDeviceAllowed().isNotEmpty
-                            ? HotspotConfigurationService.getDeviceAllowed().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
-                            : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
-                        : appState.sharedUsers.map((user) {
-                            final label = user is Map ? (user['name'] ?? 'Unknown') : user.toString();
-                            return DropdownMenuItem(value: user, child: Text(label));
-                          }).toList(),
-                    onChanged: (value) => setState(() => selectedDeviceAllowed = value),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    value: selectedProfile,
-                    decoration: InputDecoration(labelText: 'hotspot_profile'.tr()),
-                    items: appState.hotspotProfiles.isEmpty
-                        ? [DropdownMenuItem(value: 'Basic', child: Text('Basic'))]
-                        : appState.hotspotProfiles
-                            .map((profile) => DropdownMenuItem(
-                                  value: profile.id,
-                                  child: Text(profile.name),
-                                ))
-                            .toList(),
-                    onChanged: (value) => setState(() => selectedProfile = value!),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('cancel'.tr()),
-              ),
-              FilledButton(
-                onPressed: () {
-                  if (nameController.text.isEmpty || priceController.text.isEmpty ||
-                      selectedDataLimit == null || selectedValidity == null ||
-                      selectedDeviceAllowed == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('fill_all_fields'.tr())),
-                    );
-                    return;
-                  }
-
-                  // Helper to extract value from dynamic item (Map or String)
-                  int extractValue(dynamic item) {
-                    if (item is Map) {
-                      return int.tryParse(item['value']?.toString() ?? '0') ?? 0;
-                    } else if (item is String) {
-                      return HotspotConfigurationService.extractNumericValue(item);
-                    }
-                    return 0;
-                  }
-
-                  final data = {
-                    'name': nameController.text,
-                    'price': double.parse(priceController.text),
-                    'dataLimitGB': selectedDataLimit is String && HotspotConfigurationService.isUnlimited(selectedDataLimit)
-                        ? 999999
-                        : extractValue(selectedDataLimit),
-                    'validityDays': extractValue(selectedValidity),
-                    'deviceAllowed': extractValue(selectedDeviceAllowed),
-                    'userProfile': selectedProfile,
-                  };
-
-                  context.read<AppState>().createPlan(data);
-                  Navigator.pop(context);
-                },
-                child: Text('create'.tr()),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
@@ -186,37 +40,41 @@ class _PlansScreenState extends State<PlansScreen> {
       if (_searchQuery.isEmpty) return true;
       return plan.name.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'internet_plans'.tr(),
-          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
+        title: Text('internet_plans'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => appState.loadPlans(),
+            onPressed: () {
+              appState.loadPlans();
+              appState.loadAllConfigurations();
+            },
           ),
         ],
       ),
       body: Column(
         children: [
+          // Search Bar
           Padding(
             padding: const EdgeInsets.all(16),
-            child: SearchBarWidget(
-              hintText: 'search_plans'.tr(),
+            child: TextField(
               controller: _searchController,
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
+              decoration: InputDecoration(
+                hintText: 'search_plans'.tr(),
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+              ),
+              onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
+
+          // Plans List
           Expanded(
             child: appState.isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -242,67 +100,92 @@ class _PlansScreenState extends State<PlansScreen> {
                           return Card(
                             margin: const EdgeInsets.only(bottom: 16),
                             elevation: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          plan.name,
-                                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                        ),
-                                      ),
-                                      Text(
-                                        appState.formatMoney(plan.price),
-                                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                              color: Theme.of(context).colorScheme.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () => _navigateToEditPlan(plan.toMap()),
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            plan.name,
+                                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                               fontWeight: FontWeight.bold,
                                             ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  _buildPlanFeature(
-                                    Icons.cloud_download,
-                                    'data_limit'.tr(),
-                                    '${plan.dataLimitGB} GB',
-                                  ),
-                                  const SizedBox(height: 12),
-                                  _buildPlanFeature(
-                                    Icons.devices,
-                                    'device_allowed'.tr(),
-                                    '${plan.deviceAllowed} ${'devices'.tr()}',
-                                  ),
-                                  const SizedBox(height: 12),
-                                  _buildPlanFeature(
-                                    Icons.calendar_month,
-                                    'validity'.tr(),
-                                    '${plan.validityDays} ${'days'.tr()}',
-                                  ),
-                                  const SizedBox(height: 16),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: FilledButton.icon(
-                                      onPressed: () {
-                                        Navigator.of(context).pushNamed(
-                                          '/assign-user',
-                                          arguments: {'planId': plan.id, 'planName': plan.name},
-                                        );
-                                      },
-                                      icon: const Icon(Icons.person_add),
-                                      label: Text('assign_to_user'.tr()),
-                                      style: FilledButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 12),
-                                      ),
+                                          ),
+                                        ),
+                                        Text(
+                                          CurrencyUtils.formatPrice(plan.price, appState.partnerCountry),
+                                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                            color: colorScheme.primary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 16),
+                                    Wrap(
+                                      spacing: 12,
+                                      runSpacing: 8,
+                                      children: [
+                                        _buildInfoChip(
+                                          Icons.cloud_download,
+                                          '${plan.dataLimitGB} GB',
+                                          colorScheme,
+                                        ),
+                                        _buildInfoChip(
+                                          Icons.calendar_month,
+                                          '${plan.validityDays} ${'days'.tr()}',
+                                          colorScheme,
+                                        ),
+                                        _buildInfoChip(
+                                          Icons.devices,
+                                          '${plan.deviceAllowed} ${'devices'.tr()}',
+                                          colorScheme,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton.icon(
+                                            onPressed: () => _navigateToEditPlan(plan.toMap()),
+                                            icon: const Icon(Icons.edit, size: 18),
+                                            label: Text('edit'.tr()),
+                                            style: OutlinedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: FilledButton.icon(
+                                            onPressed: () {
+                                              Navigator.of(context).pushNamed(
+                                                '/assign-user',
+                                                arguments: {'planId': plan.id, 'planName': plan.name},
+                                              );
+                                            },
+                                            icon: const Icon(Icons.person_add, size: 18),
+                                            label: Text('assign_to_user'.tr()),
+                                            style: FilledButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );
@@ -311,47 +194,417 @@ class _PlansScreenState extends State<PlansScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showCreatePlanDialog,
-        child: const Icon(Icons.add),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _navigateToEditPlan(null),
+        icon: const Icon(Icons.add),
+        label: Text('new_plan'.tr()),
       ),
     );
   }
 
-  Widget _buildPlanFeature(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(8),
+  Widget _buildInfoChip(IconData icon, String label, ColorScheme colorScheme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: colorScheme.primary),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onPrimaryContainer,
+            ),
           ),
-          child: Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppTheme.textLight,
-                ),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
+  }
+
+  void _navigateToEditPlan(Map<String, dynamic>? planData) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreateEditPlanScreen(planData: planData),
+      ),
+    ).then((_) {
+      // Reload plans after returning from create/edit screen
+      context.read<AppState>().loadPlans();
+    });
+  }
+}
+
+// Separate screen for creating/editing plans
+class CreateEditPlanScreen extends StatefulWidget {
+  final Map<String, dynamic>? planData;
+
+  const CreateEditPlanScreen({super.key, this.planData});
+
+  @override
+  State<CreateEditPlanScreen> createState() => _CreateEditPlanScreenState();
+}
+
+class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _priceController = TextEditingController();
+  
+  dynamic _selectedDataLimit;
+  dynamic _selectedValidity;
+  dynamic _selectedDeviceAllowed;
+  String? _selectedProfile;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.planData != null) {
+      _nameController.text = widget.planData!['name'] ?? '';
+      _priceController.text = widget.planData!['price']?.toString() ?? '';
+      // Note: We'll need to match the selected values from the dropdowns after they load
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _priceController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appState = context.watch<AppState>();
+    final colorScheme = Theme.of(context).colorScheme;
+    final isEdit = widget.planData != null;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(isEdit ? 'edit_internet_plan'.tr() : 'create_internet_plan'.tr()),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16.0),
+                children: [
+                  // Plan Name
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: 'plan_name'.tr(),
+                      hintText: 'plan_name_hint'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.label),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'enter_plan_name'.tr();
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Price
+                  TextFormField(
+                    controller: _priceController,
+                    decoration: InputDecoration(
+                      labelText: 'price'.tr(),
+                      hintText: 'price_hint'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.attach_money),
+                      prefixText: '${appState.currencySymbol} ',
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a price';
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'Please enter a valid number';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Data Limit Dropdown
+                  DropdownButtonFormField<dynamic>(
+                    value: _selectedDataLimit,
+                    decoration: InputDecoration(
+                      labelText: 'data_limit'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.cloud_download),
+                    ),
+                    items: appState.dataLimits.isEmpty
+                        ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
+                        : appState.dataLimits.map((limit) {
+                            final label = limit is Map ? (limit['name'] ?? 'Unknown') : limit.toString();
+                            return DropdownMenuItem(value: limit, child: Text(label));
+                          }).toList(),
+                    onChanged: (value) => setState(() => _selectedDataLimit = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select a data limit';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Validity Dropdown
+                  DropdownButtonFormField<dynamic>(
+                    value: _selectedValidity,
+                    decoration: InputDecoration(
+                      labelText: 'validity'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.calendar_month),
+                    ),
+                    items: appState.validityPeriods.isEmpty
+                        ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
+                        : appState.validityPeriods.map((validity) {
+                            final label = validity is Map ? (validity['name'] ?? 'Unknown') : validity.toString();
+                            return DropdownMenuItem(value: validity, child: Text(label));
+                          }).toList(),
+                    onChanged: (value) => setState(() => _selectedValidity = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select a validity period';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Device Allowed Dropdown
+                  DropdownButtonFormField<dynamic>(
+                    value: _selectedDeviceAllowed,
+                    decoration: InputDecoration(
+                      labelText: 'device_allowed'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.devices),
+                    ),
+                    items: appState.sharedUsers.isEmpty
+                        ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
+                        : appState.sharedUsers.map((user) {
+                            final label = user is Map ? (user['name'] ?? 'Unknown') : user.toString();
+                            return DropdownMenuItem(value: user, child: Text(label));
+                          }).toList(),
+                    onChanged: (value) => setState(() => _selectedDeviceAllowed = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select device allowed';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Hotspot Profile Dropdown
+                  DropdownButtonFormField<String>(
+                    value: _selectedProfile,
+                    decoration: InputDecoration(
+                      labelText: 'hotspot_user_profile'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.person),
+                    ),
+                    items: appState.hotspotProfiles.isEmpty
+                        ? [const DropdownMenuItem(value: 'Basic', child: Text('Basic'))]
+                        : appState.hotspotProfiles
+                            .map((profile) => DropdownMenuItem(
+                                  value: profile.id,
+                                  child: Text(profile.name),
+                                ))
+                            .toList(),
+                    onChanged: (value) => setState(() => _selectedProfile = value),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Action Buttons
+                  Row(
+                    children: [
+                      if (isEdit) ...[
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _deletePlan,
+                            icon: const Icon(Icons.delete),
+                            label: Text('delete_plan'.tr()),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      Expanded(
+                        flex: 2,
+                        child: FilledButton.icon(
+                          onPressed: _savePlan,
+                          icon: Icon(isEdit ? Icons.save : Icons.add),
+                          label: Text(isEdit ? 'update_plan'.tr() : 'create_plan'.tr()),
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Future<void> _savePlan() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Helper to extract value from dynamic item
+      int extractValue(dynamic item, String context) {
+        if (kDebugMode) print('🔍 [CreatePlan] Extracting value from $context: $item');
+        
+        if (item is Map) {
+          final value = int.tryParse(
+            item['value']?.toString() ?? 
+            item['days']?.toString() ?? 
+            item['gb']?.toString() ?? 
+            item['count']?.toString() ?? 
+            item['limit']?.toString() ??
+            '0'
+          ) ?? 0;
+          if (kDebugMode) print('   Extracted: $value');
+          return value;
+        } else if (item is String) {
+          return HotspotConfigurationService.extractNumericValue(item);
+        } else if (item is int) {
+          return item;
+        }
+        return 0;
+      }
+
+      String getProfileName(String? profileId) {
+        if (profileId == null) return 'Basic';
+        final appState = context.read<AppState>();
+        
+        if (appState.hotspotProfiles.isEmpty) return 'Basic';
+        
+        try {
+          final profile = appState.hotspotProfiles.firstWhere((p) => p.id == profileId);
+          return profile.name;
+        } catch (e) {
+          return appState.hotspotProfiles.isNotEmpty ? appState.hotspotProfiles.first.name : 'Basic';
+        }
+      }
+
+      final dataLimitValue = _selectedDataLimit is String && 
+          HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
+          ? 999999
+          : extractValue(_selectedDataLimit, 'data_limit');
+      
+      final validityDays = extractValue(_selectedValidity, 'validity');
+      final validityMinutes = validityDays * 1440;
+      final sharedUsersValue = extractValue(_selectedDeviceAllowed, 'shared_users');
+
+      final data = {
+        'name': _nameController.text,
+        'price': double.parse(_priceController.text),
+        'data_limit': dataLimitValue,
+        'validity': validityMinutes,
+        'is_active': true,
+        'shared_users': sharedUsersValue,
+        'profile': _selectedProfile ?? 'Basic',
+        'profile_name': getProfileName(_selectedProfile),
+      };
+
+      if (kDebugMode) print('📦 [CreatePlan] Plan data: $data');
+
+      final appState = context.read<AppState>();
+      if (widget.planData != null && widget.planData!['id'] != null) {
+        await appState.updatePlan(widget.planData!['id'], data);
+      } else {
+        await appState.createPlan(data);
+      }
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.planData != null ? 'plan_updated'.tr() : 'plan_created'.tr()),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) print('❌ [CreatePlan] Error: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deletePlan() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('delete_plan'.tr()),
+        content: Text('delete_plan_confirm'.tr(namedArgs: {'name': _nameController.text})),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: Text('delete'.tr()),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() => _isLoading = true);
+      try {
+        await context.read<AppState>().deletePlan(widget.planData!['id']);
+        if (mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('plan_deleted_successfully'.tr()),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 }
