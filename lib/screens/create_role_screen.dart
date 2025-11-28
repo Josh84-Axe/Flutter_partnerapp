@@ -9,106 +9,6 @@ class CreateRoleScreen extends StatefulWidget {
   const CreateRoleScreen({super.key, this.roleData});
 
   @override
-  State<CreateRoleScreen> createState() => _CreateRoleScreenState();
-}
-
-class _CreateRoleScreenState extends State<CreateRoleScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final Map<String, bool> _permissions = {
-    'create_plans': false,
-    'view_plans': false,
-    'edit_plans': false,
-    'delete_plans': false,
-    'view_users': false,
-    'create_users': false,
-    'edit_users': false,
-    'delete_users': false,
-    'view_routers': false,
-    'assign_routers': false,
-    'manage_routers': false,
-    'view_transactions': false,
-    'manage_roles': false,
-  };
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.roleData != null) {
-      _nameController.text = widget.roleData!['name'] ?? '';
-      final perms = widget.roleData!['permissions'] as Map<String, dynamic>?;
-      if (perms != null) {
-        perms.forEach((key, value) {
-          if (_permissions.containsKey(key)) {
-            _permissions[key] = value as bool;
-          }
-        });
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    final isEdit = widget.roleData != null;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(isEdit ? 'edit_role'.tr() : 'create_new_role'.tr()),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: 'role_name'.tr(),
-                        hintText: 'role_name_hint'.tr(),
-                        border: const OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter role name';
-                        }
-                        return null;
-                      },
-                    ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'permissions'.tr(),
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPermissionSection(
-                    'dashboard_access'.tr(),
-                    {'dashboard_access': 'dashboard_access'.tr()},
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPermissionSection(
-                    'user_management'.tr(),
-                    {
-                      'user_create': 'create_users'.tr(),
-                      'user_read': 'read_users'.tr(),
-                      'user_update': 'update_users'.tr(),
-                      'user_delete': 'delete_users'.tr(),
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPermissionSection(
                     'plan_management'.tr(),
                     {
                       'plan_create': 'create_plans'.tr(),
@@ -217,11 +117,11 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
 
     final data = {
       'name': _nameController.text,
-      'permissions': _permissions,
+      'permissions': _selectedPermissionIds.toList(),
     };
 
     if (widget.roleData != null) {
-      context.read<AppState>().updateRole(widget.roleData!['id'], data);
+      context.read<AppState>().updateRole(widget.roleData!['slug'] ?? widget.roleData!['id'], data);
     } else {
       context.read<AppState>().createRole(data);
     }

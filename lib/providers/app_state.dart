@@ -1751,6 +1751,17 @@ class AppState with ChangeNotifier {
 
   // ==================== Role Management ====================
   
+  /// Fetch available permissions
+  Future<List<dynamic>> fetchPermissions() async {
+    try {
+      if (_roleRepository == null) _initializeRepositories();
+      return await _roleRepository!.fetchPermissions();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Fetch permissions error: $e');
+      rethrow;
+    }
+  }
+
   /// Load roles from API
   Future<void> loadRoles() async {
     try {

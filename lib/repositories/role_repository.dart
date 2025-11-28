@@ -28,6 +28,23 @@ class RoleRepository {
     }
   }
 
+  /// Fetch list of available permissions
+  Future<List<dynamic>> fetchPermissions() async {
+    try {
+      final response = await _dio.get('/partner/permissions/list/');
+      final responseData = response.data;
+      
+      if (responseData is Map && responseData['data'] is List) {
+        return responseData['data'] as List;
+      }
+      
+      return [];
+    } catch (e) {
+      if (kDebugMode) print('❌ [RoleRepository] Fetch permissions error: $e');
+      rethrow;
+    }
+  }
+
   /// Create role
   Future<Map<String, dynamic>?> createRole(Map<String, dynamic> data) async {
     try {

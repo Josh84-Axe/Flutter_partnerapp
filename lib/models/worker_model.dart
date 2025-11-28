@@ -22,10 +22,14 @@ class WorkerModel {
   });
 
   factory WorkerModel.fromJson(Map<String, dynamic> json) {
+    final firstName = json['first_name'] ?? '';
+    final lastName = json['last_name'] ?? '';
+    final fullName = '$firstName $lastName'.trim();
+
     return WorkerModel(
       id: json['id']?.toString() ?? '',
       username: json['username'] ?? '',
-      fullName: json['full_name'] ?? json['name'] ?? '',
+      fullName: fullName.isNotEmpty ? fullName : (json['name'] ?? ''),
       email: json['email'] ?? '',
       roleSlug: json['role']?.toString(),
       roleName: json['role_name']?.toString(),
