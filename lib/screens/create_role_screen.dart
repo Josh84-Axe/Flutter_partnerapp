@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 
 class CreateRoleScreen extends StatefulWidget {
@@ -9,105 +9,58 @@ class CreateRoleScreen extends StatefulWidget {
   const CreateRoleScreen({super.key, this.roleData});
 
   @override
-                    'plan_management'.tr(),
-                    {
-                      'plan_create': 'create_plans'.tr(),
-                      'plan_read': 'read_plans'.tr(),
-                      'plan_update': 'update_plans'.tr(),
-                      'plan_delete': 'delete_plans'.tr(),
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPermissionSection(
-                    'transaction_viewing'.tr(),
-                    {'transaction_viewing': 'transaction_viewing'.tr()},
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPermissionSection(
-                    'router_management'.tr(),
-                    {'router_management': 'router_management'.tr()},
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPermissionSection(
-                    'settings_access'.tr(),
-                    {'settings_access': 'settings_access'.tr()},
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: Text('cancel'.tr()),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: _saveRole,
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: Text('save_role'.tr()),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  State<CreateRoleScreen> createState() => _CreateRoleScreenState();
+}
+
+class _CreateRoleScreenState extends State<CreateRoleScreen> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _nameController;
+  final Set<int> _selectedPermissionIds = {};
+  List<dynamic> _availablePermissions = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.roleData?['name'] ?? '');
+    _loadPermissions();
   }
 
-  Widget _buildPermissionSection(String title, Map<String, String> permissions) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (permissions.length > 1)
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-            if (permissions.length > 1) const SizedBox(height: 12),
-            ...permissions.entries.map((entry) => SwitchListTile(
-              title: Text(entry.value),
-              value: _permissions[entry.key] ?? false,
-              onChanged: (value) {
-                setState(() {
-                  _permissions[entry.key] = value;
-                });
-              },
-              activeTrackColor: colorScheme.primary,
-              contentPadding: permissions.length == 1 ? EdgeInsets.zero : null,
-            )),
-          ],
-        ),
-      ),
-    );
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadPermissions() async {
+    try {
+      final permissions = await context.read<AppState>().fetchPermissions();
+      if (mounted) {
+        setState(() {
+          _availablePermissions = permissions;
+          _isLoading = false;
+          
+          // If editing, pre-select permissions
+          if (widget.roleData != null && widget.roleData!['permissions'] != null) {
+            final currentPerms = widget.roleData!['permissions'] as List;
+            for (var perm in currentPerms) {
+              if (perm is int) {
+                _selectedPermissionIds.add(perm);
+              } else if (perm is Map && perm['id'] != null) {
+                _selectedPermissionIds.add(perm['id']);
+              }
+            }
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading permissions: $e')),
+        );
+      }
+    }
   }
 
   void _saveRole() {
@@ -129,6 +82,116 @@ class CreateRoleScreen extends StatefulWidget {
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(widget.roleData != null ? 'role_updated'.tr() : 'role_created'.tr())),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.roleData != null ? 'edit_role'.tr() : 'create_new_role'.tr()),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextFormField(
+                            controller: _nameController,
+                            decoration: InputDecoration(
+                              labelText: 'role_name'.tr(),
+                              border: const OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'please_enter_role_name'.tr();
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'permissions'.tr(),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (_availablePermissions.isEmpty)
+                            Text('no_permissions_available'.tr())
+                          else
+                            ..._availablePermissions.map((perm) {
+                              final id = perm['id'] as int;
+                              final name = perm['name'] as String;
+                              final codename = perm['codename'] as String;
+                              
+                              return CheckboxListTile(
+                                title: Text(name),
+                                subtitle: Text(codename),
+                                value: _selectedPermissionIds.contains(id),
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    if (value == true) {
+                                      _selectedPermissionIds.add(id);
+                                    } else {
+                                      _selectedPermissionIds.remove(id);
+                                    }
+                                  });
+                                },
+                              );
+                            }),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
+                  ),
+                  child: SafeArea(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: Text('cancel'.tr()),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: _saveRole,
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: Text('save_role'.tr()),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }
