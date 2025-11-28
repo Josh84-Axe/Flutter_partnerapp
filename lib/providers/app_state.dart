@@ -9,6 +9,7 @@ import '../models/language_model.dart';
 import '../models/hotspot_profile_model.dart';
 import '../models/router_configuration_model.dart';
 import '../models/role_model.dart';
+import '../models/worker_model.dart';
 import '../models/subscription_model.dart';
 import '../services/auth_service.dart';
 import '../services/payment_service.dart';
@@ -28,6 +29,7 @@ import '../repositories/password_repository.dart';
 import '../repositories/plan_config_repository.dart';
 import '../repositories/transaction_repository.dart';
 import '../repositories/collaborator_repository.dart';
+import '../repositories/role_repository.dart';
 import '../repositories/payment_method_repository.dart';
 import '../repositories/additional_device_repository.dart';
 import '../repositories/subscription_repository.dart';
@@ -49,6 +51,7 @@ class AppState with ChangeNotifier {
   PlanConfigRepository? _planConfigRepository;
   TransactionRepository? _transactionRepository;
   CollaboratorRepository? _collaboratorRepository;
+  RoleRepository? _roleRepository;
   PaymentMethodRepository? _paymentMethodRepository;
   AdditionalDeviceRepository? _additionalDeviceRepository;
   SubscriptionRepository? _subscriptionRepository;
@@ -100,6 +103,7 @@ class AppState with ChangeNotifier {
       _planConfigRepository = PlanConfigRepository(dio: dio);
       _transactionRepository = TransactionRepository(dio: dio);
       _collaboratorRepository = CollaboratorRepository(dio: dio);
+      _roleRepository = RoleRepository(dio: dio);
       _paymentMethodRepository = PaymentMethodRepository(dio: dio);
       _additionalDeviceRepository = AdditionalDeviceRepository(dio: dio);
       _subscriptionRepository = SubscriptionRepository(dio: dio);
@@ -123,6 +127,7 @@ class AppState with ChangeNotifier {
   List<HotspotProfileModel> _hotspotProfiles = [];
   List<RouterConfigurationModel> _routerConfigurations = [];
   List<RoleModel> _roles = [];
+  List<WorkerModel> _workers = [];
   List<Map<String, dynamic>> _activeSessions = []; // Active WiFi sessions
   List<dynamic> _hotspotUsers = []; // Hotspot users list
   List<dynamic> _assignedPlans = []; // Assigned plans for matching
@@ -155,6 +160,7 @@ class AppState with ChangeNotifier {
   List<HotspotProfileModel> get hotspotProfiles => _hotspotProfiles;
   List<RouterConfigurationModel> get routerConfigurations => _routerConfigurations;
   List<RoleModel> get roles => _roles;
+  List<WorkerModel> get workers => _workers;
   List<Map<String, dynamic>> get activeSessions => _activeSessions;
   List<dynamic> get assignedPlans => _assignedPlans;
   List<dynamic> get hotspotUsers => _hotspotUsers;
@@ -1743,22 +1749,150 @@ class AppState with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> createRole(Map<String, dynamic> roleData) async {
-    final newRole = RoleModel.fromJson(roleData);
-    _roles.add(newRole);
-    notifyListeners();
-  }
-
-  Future<void> updateRole(String id, Map<String, dynamic> roleData) async {
-    final index = _roles.indexWhere((r) => r.id == id);
-    if (index != -1) {
-      _roles[index] = RoleModel.fromJson({...roleData, 'id': id});
+  // ==================== Role Management ====================
+  
+  /// Load roles from API
+  Future<void> loadRoles() async {
+    try {
+      if (_roleRepository == null) _initializeRepositories();
+      if (kDebugMode) print('📋 [AppState] Loading roles...');
+      
+      final rolesData = await _roleRepository!.fetchRoles();
+      _roles = rolesData.map((data) => RoleModel.fromJson(data)).toList();
+      
+      if (kDebugMode) print('✅ [AppState] Loaded ${_roles.length} roles');
       notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Load roles error: $e');
+      _setError(e.toString());
     }
   }
 
-  Future<void> deleteRole(String id) async {
-    _roles.removeWhere((r) => r.id == id);
-    notifyListeners();
+  /// Create role
+  Future<void> createRole(Map<String, dynamic> roleData) async {
+    _setLoading(true);
+    try {
+      if (_roleRepository == null) _initializeRepositories();
+      await _roleRepository!.createRole(roleData);
+      await loadRoles();
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  /// Update role
+  Future<void> updateRole(String slug, Map<String, dynamic> roleData) async {
+    _setLoading(true);
+    try {
+      if (_roleRepository == null) _initializeRepositories();
+      await _roleRepository!.updateRole(slug, roleData);
+      await loadRoles();
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  /// Delete role
+  Future<void> deleteRole(String slug) async {
+    _setLoading(true);
+    try {
+      if (_roleRepository == null) _initializeRepositories();
+      final success = await _roleRepository!.deleteRole(slug);
+      if (success) {
+        await loadRoles();
+      }
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  // ==================== Worker/Collaborator Management ====================
+  
+  /// Load workers from API
+  Future<void> loadWorkers() async {
+    try {
+      if (_collaboratorRepository == null) _initializeRepositories();
+      if (kDebugMode) print('👷 [AppState] Loading workers...');
+      
+      final workersData = await _collaboratorRepository!.fetchCollaborators();
+      _workers = workersData.map((data) => WorkerModel.fromJson(data)).toList();
+      
+      if (kDebugMode) print('✅ [AppState] Loaded ${_workers.length} workers');
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Load workers error: $e');
+      _setError(e.toString());
+    }
+  }
+
+  /// Create worker
+  Future<void> createWorker(Map<String, dynamic> workerData) async {
+    _setLoading(true);
+    try {
+      if (_collaboratorRepository == null) _initializeRepositories();
+      await _collaboratorRepository!.createCollaborator(workerData);
+      await loadWorkers();
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  /// Assign role to worker
+  Future<void> assignRoleToWorker(String username, String roleSlug) async {
+    _setLoading(true);
+    try {
+      if (_collaboratorRepository == null) _initializeRepositories();
+      await _collaboratorRepository!.assignRole(username, {'role': roleSlug});
+      await loadWorkers();
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  /// Update worker role
+  Future<void> updateWorkerRole(String username, String roleSlug) async {
+    _setLoading(true);
+    try {
+      if (_collaboratorRepository == null) _initializeRepositories();
+      await _collaboratorRepository!.updateRole(username, {'role': roleSlug});
+      await loadWorkers();
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  /// Delete worker
+  Future<void> deleteWorker(String username) async {
+    _setLoading(true);
+    try {
+      if (_collaboratorRepository == null) _initializeRepositories();
+      final success = await _collaboratorRepository!.deleteCollaborator(username);
+      if (success) {
+        await loadWorkers();
+      }
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
   }
 }

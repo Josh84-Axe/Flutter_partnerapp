@@ -4,8 +4,21 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 
-class UserRoleScreen extends StatelessWidget {
+class UserRoleScreen extends StatefulWidget {
   const UserRoleScreen({super.key});
+
+  @override
+  State<UserRoleScreen> createState() => _UserRoleScreenState();
+}
+
+class _UserRoleScreenState extends State<UserRoleScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppState>().loadRoles();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

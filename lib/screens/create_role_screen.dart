@@ -13,20 +13,22 @@ class CreateRoleScreen extends StatefulWidget {
 }
 
 class _CreateRoleScreenState extends State<CreateRoleScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final Map<String, bool> _permissions = {
-    'dashboard_access': false,
-    'user_create': false,
-    'user_read': false,
-    'user_update': false,
-    'user_delete': false,
-    'plan_create': false,
-    'plan_read': false,
-    'plan_update': false,
-    'plan_delete': false,
-    'transaction_viewing': false,
-    'router_management': false,
-    'settings_access': false,
+    'create_plans': false,
+    'view_plans': false,
+    'edit_plans': false,
+    'delete_plans': false,
+    'view_users': false,
+    'create_users': false,
+    'edit_users': false,
+    'delete_users': false,
+    'view_routers': false,
+    'assign_routers': false,
+    'manage_routers': false,
+    'view_transactions': false,
+    'manage_roles': false,
   };
 
   @override
@@ -64,19 +66,27 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: 'role_name'.tr(),
-                      hintText: 'role_name_hint'.tr(),
-                      border: const OutlineInputBorder(),
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: 'role_name'.tr(),
+                        hintText: 'role_name_hint'.tr(),
+                        border: const OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter role name';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
                   const SizedBox(height: 24),
                   Text(
                     'permissions'.tr(),
@@ -201,21 +211,17 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
   }
 
   void _saveRole() {
-    if (_nameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('enter_role_name'.tr())),
-      );
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
     final data = {
-      'id': widget.roleData?['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
       'name': _nameController.text,
       'permissions': _permissions,
     };
 
     if (widget.roleData != null) {
-      context.read<AppState>().updateRole(data['id'] as String, data);
+      context.read<AppState>().updateRole(widget.roleData!['id'], data);
     } else {
       context.read<AppState>().createRole(data);
     }

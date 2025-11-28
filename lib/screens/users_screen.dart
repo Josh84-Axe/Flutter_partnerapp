@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 import '../widgets/search_bar_widget.dart';
+import '../widgets/create_worker_dialog.dart';
 import '../utils/permissions.dart';
 import '../utils/permission_mapping.dart';
 import '../widgets/permission_denied_dialog.dart';
@@ -26,6 +27,8 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     _tabController = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppState>().loadUsers();
+      context.read<AppState>().loadWorkers();
+      context.read<AppState>().loadRoles();
     });
   }
 
@@ -264,23 +267,44 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 : TabBarView(
                     controller: _tabController,
                     children: [
-                      _buildUserList(users),
-                      _buildUserList(workers),
+                      _buildUserList(users, isCustomers: true),
+                      _buildWorkerList(appState.workers),
                     ],
                   ),
           ),
         ],
       ),
-      floatingActionButton: Permissions.canCreateUsers(appState.currentUser?.role ?? '', appState.currentUser?.permissions)
-          ? FloatingActionButton(
-              onPressed: () => _showUserDialog(),
-              child: const Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton: _buildFAB(appState),
     );
   }
 
-  Widget _buildUserList(List users) {
+  Widget? _buildFAB(AppState appState) {
+    final canCreate = Permissions.canCreateUsers(
+      appState.currentUser?.role ?? '',
+      appState.currentUser?.permissions,
+    );
+    
+    if (!canCreate) return null;
+
+    return FloatingActionButton.extended(
+      onPressed: () {
+        if (_tabController.index == 0) {
+          // Customers tab - create user
+          _showUserDialog();
+        } else {
+          // Workers tab - create worker
+          showDialog(
+            context: context,
+            builder: (context) => const CreateWorkerDialog(),
+          );
+        }
+      },
+      icon: Icon(_tabController.index == 0 ? Icons.person_add : Icons.badge),
+      label: Text(_tabController.index == 0 ? 'add_user'.tr() : 'create_worker'.tr()),
+    );
+  }
+
+  Widget _buildUserList(List users, {bool isCustomers = false}) {
     if (users.isEmpty) {
       return Center(
         child: Column(
@@ -483,6 +507,245 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     );
   }
 
+  Widget _buildWorkerList(List workers) {
+    if (workers.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.badge_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'No workers found',
+              style: TextStyle(color: Colors.grey[600], fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: workers.length,
+      itemBuilder: (context, index) {
+        final worker = workers[index];
+        final colorScheme = Theme.of(context).colorScheme;
+        
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: colorScheme.secondaryContainer,
+              child: Icon(
+                Icons.badge,
+                color: colorScheme.secondary,
+              ),
+            ),
+            title: Text(
+              worker.fullName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(worker.email),
+                const SizedBox(height: 4),
+                if (worker.roleName != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      worker.roleName!,
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'No Role',
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {
+                _showWorkerMenu(context, worker);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showWorkerMenu(BuildContext context, worker) {
+    final currentUser = context.read<AppState>().currentUser;
+    if (currentUser == null) return;
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.badge, color: Theme.of(context).colorScheme.primary),
+              title: Text(worker.roleName != null ? 'Change Role' : 'Assign Role'),
+              onTap: () {
+                Navigator.pop(context);
+                _showAssignRoleDialog(context, worker);
+              },
+            ),
+            if (Permissions.canDeleteUsers(currentUser.role, currentUser.permissions))
+              ListTile(
+                leading: const Icon(Icons.delete, color: AppTheme.errorRed),
+                title: Text('remove_worker'.tr()),
+                onTap: () {
+                  Navigator.pop(context);
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text('remove_worker'.tr()),
+                      content: Text('Are you sure you want to remove ${worker.fullName}?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text('cancel'.tr()),
+                        ),
+                        FilledButton(
+                          onPressed: () async {
+                            try {
+                              await context.read<AppState>().deleteWorker(worker.username);
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Worker removed successfully')),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error: ${e.toString()}'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.error,
+                            foregroundColor: Theme.of(context).colorScheme.onError,
+                          ),
+                          child: Text('remove'.tr()),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAssignRoleDialog(BuildContext context, worker) {
+    final appState = context.read<AppState>();
+    final roles = appState.roles;
+    String? selectedRole = worker.roleSlug;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(worker.roleName != null ? 'Change Role' : 'Assign Role'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                value: selectedRole,
+                decoration: InputDecoration(
+                  labelText: 'role'.tr(),
+                  border: const OutlineInputBorder(),
+                ),
+                items: roles.map((role) {
+                  return DropdownMenuItem(
+                    value: role.id,
+                    child: Text(role.name),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedRole = value;
+                  });
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('cancel'.tr()),
+            ),
+            FilledButton(
+              onPressed: () async {
+                if (selectedRole != null) {
+                  try {
+                    if (worker.roleSlug == null) {
+                      await appState.assignRoleToWorker(worker.username, selectedRole!);
+                    } else {
+                      await appState.updateWorkerRole(worker.username, selectedRole!);
+                    }
+                    
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Role ${worker.roleSlug == null ? "assigned" : "updated"} successfully'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
+              },
+              child: Text('save'.tr()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
 
 }
