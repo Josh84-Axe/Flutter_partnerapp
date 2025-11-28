@@ -24,8 +24,16 @@ class SessionRepository {
       // API returns: {statusCode, error, message, data: [...], exception}
       if (responseData is Map && responseData['data'] is List) {
         final sessions = responseData['data'] as List;
-        if (kDebugMode) print('✅ [SessionRepo] Found ${sessions.length} active sessions');
-        if (kDebugMode && sessions.isNotEmpty) print('   Sample session: ${sessions.first}');
+        if (kDebugMode) {
+          print('✅ [SessionRepo] Found ${sessions.length} active sessions');
+          if (sessions.isNotEmpty) {
+            print('   📋 First session structure:');
+            print('   ${sessions.first}');
+            if (sessions.first is Map) {
+              print('   🔑 Available keys: ${(sessions.first as Map).keys.toList()}');
+            }
+          }
+        }
         return sessions;
       }
       
