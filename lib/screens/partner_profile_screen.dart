@@ -84,6 +84,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appState = context.read<AppState>();
 
     return Scaffold(
       appBar: AppBar(
