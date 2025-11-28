@@ -21,24 +21,54 @@ class SessionRepository {
         print('📦 [SessionRepo] Full response: $responseData');
       }
       
-      // API returns: {statusCode, error, message, data: [...], exception}
-      if (responseData is Map && responseData['data'] is List) {
-        final sessions = responseData['data'] as List;
-        if (kDebugMode) {
-          print('✅ [SessionRepo] Found ${sessions.length} active sessions');
-          if (sessions.isNotEmpty) {
-            print('   📋 First session structure:');
-            print('   ${sessions.first}');
-            if (sessions.first is Map) {
-              print('   🔑 Available keys: ${(sessions.first as Map).keys.toList()}');
+      List<dynamic> sessions = [];
+      
+      // Try different response structures
+      if (responseData is Map) {
+        // Check for data.results (nested structure)
+        if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          sessions = responseData['data']['results'] as List;
+          if (kDebugMode) print('✅ [SessionRepo] Found data in nested structure: data.results');
+        }
+        // Check for data array (flat structure)
+        else if (responseData['data'] is List) {
+          sessions = responseData['data'] as List;
+          if (kDebugMode) print('✅ [SessionRepo] Found data in flat structure: data');
+        }
+        // Check for results array (direct structure)
+        else if (responseData['results'] is List) {
+          sessions = responseData['results'] as List;
+          if (kDebugMode) print('✅ [SessionRepo] Found data in direct structure: results');
+        }
+      }
+      // Response is directly a list
+      else if (responseData is List) {
+        sessions = responseData;
+        if (kDebugMode) print('✅ [SessionRepo] Response is directly a list');
+      }
+      
+      if (kDebugMode) {
+        print('✅ [SessionRepo] Found ${sessions.length} active sessions');
+        if (sessions.isNotEmpty) {
+          print('   📋 First session structure:');
+          print('   ${sessions.first}');
+          if (sessions.first is Map) {
+            final keys = (sessions.first as Map).keys.toList();
+            print('   🔑 Available keys: $keys');
+            
+            // Check for customer_id specifically
+            final firstSession = sessions.first as Map;
+            if (firstSession.containsKey('customer_id')) {
+              print('   ✅ Found customer_id: ${firstSession['customer_id']}');
+            }
+            if (firstSession.containsKey('username')) {
+              print('   ✅ Found username: ${firstSession['username']}');
             }
           }
         }
-        return sessions;
       }
       
-      if (kDebugMode) print('⚠️  [SessionRepo] No data array found in response');
-      return [];
+      return sessions;
     } catch (e) {
       if (kDebugMode) print('❌ [SessionRepo] Fetch active sessions error: $e');
       rethrow;
