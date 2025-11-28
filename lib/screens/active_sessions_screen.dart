@@ -253,6 +253,8 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
     final uptime = session['uptime'] ?? 'N/A';
     final bytesIn = session['bytes_in'] ?? 0;
     final bytesOut = session['bytes_out'] ?? 0;
+    final routerName = session['router_name'] ?? 'Unknown Router';
+    final routerIp = session['router_ip'] ?? 'N/A';
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -261,27 +263,37 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header with username and disconnect button
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      username,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        username,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    Text(
-                      ipAddress,
-                      style: TextStyle(
-                        color: colorScheme.secondary,
-                        fontSize: 12,
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.router, size: 14, color: Colors.grey[600]),
+                          const SizedBox(width: 4),
+                          Text(
+                            routerName,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.logout, color: Colors.red),
@@ -290,11 +302,20 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
               ],
             ),
             const Divider(),
+            // Session details
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                _buildInfoItem('IP Address', ipAddress),
                 _buildInfoItem('MAC', macAddress),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 _buildInfoItem('Uptime', uptime),
+                _buildInfoItem('Router IP', routerIp),
               ],
             ),
             const SizedBox(height: 8),
