@@ -15,6 +15,7 @@ class CreateEditInternetPlanScreen extends StatefulWidget {
 }
 
 class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   String? _selectedValidity;
@@ -62,19 +63,27 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
                       labelText: 'plan_name'.tr(),
                       hintText: 'plan_name_hint'.tr(),
                       border: const OutlineInputBorder(),
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Plan name is required';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  TextFormField(
                     controller: _priceController,
                     decoration: InputDecoration(
                       labelText: 'price'.tr(),
@@ -83,6 +92,15 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                       prefixText: '${appState.currencySymbol} ',
                     ),
                     keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Price is required';
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'Please enter a valid number';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<dynamic>(
@@ -102,6 +120,12 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                             })
                             .toList(),
                     onChanged: (value) => setState(() => _selectedValidity = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select a validity period';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<dynamic>(
@@ -121,6 +145,12 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                             })
                             .toList(),
                     onChanged: (value) => setState(() => _selectedDataLimit = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select a data limit';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<dynamic>(
@@ -140,6 +170,12 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                             })
                             .toList(),
                     onChanged: (value) => setState(() => _selectedAdditionalDevices = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select additional devices';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
@@ -155,7 +191,8 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                             .toList(),
                     onChanged: (value) => setState(() => _selectedHotspotProfile = value),
                   ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -190,33 +227,8 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
   }
 
   void _savePlan() async {
-    // Validate required text fields
-    if (_nameController.text.isEmpty || _priceController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('fill_required_fields'.tr())),
-      );
-      return;
-    }
-
-    // Validate dropdown selections
-    if (_selectedValidity == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a validity period')),
-      );
-      return;
-    }
-
-    if (_selectedDataLimit == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a data limit')),
-      );
-      return;
-    }
-
-    if (_selectedAdditionalDevices == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select additional devices')),
-      );
+    // Validate form
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 

@@ -16,6 +16,7 @@ class LoginScreenM3 extends StatefulWidget {
 }
 
 class _LoginScreenM3State extends State<LoginScreenM3> {
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
@@ -31,10 +32,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
   Future<void> _handleLogin() async {
     if (kDebugMode) print('🔐 [LoginScreenM3] _handleLogin() called');
     
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter email and password')),
-      );
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
@@ -136,37 +134,56 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                   ),
             ),
             const SizedBox(height: 24),
-            // Email field
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.mail),
-              ),
-              keyboardType: TextInputType.emailAddress,
-              enabled: !_isLoading,
-            ),
-            const SizedBox(height: 12),
-            // Password field
-            TextField(
-              controller: _passwordController,
-              obscureText: _obscurePassword,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                prefixIcon: const Icon(Icons.lock),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  // Email field
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.mail),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    enabled: !_isLoading,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      return null;
+                    },
                   ),
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
-                ),
+                  const SizedBox(height: 12),
+                  // Password field
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                    ),
+                    enabled: !_isLoading,
+                    onFieldSubmitted: (_) => _handleLogin(),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
               ),
-              enabled: !_isLoading,
-              onSubmitted: (_) => _handleLogin(),
             ),
             const SizedBox(height: 8),
             // Forgot Password link

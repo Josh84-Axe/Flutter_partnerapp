@@ -20,23 +20,33 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
   }
 
   void _showAddDialog() {
+    final formKey = GlobalKey<FormState>();
     final valueController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Add New Data Limit'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: valueController,
-              decoration: const InputDecoration(
-                labelText: 'Data Limit Value',
-                hintText: 'e.g., 10GB',
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: valueController,
+                decoration: const InputDecoration(
+                  labelText: 'Data Limit Value',
+                  hintText: 'e.g., 10GB',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a data limit value';
+                  }
+                  return null;
+                },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -45,7 +55,7 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
           ),
           FilledButton(
             onPressed: () async {
-              if (valueController.text.isNotEmpty) {
+              if (formKey.currentState!.validate()) {
                 try {
                   await context.read<AppState>().createDataLimit({
                     'value': valueController.text,
@@ -115,6 +125,7 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
   }
 
   void _showEditDialog(dynamic item) {
+    final formKey = GlobalKey<FormState>();
     final id = item['id'] as int;
     final currentValue = item['value']?.toString() ?? '';
     final valueController = TextEditingController(text: currentValue);
@@ -123,17 +134,26 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Edit Data Limit'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: valueController,
-              decoration: const InputDecoration(
-                labelText: 'Data Limit Value',
-                hintText: 'e.g., 10GB',
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: valueController,
+                decoration: const InputDecoration(
+                  labelText: 'Data Limit Value',
+                  hintText: 'e.g., 10GB',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a data limit value';
+                  }
+                  return null;
+                },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -142,7 +162,7 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
           ),
           FilledButton(
             onPressed: () async {
-              if (valueController.text.isNotEmpty) {
+              if (formKey.currentState!.validate()) {
                 try {
                   await context.read<AppState>().updateDataLimit(id, {
                     'value': valueController.text,

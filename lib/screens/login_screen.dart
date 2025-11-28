@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -130,13 +131,37 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _phoneController,
-                      decoration: InputDecoration(
-                        labelText: 'phone'.tr(),
-                        prefixIcon: Icon(Icons.phone),
+                    InternationalPhoneNumberInput(
+                      onInputChanged: (PhoneNumber number) {
+                        // Controller is updated automatically
+                      },
+                      selectorConfig: const SelectorConfig(
+                        selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
+                        setSelectorButtonAsPrefixIcon: true,
+                        leadingPadding: 12,
                       ),
-                      keyboardType: TextInputType.phone,
+                      ignoreBlank: false,
+                      autoValidateMode: AutovalidateMode.disabled,
+                      selectorTextStyle: TextStyle(color: colorScheme.onSurface),
+                      initialValue: PhoneNumber(isoCode: 'TG'),
+                      textFieldController: _phoneController,
+                      formatInput: true,
+                      keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                      inputDecoration: InputDecoration(
+                        labelText: 'phone'.tr(),
+                        filled: true,
+                        fillColor: colorScheme.surfaceContainerHighest,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'register.error.phoneRequired'.tr();
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     TextFormField(

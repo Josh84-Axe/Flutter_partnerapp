@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/app_theme.dart';
 import '../providers/app_state.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import '../utils/country_utils.dart';
 
 class PartnerProfileScreen extends StatefulWidget {
   const PartnerProfileScreen({super.key});
@@ -11,6 +13,7 @@ class PartnerProfileScreen extends StatefulWidget {
 }
 
 class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
+  final _formKey = GlobalKey<FormState>();
   late TextEditingController _companyNameController;
   late TextEditingController _addressController;
   late TextEditingController _phoneController;
@@ -62,6 +65,8 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
   }
 
   void _showOtpValidation() {
+    if (!_formKey.currentState!.validate()) return;
+
     Navigator.of(context).pushNamed('/otp-validation', arguments: {
       'purpose': 'Verify profile changes',
       'onVerified': () {
@@ -91,8 +96,10 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
       body: Column(
         children: [
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
               children: [
                 const Text(
                   'Basic Information',
@@ -115,12 +122,40 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _phoneController,
-                  label: 'Contact Number',
-                  icon: Icons.phone_outlined,
-                  keyboardType: TextInputType.phone,
-                ),
+                  InternationalPhoneNumberInput(
+                    onInputChanged: (PhoneNumber number) {
+                      // Controller is updated automatically
+                    },
+                    selectorConfig: const SelectorConfig(
+                      selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
+                      setSelectorButtonAsPrefixIcon: true,
+                      leadingPadding: 12,
+                    ),
+                    ignoreBlank: false,
+                    autoValidateMode: AutovalidateMode.disabled,
+                    selectorTextStyle: TextStyle(color: colorScheme.onSurface),
+                    initialValue: PhoneNumber(isoCode: CountryUtils.getIsoCode(appState.partnerCountry ?? 'Togo')),
+                    textFieldController: _phoneController,
+                    formatInput: true,
+                    keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                    inputDecoration: InputDecoration(
+                      labelText: 'Contact Number',
+                      prefixIcon: Icon(Icons.phone_outlined, color: colorScheme.primary),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Contact Number is required';
+                      }
+                      return null;
+                    },
+                  ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _addressController,
@@ -167,6 +202,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                 const SizedBox(height: 16),
                 ..._paymentMethods.map((method) => _buildPaymentMethodCard(method)),
               ],
+              ),
             ),
           ),
           Container(
@@ -208,9 +244,10 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     required String label,
     required IconData icon,
     TextInputType? keyboardType,
+    String? Function(String?)? validator,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       decoration: InputDecoration(
@@ -224,6 +261,12 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
           borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
       ),
+      validator: validator ?? (value) {
+        if (value == null || value.isEmpty) {
+          return '$label is required';
+        }
+        return null;
+      },
     );
   }
 

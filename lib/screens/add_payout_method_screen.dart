@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import '../utils/country_utils.dart';
 
 class AddPayoutMethodScreen extends StatefulWidget {
   const AddPayoutMethodScreen({super.key});
@@ -227,10 +229,36 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
             dropdownItems: ['MTN Mobile Money', 'Airtel Money', 'Vodafone Cash'],
           ),
           const SizedBox(height: 20),
-          _buildTextField(
-            label: 'Mobile Money Number',
-            controller: _mobileNumberController,
-            keyboardType: TextInputType.phone,
+          InternationalPhoneNumberInput(
+            onInputChanged: (PhoneNumber number) {
+              // Controller is updated automatically
+            },
+            selectorConfig: const SelectorConfig(
+              selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
+              setSelectorButtonAsPrefixIcon: true,
+              leadingPadding: 12,
+            ),
+            ignoreBlank: false,
+            autoValidateMode: AutovalidateMode.disabled,
+            selectorTextStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+            initialValue: PhoneNumber(isoCode: CountryUtils.getIsoCode(context.read<AppState>().partnerCountry ?? 'Togo')),
+            textFieldController: _mobileNumberController,
+            formatInput: true,
+            keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+            inputDecoration: InputDecoration(
+              labelText: 'Mobile Money Number',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              filled: true,
+              fillColor: Colors.grey[100],
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter Mobile Money Number';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 20),
           _buildTextField(

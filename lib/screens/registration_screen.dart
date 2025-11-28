@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -140,14 +141,42 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _phoneController,
-                        decoration: InputDecoration(
+                      InternationalPhoneNumberInput(
+                        onInputChanged: (PhoneNumber number) {
+                          // Controller is updated automatically
+                        },
+                        onInputValidated: (bool value) {
+                          // handled by validator
+                        },
+                        selectorConfig: const SelectorConfig(
+                          selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
+                          setSelectorButtonAsPrefixIcon: true,
+                          leadingPadding: 12,
+                        ),
+                        ignoreBlank: false,
+                        autoValidateMode: AutovalidateMode.disabled,
+                        selectorTextStyle: TextStyle(color: colorScheme.onSurface),
+                        initialValue: PhoneNumber(isoCode: 'TG'), // Default to Togo
+                        textFieldController: _phoneController,
+                        formatInput: true,
+                        keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                        inputDecoration: InputDecoration(
                           labelText: 'register.form.phone'.tr(),
                           filled: true,
                           fillColor: colorScheme.surfaceContainerHighest,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
-                        keyboardType: TextInputType.phone,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'register.error.phoneRequired'.tr();
+                          }
+                          return null;
+                        },
+                        // Update country when user selects from dropdown if we want to sync them
+                        // For now, let's keep them independent or sync if possible
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -176,6 +205,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           filled: true,
                           fillColor: colorScheme.surfaceContainerHighest,
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'register.error.businessNameRequired'.tr();
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -185,6 +220,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           filled: true,
                           fillColor: colorScheme.surfaceContainerHighest,
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'register.error.addressRequired'.tr();
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -197,6 +238,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 filled: true,
                                 fillColor: colorScheme.surfaceContainerHighest,
                               ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'register.error.cityRequired'.tr();
+                                }
+                                return null;
+                              },
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -218,6 +265,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 setState(() {
                                   _selectedCountry = value;
                                 });
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'register.error.countryRequired'.tr();
+                                }
+                                return null;
                               },
                             ),
                           ),

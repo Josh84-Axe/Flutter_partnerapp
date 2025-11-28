@@ -52,6 +52,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   tiknet_api_client:
     path: packages/tiknet_api_client
+  intl_phone_number_input: ^0.7.5
 
 dev_dependencies:
   flutter_test:
