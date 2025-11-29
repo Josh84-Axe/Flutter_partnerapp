@@ -165,6 +165,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                               children: [
                                 Text(
                                   plan.name,
+                                  style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
@@ -234,8 +235,6 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                     padding: EdgeInsets.zero,
                                   ),
                                 ),
-                            ],
-                          ),
                         ],
                       ),
                     );
