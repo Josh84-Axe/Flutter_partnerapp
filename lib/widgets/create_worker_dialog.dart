@@ -15,6 +15,10 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addresseController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _countryController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   String? _selectedRole;
@@ -25,6 +29,10 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
+    _addresseController.dispose();
+    _cityController.dispose();
+    _countryController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -95,6 +103,71 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _phoneController,
+                decoration: InputDecoration(
+                  labelText: 'Phone',
+                  border: const OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter phone number';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _addresseController,
+                decoration: InputDecoration(
+                  labelText: 'Address',
+                  border: const OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter address';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _cityController,
+                      decoration: InputDecoration(
+                        labelText: 'City',
+                        border: const OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Required';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _countryController,
+                      decoration: InputDecoration(
+                        labelText: 'Country',
+                        border: const OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Required';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -182,6 +255,10 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
                   'first_name': _firstNameController.text,
                   'last_name': _lastNameController.text,
                   'email': _emailController.text,
+                  'phone': _phoneController.text,
+                  'addresse': _addresseController.text,
+                  'city': _cityController.text,
+                  'country': _countryController.text,
                   'username': _usernameController.text,
                   'password': _passwordController.text,
                   'role': _selectedRole,

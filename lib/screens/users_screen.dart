@@ -40,6 +40,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     super.dispose();
   }
 
+
   void _showUserDialog({Map<String, dynamic>? userData}) {
     final currentUser = context.read<AppState>().currentUser;
     if (currentUser == null) return;
@@ -54,117 +55,27 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
       );
       return;
     }
-    final nameController = TextEditingController(text: userData?['name']);
-    final emailController = TextEditingController(text: userData?['email']);
+    final firstNameController = TextEditingController(text: userData?['first_name'] ?? userData?['name']);
     final phoneController = TextEditingController(text: userData?['phone']);
-    String selectedRole = userData?['role'] ?? 'user';
-    final Set<String> selectedPermissions = userData?['permissions'] != null 
-        ? Set<String>.from(userData!['permissions']) 
-        : {};
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text(userData == null ? 'add_user'.tr() : 'edit_user'.tr()),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+      builder: (context) => AlertDialog(
+        title: Text(userData == null ? 'add_user'.tr() : 'edit_user'.tr()),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               TextField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: 'name'.tr()),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(labelText: 'email'.tr()),
-                keyboardType: TextInputType.emailAddress,
+                controller: firstNameController,
+                decoration: InputDecoration(labelText: 'First Name'),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: phoneController,
-                decoration: InputDecoration(labelText: 'phone'.tr()),
+                decoration: InputDecoration(labelText: 'Phone'),
                 keyboardType: TextInputType.phone,
               ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: selectedRole,
-                decoration: InputDecoration(labelText: 'role'.tr()),
-                items: ['user', 'worker', 'owner', 'admin']
-                    .map((role) => DropdownMenuItem(
-                          value: role,
-                          child: Text(role.tr()),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedRole = value!;
-                    if (selectedRole != 'worker') {
-                      selectedPermissions.clear();
-                    }
-                  });
-                },
-              ),
-              if (selectedRole == 'worker') ...[
-                const SizedBox(height: 12),
-                Text(
-                  'worker_permissions'.tr(),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                CheckboxListTile(
-                  title: Text('create_plans'.tr()),
-                  value: selectedPermissions.contains('create_plans'),
-                  onChanged: (value) {
-                    setState(() {
-                      if (value == true) {
-                        selectedPermissions.add('create_plans');
-                      } else {
-                        selectedPermissions.remove('create_plans');
-                      }
-                    });
-                  },
-                ),
-                CheckboxListTile(
-                  title: Text('manage_users'.tr()),
-                  value: selectedPermissions.contains('view_users'),
-                  onChanged: (value) {
-                    setState(() {
-                      if (value == true) {
-                        selectedPermissions.add('view_users');
-                      } else {
-                        selectedPermissions.remove('view_users');
-                      }
-                    });
-                  },
-                ),
-                CheckboxListTile(
-                  title: Text('view_reports'.tr()),
-                  value: selectedPermissions.contains('view_transactions'),
-                  onChanged: (value) {
-                    setState(() {
-                      if (value == true) {
-                        selectedPermissions.add('view_transactions');
-                      } else {
-                        selectedPermissions.remove('view_transactions');
-                      }
-                    });
-                  },
-                ),
-                CheckboxListTile(
-                  title: Text('configure_routers'.tr()),
-                  value: selectedPermissions.contains('view_routers'),
-                  onChanged: (value) {
-                    setState(() {
-                      if (value == true) {
-                        selectedPermissions.add('view_routers');
-                      } else {
-                        selectedPermissions.remove('view_routers');
-                      }
-                    });
-                  },
-                ),
-              ],
             ],
           ),
         ),
@@ -176,15 +87,8 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           FilledButton(
             onPressed: () {
               final data = {
-                'name': nameController.text,
-                'email': emailController.text,
+                'first_name': firstNameController.text,
                 'phone': phoneController.text,
-                'role': selectedRole,
-                'permissions': selectedRole == 'worker' 
-                    ? selectedPermissions.toList() 
-                    : null,
-                if (userData != null) 'createdAt': userData['createdAt'],
-                if (userData != null) 'isActive': userData['isActive'],
               };
 
               if (userData == null) {
@@ -199,7 +103,6 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           ),
         ],
       ),
-    ),
     );
   }
 
