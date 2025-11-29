@@ -267,7 +267,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
   dynamic _selectedDataLimit;
   dynamic _selectedValidity;
   dynamic _selectedDeviceAllowed;
-  String? _selectedProfile;
+  int? _selectedProfile;
   bool _isLoading = false;
 
   @override
@@ -424,7 +424,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                   const SizedBox(height: 16),
 
                   // Hotspot Profile Dropdown
-                  DropdownButtonFormField<String>(
+                  DropdownButtonFormField<int>(
                     value: _selectedProfile,
                     decoration: InputDecoration(
                       labelText: 'hotspot_user_profile'.tr(),
@@ -432,14 +432,20 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                       prefixIcon: const Icon(Icons.person),
                     ),
                     items: appState.hotspotProfiles.isEmpty
-                        ? [const DropdownMenuItem(value: 'Basic', child: Text('Basic'))]
+                        ? []
                         : appState.hotspotProfiles
                             .map((profile) => DropdownMenuItem(
-                                  value: profile.id,
+                                  value: int.tryParse(profile.id),
                                   child: Text(profile.name),
                                 ))
                             .toList(),
                     onChanged: (value) => setState(() => _selectedProfile = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select a hotspot profile';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 32),
 
@@ -513,61 +519,38 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Helper to extract value from dynamic item
-      int extractValue(dynamic item, String context) {
-        if (kDebugMode) print('🔍 [CreatePlan] Extracting value from $context: $item');
+      // Helper to extract ID from dynamic item
+      int? extractId(dynamic item, String context) {
+        if (kDebugMode) print('🔍 [CreatePlan] Extracting ID from $context: $item');
         
         if (item is Map) {
-          final value = int.tryParse(
-            item['value']?.toString() ?? 
-            item['days']?.toString() ?? 
-            item['gb']?.toString() ?? 
-            item['count']?.toString() ?? 
-            item['limit']?.toString() ??
-            '0'
-          ) ?? 0;
-          if (kDebugMode) print('   Extracted: $value');
-          return value;
-        } else if (item is String) {
-          return HotspotConfigurationService.extractNumericValue(item);
+          final id = item['id'];
+          if (kDebugMode) print('   Extracted ID: $id');
+          return id is int ? id : (id is String ? int.tryParse(id) : null);
         } else if (item is int) {
           return item;
+        } else if (item is String) {
+          return int.tryParse(item);
         }
-        return 0;
+        return null;
       }
 
-      String getProfileName(String? profileId) {
-        if (profileId == null) return 'Basic';
-        final appState = context.read<AppState>();
-        
-        if (appState.hotspotProfiles.isEmpty) return 'Basic';
-        
-        try {
-          final profile = appState.hotspotProfiles.firstWhere((p) => p.id == profileId);
-          return profile.name;
-        } catch (e) {
-          return appState.hotspotProfiles.isNotEmpty ? appState.hotspotProfiles.first.name : 'Basic';
-        }
-      }
-
-      final dataLimitValue = _selectedDataLimit is String && 
+      final dataLimitId = _selectedDataLimit is String && 
           HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
           ? null
-          : extractValue(_selectedDataLimit, 'data_limit');
+          : extractId(_selectedDataLimit, 'data_limit');
       
-      final validityDays = extractValue(_selectedValidity, 'validity');
-      final validityMinutes = validityDays * 1440;
-      final sharedUsersValue = extractValue(_selectedDeviceAllowed, 'shared_users');
+      final validityId = extractId(_selectedValidity, 'validity');
+      final sharedUsersId = extractId(_selectedDeviceAllowed, 'shared_users');
 
       final data = {
         'name': _nameController.text,
         'price': double.parse(_priceController.text),
-        'data_limit': dataLimitValue,
-        'validity': validityMinutes,
+        'data_limit': dataLimitId,
+        'validity': validityId,
         'is_active': true,
-        'shared_users': sharedUsersValue,
-        'profile': _selectedProfile ?? 'Basic',
-        'profile_name': getProfileName(_selectedProfile),
+        'shared_users': sharedUsersId,
+        'profile': _selectedProfile,
       };
 
       if (kDebugMode) print('📦 [CreatePlan] Plan data: $data');
