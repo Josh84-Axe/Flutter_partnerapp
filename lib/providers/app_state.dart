@@ -139,18 +139,6 @@ class AppState with ChangeNotifier {
   List<dynamic> _idleTimeouts = [];
   List<dynamic> _validityPeriods = [];
   List<dynamic> _dataLimits = [];
-  
-  final List<NotificationModel> _notifications = [];
-  final List<ProfileModel> _profiles = [];
-  LanguageModel _selectedLanguage = LanguageModel.availableLanguages.first;
-  SubscriptionModel? _subscription;
-  List<SubscriptionPlanModel> _availableSubscriptionPlans = [];
-  
-  UserModel? get currentUser => _currentUser;
-  String? get partnerCountry => _partnerCountry;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  String? get lastWithdrawalId => _lastWithdrawalId;
   String? get registrationEmail => _registrationEmail;
   List<UserModel> get users => _users;
   List<RouterModel> get routers => _routers;
@@ -274,6 +262,13 @@ class AppState with ChangeNotifier {
               if (kDebugMode) print('❌ [AppState] Error parsing subscription: $e');
             }
           }
+          
+          // Fetch and map permissions
+          try {
+            await fetchPermissions();
+          } catch (e) {
+            if (kDebugMode) print('⚠️ [AppState] Failed to fetch permissions on login: $e');
+          }
         }
         // Load dashboard data in background - don't block login if it fails
         try {
@@ -321,6 +316,14 @@ class AppState with ChangeNotifier {
               isActive: true,
               createdAt: DateTime.now(),
             );
+            
+            // Fetch and map permissions
+            try {
+              await fetchPermissions();
+            } catch (e) {
+              if (kDebugMode) print('⚠️ [AppState] Failed to fetch permissions on register: $e');
+            }
+            
             await loadDashboardData();
           }
         } catch (e) {
@@ -1751,11 +1754,56 @@ class AppState with ChangeNotifier {
 
   // ==================== Role Management ====================
   
-  /// Fetch available permissions
+  /// Fetch available permissions and update mapping
   Future<List<dynamic>> fetchPermissions() async {
     try {
       if (_roleRepository == null) _initializeRepositories();
-      return await _roleRepository!.fetchPermissions();
+      final permissions = await _roleRepository!.fetchPermissions();
+      
+      // Update permission map
+      _permissionIdToCodename.clear();
+      for (var perm in permissions) {
+        if (perm is Map) {
+          final id = perm['id'] as int?;
+          final codename = perm['codename'] as String?;
+          if (id != null && codename != null) {
+            _permissionIdToCodename[id] = codename;
+          }
+        }
+      }
+      
+      // If current user has integer permissions, map them now
+      if (_currentUser != null && _currentUser!.permissions != null) {
+        final hasIntPermissions = _currentUser!.permissions!.any((p) => int.tryParse(p.toString()) != null);
+        if (hasIntPermissions) {
+          final mappedPermissions = _currentUser!.permissions!.map((p) {
+            final id = int.tryParse(p.toString());
+            if (id != null) {
+              return _permissionIdToCodename[id] ?? p.toString();
+            }
+            return p.toString();
+          }).toList();
+          
+          _currentUser = UserModel(
+            id: _currentUser!.id,
+            name: _currentUser!.name,
+            email: _currentUser!.email,
+            role: _currentUser!.role,
+            phone: _currentUser!.phone,
+            isActive: _currentUser!.isActive,
+            createdAt: _currentUser!.createdAt,
+            permissions: mappedPermissions,
+            assignedRouters: _currentUser!.assignedRouters,
+            country: _currentUser!.country,
+            address: _currentUser!.address,
+            city: _currentUser!.city,
+            numberOfRouters: _currentUser!.numberOfRouters,
+          );
+          notifyListeners();
+        }
+      }
+      
+      return permissions;
     } catch (e) {
       if (kDebugMode) print('❌ [AppState] Fetch permissions error: $e');
       rethrow;
