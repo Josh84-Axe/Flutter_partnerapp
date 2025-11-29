@@ -1,7 +1,7 @@
 import 'permission_mapping.dart';
 
 class Permissions {
-  static const String roleOwner = 'owner';
+  static const String roleOwner = 'Administrator';
   static const String roleWorker = 'worker';
   
   // Legacy methods (kept for backward compatibility)
