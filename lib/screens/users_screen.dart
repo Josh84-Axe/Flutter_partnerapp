@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
@@ -426,6 +427,16 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
   void _showUserMenu(BuildContext context, user) {
     final currentUser = context.read<AppState>().currentUser;
     if (currentUser == null) return;
+    
+    // Debug logging
+    if (kDebugMode) {
+      print('🔍 [UsersScreen] Current user role: ${currentUser.role}');
+      print('🔍 [UsersScreen] Current user permissions: ${currentUser.permissions}');
+      print('🔍 [UsersScreen] canEditUsers: ${Permissions.canEditUsers(currentUser.role, currentUser.permissions)}');
+      print('🔍 [UsersScreen] canViewUsers: ${Permissions.canViewUsers(currentUser.role, currentUser.permissions)}');
+      print('🔍 [UsersScreen] canDeleteUsers: ${Permissions.canDeleteUsers(currentUser.role, currentUser.permissions)}');
+    }
+    
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -500,6 +511,18 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                     ),
                   );
                 },
+              ),
+            // Show message if no permissions
+            if (!Permissions.canEditUsers(currentUser.role, currentUser.permissions) &&
+                !Permissions.canViewUsers(currentUser.role, currentUser.permissions) &&
+                !Permissions.canDeleteUsers(currentUser.role, currentUser.permissions))
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'You don\'t have permission to manage users',
+                  style: TextStyle(color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
               ),
           ],
         ),
@@ -599,6 +622,12 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
   void _showWorkerMenu(BuildContext context, worker) {
     final currentUser = context.read<AppState>().currentUser;
     if (currentUser == null) return;
+    
+    // Debug logging
+    if (kDebugMode) {
+      print('🔍 [UsersScreen] Worker menu - Current user role: ${currentUser.role}');
+      print('🔍 [UsersScreen] Worker menu - Current user permissions: ${currentUser.permissions}');
+    }
     
     showModalBottomSheet(
       context: context,
