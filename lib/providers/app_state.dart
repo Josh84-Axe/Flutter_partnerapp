@@ -1773,7 +1773,9 @@ class AppState with ChangeNotifier {
   Future<List<dynamic>> fetchPermissions() async {
     try {
       if (_roleRepository == null) _initializeRepositories();
+      if (kDebugMode) print('🔐 [AppState] Fetching permissions...');
       final permissions = await _roleRepository!.fetchPermissions();
+      if (kDebugMode) print('✅ [AppState] Fetched ${permissions.length} permissions');
       
       // Update permission map
       _permissionIdToCodename.clear();
@@ -1817,13 +1819,6 @@ class AppState with ChangeNotifier {
           notifyListeners();
         }
       }
-      
-      if (kDebugMode) print('🔐 [AppState] Fetching permissions...');
-      final permissions = await _roleRepository!.fetchPermissions();
-      if (kDebugMode) print('✅ [AppState] Fetched ${permissions.length} permissions');
-      
-      // Map permissions if needed
-      // ... existing mapping logic ...
       
       return permissions;
     } catch (e) {
