@@ -355,12 +355,20 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                     ),
                     items: appState.dataLimits.isEmpty
                         ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
-                        : appState.dataLimits.map((limit) {
-                            return DropdownMenuItem(
-                              value: limit, 
-                              child: Text(_getLabel(limit, 'data_limit'))
-                            );
-                          }).toList(),
+                        : [
+                            // Add Unlimited option first
+                            const DropdownMenuItem(
+                              value: 'unlimited',
+                              child: Text('Unlimited'),
+                            ),
+                            // Then add all configured data limits
+                            ...appState.dataLimits.map((limit) {
+                              return DropdownMenuItem(
+                                value: limit, 
+                                child: Text(_getLabel(limit, 'data_limit'))
+                              );
+                            }),
+                          ],
                     onChanged: (value) => setState(() => _selectedDataLimit = value),
                     validator: (value) {
                       if (value == null) {
@@ -492,9 +500,9 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
     
     switch (type) {
       case 'data_limit':
-        if (item['gb'] != null) return '${item['gb']} GB';
-        if (item['value'] != null) return '${item['value']} GB';
-        if (item['limit'] != null) return '${item['limit']} GB';
+        if (item['gb'] != null) return item['gb'].toString();
+        if (item['value'] != null) return item['value'].toString();
+        if (item['limit'] != null) return item['limit'].toString();
         break;
       case 'validity':
         if (item['days'] != null) return '${item['days']} Days';
@@ -535,8 +543,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
         return null;
       }
 
-      final dataLimitId = _selectedDataLimit is String && 
-          HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
+      final dataLimitId = _selectedDataLimit == 'unlimited'
           ? null
           : extractId(_selectedDataLimit, 'data_limit');
       
