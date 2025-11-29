@@ -15,11 +15,20 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
   String? _selectedRole;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppState>().loadWorkers();
+      context.read<AppState>().loadRoles();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     final appState = context.watch<AppState>();
-    final users = appState.users;
+    final workers = appState.workers;
 
     return Scaffold(
       appBar: AppBar(
@@ -35,7 +44,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
             padding: const EdgeInsets.all(16),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'search_users'.tr(),
+                hintText: 'search_workers'.tr(),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -48,51 +57,53 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: users.length,
-              itemBuilder: (context, index) {
-                final user = users[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                      child: Text(
-                        user.name[0].toUpperCase(),
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
+            child: workers.isEmpty
+                ? Center(child: Text('no_workers_found'.tr()))
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: workers.length,
+                    itemBuilder: (context, index) {
+                      final worker = workers[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                            child: Text(
+                              worker.name.isNotEmpty ? worker.name[0].toUpperCase() : '?',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            worker.name,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Text(worker.email),
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: _getRoleBadgeColor(worker.role).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              worker.role,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: _getRoleBadgeColor(worker.role),
+                              ),
+                            ),
+                          ),
+                          onTap: () {
+                            _showRoleSelector(context, worker);
+                          },
                         ),
-                      ),
-                    ),
-                    title: Text(
-                      user.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(user.email),
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _getRoleBadgeColor(user.role).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        user.role,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: _getRoleBadgeColor(user.role),
-                        ),
-                      ),
-                    ),
-                    onTap: () {
-                      _showRoleSelector(context, user);
+                      );
                     },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
@@ -102,6 +113,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
   Color _getRoleBadgeColor(String role) {
     switch (role.toLowerCase()) {
       case 'admin':
+      case 'administrator':
         return Colors.purple;
       case 'manager':
         return Colors.teal;
@@ -112,7 +124,10 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
     }
   }
 
-  void _showRoleSelector(BuildContext context, user) {
+  void _showRoleSelector(BuildContext context, worker) {
+    final appState = context.read<AppState>();
+    final roles = appState.roles;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -147,47 +162,56 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  user.name,
+                  worker.name,
                   style: TextStyle(
                     fontSize: 16,
                     color: AppTheme.textLight,
                   ),
                 ),
                 const SizedBox(height: 24),
-                _buildRoleOption(
-                  context,
-                  setModalState,
-                  'Administrator',
-                  'admin',
-                  user.role.toLowerCase() == 'admin',
-                ),
-                const SizedBox(height: 12),
-                _buildRoleOption(
-                  context,
-                  setModalState,
-                  'Manager',
-                  'manager',
-                  user.role.toLowerCase() == 'manager',
-                ),
-                const SizedBox(height: 12),
-                _buildRoleOption(
-                  context,
-                  setModalState,
-                  'Worker',
-                  'worker',
-                  user.role.toLowerCase() == 'worker',
-                ),
+                if (roles.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text('no_roles_available'.tr()),
+                  )
+                else
+                  ...roles.map((role) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildRoleOption(
+                      context,
+                      setModalState,
+                      role.name,
+                      role.slug,
+                      worker.role.toLowerCase() == role.slug.toLowerCase() || worker.role.toLowerCase() == role.name.toLowerCase(),
+                    ),
+                  )),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('role_updated_to'.tr(namedArgs: {'role': _selectedRole ?? user.role})),
-                        ),
-                      );
+                    onPressed: () async {
+                      if (_selectedRole != null) {
+                        Navigator.pop(context);
+                        try {
+                          await appState.assignRoleToWorker(worker.username, _selectedRole!);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('role_updated_to'.tr(namedArgs: {'role': _selectedRole!})),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error assigning role: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      }
                     },
                     style: FilledButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
