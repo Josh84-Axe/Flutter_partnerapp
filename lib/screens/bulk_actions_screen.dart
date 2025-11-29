@@ -207,7 +207,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
           children: appState.plans.map((plan) {
             return ListTile(
               title: Text(plan.name),
-              subtitle: Text(CurrencyUtils.formatPrice(plan.price, partnerCountry)),
+              subtitle: Text(plan.priceDisplay),
               onTap: () {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(

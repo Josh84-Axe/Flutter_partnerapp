@@ -13,13 +13,18 @@ class PaymentService {
     await Future.delayed(const Duration(milliseconds: 500));
     
     return PlanModel(
-      id: 'plan_${DateTime.now().millisecondsSinceEpoch}',
+      id: DateTime.now().millisecondsSinceEpoch,
+      slug: 'mock-plan',
       name: planData['name'],
-      price: planData['price'],
-      dataLimitGB: planData['dataLimitGB'],
-      validityDays: planData['validityDays'],
-      speedMbps: planData['speedMbps'],
+      price: planData['price'].toString(),
+      priceDisplay: '${planData['price']} GHS',
+      dataLimit: planData['dataLimitGB'],
+      validity: planData['validityDays'] ?? 30,
+      formattedValidity: '${planData['validityDays']} Days',
+      validityValue: '${planData['validityDays']}d',
       isActive: true,
+      sharedUsers: 1,
+      sharedUsersLabel: '1 Device',
     );
   }
 

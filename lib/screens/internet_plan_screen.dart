@@ -165,8 +165,32 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                               children: [
                                 Text(
                                   plan.name,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  '${plan.dataLimit != null ? '${plan.dataLimit} GB' : 'Unlimited'} | ${plan.formattedValidity}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  plan.priceDisplay,
                                   style: const TextStyle(
-                              if (Permissions.canEditPlans(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (Permissions.canEditPlans(
                                 appState.currentUser?.role ?? '',
                                 appState.currentUser?.permissions,
                               ))

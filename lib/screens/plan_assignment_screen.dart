@@ -155,9 +155,9 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                             final currencySymbol = CurrencyUtils.getCurrencySymbol(partnerCountry);
                             
                             return DropdownMenuItem(
-                              value: plan.id,
+                              value: plan.id.toString(),
                               child: Text(
-                                '${plan.name} - $currencySymbol${plan.price.toStringAsFixed(2)}',
+                                '${plan.name} - ${plan.priceDisplay}',
                               ),
                             );
                           }).toList(),
@@ -198,18 +198,16 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                           ),
                           const SizedBox(height: 12),
                           ...appState.plans
-                              .where((p) => p.id == _selectedPlan)
+                              .where((p) => p.id.toString() == _selectedPlan)
                               .map((plan) {
-                            final partnerCountry = appState.currentUser?.country ?? 'TG';
-                            final currencySymbol = CurrencyUtils.getCurrencySymbol(partnerCountry);
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildDetailRow('plan_name'.tr(), plan.name),
-                                _buildDetailRow('price'.tr(), '$currencySymbol${plan.price.toStringAsFixed(2)}'),
-                                _buildDetailRow('data_limit'.tr(), '${plan.dataLimitGB} GB'),
-                                _buildDetailRow('validity'.tr(), '${plan.validityDays} ${'days'.tr()}'),
-                                _buildDetailRow('devices_allowed'.tr(), plan.deviceAllowed.toString()),
+                                _buildDetailRow('price'.tr(), plan.priceDisplay),
+                                _buildDetailRow('data_limit'.tr(), plan.dataLimit != null ? '${plan.dataLimit} GB' : 'Unlimited'),
+                                _buildDetailRow('validity'.tr(), plan.formattedValidity),
+                                _buildDetailRow('devices_allowed'.tr(), plan.sharedUsersLabel),
                               ],
                             );
                           }),
