@@ -139,6 +139,21 @@ class AppState with ChangeNotifier {
   List<dynamic> _idleTimeouts = [];
   List<dynamic> _validityPeriods = [];
   List<dynamic> _dataLimits = [];
+  
+  final List<NotificationModel> _notifications = [];
+  final List<ProfileModel> _profiles = [];
+  LanguageModel _selectedLanguage = LanguageModel.availableLanguages.first;
+  SubscriptionModel? _subscription;
+  List<SubscriptionPlanModel> _availableSubscriptionPlans = [];
+  
+  final Map<int, String> _permissionIdToCodename = {};
+  
+  // Getters
+  UserModel? get currentUser => _currentUser;
+  String? get partnerCountry => _partnerCountry;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  String? get lastWithdrawalId => _lastWithdrawalId;
   String? get registrationEmail => _registrationEmail;
   List<UserModel> get users => _users;
   List<RouterModel> get routers => _routers;
@@ -1782,7 +1797,7 @@ class AppState with ChangeNotifier {
               return _permissionIdToCodename[id] ?? p.toString();
             }
             return p.toString();
-          }).toList();
+          }).cast<String>().toList();
           
           _currentUser = UserModel(
             id: _currentUser!.id,
