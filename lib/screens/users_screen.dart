@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
+import '../models/worker_model.dart';
 import '../utils/app_theme.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/create_worker_dialog.dart';
@@ -538,6 +539,27 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // View Details
+            if (Permissions.canViewUsers(currentUser.role, currentUser.permissions))
+              ListTile(
+                leading: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
+                title: const Text('View Details'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showWorkerDetailsDialog(context, worker);
+                },
+              ),
+            // Edit Worker
+            if (Permissions.canEditUsers(currentUser.role, currentUser.permissions))
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('Edit Worker'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEditWorkerDialog(context, worker);
+                },
+              ),
+            // Assign/Change Role
             ListTile(
               leading: Icon(Icons.badge, color: Theme.of(context).colorScheme.primary),
               title: Text(worker.roleName != null ? 'Change Role' : 'Assign Role'),
@@ -546,6 +568,17 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 _showAssignRoleDialog(context, worker);
               },
             ),
+            // Assign Router
+            if (Permissions.canAssignRouters(currentUser.role))
+              ListTile(
+                leading: Icon(Icons.router, color: Theme.of(context).colorScheme.secondary),
+                title: const Text('Assign Router'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showAssignRouterDialog(context, worker);
+                },
+              ),
+            // Delete Worker
             if (Permissions.canDeleteUsers(currentUser.role, currentUser.permissions))
               ListTile(
                 leading: const Icon(Icons.delete, color: AppTheme.errorRed),
@@ -672,6 +705,198 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 }
               },
               child: Text('save'.tr()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showWorkerDetailsDialog(BuildContext context, WorkerModel worker) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Worker Details'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDetailRow('Name', worker.fullName),
+              _buildDetailRow('Email', worker.email),
+              _buildDetailRow('Username', worker.username),
+              _buildDetailRow('Role', worker.roleName ?? 'No role'),
+              _buildDetailRow('Status', worker.isActive ? 'Active' : 'Inactive'),
+              if (worker.assignedRouters != null && worker.assignedRouters!.isNotEmpty)
+                _buildDetailRow('Assigned Routers', worker.assignedRouters!.join(', ')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              '$label:',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            child: Text(value),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditWorkerDialog(BuildContext context, WorkerModel worker) {
+    final firstNameController = TextEditingController(text: worker.fullName.split(' ').first);
+    final lastNameController = TextEditingController(text: worker.fullName.split(' ').skip(1).join(' '));
+    final emailController = TextEditingController(text: worker.email);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Worker'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: firstNameController,
+                decoration: const InputDecoration(labelText: 'First Name'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: lastNameController,
+                decoration: const InputDecoration(labelText: 'Last Name'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () async {
+              try {
+                await context.read<AppState>().updateWorker(worker.username, {
+                  'first_name': firstNameController.text,
+                  'last_name': lastNameController.text,
+                  'email': emailController.text,
+                });
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Worker updated successfully')),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAssignRouterDialog(BuildContext context, WorkerModel worker) {
+    final appState = context.read<AppState>();
+    final routers = appState.routers;
+    String? selectedRouter;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('Assign Router to ${worker.fullName}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (routers.isEmpty)
+                const Text('No routers available')
+              else
+                DropdownButtonFormField<String>(
+                  value: selectedRouter,
+                  decoration: const InputDecoration(
+                    labelText: 'Select Router',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: routers.map((router) {
+                    return DropdownMenuItem(
+                      value: router.id,
+                      child: Text(router.name),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedRouter = value;
+                    });
+                  },
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('cancel'.tr()),
+            ),
+            FilledButton(
+              onPressed: selectedRouter == null
+                  ? null
+                  : () async {
+                      try {
+                        await appState.assignRouterToWorker(worker.username, selectedRouter!);
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Router assigned successfully')),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: ${e.toString()}'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    },
+              child: const Text('Assign'),
             ),
           ],
         ),

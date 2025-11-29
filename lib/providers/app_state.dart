@@ -1969,4 +1969,68 @@ class AppState with ChangeNotifier {
       rethrow;
     }
   }
+
+  /// Fetch worker details
+  Future<WorkerModel?> fetchWorkerDetails(String username) async {
+    try {
+      if (_collaboratorRepository == null) _initializeRepositories();
+      final data = await _collaboratorRepository!.fetchCollaboratorDetails(username);
+      if (data != null) {
+        return WorkerModel.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Fetch worker details error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update worker
+  Future<void> updateWorker(String username, Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      if (_collaboratorRepository == null) _initializeRepositories();
+      await _collaboratorRepository!.updateCollaborator(username, data);
+      await loadWorkers();
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  /// Assign router to worker
+  Future<void> assignRouterToWorker(String username, String routerId) async {
+    _setLoading(true);
+    try {
+      if (_collaboratorRepository == null) _initializeRepositories();
+      final success = await _collaboratorRepository!.assignRouter(username, {'router_id': routerId});
+      if (success) {
+        await loadWorkers();
+      }
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  /// Remove router from worker
+  Future<void> removeRouterFromWorker(String username, String routerId) async {
+    _setLoading(true);
+    try {
+      if (_collaboratorRepository == null) _initializeRepositories();
+      final success = await _collaboratorRepository!.removeRouter(username, routerId);
+      if (success) {
+        await loadWorkers();
+      }
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
 }

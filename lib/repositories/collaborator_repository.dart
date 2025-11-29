@@ -76,6 +76,63 @@ class CollaboratorRepository {
     }
   }
 
+  /// Get collaborator details
+  Future<Map<String, dynamic>?> fetchCollaboratorDetails(String username) async {
+    try {
+      if (kDebugMode) print('📋 [CollaboratorRepository] Fetching details for: $username');
+      final response = await _dio.get('/partner/collaborators/$username/details/');
+      if (kDebugMode) print('✅ [CollaboratorRepository] Details response: ${response.data}');
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('❌ [CollaboratorRepository] Fetch details error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update collaborator
+  Future<Map<String, dynamic>?> updateCollaborator(String username, Map<String, dynamic> data) async {
+    try {
+      if (kDebugMode) print('✏️ [CollaboratorRepository] Updating collaborator: $username');
+      if (kDebugMode) print('📦 [CollaboratorRepository] Update data: $data');
+      final response = await _dio.put('/partner/collaborators/$username/update/', data: data);
+      if (kDebugMode) print('✅ [CollaboratorRepository] Update response: ${response.data}');
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('❌ [CollaboratorRepository] Update error: $e');
+      rethrow;
+    }
+  }
+
+  /// Assign router to collaborator
+  Future<bool> assignRouter(String username, Map<String, dynamic> routerData) async {
+    try {
+      if (kDebugMode) print('🔗 [CollaboratorRepository] Assigning router to: $username');
+      if (kDebugMode) print('📦 [CollaboratorRepository] Router data: $routerData');
+      await _dio.post(
+        '/partner/collaborators/$username/assign-router/',
+        data: routerData,
+      );
+      if (kDebugMode) print('✅ [CollaboratorRepository] Router assigned successfully');
+      return true;
+    } catch (e) {
+      if (kDebugMode) print('❌ [CollaboratorRepository] Assign router error: $e');
+      return false;
+    }
+  }
+
+  /// Remove router from collaborator
+  Future<bool> removeRouter(String username, String routerId) async {
+    try {
+      if (kDebugMode) print('🔓 [CollaboratorRepository] Removing router from: $username');
+      await _dio.delete('/partner/collaborators/$username/routers/$routerId/');
+      if (kDebugMode) print('✅ [CollaboratorRepository] Router removed successfully');
+      return true;
+    } catch (e) {
+      if (kDebugMode) print('❌ [CollaboratorRepository] Remove router error: $e');
+      return false;
+    }
+  }
+
   // ==================== Roles ====================
 
   /// Fetch list of roles

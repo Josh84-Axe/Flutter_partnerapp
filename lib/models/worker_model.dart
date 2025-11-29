@@ -6,6 +6,7 @@ class WorkerModel {
   final String? roleSlug;
   final String? roleName;
   final List<String>? permissions;
+  final List<String>? assignedRouters;
   final bool isActive;
   final DateTime createdAt;
 
@@ -17,6 +18,7 @@ class WorkerModel {
     this.roleSlug,
     this.roleName,
     this.permissions,
+    this.assignedRouters,
     required this.isActive,
     required this.createdAt,
   });
@@ -36,6 +38,9 @@ class WorkerModel {
       permissions: (json['permissions'] as List?)
           ?.map((e) => e.toString())
           .toList(),
+      assignedRouters: (json['assigned_routers'] as List?)
+          ?.map((e) => e.toString())
+          .toList(),
       isActive: json['is_active'] ?? true,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
@@ -52,6 +57,7 @@ class WorkerModel {
       'role': roleSlug,
       'role_name': roleName,
       'permissions': permissions,
+      'assigned_routers': assignedRouters,
       'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
     };
