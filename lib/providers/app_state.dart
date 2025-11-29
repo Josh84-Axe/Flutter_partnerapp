@@ -943,22 +943,7 @@ class AppState with ChangeNotifier {
       // CACHE-FIRST: Try to load from cache first
       final cachedData = await _cacheService.getData('plans', isCritical: true);
       if (cachedData != null && cachedData is List) {
-        _plans = cachedData.map<PlanModel>((data) {
-          final validityMinutes = (data['validity'] as num?)?.toInt() ?? 0;
-          final validityDays = validityMinutes > 0 ? (validityMinutes / 1440).ceil() : 1;
-          
-          return PlanModel(
-            id: data['id']?.toString() ?? '',
-            name: data['name']?.toString() ?? 'Plan',
-            price: double.tryParse(data['price']?.toString() ?? '0') ?? 0.0,
-            dataLimitGB: (data['data_limit'] as num?)?.toInt() ?? 0,
-            validityDays: validityDays,
-            speedMbps: 10,
-            isActive: data['is_active'] == true,
-            deviceAllowed: (data['shared_users'] as num?)?.toInt() ?? 1,
-            userProfile: data['profile_name']?.toString() ?? 'Basic',
-          );
-        }).toList();
+        _plans = cachedData.map<PlanModel>((data) => PlanModel.fromJson(data)).toList();
         notifyListeners();
         if (kDebugMode) print('📦 [AppState] Loaded ${_plans.length} plans from cache');
       }
@@ -968,23 +953,7 @@ class AppState with ChangeNotifier {
       
       // Fetch plans from API using PlanRepository (not WalletRepository)
       final plansData = await _planRepository!.fetchPlans();
-      _plans = plansData.map<PlanModel>((data) {
-        // API returns 'validity' in minutes, convert to days
-        final validityMinutes = (data['validity'] as num?)?.toInt() ?? 0;
-        final validityDays = validityMinutes > 0 ? (validityMinutes / 1440).ceil() : 1;
-        
-        return PlanModel(
-          id: data['id']?.toString() ?? '',
-          name: data['name']?.toString() ?? 'Plan',
-          price: double.tryParse(data['price']?.toString() ?? '0') ?? 0.0,
-          dataLimitGB: (data['data_limit'] as num?)?.toInt() ?? 0,
-          validityDays: validityDays,
-          speedMbps: 10, // API doesn't provide speed, use default
-          isActive: data['is_active'] == true,
-          deviceAllowed: (data['shared_users'] as num?)?.toInt() ?? 1,
-          userProfile: data['profile_name']?.toString() ?? 'Basic',
-        );
-      }).toList();
+      _plans = plansData.map<PlanModel>((data) => PlanModel.fromJson(data)).toList();
       
       // Save fresh data to cache
       await _cacheService.saveData('plans', plansData, isCritical: true);

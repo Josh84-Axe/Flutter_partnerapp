@@ -126,7 +126,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                         ),
                                       ),
                                       Text(
-                                        CurrencyUtils.formatPrice(plan.price, appState.partnerCountry),
+                                        plan.priceDisplay,
                                         style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
@@ -140,19 +140,19 @@ class _PlansScreenState extends State<PlansScreen> {
                                   _buildInfoChip(
                                     Icons.cloud_download,
                                     'Data Limit',
-                                    '${plan.dataLimitGB} GB',
+                                    plan.dataLimit != null ? '${plan.dataLimit} GB' : 'Unlimited',
                                   ),
                                   const SizedBox(height: 8),
                                   _buildInfoChip(
                                     Icons.devices,
                                     'Device Allowed',
-                                    '${plan.deviceAllowed} devices',
+                                    plan.sharedUsersLabel,
                                   ),
                                   const SizedBox(height: 8),
                                   _buildInfoChip(
                                     Icons.calendar_month,
                                     'Validity',
-                                    '${plan.validityDays} days',
+                                    plan.formattedValidity,
                                   ),
                                   const SizedBox(height: 16),
                                   
@@ -163,7 +163,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                       onPressed: () {
                                         Navigator.of(context).pushNamed(
                                           '/assign-user',
-                                          arguments: {'planId': plan.id, 'planName': plan.name},
+                                          arguments: {'planId': plan.id.toString(), 'planName': plan.name},
                                         );
                                       },
                                       icon: const Icon(Icons.person_add, size: 18),
@@ -552,7 +552,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
 
       final dataLimitValue = _selectedDataLimit is String && 
           HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
-          ? 999999
+          ? null
           : extractValue(_selectedDataLimit, 'data_limit');
       
       final validityDays = extractValue(_selectedValidity, 'validity');
@@ -574,7 +574,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
 
       final appState = context.read<AppState>();
       if (widget.planData != null && widget.planData!['id'] != null) {
-        await appState.updatePlan(widget.planData!['id'], data);
+        await appState.updatePlan(widget.planData!['slug']?.toString() ?? widget.planData!['id'].toString(), data);
       } else {
         await appState.createPlan(data);
       }
@@ -625,7 +625,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
     if (confirmed == true && mounted) {
       setState(() => _isLoading = true);
       try {
-        await context.read<AppState>().deletePlan(widget.planData!['id']);
+        await context.read<AppState>().deletePlan(widget.planData!['slug']?.toString() ?? widget.planData!['id'].toString());
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(

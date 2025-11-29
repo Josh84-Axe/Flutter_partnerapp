@@ -78,7 +78,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
             onPressed: () async {
               Navigator.pop(context);
               try {
-                await context.read<AppState>().deletePlan(plan.id);
+                await context.read<AppState>().deletePlan(plan.slug);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('plan_deleted_successfully'.tr())),
@@ -166,34 +166,6 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                 Text(
                                   plan.name,
                                   style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  '${plan.dataLimitGB} GB | ${plan.speedMbps} Mbps | ${plan.validityDays} days',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  CurrencyUtils.formatPrice(plan.price, partnerCountry),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
                               if (Permissions.canEditPlans(
                                 appState.currentUser?.role ?? '',
                                 appState.currentUser?.permissions,

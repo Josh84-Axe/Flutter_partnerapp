@@ -64,13 +64,16 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                     itemCount: workers.length,
                     itemBuilder: (context, index) {
                       final worker = workers[index];
+                      final displayName = worker.fullName.isNotEmpty ? worker.fullName : worker.username;
+                      final displayRole = worker.roleName ?? worker.roleSlug ?? 'No Role';
+                      
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
                           leading: CircleAvatar(
                             backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                             child: Text(
-                              worker.name.isNotEmpty ? worker.name[0].toUpperCase() : '?',
+                              displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
@@ -78,22 +81,22 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                             ),
                           ),
                           title: Text(
-                            worker.name,
+                            displayName,
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                           subtitle: Text(worker.email),
                           trailing: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: _getRoleBadgeColor(worker.role).withValues(alpha: 0.1),
+                              color: _getRoleBadgeColor(worker.roleSlug ?? '').withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              worker.role,
+                              displayRole,
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: _getRoleBadgeColor(worker.role),
+                                color: _getRoleBadgeColor(worker.roleSlug ?? ''),
                               ),
                             ),
                           ),
@@ -127,6 +130,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
   void _showRoleSelector(BuildContext context, worker) {
     final appState = context.read<AppState>();
     final roles = appState.roles;
+    final displayName = worker.fullName.isNotEmpty ? worker.fullName : worker.username;
 
     showModalBottomSheet(
       context: context,
@@ -162,7 +166,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  worker.name,
+                  displayName,
                   style: TextStyle(
                     fontSize: 16,
                     color: AppTheme.textLight,
@@ -175,16 +179,22 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                     child: Text('no_roles_available'.tr()),
                   )
                 else
-                  ...roles.map((role) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _buildRoleOption(
-                      context,
-                      setModalState,
-                      role.name,
-                      role.slug,
-                      worker.role.toLowerCase() == role.slug.toLowerCase() || worker.role.toLowerCase() == role.name.toLowerCase(),
-                    ),
-                  )),
+                  ...roles.map((role) {
+                    final currentRoleSlug = worker.roleSlug?.toLowerCase() ?? '';
+                    final isCurrent = currentRoleSlug == role.slug.toLowerCase() || 
+                                      currentRoleSlug == role.name.toLowerCase();
+                    
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _buildRoleOption(
+                        context,
+                        setModalState,
+                        role.name,
+                        role.slug,
+                        isCurrent,
+                      ),
+                    );
+                  }),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
