@@ -140,9 +140,11 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
                             Text('no_permissions_available'.tr())
                           else
                             ..._availablePermissions.map((perm) {
-                              final id = perm['id'] as int;
-                              final name = perm['name'] as String;
-                              final codename = perm['codename'] as String;
+                              final id = perm['id'] is int ? perm['id'] as int : int.tryParse(perm['id'].toString()) ?? 0;
+                              final name = perm['name']?.toString() ?? 'Unknown';
+                              final codename = perm['codename']?.toString() ?? 'unknown';
+                              
+                              if (id == 0) return const SizedBox.shrink();
                               
                               return CheckboxListTile(
                                 title: Text(name),

@@ -27,11 +27,24 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    
+    // Restore tab index if saved
+    // We use a post-frame callback to set the index to avoid initial animation glitches
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final savedIndex = PageStorage.of(context).readState(context, identifier: 'users_tab_index') as int?;
+      if (savedIndex != null && savedIndex != _tabController.index) {
+        _tabController.animateTo(savedIndex);
+      }
+    });
+
     _tabController.addListener(() {
+      // Save tab index
       if (!_tabController.indexIsChanging) {
+        PageStorage.of(context).writeState(context, _tabController.index, identifier: 'users_tab_index');
         setState(() {});
       }
     });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppState>().loadUsers();
       context.read<AppState>().loadWorkers();
