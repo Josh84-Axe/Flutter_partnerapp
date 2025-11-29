@@ -653,12 +653,12 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                   labelText: 'role'.tr(),
                   border: const OutlineInputBorder(),
                 ),
-                items: roles.map((role) {
-                  return DropdownMenuItem(
-                    value: role.id,
-                    child: Text(role.name),
-                  );
-                }).toList(),
+                  items: roles.map((role) {
+                    return DropdownMenuItem(
+                      value: role.slug,
+                      child: Text(role.name),
+                    );
+                  }).toList(),
                 onChanged: (value) {
                   setState(() {
                     selectedRole = value;

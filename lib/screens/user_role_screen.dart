@@ -102,7 +102,7 @@ class _UserRoleScreenState extends State<UserRoleScreen> {
           ),
           FilledButton(
             onPressed: () {
-              context.read<AppState>().deleteRole(role.id);
+              context.read<AppState>().deleteRole(role.slug);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('role_deleted'.tr())),

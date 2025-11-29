@@ -74,7 +74,8 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
     };
 
     if (widget.roleData != null) {
-      context.read<AppState>().updateRole(widget.roleData!['slug'] ?? widget.roleData!['id'], data);
+      final slug = widget.roleData!['slug'] ?? widget.roleData!['id'];
+      context.read<AppState>().updateRole(slug, data);
     } else {
       context.read<AppState>().createRole(data);
     }
