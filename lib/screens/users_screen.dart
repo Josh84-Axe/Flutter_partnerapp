@@ -27,6 +27,11 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppState>().loadUsers();
       context.read<AppState>().loadWorkers();

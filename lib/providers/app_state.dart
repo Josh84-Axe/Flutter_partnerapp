@@ -1818,6 +1818,13 @@ class AppState with ChangeNotifier {
         }
       }
       
+      if (kDebugMode) print('🔐 [AppState] Fetching permissions...');
+      final permissions = await _roleRepository!.fetchPermissions();
+      if (kDebugMode) print('✅ [AppState] Fetched ${permissions.length} permissions');
+      
+      // Map permissions if needed
+      // ... existing mapping logic ...
+      
       return permissions;
     } catch (e) {
       if (kDebugMode) print('❌ [AppState] Fetch permissions error: $e');

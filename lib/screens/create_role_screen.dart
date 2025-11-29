@@ -34,7 +34,10 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
 
   Future<void> _loadPermissions() async {
     try {
-      final permissions = await context.read<AppState>().fetchPermissions();
+      // Add a timeout to prevent infinite loading
+      final permissions = await context.read<AppState>().fetchPermissions()
+          .timeout(const Duration(seconds: 10));
+      
       if (mounted) {
         setState(() {
           _availablePermissions = permissions;
@@ -57,7 +60,15 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading permissions: $e')),
+          SnackBar(
+            content: Text('Error loading permissions: $e'),
+            backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: _loadPermissions,
+            ),
+          ),
         );
       }
     }
