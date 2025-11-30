@@ -37,6 +37,7 @@ import 'screens/config/data_limit_config_screen.dart';
 import 'screens/config/shared_user_config_screen.dart';
 import 'screens/config/additional_device_config_screen.dart';
 import 'screens/internet_plan_screen.dart';
+import 'screens/internet_plans_settings_screen.dart';
 import 'screens/subscription_management_screen.dart';
 import 'screens/router_settings_screen.dart';
 import 'screens/add_router_screen.dart';
@@ -149,6 +150,7 @@ class HotspotPartnerApp extends StatelessWidget {
         '/config/shared-users': (context) => const SharedUserConfigScreen(),
         '/config/additional-devices': (context) => const AdditionalDeviceConfigScreen(),
         '/internet-plan': (context) => const PlansScreen(),
+        '/internet-plans-settings': (context) => const InternetPlansSettingsScreen(),
         '/subscription-management': (context) => const SubscriptionManagementScreen(),
         '/router-settings': (context) => const RouterSettingsScreen(),
         '/add-router': (context) => const AddRouterScreen(),
