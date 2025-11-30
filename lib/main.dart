@@ -42,6 +42,7 @@ import 'screens/subscription_management_screen.dart';
 import 'screens/router_settings_screen.dart';
 import 'screens/add_router_screen.dart';
 import 'screens/create_edit_internet_plan_screen.dart';
+import 'screens/create_edit_plan_screen.dart';
 import 'screens/assign_user_screen.dart';
 import 'screens/create_role_screen.dart';
 import 'screens/worker_profile_setup_screen.dart';
