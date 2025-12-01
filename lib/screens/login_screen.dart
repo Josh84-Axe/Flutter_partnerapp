@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
+import '../utils/ip_geolocation.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _addressController = TextEditingController();
   final _cityController = TextEditingController();
   final _numberOfRoutersController = TextEditingController();
-  String? _selectedCountry = 'TG'; // Default to Togo
+  String? _selectedCountry; // Will be set from IP geolocation
   
   // Comprehensive ISO country codes
   final Map<String, String> _countries = {
@@ -68,6 +69,22 @@ class _LoginScreenState extends State<LoginScreen> {
     'UZ': 'Uzbekistan', 'VU': 'Vanuatu', 'VA': 'Vatican City', 'VE': 'Venezuela', 'VN': 'Vietnam',
     'YE': 'Yemen', 'ZM': 'Zambia', 'ZW': 'Zimbabwe',
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _detectCountryFromIp();
+  }
+
+  /// Detect user's country from their IP address
+  Future<void> _detectCountryFromIp() async {
+    final countryCode = await IpGeolocation.detectCountryCode();
+    if (mounted) {
+      setState(() {
+        _selectedCountry = countryCode;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -189,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ignoreBlank: false,
                       autoValidateMode: AutovalidateMode.disabled,
                       selectorTextStyle: TextStyle(color: colorScheme.onSurface),
-                      initialValue: PhoneNumber(isoCode: _selectedCountry ?? 'TG'),
+                      initialValue: PhoneNumber(isoCode: _selectedCountry ?? 'GH'), // Use detected country or Ghana
                       textFieldController: _phoneController,
                       formatInput: true,
                       keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
