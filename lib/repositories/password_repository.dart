@@ -25,7 +25,7 @@ class PasswordRepository {
   Future<bool> requestPasswordResetOtp(String email) async {
     try {
       await _dio.post(
-        '/partner/password-reset-request-otp/',
+        '/partner/password-reset/request-otp/',
         data: {'email': email},
       );
       return true;
@@ -39,7 +39,7 @@ class PasswordRepository {
   Future<bool> verifyPasswordResetOtp(String email, String otp) async {
     try {
       await _dio.post(
-        '/partner/password-reset-otp-verify/',
+        '/partner/password-reset/verify-otp/',
         data: {'email': email, 'otp': otp},
       );
       return true;
@@ -53,12 +53,26 @@ class PasswordRepository {
   Future<bool> resetPassword(Map<String, dynamic> resetData) async {
     try {
       await _dio.post(
-        '/partner/reset-password/',
+        '/partner/password-reset/update-password/',
         data: resetData,
       );
       return true;
     } catch (e) {
       if (kDebugMode) print('Reset password error: $e');
+      return false;
+    }
+  }
+  
+  /// Resend password reset OTP
+  Future<bool> resendPasswordResetOtp(String email) async {
+    try {
+      await _dio.post(
+        '/partner/password-reset/resend-request-otp/',
+        data: {'email': email},
+      );
+      return true;
+    } catch (e) {
+      if (kDebugMode) print('Resend password reset OTP error: $e');
       return false;
     }
   }

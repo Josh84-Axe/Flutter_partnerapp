@@ -42,15 +42,30 @@ class _VerifyPasswordResetOtpScreenState
     });
 
     try {
-      // Navigate to reset password screen with email and OTP
-      // Note: OTP verification happens during password reset confirmation
-      Navigator.of(context).pushReplacementNamed(
-        '/reset-password',
-        arguments: {
-          'email': widget.email,
-          'otp': _otpController.text,
-        },
-      );
+      // Verify OTP with backend first
+      final success = await context.read<AppState>().verifyPasswordResetOtp(
+            widget.email,
+            _otpController.text,
+          );
+
+      if (!mounted) return;
+
+      if (success) {
+        // Navigate to reset password screen with email and OTP
+        Navigator.of(context).pushReplacementNamed(
+          '/reset-password',
+          arguments: {
+            'email': widget.email,
+            'otp': _otpController.text,
+          },
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid verification code. Please try again.'),
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
 
