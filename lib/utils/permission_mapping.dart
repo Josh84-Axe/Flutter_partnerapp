@@ -43,4 +43,25 @@ class PermissionMapping {
   static String getLabel(String permission) {
     return permissionLabels[permission] ?? permission;
   }
+
+  // Map API permission strings to internal constants
+  static const Map<String, String> apiToConstant = {
+    'Create Plans': PermissionConstants.createPlans,
+    'Read Plans': PermissionConstants.viewPlans,
+    'Update Plans': PermissionConstants.editPlans,
+    'Delete Plans': PermissionConstants.deletePlans,
+    'Create Users': PermissionConstants.createUsers,
+    'Read Users': PermissionConstants.viewUsers,
+    'Update Users': PermissionConstants.editUsers,
+    'Delete Users': PermissionConstants.deleteUsers,
+    'Router Management': PermissionConstants.manageRouters,
+    'Transaction Viewing': PermissionConstants.viewTransactions,
+    'Dashboard Access': 'dashboard_view', // New constant might be needed
+    'Setting Access': 'settings_view', // New constant might be needed
+    'Hotspot Profile Management': 'manage_hotspot_profiles', // New constant might be needed
+  };
+
+  static String? getConstant(String apiLabel) {
+    return apiToConstant[apiLabel];
+  }
 }

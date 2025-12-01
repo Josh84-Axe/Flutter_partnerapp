@@ -33,8 +33,8 @@ import '../repositories/role_repository.dart';
 import '../repositories/payment_method_repository.dart';
 import '../repositories/additional_device_repository.dart';
 import '../repositories/subscription_repository.dart';
-import '../utils/country_utils.dart';
 import '../utils/currency_utils.dart';
+import '../utils/permission_mapping.dart';
 import '../services/cache_service.dart';
 import 'package:flutter/foundation.dart';
 
@@ -251,23 +251,51 @@ class AppState with ChangeNotifier {
       );
       
       if (result['success'] == true) {
-        // Load profile to get user data
-        final profileData = await _partnerRepository!.fetchProfile();
-        if (profileData != null) {
-          // Unwrap data if nested
-          final data = profileData['data'] is Map ? profileData['data'] : profileData;
+        // Extract user data from login response if available
+        final loginData = result['data'];
+        Map<String, dynamic>? userData;
+        
+        if (loginData != null && loginData['user'] != null) {
+          userData = loginData['user'];
+        } else {
+          // Fallback to fetching profile if user data not in login response
+          final profileData = await _partnerRepository!.fetchProfile();
+          if (profileData != null) {
+            userData = profileData['data'] is Map ? profileData['data'] : profileData;
+          }
+        }
+
+        if (userData != null) {
+          // Extract permissions
+          List<String> mappedPermissions = [];
+          if (userData['role'] is Map && userData['role']['permissions'] is Map) {
+            final permsMap = userData['role']['permissions'] as Map;
+            permsMap.forEach((key, value) {
+              if (value == true) {
+                final constant = PermissionMapping.getConstant(key.toString());
+                if (constant != null) {
+                  mappedPermissions.add(constant);
+                } else {
+                  if (kDebugMode) print('⚠️ [AppState] Unknown permission label: $key');
+                }
+              }
+            });
+          }
           
+          if (kDebugMode) print('✅ [AppState] Mapped permissions: $mappedPermissions');
+
           _currentUser = UserModel(
-            id: data['id']?.toString() ?? '1',
-            name: '${data['first_name'] ?? ''} ${data['last_name'] ?? ''}'.trim(),
-            email: data['email']?.toString() ?? email,
-            role: data['role'] is Map ? (data['role']['name']?.toString() ?? 'Partner') : 'Partner',
+            id: userData['id']?.toString() ?? '1',
+            name: '${userData['first_name'] ?? ''} ${userData['last_name'] ?? ''}'.trim(),
+            email: userData['email']?.toString() ?? email,
+            role: userData['role'] is Map ? (userData['role']['name']?.toString() ?? 'Partner') : 'Partner',
+            permissions: mappedPermissions,
             isActive: true,
             createdAt: DateTime.now(),
           );
           
           // Extract country and set currency info
-          _partnerCountry = data['country']?.toString();
+          _partnerCountry = userData['country']?.toString();
           if (kDebugMode) print('🌍 [AppState] Partner country: $_partnerCountry');
           
           // Set currency info based on country (fallback mapping)
@@ -276,22 +304,16 @@ class AppState with ChangeNotifier {
           if (kDebugMode) print('💱 [AppState] Currency: $_partnerCurrencyCode ($_partnerCurrencySymbol)');
           
           // Parse subscription data if available
-          if (data['subscription'] != null) {
+          if (userData['subscription'] != null) {
             try {
               if (kDebugMode) print('📦 [AppState] Parsing subscription data');
-              _subscription = SubscriptionModel.fromJson(data['subscription']);
+              _subscription = SubscriptionModel.fromJson(userData['subscription']);
             } catch (e) {
               if (kDebugMode) print('❌ [AppState] Error parsing subscription: $e');
             }
           }
-          
-          // Fetch and map permissions
-          try {
-            await fetchPermissions();
-          } catch (e) {
-            if (kDebugMode) print('⚠️ [AppState] Failed to fetch permissions on login: $e');
-          }
         }
+
         // Load dashboard data in background - don't block login if it fails
         try {
           await loadDashboardData();
@@ -520,11 +542,30 @@ class AppState with ChangeNotifier {
                           'Togo'; // Default to Togo for West African partners
           if (kDebugMode) print('Partner country loaded: $_partnerCountry');
           
+          // Extract permissions
+          List<String> mappedPermissions = [];
+          if (data['role'] is Map && data['role']['permissions'] is Map) {
+            final permsMap = data['role']['permissions'] as Map;
+            permsMap.forEach((key, value) {
+              if (value == true) {
+                final constant = PermissionMapping.getConstant(key.toString());
+                if (constant != null) {
+                  mappedPermissions.add(constant);
+                } else {
+                  if (kDebugMode) print('⚠️ [AppState] Unknown permission label: $key');
+                }
+              }
+            });
+          }
+          
+          if (kDebugMode) print('✅ [AppState] Mapped permissions (checkAuthStatus): $mappedPermissions');
+
           _currentUser = UserModel(
             id: data['id']?.toString() ?? '1',
             name: '${data['first_name'] ?? ''} ${data['last_name'] ?? ''}'.trim(),
             email: data['email']?.toString() ?? '',
-            role: 'Partner',
+            role: data['role'] is Map ? (data['role']['name']?.toString() ?? 'Partner') : 'Partner',
+            permissions: mappedPermissions,
             isActive: true,
             createdAt: DateTime.now(),
           );

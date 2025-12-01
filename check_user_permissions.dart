@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+
 
 /// Quick script to check user role and permissions
 /// Run with: dart run check_user_permissions.dart
 void main() async {
   final dio = Dio(BaseOptions(
-    baseUrl: 'https://hotspot.sientey.com',
+    baseUrl: 'https://api.tiknetafrica.com/v1',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -23,6 +23,7 @@ void main() async {
       final data = loginResponse.data;
       
       print('\n✅ Login successful!\n');
+      print('📦 Full Response Data: $data');
       print('📋 User Information:');
       print('   Email: ${data['email']}');
       print('   Name: ${data['name']}');
