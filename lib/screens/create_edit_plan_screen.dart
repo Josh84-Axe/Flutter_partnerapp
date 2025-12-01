@@ -259,8 +259,8 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
         if (item['limit'] != null) return item['limit'].toString();
         break;
       case 'validity':
-        if (item['days'] != null) return '${item['days']} Days';
-        if (item['value'] != null) return '${item['value']} Days';
+        if (item['days'] != null) return '${item['days']}';
+        if (item['value'] != null) return '${item['value']}';
         break;
       case 'shared_users':
         if (item['count'] != null) return '${item['count']} Users';

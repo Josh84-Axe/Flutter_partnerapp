@@ -138,7 +138,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                   _buildInfoChip(
                                     Icons.cloud_download,
                                     'Data Limit',
-                                    plan.dataLimit != null ? '${plan.dataLimit} GB' : 'Unlimited',
+                                    _getDataLimitLabel(plan.dataLimit, appState),
                                   ),
                                   const SizedBox(height: 8),
                                   _buildInfoChip(
@@ -244,6 +244,29 @@ class _PlansScreenState extends State<PlansScreen> {
       // Reload plans after returning from create/edit screen
       context.read<AppState>().loadPlans();
     });
+  }
+
+  String _getDataLimitLabel(int? dataLimitId, AppState appState) {
+    if (dataLimitId == null) return 'Unlimited';
+    
+    // Find the configuration with this ID
+    try {
+      final config = appState.dataLimits.firstWhere(
+        (limit) => limit is Map && limit['id'] == dataLimitId,
+        orElse: () => null,
+      );
+      
+      if (config != null) {
+        if (config['gb'] != null) return '${config['gb']} GB';
+        if (config['value'] != null) return config['value'].toString();
+        if (config['limit'] != null) return config['limit'].toString();
+      }
+    } catch (e) {
+      // Ignore error and fallback
+    }
+    
+    // Fallback if not found (might be legacy value or just the ID)
+    return '$dataLimitId GB'; 
   }
 }
 

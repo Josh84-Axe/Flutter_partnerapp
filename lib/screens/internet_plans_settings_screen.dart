@@ -191,7 +191,7 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
                                 children: [
                                   _buildInfoRow(
                                     Icons.cloud_download_outlined,
-                                    plan.dataLimit != null ? '${plan.dataLimit} GB' : 'Unlimited',
+                                    _getDataLimitLabel(plan.dataLimit, appState),
                                   ),
                                   const SizedBox(height: 4),
                                   _buildInfoRow(
@@ -262,5 +262,28 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
         ),
       ],
     );
+  }
+
+  String _getDataLimitLabel(int? dataLimitId, AppState appState) {
+    if (dataLimitId == null) return 'Unlimited';
+    
+    // Find the configuration with this ID
+    try {
+      final config = appState.dataLimits.firstWhere(
+        (limit) => limit is Map && limit['id'] == dataLimitId,
+        orElse: () => null,
+      );
+      
+      if (config != null) {
+        if (config['gb'] != null) return '${config['gb']} GB';
+        if (config['value'] != null) return config['value'].toString();
+        if (config['limit'] != null) return config['limit'].toString();
+      }
+    } catch (e) {
+      // Ignore error and fallback
+    }
+    
+    // Fallback if not found (might be legacy value or just the ID)
+    return '$dataLimitId GB'; 
   }
 }
