@@ -20,8 +20,10 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadWalletBalance();
-      context.read<AppState>().loadTransactions();
+      final appState = context.read<AppState>();
+      appState.loadAllWalletBalances();
+      appState.loadAllTransactions();
+      appState.loadWithdrawals();
     });
   }
 
@@ -55,8 +57,9 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              appState.loadWalletBalance();
-              appState.loadTransactions();
+              appState.loadAllWalletBalances();
+              appState.loadAllTransactions();
+              appState.loadWithdrawals();
             },
           ),
         ],
@@ -93,11 +96,19 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  appState.formatMoney(appState.walletBalance),
+                  appState.formatMoney(appState.totalBalance),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Online: ${appState.formatMoney(appState.walletBalance)} • Assigned: ${appState.formatMoney(appState.assignedWalletBalance)}',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
                   ),
                 ),
               ],

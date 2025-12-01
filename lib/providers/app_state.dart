@@ -123,7 +123,10 @@ class AppState with ChangeNotifier {
   List<RouterModel> _routers = [];
   List<PlanModel> _plans = [];
   List<TransactionModel> _transactions = [];
-  double _walletBalance = 0.0;
+  double _walletBalance = 0.0; // Online purchases wallet
+  double _assignedWalletBalance = 0.0; // Assigned plans wallet
+  List<dynamic> _assignedWalletTransactions = []; // Assigned wallet transactions
+  List<dynamic> _withdrawals = []; // Withdrawal history
   List<HotspotProfileModel> _hotspotProfiles = [];
   List<RouterConfigurationModel> _routerConfigurations = [];
   List<RoleModel> _roles = [];
@@ -160,6 +163,10 @@ class AppState with ChangeNotifier {
   List<PlanModel> get plans => _plans;
   List<TransactionModel> get transactions => _transactions;
   double get walletBalance => _walletBalance;
+  double get assignedWalletBalance => _assignedWalletBalance;
+  double get totalBalance => _walletBalance + _assignedWalletBalance;
+  List<dynamic> get assignedWalletTransactions => _assignedWalletTransactions;
+  List<dynamic> get withdrawals => _withdrawals;
   List<HotspotProfileModel> get hotspotProfiles => _hotspotProfiles;
   List<RouterConfigurationModel> get routerConfigurations => _routerConfigurations;
   List<RoleModel> get roles => _roles;
@@ -614,64 +621,6 @@ class AppState with ChangeNotifier {
   
 
   
-  Future<void> loadDashboardData() async {
-    if (kDebugMode) print('📊 [AppState] Loading dashboard data...');
-    
-    // OPTIMIZATION: Load critical data first (blocking), then non-critical data in background
-    
-    // Phase 1: Load CRITICAL data that must be available immediately
-    // These are wrapped individually so one failure doesn't block others
-    final criticalFutures = [
-      loadPlans().catchError((e) {
-        if (kDebugMode) print('⚠️ Failed to load plans: $e');
-      }),
-      loadWalletBalance().catchError((e) {
-        if (kDebugMode) print('⚠️ Failed to load wallet balance: $e');
-      }),
-      loadSubscription().catchError((e) {
-        if (kDebugMode) print('⚠️ Failed to load subscription: $e');
-      }),
-    ];
-    
-    // Wait for critical data (with individual error handling)
-    await Future.wait(criticalFutures);
-    
-    // Phase 2: Load NON-CRITICAL data in background (don't block UI)
-    // These load asynchronously without blocking the dashboard from appearing
-    Future.wait([
-      loadUsers().catchError((e) {
-        if (kDebugMode) print('⚠️ Failed to load users: $e');
-      }),
-      loadRouters().catchError((e) {
-        if (kDebugMode) print('⚠️ Failed to load routers: $e');
-      }),
-      loadTransactions().catchError((e) {
-        if (kDebugMode) print('⚠️ Failed to load transactions: $e');
-      }),
-      loadNotifications().catchError((e) {
-        if (kDebugMode) print('⚠️ Failed to load notifications: $e');
-      }),
-      loadHotspotProfiles().catchError((e) {
-        if (kDebugMode) print('⚠️ Failed to load hotspot profiles: $e');
-      }),
-    ]).then((_) {
-      if (kDebugMode) print('✅ [AppState] Background data loaded');
-    });
-    
-    // Load real data from API instead of using placeholders
-    _roles = [];
-    
-    if (kDebugMode) {
-      print('✅ [AppState] Critical dashboard data loaded:');
-      print('   Plans: ${_plans.length}');
-      print('   Wallet Balance: $_walletBalance');
-    }
-    
-    // Load dynamic configurations in background
-    loadAllConfigurations().catchError((e) {
-      if (kDebugMode) print('⚠️ Failed to load configurations: $e');
-    });
-  }
 
   Future<void> loadAllConfigurations() async {
     if (kDebugMode) print('⚙️  [AppState] Loading configurations...');
@@ -789,6 +738,174 @@ class AppState with ChangeNotifier {
     } catch (e) {
       if (kDebugMode) print('❌ [AppState] Load subscription error: $e');
       _setError(e.toString());
+    }
+  }
+
+  /// Load wallet balance (online purchases)
+  Future<void> loadWalletBalance() async {
+    try {
+      if (_transactionRepository == null) _initializeRepositories();
+      
+      if (kDebugMode) print('💰 [AppState] Loading wallet balance...');
+      final balanceData = await _transactionRepository!.getWalletBalance();
+      
+      if (balanceData['balance'] != null) {
+        _walletBalance = (balanceData['balance'] as num).toDouble();
+        if (kDebugMode) print('✅ [AppState] Wallet balance loaded: $_walletBalance');
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Load wallet balance error: $e');
+      _setError(e.toString());
+    }
+  }
+
+  /// Load assigned wallet balance (assigned plans)
+  Future<void> loadAssignedWalletBalance() async {
+    try {
+      if (_transactionRepository == null) _initializeRepositories();
+      
+      if (kDebugMode) print('💰 [AppState] Loading assigned wallet balance...');
+      final balanceData = await _transactionRepository!.getAssignedWalletBalance();
+      
+      if (balanceData['balance'] != null) {
+        _assignedWalletBalance = (balanceData['balance'] as num).toDouble();
+        if (kDebugMode) print('✅ [AppState] Assigned wallet balance loaded: $_assignedWalletBalance');
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Load assigned wallet balance error: $e');
+      _setError(e.toString());
+    }
+  }
+
+  /// Load all wallet balances (both online and assigned)
+  Future<void> loadAllWalletBalances() async {
+    await Future.wait([
+      loadWalletBalance(),
+      loadAssignedWalletBalance(),
+    ]);
+  }
+
+  /// Load wallet transactions (online purchases)
+  Future<void> loadWalletTransactions() async {
+    try {
+      if (_transactionRepository == null) _initializeRepositories();
+      
+      if (kDebugMode) print('💳 [AppState] Loading wallet transactions...');
+      final transactionsData = await _transactionRepository!.getWalletTransactions();
+      
+      // Parse transactions into TransactionModel
+      _transactions = transactionsData.map((txn) {
+        return TransactionModel.fromJson(txn as Map<String, dynamic>);
+      }).toList();
+      
+      if (kDebugMode) print('✅ [AppState] Wallet transactions loaded: ${_transactions.length}');
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Load wallet transactions error: $e');
+      _setError(e.toString());
+    }
+  }
+
+  /// Load assigned wallet transactions
+  Future<void> loadAssignedWalletTransactions() async {
+    try {
+      if (_transactionRepository == null) _initializeRepositories();
+      
+      if (kDebugMode) print('💳 [AppState] Loading assigned wallet transactions...');
+      _assignedWalletTransactions = await _transactionRepository!.getAssignedWalletTransactions();
+      
+      if (kDebugMode) print('✅ [AppState] Assigned wallet transactions loaded: ${_assignedWalletTransactions.length}');
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Load assigned wallet transactions error: $e');
+      _setError(e.toString());
+    }
+  }
+
+  /// Load all transactions (both wallet types)
+  Future<void> loadAllTransactions() async {
+    await Future.wait([
+      loadWalletTransactions(),
+      loadAssignedWalletTransactions(),
+    ]);
+  }
+
+  /// Load withdrawal history
+  Future<void> loadWithdrawals() async {
+    try {
+      if (_transactionRepository == null) _initializeRepositories();
+      
+      if (kDebugMode) print('💸 [AppState] Loading withdrawals...');
+      _withdrawals = await _transactionRepository!.getWithdrawals();
+      
+      if (kDebugMode) print('✅ [AppState] Withdrawals loaded: ${_withdrawals.length}');
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Load withdrawals error: $e');
+      _setError(e.toString());
+    }
+  }
+
+  /// Request payout/withdrawal
+  Future<bool> requestPayout(double amount, String paymentMethodId) async {
+    try {
+      if (_transactionRepository == null) _initializeRepositories();
+      
+      if (kDebugMode) print('💸 [AppState] Requesting payout: $amount to method: $paymentMethodId');
+      
+      final withdrawalData = {
+        'amount': amount,
+        'payment_method_id': paymentMethodId,
+      };
+      
+      final result = await _transactionRepository!.createWithdrawal(withdrawalData);
+      
+      if (kDebugMode) print('✅ [AppState] Payout requested successfully: ${result['id']}');
+      
+      // Store withdrawal ID for tracking
+      _lastWithdrawalId = result['id']?.toString();
+      
+      // Reload wallet balance and transactions
+      await Future.wait([
+        loadAllWalletBalances(),
+        loadAllTransactions(),
+        loadWithdrawals(),
+      ]);
+      
+      return true;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Request payout error: $e');
+      _setError(e.toString());
+      return false;
+    }
+  }
+
+  /// Load complete dashboard data (including wallet and transactions)
+  Future<void> loadDashboardData() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+      
+      if (kDebugMode) print('📊 [AppState] Loading dashboard data...');
+      
+      await Future.wait([
+        loadAllWalletBalances(),
+        loadAllTransactions(),
+        loadWithdrawals(),
+      ]);
+      
+      if (kDebugMode) print('✅ [AppState] Dashboard data loaded successfully');
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Load dashboard data error: $e');
+      _isLoading = false;
+      _setError(e.toString());
+      notifyListeners();
     }
   }
 
@@ -1008,22 +1125,6 @@ class AppState with ChangeNotifier {
     }
   }
   
-  Future<void> loadWalletBalance() async {
-    try {
-      // FORCE REMOTE API: Always use real API (no mock fallback)
-      if (_walletRepository == null) _initializeRepositories();
-      
-      final balanceData = await _walletRepository!.fetchBalance();
-      if (balanceData != null) {
-        // API returns 'wallet_balance', not 'balance'
-        final balanceStr = balanceData['wallet_balance']?.toString() ?? '0.0';
-        _walletBalance = double.tryParse(balanceStr) ?? 0.0;
-      }
-      notifyListeners();
-    } catch (e) {
-      _setError(e.toString());
-    }
-  }
   
   Future<void> createUser(Map<String, dynamic> userData) async {
     _setLoading(true);
@@ -1132,32 +1233,6 @@ class AppState with ChangeNotifier {
     }
   }
   
-  Future<void> requestPayout(double amount, String method) async {
-    _setLoading(true);
-    try {
-      // FORCE REMOTE API: Use WalletRepository instead of mock PaymentService
-      if (_walletRepository == null) _initializeRepositories();
-      final response = await _walletRepository!.createWithdrawal({
-        'amount': amount,
-        'payment_method': method,
-      });
-      
-      // Store the withdrawal ID from the API response for tracking
-      if (response != null && response['data'] != null && response['data']['id'] != null) {
-        _lastWithdrawalId = response['data']['id'].toString();
-      } else if (response != null && response['id'] != null) {
-        _lastWithdrawalId = response['id'].toString();
-      }
-      
-      await loadTransactions();
-      await loadWalletBalance();
-      _setLoading(false);
-    } catch (e) {
-      _setError(e.toString());
-      _setLoading(false);
-      rethrow; // Re-throw to allow UI to handle error
-    }
-  }
   
   // ==================== Payment Method Management ====================
   

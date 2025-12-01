@@ -25,21 +25,21 @@ class RevenueBreakdownScreen extends StatelessWidget {
           _buildRevenueCard(
             context,
             'assigned_revenue'.tr(),
-            CurrencyUtils.formatPrice(1234.56, appState.partnerCountry),
+            appState.formatMoney(appState.assignedWalletBalance),
             'assigned_revenue_desc'.tr(),
             Icons.assignment_ind,
             Theme.of(context).colorScheme.primary,
-            () => _showTransactionModal(context),
+            () => _showTransactionModal(context, 'assigned'),
           ),
           const SizedBox(height: 16),
           _buildRevenueCard(
             context,
             'online_revenue'.tr(),
-            CurrencyUtils.formatPrice(789.01, appState.partnerCountry),
+            appState.formatMoney(appState.walletBalance),
             'online_revenue_desc'.tr(),
             Icons.credit_card,
             Theme.of(context).colorScheme.primaryContainer,
-            () => _showTransactionModal(context),
+            () => _showTransactionModal(context, 'online'),
           ),
         ],
       ),
@@ -139,7 +139,12 @@ class RevenueBreakdownScreen extends StatelessWidget {
     );
   }
 
-  void _showTransactionModal(BuildContext context) {
+  void _showTransactionModal(BuildContext context, String walletType) {
+    final appState = context.read<AppState>();
+    final transactions = walletType == 'assigned' 
+        ? appState.assignedWalletTransactions 
+        : appState.transactions;
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -200,52 +205,56 @@ class RevenueBreakdownScreen extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
-                    _buildTransactionItem(
-                      context,
-                      '${'plan_purchase'.tr()} - Pro',
-                      'Oct 26, 2023 - John Doe',
-                      '+${CurrencyUtils.formatPrice(25.00, context.read<AppState>().partnerCountry)}',
-                      Colors.green,
-                      Icons.add,
-                    ),
-                    _buildTransactionItem(
-                      context,
-                      '${'plan_assignment'.tr()} - Basic',
-                      'Oct 25, 2023 - Jane Smith',
-                      '+${CurrencyUtils.formatPrice(10.00, context.read<AppState>().partnerCountry)}',
-                      Colors.green,
-                      Icons.add,
-                    ),
-                    _buildTransactionItem(
-                      context,
-                      '${'refund'.tr()} - Pro Plan',
-                      'Oct 24, 2023 - Mike Johnson',
-                      '-${CurrencyUtils.formatPrice(25.00, context.read<AppState>().partnerCountry)}',
-                      Colors.red,
-                      Icons.remove,
-                    ),
-                    _buildTransactionItem(
-                      context,
-                      '${'plan_assignment'.tr()} - Business',
-                      'Oct 23, 2023 - Sarah Chen',
-                      '+${CurrencyUtils.formatPrice(50.00, context.read<AppState>().partnerCountry)}',
-                      Colors.green,
-                      Icons.add,
-                    ),
-                    _buildTransactionItem(
-                      context,
-                      '${'plan_purchase'.tr()} - Basic',
-                      'Oct 22, 2023 - Alex Wilson',
-                      '+${CurrencyUtils.formatPrice(15.00, context.read<AppState>().partnerCountry)}',
-                      Colors.green,
-                      Icons.add,
-                    ),
-                  ],
-                ),
+                child: transactions.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.receipt_long, size: 64, color: Colors.grey[400]),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No transactions yet',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scrollController,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: transactions.length,
+                        itemBuilder: (context, index) {
+                          final txn = transactions[index];
+                          final description = txn is Map 
+                              ? (txn['description']?.toString() ?? 'Transaction')
+                              : txn.description;
+                          final amount = txn is Map
+                              ? (txn['amount'] as num?)?.toDouble() ?? 0.0
+                              : txn.amount;
+                          final createdAt = txn is Map
+                              ? (txn['created_at'] != null 
+                                  ? DateTime.tryParse(txn['created_at'].toString()) ?? DateTime.now()
+                                  : DateTime.now())
+                              : txn.createdAt;
+                          final type = txn is Map
+                              ? (txn['type']?.toString() ?? 'revenue')
+                              : txn.type;
+                          
+                          final isRevenue = type == 'revenue';
+                          
+                          return _buildTransactionItem(
+                            context,
+                            description,
+                            DateFormat('MMM dd, yyyy • HH:mm').format(createdAt),
+                            '${isRevenue ? '+' : '-'}${appState.formatMoney(amount.abs())}',
+                            isRevenue ? Colors.green : Colors.red,
+                            isRevenue ? Icons.add : Icons.remove,
+                          );
+                        },
+                      ),
               ),
             ],
           ),

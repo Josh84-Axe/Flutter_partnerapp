@@ -113,11 +113,19 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        appState.formatMoney(appState.walletBalance),
+                        appState.formatMoney(appState.totalBalance),
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.successGreen,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Online: ${appState.formatMoney(appState.walletBalance)} • Assigned: ${appState.formatMoney(appState.assignedWalletBalance)}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.textLight,
                         ),
                       ),
                     ],
@@ -157,7 +165,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                     const SizedBox(width: 12),
                     FilledButton(
                       onPressed: () {
-                        _amountController.text = appState.walletBalance.toStringAsFixed(2);
+                        _amountController.text = appState.totalBalance.toStringAsFixed(2);
                       },
                       style: FilledButton.styleFrom(
                         backgroundColor: colorScheme.primary,
@@ -361,9 +369,20 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: _requestedAmount > 0 ? () {
-                    context.read<AppState>().requestPayout(_requestedAmount, _selectedMethod);
-                    Navigator.of(context).pushReplacementNamed('/payout-submitted');
+                  onPressed: _requestedAmount > 0 && _selectedMethod.isNotEmpty ? () async {
+                    final success = await context.read<AppState>().requestPayout(_requestedAmount, _selectedMethod);
+                    if (!mounted) return;
+                    
+                    if (success) {
+                      Navigator.of(context).pushReplacementNamed('/payout-submitted');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to submit payout request. Please try again.'),
+                          backgroundColor: AppTheme.errorRed,
+                        ),
+                      );
+                    }
                   } : null,
                   style: FilledButton.styleFrom(
                     backgroundColor: colorScheme.primary,
