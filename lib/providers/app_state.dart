@@ -518,9 +518,20 @@ class AppState with ChangeNotifier {
   Future<bool> requestPasswordReset(String email) async {
     try {
       _initializeRepositories();
-      return await _authRepository!.requestPasswordReset(email);
+      return await _passwordRepository!.requestPasswordResetOtp(email);
     } catch (e) {
       if (kDebugMode) print('Request password reset error: $e');
+      return false;
+    }
+  }
+  
+  /// Verify password reset OTP
+  Future<bool> verifyPasswordResetOtp(String email, String otp) async {
+    try {
+      _initializeRepositories();
+      return await _passwordRepository!.verifyPasswordResetOtp(email, otp);
+    } catch (e) {
+      if (kDebugMode) print('Verify password reset OTP error: $e');
       return false;
     }
   }
@@ -533,11 +544,11 @@ class AppState with ChangeNotifier {
   }) async {
     try {
       _initializeRepositories();
-      return await _authRepository!.confirmPasswordReset(
-        email: email,
-        otp: otp,
-        newPassword: newPassword,
-      );
+      return await _passwordRepository!.resetPassword({
+        'email': email,
+        'otp': otp,
+        'new_password': newPassword,
+      });
     } catch (e) {
       if (kDebugMode) print('Confirm password reset error: $e');
       return false;
