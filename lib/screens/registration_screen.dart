@@ -74,18 +74,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
 
     final appState = context.read<AppState>();
-    final success = await appState.registerWithDetails(
-      fullName: _fullNameController.text.trim(),
+    final success = await appState.register(
+      firstName: _fullNameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text,
+      password2: _confirmPasswordController.text,
       phone: _phoneController.text.trim(),
       businessName: _businessNameController.text.trim(),
       address: _addressController.text.trim(),
       city: _cityController.text.trim(),
-      country: _selectedCountry,
-      numberOfRouters: _numberOfRoutersController.text.isNotEmpty 
-          ? int.tryParse(_numberOfRoutersController.text) 
-          : null,
+      country: _selectedCountry ?? 'TG',
+      numberOfRouters: int.tryParse(_numberOfRoutersController.text) ?? 1,
     );
 
     if (success && mounted) {

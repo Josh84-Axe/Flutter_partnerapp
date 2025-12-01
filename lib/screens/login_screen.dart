@@ -16,40 +16,46 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _password2Controller = TextEditingController(); // Confirm password
   bool _isLogin = true;
-  final _nameController = TextEditingController();
+  final _nameController = TextEditingController(); // First Name
+  final _enterpriseNameController = TextEditingController(); // Enterprise Name
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _cityController = TextEditingController();
   final _numberOfRoutersController = TextEditingController();
   String? _selectedCountry;
   
-  final List<String> _countries = [
-    'United States',
-    'France',
-    'Belgium',
-    'Canada',
-    'Ivory Coast',
-    'Senegal',
-    'United Kingdom',
-    'Germany',
-    'Spain',
-    'Italy',
-    'Nigeria',
-    'Ghana',
-    'Kenya',
-    'South Africa',
-  ];
+  // Map of ISO code to Country Name
+  final Map<String, String> _countries = {
+    'TG': 'Togo',
+    'US': 'United States',
+    'FR': 'France',
+    'BE': 'Belgium',
+    'CA': 'Canada',
+    'CI': 'Ivory Coast',
+    'SN': 'Senegal',
+    'GB': 'United Kingdom',
+    'DE': 'Germany',
+    'ES': 'Spain',
+    'IT': 'Italy',
+    'NG': 'Nigeria',
+    'GH': 'Ghana',
+    'KE': 'Kenya',
+    'ZA': 'South Africa',
+  };
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
+    _enterpriseNameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
     _cityController.dispose();
     _numberOfRoutersController.dispose();
+    _password2Controller.dispose();
     super.dispose();
   }
 
@@ -65,10 +71,25 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
     } else {
+      // Validate confirm password
+      if (_passwordController.text != _password2Controller.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('passwords_do_not_match'.tr())),
+        );
+        return;
+      }
+      
       success = await appState.register(
-        _nameController.text.trim(),
-        _emailController.text.trim(),
-        _passwordController.text,
+        firstName: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        password2: _password2Controller.text,
+        phone: _phoneController.text.trim(),
+        businessName: _enterpriseNameController.text.trim(),
+        address: _addressController.text.trim(),
+        city: _cityController.text.trim(),
+        country: _selectedCountry ?? 'TG',
+        numberOfRouters: int.tryParse(_numberOfRoutersController.text.trim()) ?? 1,
       );
     }
 
@@ -143,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ignoreBlank: false,
                       autoValidateMode: AutovalidateMode.disabled,
                       selectorTextStyle: TextStyle(color: colorScheme.onSurface),
-                      initialValue: PhoneNumber(isoCode: 'TG'),
+                      initialValue: PhoneNumber(isoCode: _selectedCountry ?? 'TG'),
                       textFieldController: _phoneController,
                       formatInput: true,
                       keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
@@ -165,11 +186,31 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
+                      controller: _enterpriseNameController,
+                      decoration: InputDecoration(
+                        labelText: 'enterprise_name'.tr(),
+                        prefixIcon: Icon(Icons.business),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'enter_enterprise_name'.tr();
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
                       controller: _addressController,
                       decoration: InputDecoration(
                         labelText: 'address'.tr(),
                         prefixIcon: Icon(Icons.location_on),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'enter_address'.tr();
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -178,6 +219,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelText: 'city'.tr(),
                         prefixIcon: Icon(Icons.location_city),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'enter_city'.tr();
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
@@ -186,10 +233,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelText: 'country'.tr(),
                         prefixIcon: Icon(Icons.flag),
                       ),
-                      items: _countries.map((country) {
+                      items: _countries.entries.map((entry) {
                         return DropdownMenuItem(
-                          value: country,
-                          child: Text(country),
+                          value: entry.key,
+                          child: Text(entry.value),
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -213,11 +260,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value != null && value.isNotEmpty) {
-                          final number = int.tryParse(value);
-                          if (number == null || number < 0) {
-                            return 'must_be_zero_or_greater'.tr();
-                          }
+                        if (value == null || value.isEmpty) {
+                          return 'enter_number_of_routers'.tr();
+                        }
+                        final number = int.tryParse(value);
+                        if (number == null || number < 1) {
+                          return 'must_be_one_or_greater'.tr();
                         }
                         return null;
                       },
@@ -259,6 +307,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
+                  if (!_isLogin) ...[
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _password2Controller,
+                      decoration: InputDecoration(
+                        labelText: 'confirm_password'.tr(),
+                        prefixIcon: Icon(Icons.lock_outline),
+                      ),
+                      obscureText: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'confirm_password_required'.tr();
+                        }
+                        if (value != _passwordController.text) {
+                          return 'passwords_do_not_match'.tr();
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                   if (_isLogin) ...[
                     const SizedBox(height: 8),
                     Align(

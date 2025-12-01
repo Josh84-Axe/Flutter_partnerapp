@@ -313,16 +313,34 @@ class AppState with ChangeNotifier {
     }
   }
   
-  Future<bool> register(String name, String email, String password) async {
+  Future<bool> register({
+    required String firstName,
+    required String email,
+    required String password,
+    required String password2,
+    required String phone,
+    required String businessName,
+    required String address,
+    required String city,
+    required String country,
+    required int numberOfRouters,
+  }) async {
     _setLoading(true);
     _registrationEmail = email; // Store email for verification
     try {
       // FORCE REMOTE API: Always use real API (no mock fallback)
       _initializeRepositories();
       final success = await _authRepository!.register(
-        firstName: name,
+        firstName: firstName,
         email: email,
         password: password,
+        password2: password2,
+        phone: phone,
+        businessName: businessName,
+        address: address,
+        city: city,
+        country: country,
+        numberOfRouters: numberOfRouters,
       );
       if (success) {
         // Try to load profile to get user data
@@ -332,7 +350,7 @@ class AppState with ChangeNotifier {
           if (profileData != null) {
             _currentUser = UserModel(
               id: profileData['id']?.toString() ?? '1',
-              name: profileData['first_name']?.toString() ?? name,
+              name: profileData['first_name']?.toString() ?? firstName,
               email: profileData['email']?.toString() ?? email,
               role: 'Partner',
               isActive: true,
@@ -353,7 +371,7 @@ class AppState with ChangeNotifier {
           // create a temporary user model
           _currentUser = UserModel(
             id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
-            name: name,
+            name: firstName,
             email: email,
             role: 'Partner',
             isActive: false,
@@ -414,86 +432,6 @@ class AppState with ChangeNotifier {
     try {
       if (_authRepository == null) _initializeRepositories();
       final success = await _authRepository!.resendVerifyEmailOtp(_registrationEmail!);
-      _setLoading(false);
-      return success;
-    } catch (e) {
-      _setError(e.toString());
-      _setLoading(false);
-      return false;
-    }
-  }
-  
-  Future<bool> registerWithDetails({
-    required String fullName,
-    required String email,
-    required String password,
-    String? phone,
-    String? businessName,
-    String? address,
-    String? city,
-    String? country,
-    int? numberOfRouters,
-  }) async {
-    _setLoading(true);
-    try {
-      // FORCE REMOTE API: Always use real API (no mock fallback)
-      _initializeRepositories();
-      
-      // Convert country name to ISO code if needed
-      String? countryIsoCode;
-      if (country != null) {
-        countryIsoCode = CountryUtils.getIsoCode(country);
-        if (kDebugMode) print('Registration: Converting country "$country" to ISO code "$countryIsoCode"');
-      }
-      
-      final success = await _authRepository!.register(
-        firstName: fullName,
-        email: email,
-        password: password,
-        phone: phone,
-        businessName: businessName,
-        address: address,
-        city: city,
-        country: countryIsoCode,
-        numberOfRouters: numberOfRouters,
-      );
-      if (success) {
-        // Registration successful - check if we have tokens (immediate login)
-        // or if email verification is required
-        final hasTokens = await _authRepository!.isAuthenticated();
-        
-        if (hasTokens) {
-          // Tokens were returned - try to load profile
-          try {
-            final profileData = await _partnerRepository!.fetchProfile();
-            if (profileData != null) {
-              _currentUser = UserModel(
-                id: profileData['id']?.toString() ?? '1',
-                name: profileData['first_name']?.toString() ?? fullName,
-                email: profileData['email']?.toString() ?? email,
-                role: 'Partner',
-                isActive: true,
-                createdAt: DateTime.now(),
-              );
-              await loadDashboardData();
-            }
-          } catch (e) {
-            if (kDebugMode) print('Profile fetch failed after registration: $e');
-          }
-        } else {
-          // No tokens - email verification required
-          // Create a temporary user model for UI purposes
-          if (kDebugMode) print('Registration successful - email verification required');
-          _currentUser = UserModel(
-            id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
-            name: fullName,
-            email: email,
-            role: 'Partner',
-            isActive: false,
-            createdAt: DateTime.now(),
-          );
-        }
-      }
       _setLoading(false);
       return success;
     } catch (e) {

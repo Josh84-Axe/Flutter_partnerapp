@@ -107,12 +107,13 @@ class AuthRepository {
     required String firstName,
     required String email,
     required String password,
-    String? phone,
-    String? businessName,
-    String? address,
-    String? city,
-    String? country,
-    int? numberOfRouters,
+    required String password2,
+    required String phone,
+    required String businessName,
+    required String address,
+    required String city,
+    required String country,
+    required int numberOfRouters,
   }) async {
     try {
       if (kDebugMode) print('📝 [AuthRepository] Register request for: $email');
@@ -120,13 +121,13 @@ class AuthRepository {
         'first_name': firstName,
         'email': email,
         'password': password,
-        'password2': password, // Confirm password with same value
-        if (phone != null) 'phone': phone,
-        if (businessName != null) 'entreprise_name': businessName,
-        if (address != null) 'addresse': address, // Note: API uses 'addresse' (with 'e')
-        if (city != null) 'city': city,
-        if (country != null) 'country': country,
-        if (numberOfRouters != null) 'number_of_router': numberOfRouters,
+        'password2': password2,
+        'phone': phone,
+        'entreprise_name': businessName,
+        'addresse': address, // Note: API uses 'addresse' (with 'e')
+        'city': city,
+        'country': country,
+        'number_of_router': numberOfRouters,
       };
       if (kDebugMode) print('📦 [AuthRepository] Register request data: $requestData');
       
