@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
+import '../utils/ip_geolocation.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -23,28 +24,69 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   
-  String? _selectedCountry;
+  String? _selectedCountry; // Will be set from IP geolocation
   bool _agreedToTerms = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   
-  final List<String> _countries = [
-    'United States',
-    'Canada',
-    'Mexico',
-    'France',
-    'Belgium',
-    'Ivory Coast',
-    'Senegal',
-    'United Kingdom',
-    'Germany',
-    'Spain',
-    'Italy',
-    'Nigeria',
-    'Ghana',
-    'Kenya',
-    'South Africa',
-  ];
+  // Comprehensive ISO country codes (matching LoginScreen)
+  final Map<String, String> _countries = {
+    'AF': 'Afghanistan', 'AL': 'Albania', 'DZ': 'Algeria', 'AD': 'Andorra', 'AO': 'Angola',
+    'AR': 'Argentina', 'AM': 'Armenia', 'AU': 'Australia', 'AT': 'Austria', 'AZ': 'Azerbaijan',
+    'BS': 'Bahamas', 'BH': 'Bahrain', 'BD': 'Bangladesh', 'BB': 'Barbados', 'BY': 'Belarus',
+    'BE': 'Belgium', 'BZ': 'Belize', 'BJ': 'Benin', 'BT': 'Bhutan', 'BO': 'Bolivia',
+    'BA': 'Bosnia and Herzegovina', 'BW': 'Botswana', 'BR': 'Brazil', 'BN': 'Brunei', 'BG': 'Bulgaria',
+    'BF': 'Burkina Faso', 'BI': 'Burundi', 'KH': 'Cambodia', 'CM': 'Cameroon', 'CA': 'Canada',
+    'CV': 'Cape Verde', 'CF': 'Central African Republic', 'TD': 'Chad', 'CL': 'Chile', 'CN': 'China',
+    'CO': 'Colombia', 'KM': 'Comoros', 'CG': 'Congo', 'CR': 'Costa Rica', 'HR': 'Croatia',
+    'CU': 'Cuba', 'CY': 'Cyprus', 'CZ': 'Czech Republic', 'DK': 'Denmark', 'DJ': 'Djibouti',
+    'DM': 'Dominica', 'DO': 'Dominican Republic', 'EC': 'Ecuador', 'EG': 'Egypt', 'SV': 'El Salvador',
+    'GQ': 'Equatorial Guinea', 'ER': 'Eritrea', 'EE': 'Estonia', 'ET': 'Ethiopia', 'FJ': 'Fiji',
+    'FI': 'Finland', 'FR': 'France', 'GA': 'Gabon', 'GM': 'Gambia', 'GE': 'Georgia',
+    'DE': 'Germany', 'GH': 'Ghana', 'GR': 'Greece', 'GD': 'Grenada', 'GT': 'Guatemala',
+    'GN': 'Guinea', 'GW': 'Guinea-Bissau', 'GY': 'Guyana', 'HT': 'Haiti', 'HN': 'Honduras',
+    'HU': 'Hungary', 'IS': 'Iceland', 'IN': 'India', 'ID': 'Indonesia', 'IR': 'Iran',
+    'IQ': 'Iraq', 'IE': 'Ireland', 'IL': 'Israel', 'IT': 'Italy', 'CI': 'Ivory Coast',
+    'JM': 'Jamaica', 'JP': 'Japan', 'JO': 'Jordan', 'KZ': 'Kazakhstan', 'KE': 'Kenya',
+    'KI': 'Kiribati', 'KW': 'Kuwait', 'KG': 'Kyrgyzstan', 'LA': 'Laos', 'LV': 'Latvia',
+    'LB': 'Lebanon', 'LS': 'Lesotho', 'LR': 'Liberia', 'LY': 'Libya', 'LI': 'Liechtenstein',
+    'LT': 'Lithuania', 'LU': 'Luxembourg', 'MK': 'North Macedonia', 'MG': 'Madagascar', 'MW': 'Malawi',
+    'MY': 'Malaysia', 'MV': 'Maldives', 'ML': 'Mali', 'MT': 'Malta', 'MH': 'Marshall Islands',
+    'MR': 'Mauritania', 'MU': 'Mauritius', 'MX': 'Mexico', 'FM': 'Micronesia', 'MD': 'Moldova',
+    'MC': 'Monaco', 'MN': 'Mongolia', 'ME': 'Montenegro', 'MA': 'Morocco', 'MZ': 'Mozambique',
+    'MM': 'Myanmar', 'NA': 'Namibia', 'NR': 'Nauru', 'NP': 'Nepal', 'NL': 'Netherlands',
+    'NZ': 'New Zealand', 'NI': 'Nicaragua', 'NE': 'Niger', 'NG': 'Nigeria', 'KP': 'North Korea',
+    'NO': 'Norway', 'OM': 'Oman', 'PK': 'Pakistan', 'PW': 'Palau', 'PA': 'Panama',
+    'PG': 'Papua New Guinea', 'PY': 'Paraguay', 'PE': 'Peru', 'PH': 'Philippines', 'PL': 'Poland',
+    'PT': 'Portugal', 'QA': 'Qatar', 'RO': 'Romania', 'RU': 'Russia', 'RW': 'Rwanda',
+    'KN': 'Saint Kitts and Nevis', 'LC': 'Saint Lucia', 'VC': 'Saint Vincent', 'WS': 'Samoa', 'SM': 'San Marino',
+    'ST': 'Sao Tome and Principe', 'SA': 'Saudi Arabia', 'SN': 'Senegal', 'RS': 'Serbia', 'SC': 'Seychelles',
+    'SL': 'Sierra Leone', 'SG': 'Singapore', 'SK': 'Slovakia', 'SI': 'Slovenia', 'SB': 'Solomon Islands',
+    'SO': 'Somalia', 'ZA': 'South Africa', 'KR': 'South Korea', 'SS': 'South Sudan', 'ES': 'Spain',
+    'LK': 'Sri Lanka', 'SD': 'Sudan', 'SR': 'Suriname', 'SZ': 'Eswatini', 'SE': 'Sweden',
+    'CH': 'Switzerland', 'SY': 'Syria', 'TW': 'Taiwan', 'TJ': 'Tajikistan', 'TZ': 'Tanzania',
+    'TH': 'Thailand', 'TL': 'Timor-Leste', 'TG': 'Togo', 'TO': 'Tonga', 'TT': 'Trinidad and Tobago',
+    'TN': 'Tunisia', 'TR': 'Turkey', 'TM': 'Turkmenistan', 'TV': 'Tuvalu', 'UG': 'Uganda',
+    'UA': 'Ukraine', 'AE': 'United Arab Emirates', 'GB': 'United Kingdom', 'US': 'United States', 'UY': 'Uruguay',
+    'UZ': 'Uzbekistan', 'VU': 'Vanuatu', 'VA': 'Vatican City', 'VE': 'Venezuela', 'VN': 'Vietnam',
+    'YE': 'Yemen', 'ZM': 'Zambia', 'ZW': 'Zimbabwe',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _detectCountryFromIp();
+  }
+
+  /// Detect user's country from their IP address
+  Future<void> _detectCountryFromIp() async {
+    final countryCode = await IpGeolocation.detectCountryCode();
+    if (mounted) {
+      setState(() {
+        _selectedCountry = countryCode;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -83,7 +125,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       businessName: _businessNameController.text.trim(),
       address: _addressController.text.trim(),
       city: _cityController.text.trim(),
-      country: _selectedCountry ?? 'TG',
+      country: _selectedCountry ?? 'GH', // Fallback to Ghana
       numberOfRouters: int.tryParse(_numberOfRoutersController.text) ?? 1,
     );
 
@@ -141,6 +183,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ),
                       const SizedBox(height: 16),
                       InternationalPhoneNumberInput(
+                        key: ValueKey(_selectedCountry), // Rebuild when country changes
                         onInputChanged: (PhoneNumber number) {
                           // Controller is updated automatically
                         },
@@ -155,7 +198,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ignoreBlank: false,
                         autoValidateMode: AutovalidateMode.disabled,
                         selectorTextStyle: TextStyle(color: colorScheme.onSurface),
-                        initialValue: PhoneNumber(isoCode: 'TG'), // Default to Togo
+                        initialValue: PhoneNumber(isoCode: _selectedCountry ?? 'GH'), // Use detected country or Ghana
                         textFieldController: _phoneController,
                         formatInput: true,
                         keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
@@ -174,8 +217,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           }
                           return null;
                         },
-                        // Update country when user selects from dropdown if we want to sync them
-                        // For now, let's keep them independent or sync if possible
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -254,10 +295,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 filled: true,
                                 fillColor: colorScheme.surfaceContainerHighest,
                               ),
-                              items: _countries.map((country) {
+                              items: _countries.entries.map((entry) {
                                 return DropdownMenuItem(
-                                  value: country,
-                                  child: Text(country),
+                                  value: entry.key, // ISO code
+                                  child: Text(entry.value), // Country name
                                 );
                               }).toList(),
                               onChanged: (value) {
