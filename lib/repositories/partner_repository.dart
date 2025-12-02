@@ -104,8 +104,19 @@ class PartnerRepository {
     try {
       if (kDebugMode) print('💰 [PartnerRepository] Fetching counters balance');
       final response = await _dio.get('/partner/counters/balance/');
-      if (kDebugMode) print('✅ [PartnerRepository] Counters balance fetched: ${response.data}');
-      return response.data as Map<String, dynamic>?;
+      if (kDebugMode) print('✅ [PartnerRepository] Raw response: ${response.data}');
+      
+      final responseData = response.data as Map<String, dynamic>?;
+      
+      // Extract 'data' field from wrapped response
+      if (responseData != null && responseData['data'] != null) {
+        final data = responseData['data'] as Map<String, dynamic>;
+        if (kDebugMode) print('✅ [PartnerRepository] Extracted data: $data');
+        return data;
+      }
+      
+      if (kDebugMode) print('⚠️ [PartnerRepository] No data field in response');
+      return null;
     } catch (e) {
       if (kDebugMode) print('❌ [PartnerRepository] Fetch counters balance error: $e');
       return null;
@@ -117,8 +128,19 @@ class PartnerRepository {
     try {
       if (kDebugMode) print('💳 [PartnerRepository] Fetching wallet balance');
       final response = await _dio.get('/partner/wallet/balance/');
-      if (kDebugMode) print('✅ [PartnerRepository] Wallet balance fetched: ${response.data}');
-      return response.data as Map<String, dynamic>?;
+      if (kDebugMode) print('✅ [PartnerRepository] Raw response: ${response.data}');
+      
+      final responseData = response.data as Map<String, dynamic>?;
+      
+      // Extract 'data' field from wrapped response
+      if (responseData != null && responseData['data'] != null) {
+        final data = responseData['data'] as Map<String, dynamic>;
+        if (kDebugMode) print('✅ [PartnerRepository] Extracted data: $data');
+        return data;
+      }
+      
+      if (kDebugMode) print('⚠️ [PartnerRepository] No data field in response');
+      return null;
     } catch (e) {
       if (kDebugMode) print('❌ [PartnerRepository] Fetch wallet balance error: $e');
       return null;

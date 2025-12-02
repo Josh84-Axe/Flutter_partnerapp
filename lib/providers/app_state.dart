@@ -375,6 +375,14 @@ class AppState with ChangeNotifier {
         country: country,
         numberOfRouters: numberOfRouters,
       );
+      
+      if (!success) {
+        if (kDebugMode) print('❌ [AppState] Registration failed');
+        _setError('Registration failed. Please check your details and try again.');
+        _setLoading(false);
+        return false;
+      }
+      
       if (success) {
         // Try to load profile to get user data
         // If registration requires email verification, this might fail
@@ -744,6 +752,8 @@ class AppState with ChangeNotifier {
       if (balanceData != null && balanceData['wallet_balance'] != null) {
         _walletBalance = CurrencyUtils.parseAmount(balanceData['wallet_balance']);
         if (kDebugMode) print('✅ [AppState] Wallet balance loaded: $_walletBalance');
+      } else {
+        if (kDebugMode) print('⚠️ [AppState] No wallet balance data received');
       }
       
       notifyListeners();
@@ -761,6 +771,8 @@ class AppState with ChangeNotifier {
       if (kDebugMode) print('💰 [AppState] Loading revenue counters...');
       final countersData = await _partnerRepository!.fetchCountersBalance();
       
+      if (kDebugMode) print('📊 [AppState] Raw countersData: $countersData');
+      
       if (countersData != null) {
         _totalRevenue = CurrencyUtils.parseAmount(countersData['total_revenue']);
         _onlineRevenue = CurrencyUtils.parseAmount(countersData['online_revenue_counter']);
@@ -770,7 +782,14 @@ class AppState with ChangeNotifier {
         // Map assigned revenue to deprecated field for compatibility
         _assignedWalletBalance = _assignedRevenue;
         
-        if (kDebugMode) print('✅ [AppState] Counters loaded: Total=$_totalRevenue, Online=$_onlineRevenue, Assigned=$_assignedRevenue');
+        if (kDebugMode) {
+          print('✅ [AppState] Counters loaded successfully:');
+          print('   - Total Revenue: \$_totalRevenue');
+          print('   - Online Revenue: \$_onlineRevenue');
+          print('   - Assigned Revenue: \$_assignedRevenue');
+        }
+      } else {
+        if (kDebugMode) print('⚠️ [AppState] No counters data received');
       }
       
       notifyListeners();
