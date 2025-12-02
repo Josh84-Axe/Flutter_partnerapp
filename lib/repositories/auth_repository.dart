@@ -102,8 +102,8 @@ class AuthRepository {
   }
 
   /// Register a new partner account
-  /// Returns true if registration successful, false otherwise
-  Future<bool> register({
+  /// Returns map with 'success' (bool) and 'message' (String) for user feedback
+  Future<Map<String, dynamic>> register({
     required String firstName,
     required String email,
     required String password,
@@ -141,7 +141,7 @@ class AuthRepository {
       final responseData = response.data as Map<String, dynamic>?;
       if (responseData == null) {
         if (kDebugMode) print('❌ [AuthRepository] Registration error: Response data is null');
-        return false;
+        return {'success': false, 'message': 'Registration failed. Please try again.'};
       }
 
       // Check if registration was successful
@@ -158,8 +158,7 @@ class AuthRepository {
           final refreshToken = data['refresh']?.toString();
 
           if (accessToken != null && refreshToken != null) {
-            if (kDebugMode) print('✅ [AuthRepository] Registration returned tokens - saving (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
-            await _tokenStorage.saveTokens(
+            if (kDebugMode) print('✅ [AuthRepository] Registration returned tokens - saving (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');\n            await _tokenStorage.saveTokens(
               accessToken: accessToken,
               refreshToken: refreshToken,
             );
@@ -176,14 +175,40 @@ class AuthRepository {
           }
         }
         
-        return true;
+        return {'success': true, 'message': responseData['message'] ?? 'Registration successful!'};
       }
 
       if (kDebugMode) print('❌ [AuthRepository] Registration failed: ${responseData['message']}');
-      return false;
+      return {'success': false, 'message': responseData['message'] ?? 'Registration failed. Please try again.'};
+    } on DioException catch (e) {
+      if (kDebugMode) print('❌ [AuthRepository] Registration DioException: ${e.response?.data}');
+      
+      // Handle validation errors from backend (400 Bad Request)
+      if (e.response?.statusCode == 400 && e.response?.data != null) {
+        final errorData = e.response!.data;
+        
+        // Parse validation errors
+        if (errorData is Map<String, dynamic>) {
+          final errors = <String>[];
+          
+          errorData.forEach((key, value) {
+            if (value is List) {
+              errors.addAll(value.map((e) => '$key: ${e.toString()}'));
+            } else {
+              errors.add('$key: ${value.toString()}');
+            }
+          });
+          
+          final errorMessage = errors.join('\n');
+          if (kDebugMode) print('❌ [AuthRepository] Validation errors: $errorMessage');
+          return {'success': false, 'message': errorMessage};
+        }
+      }
+      
+      return {'success': false, 'message': 'Registration failed: ${e.message}'};
     } catch (e) {
       if (kDebugMode) print('❌ [AuthRepository] Registration error: $e');
-      return false;
+      return {'success': false, 'message': 'Registration error: ${e.toString()}'};
     }
   }
 

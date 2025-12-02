@@ -361,10 +361,13 @@ class AppState with ChangeNotifier {
   }) async {
     _setLoading(true);
     _registrationEmail = email; // Store email for verification
+    _setError(null); // Clear previous errors
+    
     try {
       // FORCE REMOTE API: Always use real API (no mock fallback)
       _initializeRepositories();
-      final success = await _authRepository!.register(
+      
+      final result = await _authRepository!.register(
         firstName: firstName,
         email: email,
         password: password,
@@ -377,56 +380,63 @@ class AppState with ChangeNotifier {
         numberOfRouters: numberOfRouters,
       );
       
+      final success = result['success'] as bool;
+      final message = result['message'] as String;
+      
       if (!success) {
-        if (kDebugMode) print('❌ [AppState] Registration failed');
-        _setError('Registration failed. Please check your details and try again.');
+        if (kDebugMode) print('❌ [AppState] Registration failed: $message');
+        _setError(message);
         _setLoading(false);
         return false;
       }
       
-      if (success) {
-        // Try to load profile to get user data
-        // If registration requires email verification, this might fail
-        try {
-          final profileData = await _partnerRepository!.fetchProfile();
-          if (profileData != null) {
-            _currentUser = UserModel(
-              id: profileData['id']?.toString() ?? '1',
-              name: profileData['first_name']?.toString() ?? firstName,
-              email: profileData['email']?.toString() ?? email,
-              role: 'Partner',
-              isActive: true,
-              createdAt: DateTime.now(),
-            );
-            
-            // Fetch and map permissions
-            try {
-              await fetchPermissions();
-            } catch (e) {
-              if (kDebugMode) print('⚠️ [AppState] Failed to fetch permissions on register: $e');
-            }
-            
-            await loadDashboardData();
-          }
-        } catch (e) {
-          // If profile fetch fails (e.g., email verification required),
-          // create a temporary user model
+      if (kDebugMode) print('✅ [AppState] Registration successful: $message');
+      
+      // Try to load profile to get user data
+      // If registration requires email verification, this might fail
+      try {
+        final profileData = await _partnerRepository!.fetchProfile();
+        if (profileData != null) {
           _currentUser = UserModel(
-            id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
-            name: firstName,
-            email: email,
+            id: profileData['id']?.toString() ?? '1',
+            name: profileData['first_name']?.toString() ?? firstName,
+            email: profileData['email']?.toString() ?? email,
             role: 'Partner',
-            isActive: false,
+            isActive: true,
             createdAt: DateTime.now(),
           );
+          
+          // Fetch and map permissions
+          try {
+            await fetchPermissions();
+          } catch (e) {
+            if (kDebugMode) print('⚠️ [AppState] Failed to fetch permissions on register: $e');
+          }
+          
+          await loadDashboardData();
         }
+      } catch (e) {
+        // If profile fetch fails (e.g., email verification required),
+        // create a temporary user model
+        _currentUser = UserModel(
+          id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
+          name: firstName,
+          email: email,
+          role: 'Partner',
+          isActive: false,
+          createdAt: DateTime.now(),
+        );
+        
+        // Set info message for email verification
+        _setError('Please check your email to verify your account.');
       }
+      
       _setLoading(false);
       return success;
     } catch (e, stackTrace) {
       if (kDebugMode) print('❌ [AppState] Register error: $e');
       if (kDebugMode) print('❌ [AppState] Stack trace: $stackTrace');
-      _setError('$e\n$stackTrace');
+      _setError('Registration error: ${e.toString()}');
       _setLoading(false);
       return false;
     }
