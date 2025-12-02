@@ -25,6 +25,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _confirmPasswordController = TextEditingController();
   
   String? _selectedCountry; // Will be set from IP geolocation
+  PhoneNumber? _phoneNumber; // Store full international phone number
   bool _agreedToTerms = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -121,12 +122,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       print('📝 [RegistrationScreen] Form valid, preparing registration...');
       final appState = context.read<AppState>();
       
+      // Get phone number with country code (e.g., +23355349010)
+      final phoneWithCode = _phoneNumber?.phoneNumber ?? _phoneController.text.trim();
+      if (kDebugMode) print('📞 [RegistrationScreen] Phone number: $phoneWithCode');
+      
       final success = await appState.register(
         firstName: _fullNameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
         password2: _confirmPasswordController.text,
-        phone: _phoneController.text.trim(),
+        phone: phoneWithCode,
         businessName: _businessNameController.text.trim(),
         address: _addressController.text.trim(),
         city: _cityController.text.trim(),
@@ -202,7 +207,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       InternationalPhoneNumberInput(
                         key: ValueKey(_selectedCountry), // Rebuild when country changes
                         onInputChanged: (PhoneNumber number) {
-                          // Controller is updated automatically
+                          setState(() {
+                            _phoneNumber = number;
+                          });
                         },
                         onInputValidated: (bool value) {
                           // handled by validator
