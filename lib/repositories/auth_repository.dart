@@ -158,7 +158,8 @@ class AuthRepository {
           final refreshToken = data['refresh']?.toString();
 
           if (accessToken != null && refreshToken != null) {
-            if (kDebugMode) print('✅ [AuthRepository] Registration returned tokens - saving (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');\n            await _tokenStorage.saveTokens(
+            if (kDebugMode) print('✅ [AuthRepository] Registration returned tokens - saving (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
+            await _tokenStorage.saveTokens(
               accessToken: accessToken,
               refreshToken: refreshToken,
             );
