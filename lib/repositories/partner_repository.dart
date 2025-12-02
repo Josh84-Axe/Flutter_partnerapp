@@ -97,6 +97,33 @@ class PartnerRepository {
     }
   }
 
+
+
+  /// Fetch counters balance (Total, Online, Assigned Revenue)
+  Future<Map<String, dynamic>?> fetchCountersBalance() async {
+    try {
+      if (kDebugMode) print('💰 [PartnerRepository] Fetching counters balance');
+      final response = await _dio.get('/partner/counters/balance/');
+      if (kDebugMode) print('✅ [PartnerRepository] Counters balance fetched: ${response.data}');
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('❌ [PartnerRepository] Fetch counters balance error: $e');
+      return null;
+    }
+  }
+
+  /// Fetch wallet balance
+  Future<Map<String, dynamic>?> fetchWalletBalance() async {
+    try {
+      if (kDebugMode) print('💳 [PartnerRepository] Fetching wallet balance');
+      final response = await _dio.get('/partner/wallet/balance/');
+      if (kDebugMode) print('✅ [PartnerRepository] Wallet balance fetched: ${response.data}');
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('❌ [PartnerRepository] Fetch wallet balance error: $e');
+      return null;
+    }
+  }
   /// Fetch available report types
   Future<List<String>> fetchReportTypes() async {
     try {

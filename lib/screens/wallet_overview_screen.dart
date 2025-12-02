@@ -33,15 +33,11 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final partnerCountry = appState.currentUser?.country;
     
-    final revenueTransactions = appState.transactions
-        .where((t) => t.type == 'revenue')
-        .toList();
-    
     final payoutTransactions = appState.transactions
         .where((t) => t.type == 'payout')
         .toList();
     
-    final totalRevenue = revenueTransactions.fold(0.0, (sum, t) => sum + t.amount);
+    final totalRevenue = appState.totalRevenue;
     final totalPayouts = payoutTransactions.fold(0.0, (sum, t) => sum + t.amount.abs());
 
     return Scaffold(

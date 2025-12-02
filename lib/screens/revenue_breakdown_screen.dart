@@ -25,7 +25,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
           _buildRevenueCard(
             context,
             'assigned_revenue'.tr(),
-            appState.formatMoney(appState.assignedWalletBalance),
+            appState.formatMoney(appState.assignedRevenue),
             'assigned_revenue_desc'.tr(),
             Icons.assignment_ind,
             Theme.of(context).colorScheme.primary,
@@ -35,7 +35,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
           _buildRevenueCard(
             context,
             'online_revenue'.tr(),
-            appState.formatMoney(appState.walletBalance),
+            appState.formatMoney(appState.onlineRevenue),
             'online_revenue_desc'.tr(),
             Icons.credit_card,
             Theme.of(context).colorScheme.primaryContainer,

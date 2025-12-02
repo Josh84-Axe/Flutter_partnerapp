@@ -123,8 +123,14 @@ class AppState with ChangeNotifier {
   List<RouterModel> _routers = [];
   List<PlanModel> _plans = [];
   List<TransactionModel> _transactions = [];
-  double _walletBalance = 0.0; // Online purchases wallet
-  double _assignedWalletBalance = 0.0; // Assigned plans wallet
+  double _walletBalance = 0.0; // Current wallet balance
+  
+  // Revenue counters
+  double _totalRevenue = 0.0;
+  double _onlineRevenue = 0.0;
+  double _assignedRevenue = 0.0;
+  
+  double _assignedWalletBalance = 0.0; // Deprecated, mapped to assignedRevenue
   List<dynamic> _assignedWalletTransactions = []; // Assigned wallet transactions
   List<dynamic> _withdrawals = []; // Withdrawal history
   List<HotspotProfileModel> _hotspotProfiles = [];
@@ -163,8 +169,13 @@ class AppState with ChangeNotifier {
   List<PlanModel> get plans => _plans;
   List<TransactionModel> get transactions => _transactions;
   double get walletBalance => _walletBalance;
-  double get assignedWalletBalance => _assignedWalletBalance;
-  double get totalBalance => _walletBalance + _assignedWalletBalance;
+  double get assignedWalletBalance => _assignedRevenue; // Mapped to assigned revenue
+  double get totalBalance => _walletBalance; // Mapped to current wallet balance
+  
+  // New getters
+  double get totalRevenue => _totalRevenue;
+  double get onlineRevenue => _onlineRevenue;
+  double get assignedRevenue => _assignedRevenue;
   List<dynamic> get assignedWalletTransactions => _assignedWalletTransactions;
   List<dynamic> get withdrawals => _withdrawals;
   List<HotspotProfileModel> get hotspotProfiles => _hotspotProfiles;
@@ -722,16 +733,16 @@ class AppState with ChangeNotifier {
     }
   }
 
-  /// Load wallet balance (online purchases)
+  /// Load wallet balance (current withdrawable funds)
   Future<void> loadWalletBalance() async {
     try {
-      if (_transactionRepository == null) _initializeRepositories();
+      if (_partnerRepository == null) _initializeRepositories();
       
       if (kDebugMode) print('💰 [AppState] Loading wallet balance...');
-      final balanceData = await _transactionRepository!.getWalletBalance();
+      final balanceData = await _partnerRepository!.fetchWalletBalance();
       
-      if (balanceData['balance'] != null) {
-        _walletBalance = (balanceData['balance'] as num).toDouble();
+      if (balanceData != null && balanceData['balance'] != null) {
+        _walletBalance = CurrencyUtils.parseAmount(balanceData['balance']);
         if (kDebugMode) print('✅ [AppState] Wallet balance loaded: $_walletBalance');
       }
       
@@ -742,31 +753,43 @@ class AppState with ChangeNotifier {
     }
   }
 
-  /// Load assigned wallet balance (assigned plans)
-  Future<void> loadAssignedWalletBalance() async {
+  /// Load revenue counters (Total, Online, Assigned)
+  Future<void> loadCountersBalance() async {
     try {
-      if (_transactionRepository == null) _initializeRepositories();
+      if (_partnerRepository == null) _initializeRepositories();
       
-      if (kDebugMode) print('💰 [AppState] Loading assigned wallet balance...');
-      final balanceData = await _transactionRepository!.getAssignedWalletBalance();
+      if (kDebugMode) print('💰 [AppState] Loading revenue counters...');
+      final countersData = await _partnerRepository!.fetchCountersBalance();
       
-      if (balanceData['balance'] != null) {
-        _assignedWalletBalance = (balanceData['balance'] as num).toDouble();
-        if (kDebugMode) print('✅ [AppState] Assigned wallet balance loaded: $_assignedWalletBalance');
+      if (countersData != null) {
+        _totalRevenue = CurrencyUtils.parseAmount(countersData['total_revenue']);
+        _onlineRevenue = CurrencyUtils.parseAmount(countersData['online_revenue_counter']);
+        // Note: Backend has a typo 'assinged'
+        _assignedRevenue = CurrencyUtils.parseAmount(countersData['assinged_revenue_counter']);
+        
+        // Map assigned revenue to deprecated field for compatibility
+        _assignedWalletBalance = _assignedRevenue;
+        
+        if (kDebugMode) print('✅ [AppState] Counters loaded: Total=$_totalRevenue, Online=$_onlineRevenue, Assigned=$_assignedRevenue');
       }
       
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) print('❌ [AppState] Load assigned wallet balance error: $e');
+      if (kDebugMode) print('❌ [AppState] Load counters error: $e');
       _setError(e.toString());
     }
   }
 
-  /// Load all wallet balances (both online and assigned)
+  /// Deprecated: Use loadCountersBalance instead
+  Future<void> loadAssignedWalletBalance() async {
+    await loadCountersBalance();
+  }
+
+  /// Load all balances (wallet and counters)
   Future<void> loadAllWalletBalances() async {
     await Future.wait([
       loadWalletBalance(),
-      loadAssignedWalletBalance(),
+      loadCountersBalance(),
     ]);
   }
 

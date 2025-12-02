@@ -25,9 +25,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     
-    final totalRevenue = appState.transactions
-        .where((t) => t.type == 'revenue')
-        .fold(0.0, (sum, t) => sum + t.amount);
+    final totalRevenue = appState.totalRevenue;
     
     final activeUsers = appState.users.where((u) => u.isActive).length;
 
