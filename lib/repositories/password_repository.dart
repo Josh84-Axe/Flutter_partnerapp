@@ -51,24 +51,41 @@ class PasswordRepository {
 
   /// Verify password reset OTP
   /// Requires otp_id from the request response
-  Future<bool> verifyPasswordResetOtp({
+  /// Returns reset_token if successful, null otherwise
+  Future<String?> verifyPasswordResetOtp({
     required String otp,
     required String otpId,
   }) async {
     try {
       if (kDebugMode) print('🔐 [PasswordRepository] Verifying OTP with OTP ID: $otpId, Code: $otp');
-      await _dio.post(
+      final response = await _dio.post(
         '/partner/password-reset/verify-otp/',
         data: {
           'otp_id': otpId,
           'code': otp,
         },
       );
-      if (kDebugMode) print('✅ [PasswordRepository] OTP verified successfully');
-      return true;
+      
+      if (kDebugMode) print('✅ [PasswordRepository] OTP verification response: ${response.data}');
+      
+      final responseData = response.data as Map<String, dynamic>?;
+      
+      // Extract reset_token from data field
+      if (responseData != null && responseData['data'] != null) {
+        final data = responseData['data'] as Map<String, dynamic>;
+        final resetToken = data['reset_token'] as String?;
+        
+        if (resetToken != null) {
+          if (kDebugMode) print('✅ [PasswordRepository] Reset token received: ${resetToken.substring(0, 20)}...');
+          return resetToken;
+        }
+      }
+      
+      if (kDebugMode) print('⚠️ [PasswordRepository] No reset token in response');
+      return null;
     } catch (e) {
       if (kDebugMode) print('❌ [PasswordRepository] Verify password reset OTP error: $e');
-      return false;
+      return null;
     }
   }
 

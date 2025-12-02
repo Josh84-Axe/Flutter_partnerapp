@@ -119,6 +119,7 @@ class AppState with ChangeNotifier {
   String? _lastWithdrawalId; // Store last withdrawal ID for tracking
   String? _registrationEmail; // Store email for verification flow
   String? _passwordResetOtpId; // Store OTP ID for password reset flow
+  String? _passwordResetToken; // Store reset token after OTP verification
   
   List<UserModel> _users = [];
   List<RouterModel> _routers = [];
@@ -534,6 +535,7 @@ class AppState with ChangeNotifier {
   }
   
   /// Verify password reset OTP with OTP ID
+  /// Returns reset_token and stores it for password update
   Future<bool> verifyPasswordResetOtp(String email, String otp) async {
     try {
       _initializeRepositories();
@@ -543,17 +545,26 @@ class AppState with ChangeNotifier {
         return false;
       }
       
-      return await _passwordRepository!.verifyPasswordResetOtp(
+      final resetToken = await _passwordRepository!.verifyPasswordResetOtp(
         otp: otp,
         otpId: _passwordResetOtpId!,
       );
+      
+      if (resetToken != null) {
+        _passwordResetToken = resetToken;
+        if (kDebugMode) print('✅ [AppState] Reset token stored');
+        return true;
+      }
+      
+      if (kDebugMode) print('❌ [AppState] OTP verification failed - no reset token');
+      return false;
     } catch (e) {
       if (kDebugMode) print('❌ [AppState] Verify password reset OTP error: $e');
       return false;
     }
   }
   
-  /// Confirm password reset with OTP, OTP ID, and new password
+  /// Confirm password reset with reset token and new password
   Future<bool> confirmPasswordReset({
     required String email,
     required String otp,
@@ -562,21 +573,21 @@ class AppState with ChangeNotifier {
     try {
       _initializeRepositories();
       
-      if (_passwordResetOtpId == null) {
-        if (kDebugMode) print('❌ [AppState] No OTP ID available for password reset');
+      if (_passwordResetToken == null) {
+        if (kDebugMode) print('❌ [AppState] No reset token available for password reset');
         return false;
       }
       
       final success = await _passwordRepository!.resetPassword({
-        'email': email,
-        'otp': otp,
-        'otp_id': _passwordResetOtpId!,
+        'token': _passwordResetToken!,
         'new_password': newPassword,
       });
       
       if (success) {
-        _passwordResetOtpId = null; // Clear OTP ID after successful reset
-        if (kDebugMode) print('✅ [AppState] Password reset successful, OTP ID cleared');
+        // Clear all password reset state after successful reset
+        _passwordResetOtpId = null;
+        _passwordResetToken = null;
+        if (kDebugMode) print('✅ [AppState] Password reset successful, state cleared');
       }
       
       return success;
