@@ -22,29 +22,54 @@ class PasswordRepository {
   }
 
   /// Request password reset OTP
-  Future<bool> requestPasswordResetOtp(String email) async {
+  /// Returns data containing otp_id if successful
+  Future<Map<String, dynamic>?> requestPasswordResetOtp(String email) async {
     try {
-      await _dio.post(
+      if (kDebugMode) print('🔐 [PasswordRepository] Requesting password reset OTP for: $email');
+      final response = await _dio.post(
         '/partner/password-reset/request-otp/',
         data: {'email': email},
       );
-      return true;
+      
+      if (kDebugMode) print('✅ [PasswordRepository] OTP request response: ${response.data}');
+      
+      final responseData = response.data as Map<String, dynamic>?;
+      
+      // Extract data field if wrapped
+      if (responseData != null && responseData['data'] != null) {
+        final data = responseData['data'] as Map<String, dynamic>;
+        if (kDebugMode) print('✅ [PasswordRepository] Extracted OTP data: $data');
+        return data;
+      }
+      
+      return responseData;
     } catch (e) {
-      if (kDebugMode) print('Request password reset OTP error: $e');
-      return false;
+      if (kDebugMode) print('❌ [PasswordRepository] Request password reset OTP error: $e');
+      return null;
     }
   }
 
   /// Verify password reset OTP
-  Future<bool> verifyPasswordResetOtp(String email, String otp) async {
+  /// Requires otp_id from the request response
+  Future<bool> verifyPasswordResetOtp({
+    required String email,
+    required String otp,
+    required String otpId,
+  }) async {
     try {
+      if (kDebugMode) print('🔐 [PasswordRepository] Verifying OTP for: $email with OTP ID: $otpId');
       await _dio.post(
         '/partner/password-reset/verify-otp/',
-        data: {'email': email, 'otp': otp},
+        data: {
+          'email': email,
+          'otp': otp,
+          'otp_id': otpId,
+        },
       );
+      if (kDebugMode) print('✅ [PasswordRepository] OTP verified successfully');
       return true;
     } catch (e) {
-      if (kDebugMode) print('Verify password reset OTP error: $e');
+      if (kDebugMode) print('❌ [PasswordRepository] Verify password reset OTP error: $e');
       return false;
     }
   }

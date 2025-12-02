@@ -118,6 +118,7 @@ class AppState with ChangeNotifier {
   String? _error;
   String? _lastWithdrawalId; // Store last withdrawal ID for tracking
   String? _registrationEmail; // Store email for verification flow
+  String? _passwordResetOtpId; // Store OTP ID for password reset flow
   
   List<UserModel> _users = [];
   List<RouterModel> _routers = [];
@@ -502,29 +503,48 @@ class AppState with ChangeNotifier {
     notifyListeners();
   }
   
-  /// Request password reset - sends OTP to email
+  /// Request password reset - sends OTP to email and stores OTP ID
   Future<bool> requestPasswordReset(String email) async {
     try {
       _initializeRepositories();
-      return await _passwordRepository!.requestPasswordResetOtp(email);
+      final result = await _passwordRepository!.requestPasswordResetOtp(email);
+      
+      if (result != null && result['otp_id'] != null) {
+        _passwordResetOtpId = result['otp_id'].toString();
+        if (kDebugMode) print('✅ [AppState] OTP ID stored: $_passwordResetOtpId');
+        return true;
+      }
+      
+      if (kDebugMode) print('⚠️ [AppState] No OTP ID in response');
+      return false;
     } catch (e) {
-      if (kDebugMode) print('Request password reset error: $e');
+      if (kDebugMode) print('❌ [AppState] Request password reset error: $e');
       return false;
     }
   }
   
-  /// Verify password reset OTP
+  /// Verify password reset OTP with OTP ID
   Future<bool> verifyPasswordResetOtp(String email, String otp) async {
     try {
       _initializeRepositories();
-      return await _passwordRepository!.verifyPasswordResetOtp(email, otp);
+      
+      if (_passwordResetOtpId == null) {
+        if (kDebugMode) print('❌ [AppState] No OTP ID available for verification');
+        return false;
+      }
+      
+      return await _passwordRepository!.verifyPasswordResetOtp(
+        email: email,
+        otp: otp,
+        otpId: _passwordResetOtpId!,
+      );
     } catch (e) {
-      if (kDebugMode) print('Verify password reset OTP error: $e');
+      if (kDebugMode) print('❌ [AppState] Verify password reset OTP error: $e');
       return false;
     }
   }
   
-  /// Confirm password reset with OTP and new password
+  /// Confirm password reset with OTP, OTP ID, and new password
   Future<bool> confirmPasswordReset({
     required String email,
     required String otp,
@@ -532,13 +552,27 @@ class AppState with ChangeNotifier {
   }) async {
     try {
       _initializeRepositories();
-      return await _passwordRepository!.resetPassword({
+      
+      if (_passwordResetOtpId == null) {
+        if (kDebugMode) print('❌ [AppState] No OTP ID available for password reset');
+        return false;
+      }
+      
+      final success = await _passwordRepository!.resetPassword({
         'email': email,
         'otp': otp,
+        'otp_id': _passwordResetOtpId!,
         'new_password': newPassword,
       });
+      
+      if (success) {
+        _passwordResetOtpId = null; // Clear OTP ID after successful reset
+        if (kDebugMode) print('✅ [AppState] Password reset successful, OTP ID cleared');
+      }
+      
+      return success;
     } catch (e) {
-      if (kDebugMode) print('Confirm password reset error: $e');
+      if (kDebugMode) print('❌ [AppState] Confirm password reset error: $e');
       return false;
     }
   }
