@@ -52,18 +52,16 @@ class PasswordRepository {
   /// Verify password reset OTP
   /// Requires otp_id from the request response
   Future<bool> verifyPasswordResetOtp({
-    required String email,
     required String otp,
     required String otpId,
   }) async {
     try {
-      if (kDebugMode) print('🔐 [PasswordRepository] Verifying OTP for: $email with OTP ID: $otpId');
+      if (kDebugMode) print('🔐 [PasswordRepository] Verifying OTP with OTP ID: $otpId, Code: $otp');
       await _dio.post(
         '/partner/password-reset/verify-otp/',
         data: {
-          'email': email,
-          'otp': otp,
           'otp_id': otpId,
+          'code': otp,
         },
       );
       if (kDebugMode) print('✅ [PasswordRepository] OTP verified successfully');

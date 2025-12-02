@@ -534,7 +534,6 @@ class AppState with ChangeNotifier {
       }
       
       return await _passwordRepository!.verifyPasswordResetOtp(
-        email: email,
         otp: otp,
         otpId: _passwordResetOtpId!,
       );
