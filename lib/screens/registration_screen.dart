@@ -158,6 +158,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     final appState = context.watch<AppState>();
 
     return Scaffold(
+      appBar: AppBar(
         backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: IconButton(
