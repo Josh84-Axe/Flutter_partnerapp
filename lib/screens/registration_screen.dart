@@ -97,6 +97,67 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _addressController.dispose();
     _cityController.dispose();
     _numberOfRoutersController.dispose();
+  }
+
+  Future<void> _submit() async {
+    print('📝 [RegistrationScreen] _submit called');
+    try {
+      if (!_formKey.currentState!.validate()) {
+        print('❌ [RegistrationScreen] Form validation failed');
+        return;
+      }
+      
+      if (!_agreedToTerms) {
+        print('❌ [RegistrationScreen] Terms not agreed');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('register.terms.required'.tr()),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+        return;
+      }
+
+      print('📝 [RegistrationScreen] Form valid, preparing registration...');
+      final appState = context.read<AppState>();
+      
+      final success = await appState.register(
+        firstName: _fullNameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        password2: _confirmPasswordController.text,
+        phone: _phoneController.text.trim(),
+        businessName: _businessNameController.text.trim(),
+        address: _addressController.text.trim(),
+        city: _cityController.text.trim(),
+        country: _selectedCountry ?? 'GH',
+        numberOfRouters: int.tryParse(_numberOfRoutersController.text) ?? 1,
+      );
+
+      if (success && mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
+    } catch (e, stackTrace) {
+      print('❌ [RegistrationScreen] Error in _submit: $e');
+      print('❌ [RegistrationScreen] Stack trace: $stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e\n$stackTrace'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            duration: const Duration(seconds: 10),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final appState = context.watch<AppState>();
+
+    return Scaffold(
         backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: IconButton(
