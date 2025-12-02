@@ -403,8 +403,10 @@ class AppState with ChangeNotifier {
       }
       _setLoading(false);
       return success;
-    } catch (e) {
-      _setError(e.toString());
+    } catch (e, stackTrace) {
+      if (kDebugMode) print('❌ [AppState] Register error: $e');
+      if (kDebugMode) print('❌ [AppState] Stack trace: $stackTrace');
+      _setError('$e\n$stackTrace');
       _setLoading(false);
       return false;
     }
