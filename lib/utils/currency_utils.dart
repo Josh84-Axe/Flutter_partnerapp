@@ -63,6 +63,17 @@ class CurrencyUtils {
     }
   }
   
+  /// Safely parse amount from API response (handles both int and double, strings)
+  static double parseAmount(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      return double.tryParse(value) ?? 0.0;
+    }
+    return 0.0;
+  }
+  
   /// Format price with currency symbol based on country
   /// 
   /// Examples:
