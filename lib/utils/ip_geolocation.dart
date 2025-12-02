@@ -12,7 +12,7 @@ class IpGeolocation {
       // Use ip-api.com free service (no API key required)
       // Limit: 45 requests per minute from single IP
       final response = await http.get(
-        Uri.parse('http://ip-api.com/json/?fields=countryCode'),
+        Uri.parse('https://ipapi.co/json/'),
       ).timeout(
         const Duration(seconds: 5),
         onTimeout: () {
@@ -23,7 +23,7 @@ class IpGeolocation {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final countryCode = data['countryCode'] as String?;
+        final countryCode = data['country_code'] as String?;
         
         if (countryCode != null && countryCode.isNotEmpty) {
           if (kDebugMode) print('🌍 [IpGeolocation] Detected country: $countryCode');
