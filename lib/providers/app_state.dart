@@ -741,8 +741,8 @@ class AppState with ChangeNotifier {
       if (kDebugMode) print('💰 [AppState] Loading wallet balance...');
       final balanceData = await _partnerRepository!.fetchWalletBalance();
       
-      if (balanceData != null && balanceData['balance'] != null) {
-        _walletBalance = CurrencyUtils.parseAmount(balanceData['balance']);
+      if (balanceData != null && balanceData['wallet_balance'] != null) {
+        _walletBalance = CurrencyUtils.parseAmount(balanceData['wallet_balance']);
         if (kDebugMode) print('✅ [AppState] Wallet balance loaded: $_walletBalance');
       }
       
