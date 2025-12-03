@@ -134,7 +134,9 @@ class AppState with ChangeNotifier {
   double _assignedRevenue = 0.0;
   
   double _assignedWalletBalance = 0.0; // Deprecated, mapped to assignedRevenue
-  List<dynamic> _assignedWalletTransactions = []; // Assigned wallet transactions
+  List<dynamic> _assignedWalletTransactions = []; // Assigned wallet transactions (deprecated)
+  List<dynamic> _assignedTransactions = []; // Assigned plan transactions from /partner/transactions/assigned/
+  List<dynamic> _walletTransactions = []; // Wallet transactions from /partner/transactions/wallet/
   List<dynamic> _withdrawals = []; // Withdrawal history
   List<HotspotProfileModel> _hotspotProfiles = [];
   List<RouterConfigurationModel> _routerConfigurations = [];
@@ -180,6 +182,8 @@ class AppState with ChangeNotifier {
   double get onlineRevenue => _onlineRevenue;
   double get assignedRevenue => _assignedRevenue;
   List<dynamic> get assignedWalletTransactions => _assignedWalletTransactions;
+  List<dynamic> get assignedTransactions => _assignedTransactions;
+  List<dynamic> get walletTransactions => _walletTransactions;
   List<dynamic> get withdrawals => _withdrawals;
   List<HotspotProfileModel> get hotspotProfiles => _hotspotProfiles;
   List<RouterConfigurationModel> get routerConfigurations => _routerConfigurations;
@@ -874,17 +878,28 @@ class AppState with ChangeNotifier {
       if (_transactionRepository == null) _initializeRepositories();
       
       if (kDebugMode) print('💳 [AppState] Loading wallet transactions...');
-      final transactionsData = await _transactionRepository!.getWalletTransactions();
+      _walletTransactions = await _transactionRepository!.getWalletTransactions();
       
-      // Parse transactions into TransactionModel
-      _transactions = transactionsData.map((txn) {
-        return TransactionModel.fromJson(txn as Map<String, dynamic>);
-      }).toList();
-      
-      if (kDebugMode) print('✅ [AppState] Wallet transactions loaded: ${_transactions.length}');
+      if (kDebugMode) print('✅ [AppState] Wallet transactions loaded: ${_walletTransactions.length}');
       notifyListeners();
     } catch (e) {
       if (kDebugMode) print('❌ [AppState] Load wallet transactions error: $e');
+      _setError(e.toString());
+    }
+  }
+
+  /// Load assigned plan transactions
+  Future<void> loadAssignedTransactions() async {
+    try {
+      if (_transactionRepository == null) _initializeRepositories();
+      
+      if (kDebugMode) print('💳 [AppState] Loading assigned transactions...');
+      _assignedTransactions = await _transactionRepository!.fetchAssignedPlanTransactions();
+      
+      if (kDebugMode) print('✅ [AppState] Assigned transactions loaded: ${_assignedTransactions.length}');
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Load assigned transactions error: $e');
       _setError(e.toString());
     }
   }
@@ -905,11 +920,11 @@ class AppState with ChangeNotifier {
     }
   }
 
-  /// Load all transactions (both wallet types)
+  /// Load all transactions (both assigned and wallet)
   Future<void> loadAllTransactions() async {
     await Future.wait([
       loadWalletTransactions(),
-      loadAssignedWalletTransactions(),
+      loadAssignedTransactions(),
     ]);
   }
 

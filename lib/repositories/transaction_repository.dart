@@ -75,7 +75,7 @@ class TransactionRepository {
   Future<List<dynamic>> fetchAssignedPlanTransactions() async {
     try {
       if (kDebugMode) print('📋 [TransactionRepository] Fetching assigned plan transactions');
-      final response = await _dio.get('/partner/transactions/assigned-plans/');
+      final response = await _dio.get('/partner/transactions/assigned/');
       if (kDebugMode) print('✅ [TransactionRepository] Response: ${response.data}');
       
       final responseData = response.data;
@@ -158,7 +158,7 @@ class TransactionRepository {
   Future<List<dynamic>> getWalletTransactions() async {
     try {
       if (kDebugMode) print('💳 [TransactionRepository] Fetching wallet transactions');
-      final response = await _dio.get('/partner/wallet/transactions/');
+      final response = await _dio.get('/partner/transactions/wallet/');
       if (kDebugMode) print('✅ [TransactionRepository] Response: ${response.data}');
       
       final responseData = response.data;
