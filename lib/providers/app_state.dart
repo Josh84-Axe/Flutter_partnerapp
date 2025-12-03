@@ -118,6 +118,7 @@ class AppState with ChangeNotifier {
   String? _error;
   String? _lastWithdrawalId; // Store last withdrawal ID for tracking
   String? _registrationEmail; // Store email for verification flow
+  String? _registrationOtpId; // Store OTP ID for registration verification flow
   String? _passwordResetOtpId; // Store OTP ID for password reset flow
   String? _passwordResetToken; // Store reset token after OTP verification
   
@@ -383,12 +384,19 @@ class AppState with ChangeNotifier {
       
       final success = result['success'] as bool;
       final message = result['message'] as String;
+      final otpId = result['otp_id'] as String?;
       
       if (!success) {
         if (kDebugMode) print('❌ [AppState] Registration failed: $message');
         _setError(message);
         _setLoading(false);
         return false;
+      }
+      
+      // Store OTP ID if email verification is required
+      if (otpId != null) {
+        _registrationOtpId = otpId;
+        if (kDebugMode) print('✅ [AppState] Stored registration OTP ID: $otpId');
       }
       
       if (kDebugMode) print('✅ [AppState] Registration successful: $message');
@@ -450,15 +458,26 @@ class AppState with ChangeNotifier {
       return false;
     }
     
+    if (_registrationOtpId == null) {
+      _setError('No OTP ID found. Please try registering again.');
+      return false;
+    }
+    
     _setLoading(true);
     try {
       if (_authRepository == null) _initializeRepositories();
       
-      // Use verifyEmailOtp instead of confirmRegistration as the latter endpoint (register-confirm) returns 404
-      final success = await _authRepository!.verifyEmailOtp(_registrationEmail!, otp);
+      // Use verifyEmailOtp with otp_id
+      final success = await _authRepository!.verifyEmailOtp(
+        email: _registrationEmail!,
+        otp: otp,
+        otpId: _registrationOtpId!,
+      );
       
       if (success) {
         if (kDebugMode) print('✅ [AppState] Email verification successful');
+        // Clear the OTP ID after successful verification
+        _registrationOtpId = null;
         // Verification endpoint doesn't return tokens, so we can't auto-login.
         // The UI will navigate to /home, which will redirect to /login via AuthWrapper.
         _setLoading(false);

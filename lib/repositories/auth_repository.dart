@@ -153,11 +153,12 @@ class AuthRepository {
       if (statusCode == 200 && error == false) {
         if (kDebugMode) print('✅ [AuthRepository] Registration successful: ${responseData['message']}');
         
-        // Extract tokens from nested data object if present
+        // Extract tokens and otp_id from nested data object if present
         final data = responseData['data'] as Map<String, dynamic>?;
         if (data != null) {
           final accessToken = data['access']?.toString();
           final refreshToken = data['refresh']?.toString();
+          final otpId = data['otp_id']?.toString();
 
           if (accessToken != null && refreshToken != null) {
             if (kDebugMode) print('✅ [AuthRepository] Registration returned tokens - saving (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
@@ -173,8 +174,16 @@ class AuthRepository {
             } else {
               if (kDebugMode) print('❌ [AuthRepository] ERROR: Tokens not saved correctly!');
             }
+            return {'success': true, 'message': responseData['message'] ?? 'Registration successful!'};
+          } else if (otpId != null) {
+            if (kDebugMode) print('ℹ️ [AuthRepository] Registration requires email verification - OTP ID: $otpId');
+            return {
+              'success': true, 
+              'message': responseData['message'] ?? 'Registration successful!',
+              'otp_id': otpId
+            };
           } else {
-            if (kDebugMode) print('ℹ️ [AuthRepository] Registration requires email verification - no tokens returned');
+            if (kDebugMode) print('ℹ️ [AuthRepository] Registration requires email verification - no tokens or otp_id returned');
           }
         }
         
@@ -232,12 +241,20 @@ class AuthRepository {
   }
 
   /// Verify email with OTP
-  Future<bool> verifyEmailOtp(String email, String otp) async {
+  Future<bool> verifyEmailOtp({
+    required String email, 
+    required String otp,
+    required String otpId,
+  }) async {
     try {
-      if (kDebugMode) print('✉️ [AuthRepository] Verify email OTP for: $email');
+      if (kDebugMode) print('✉️ [AuthRepository] Verify email OTP for: $email with OTP ID: $otpId');
       final response = await _dio.post(
         '/partner/verify-email-otp/',
-        data: {'email': email, 'code': otp}, // Backend expects 'code' field, not 'otp'
+        data: {
+          'email': email, 
+          'code': otp,
+          'otp_id': otpId,
+        },
       );
       if (kDebugMode) print('✅ [AuthRepository] Verify email OTP response: ${response.data}');
       return true;
