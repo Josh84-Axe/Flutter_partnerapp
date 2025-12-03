@@ -453,32 +453,14 @@ class AppState with ChangeNotifier {
     _setLoading(true);
     try {
       if (_authRepository == null) _initializeRepositories();
-      final response = await _authRepository!.confirmRegistration(_registrationEmail!, otp);
       
-      if (response != null) {
-        // If confirmation returns tokens, save them
-        if (response['data'] != null) {
-          final data = response['data'];
-          final accessToken = data['access']?.toString();
-          final refreshToken = data['refresh']?.toString();
-          
-          if (accessToken != null && refreshToken != null) {
-            if (kDebugMode) print('✅ [AppState] Confirmation returned tokens - saving');
-            await _authRepository!.tokenStorage.saveTokens(
-              accessToken: accessToken,
-              refreshToken: refreshToken,
-            );
-            
-            // Fetch profile to update user state
-            await loadDashboardData();
-            return true;
-          }
-        }
-        
-        // If no tokens returned, maybe we just need to login?
-        // But we don't have password here.
-        // Assume success and let UI navigate to login if needed, 
-        // or if tokens were saved, we are good.
+      // Use verifyEmailOtp instead of confirmRegistration as the latter endpoint (register-confirm) returns 404
+      final success = await _authRepository!.verifyEmailOtp(_registrationEmail!, otp);
+      
+      if (success) {
+        if (kDebugMode) print('✅ [AppState] Email verification successful');
+        // Verification endpoint doesn't return tokens, so we can't auto-login.
+        // The UI will navigate to /home, which will redirect to /login via AuthWrapper.
         _setLoading(false);
         return true;
       }
