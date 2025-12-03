@@ -52,89 +52,12 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
   }
 
   Future<void> _showCreatePaymentMethodDialog() async {
-    final nameController = TextEditingController();
-    final typeController = TextEditingController();
-    final detailsController = TextEditingController();
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('add_payment_method'.tr()),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: 'method_name'.tr(),
-                  hintText: 'e.g., Mobile Money',
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: typeController,
-                decoration: InputDecoration(
-                  labelText: 'method_type'.tr(),
-                  hintText: 'e.g., mobile_money, bank_transfer',
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: detailsController,
-                decoration: InputDecoration(
-                  labelText: 'account_details'.tr(),
-                  hintText: 'e.g., +228 XX XX XX XX',
-                  border: const OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('cancel'.tr()),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text('add'.tr()),
-          ),
-        ],
-      ),
-    );
-
-    if (result != true) return;
-
-    try {
-      final appState = context.read<AppState>();
-      await appState.paymentMethodRepository.createPaymentMethod({
-        'name': nameController.text,
-        'type': typeController.text,
-        'details': detailsController.text,
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('payment_method_added_success'.tr()),
-            backgroundColor: Colors.green,
-          ),
-        );
-        _loadPaymentMethods();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${'error_adding_payment_method'.tr()}: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+    // Navigate to the dedicated Add Payout Method screen which handles OTP flow
+    final result = await Navigator.pushNamed(context, '/add-payout-method');
+    
+    if (result == true && mounted) {
+      // Reload the list if a payment method was added
+      _loadPaymentMethods();
     }
   }
 
