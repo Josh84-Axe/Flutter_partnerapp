@@ -10,7 +10,7 @@ class PaymentMethodRepository {
   /// Fetch list of payment methods
   Future<List<dynamic>> fetchPaymentMethods() async {
     try {
-      final response = await _dio.get('/partner/payment-methods/list/');
+      final response = await _dio.get('/partner/payment-methods/');
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {
@@ -27,7 +27,7 @@ class PaymentMethodRepository {
   /// Create payment method
   Future<Map<String, dynamic>?> createPaymentMethod(Map<String, dynamic> data) async {
     try {
-      final response = await _dio.post('/partner/payment-methods/create/', data: data);
+      final response = await _dio.post('/partner/payment-methods/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
       if (kDebugMode) print('Create payment method error: $e');
@@ -49,7 +49,7 @@ class PaymentMethodRepository {
   /// Update payment method
   Future<Map<String, dynamic>?> updatePaymentMethod(String slug, Map<String, dynamic> data) async {
     try {
-      final response = await _dio.put('/partner/payment-methods/$slug/update/', data: data);
+      final response = await _dio.put('/partner/payment-methods/$slug/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
       if (kDebugMode) print('Update payment method error: $e');
@@ -60,7 +60,7 @@ class PaymentMethodRepository {
   /// Delete payment method
   Future<bool> deletePaymentMethod(String slug) async {
     try {
-      await _dio.delete('/partner/payment-methods/$slug/delete/');
+      await _dio.delete('/partner/payment-methods/$slug/');
       return true;
     } catch (e) {
       if (kDebugMode) print('Delete payment method error: $e');
