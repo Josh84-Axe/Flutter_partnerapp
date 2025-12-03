@@ -141,7 +141,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       );
 
       if (success && mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        // Check if email verification is required
+        if (appState.currentUser != null && !appState.currentUser!.isActive) {
+          if (kDebugMode) print('ℹ️ [RegistrationScreen] Email verification required, navigating to verify-email');
+          Navigator.of(context).pushReplacementNamed('/email-verification');
+        } else {
+          if (kDebugMode) print('✅ [RegistrationScreen] Registration complete, navigating to home');
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
       }
     } catch (e, stackTrace) {
       print('❌ [RegistrationScreen] Error in _submit: $e');

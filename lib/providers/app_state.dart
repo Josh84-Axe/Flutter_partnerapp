@@ -457,12 +457,28 @@ class AppState with ChangeNotifier {
       
       if (response != null) {
         // If confirmation returns tokens, save them
-        if (response['data'] != null && response['data']['access'] != null) {
-          // We would need to manually save tokens here or rely on AuthRepository
-          // For now, assume success means we can proceed to login
-          await login(_registrationEmail!, ''); // This might fail if we don't have password
-          // Better approach: Just return true and let UI navigate to login
+        if (response['data'] != null) {
+          final data = response['data'];
+          final accessToken = data['access']?.toString();
+          final refreshToken = data['refresh']?.toString();
+          
+          if (accessToken != null && refreshToken != null) {
+            if (kDebugMode) print('✅ [AppState] Confirmation returned tokens - saving');
+            await _authRepository!.tokenStorage.saveTokens(
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+            );
+            
+            // Fetch profile to update user state
+            await loadDashboardData();
+            return true;
+          }
         }
+        
+        // If no tokens returned, maybe we just need to login?
+        // But we don't have password here.
+        // Assume success and let UI navigate to login if needed, 
+        // or if tokens were saved, we are good.
         _setLoading(false);
         return true;
       }

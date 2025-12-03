@@ -18,6 +18,7 @@ import 'screens/notifications_screen.dart';
 import 'screens/language_screen.dart';
 import 'feature/auth/forgot_password_screen.dart';
 import 'feature/auth/verify_password_reset_otp_screen.dart';
+import 'screens/email_verification_screen.dart';
 import 'feature/auth/reset_password_screen.dart';
 
 import 'screens/reset_email_sent_screen.dart';
@@ -247,9 +248,6 @@ class HotspotPartnerApp extends StatelessWidget {
             builder: (context) => VerifyPasswordResetOtpScreen(email: email),
           );
         }
-        if (settings.name == '/reset-password') {
-          final args = settings.arguments as Map<String, dynamic>;
-          return MaterialPageRoute(
             builder: (context) => ResetPasswordScreen(
               email: args['email'] as String,
               otp: args['otp'] as String,

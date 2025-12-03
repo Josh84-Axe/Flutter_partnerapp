@@ -66,7 +66,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         ),
       );
       // Navigate to dashboard or login
-      Navigator.of(context).pushReplacementNamed('/dashboard'); 
+      Navigator.of(context).pushReplacementNamed('/home'); 
     }
   }
 
