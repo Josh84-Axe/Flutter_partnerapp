@@ -365,20 +365,19 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
 
     if (isValid) {
       try {
-        // Prepare data for API
+        // Prepare data for API with correct field names
         final Map<String, dynamic> paymentData = {};
         
         if (_selectedMethod == 'mobile') {
-          paymentData['method_type'] = 'mobile_money';
-          paymentData['provider'] = _mobileProviderController.text;
-          paymentData['account_number'] = _mobileNumberController.text;
-          paymentData['account_name'] = _mobileHolderNameController.text;
+          paymentData['name'] = _mobileProviderController.text; // Provider name (e.g., "MTN Mobile Money")
+          paymentData['numbers'] = _mobileNumberController.text; // Mobile number
+          paymentData['account_holder_name'] = _mobileHolderNameController.text;
+          paymentData['description'] = 'Mobile Money - ${_mobileProviderController.text}';
         } else if (_selectedMethod == 'bank') {
-          paymentData['method_type'] = 'bank_transfer';
-          paymentData['provider'] = _bankNameController.text;
-          paymentData['account_number'] = _bankAccountNumberController.text;
-          paymentData['account_name'] = _bankHolderNameController.text;
-          paymentData['swift_code'] = _swiftIbanController.text;
+          paymentData['name'] = _bankNameController.text; // Bank name
+          paymentData['numbers'] = _bankAccountNumberController.text; // Account number
+          paymentData['account_holder_name'] = _bankHolderNameController.text;
+          paymentData['description'] = 'Bank Transfer - ${_bankNameController.text}${_swiftIbanController.text.isNotEmpty ? ' (SWIFT: ${_swiftIbanController.text})' : ''}';
         }
         
         // Request OTP
