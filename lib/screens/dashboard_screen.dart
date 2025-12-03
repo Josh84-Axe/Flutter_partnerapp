@@ -185,57 +185,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _showRevenueDetails(BuildContext context, AppState appState) {
-    final currentMonth = DateTime.now().month;
-    final revenueTransactions = appState.transactions
-        .where((t) => t.type == 'revenue' && t.createdAt.month == currentMonth)
-        .toList();
-    
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) => Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('revenue_details'.tr(), style: Theme.of(context).textTheme.titleLarge),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(),
-            Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: revenueTransactions.length,
-                itemBuilder: (context, index) {
-                  final txn = revenueTransactions[index];
-                  return ListTile(
-                    leading: const Icon(Icons.payment, color: AppTheme.successGreen),
-                    title: Text(txn.description),
-                    subtitle: Text('${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year}'),
-                    trailing: Text(
-                      appState.formatMoney(txn.amount),
-                      style: const TextStyle(color: AppTheme.successGreen, fontWeight: FontWeight.bold),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    // Navigate to transaction history screen with API data and enhanced UX
+    Navigator.of(context).pushNamed('/transaction-history');
   }
 
   void _showActiveUsersDetails(BuildContext context, AppState appState) {
