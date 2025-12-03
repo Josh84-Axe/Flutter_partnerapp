@@ -39,9 +39,10 @@ class PaymentMethodRepository {
   Future<Map<String, dynamic>?> verifyCreateOtp({
     required Map<String, dynamic> data,
     required String otp,
+    required String otpId,
   }) async {
     try {
-      final payload = {...data, 'code': otp};
+      final payload = {...data, 'code': otp, 'otp_id': otpId};
       final response = await _dio.post('/partner/payment-methods/create/verify-otp/', data: payload);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
