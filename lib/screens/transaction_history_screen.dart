@@ -22,6 +22,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    
+    // Set initial tab from route arguments if provided
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null && args['initialTab'] != null) {
+        final initialTab = args['initialTab'] as int;
+        if (initialTab >= 0 && initialTab < 3) {
+          _tabController.index = initialTab;
+        }
+      }
+    });
+    
     _loadTransactions();
   }
 

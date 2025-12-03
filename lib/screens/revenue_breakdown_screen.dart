@@ -140,126 +140,13 @@ class RevenueBreakdownScreen extends StatelessWidget {
   }
 
   void _showTransactionModal(BuildContext context, String walletType) {
-    final appState = context.read<AppState>();
-    final transactions = walletType == 'assigned' 
-        ? appState.assignedWalletTransactions 
-        : appState.transactions;
+    // Navigate to transaction history with pre-selected tab
+    // 0 = All, 1 = Assigned, 2 = Wallet
+    final initialTab = walletType == 'assigned' ? 1 : 2;
     
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        maxChildSize: 0.9,
-        minChildSize: 0.5,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'transaction_history'.tr(),
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: 'search_transactions'.tr(),
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: transactions.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.receipt_long, size: 64, color: Colors.grey[400]),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No transactions yet',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        controller: scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: transactions.length,
-                        itemBuilder: (context, index) {
-                          final txn = transactions[index];
-                          final description = txn is Map 
-                              ? (txn['description']?.toString() ?? 'Transaction')
-                              : txn.description;
-                          final amount = txn is Map
-                              ? (txn['amount'] as num?)?.toDouble() ?? 0.0
-                              : txn.amount;
-                          final createdAt = txn is Map
-                              ? (txn['created_at'] != null 
-                                  ? DateTime.tryParse(txn['created_at'].toString()) ?? DateTime.now()
-                                  : DateTime.now())
-                              : txn.createdAt;
-                          final type = txn is Map
-                              ? (txn['type']?.toString() ?? 'revenue')
-                              : txn.type;
-                          
-                          final isRevenue = type == 'revenue';
-                          
-                          return _buildTransactionItem(
-                            context,
-                            description,
-                            DateFormat('MMM dd, yyyy • HH:mm').format(createdAt),
-                            '${isRevenue ? '+' : '-'}${appState.formatMoney(amount.abs())}',
-                            isRevenue ? Colors.green : Colors.red,
-                            isRevenue ? Icons.add : Icons.remove,
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    Navigator.of(context).pushNamed(
+      '/transaction-history',
+      arguments: {'initialTab': initialTab},
     );
   }
 
