@@ -248,6 +248,9 @@ class HotspotPartnerApp extends StatelessWidget {
             builder: (context) => VerifyPasswordResetOtpScreen(email: email),
           );
         }
+        if (settings.name == '/reset-password') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
             builder: (context) => ResetPasswordScreen(
               email: args['email'] as String,
               otp: args['otp'] as String,

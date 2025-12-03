@@ -15,6 +15,8 @@ class AuthRepository {
   })  : _dio = dio,
         _tokenStorage = tokenStorage;
 
+  TokenStorage get tokenStorage => _tokenStorage;
+
   /// Login with email and password
   /// Returns true if login successful, false otherwise
   /// Login with email and password
