@@ -381,24 +381,86 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
           paymentData['swift_code'] = _swiftIbanController.text;
         }
         
-        // Call API through AppState
+        // Request OTP
         final appState = context.read<AppState>();
-        await appState.createPaymentMethod(paymentData);
+        await appState.requestPaymentMethodOtp(paymentData);
         
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Payment method added successfully'),
-              backgroundColor: Colors.green,
+          // Show OTP verification dialog
+          final otpController = TextEditingController();
+          final verified = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: const Text('Verify Payment Method'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Enter the OTP code sent to your registered contact.'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: otpController,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 24, letterSpacing: 8),
+                    decoration: InputDecoration(
+                      hintText: '000000',
+                      counterText: '',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () async {
+                    final otp = otpController.text.trim();
+                    if (otp.length == 6) {
+                      try {
+                        await appState.verifyPaymentMethodOtp(otp);
+                        if (context.mounted) {
+                          Navigator.pop(context, true);
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Verification failed: ${e.toString()}'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    }
+                  },
+                  child: const Text('Verify'),
+                ),
+              ],
             ),
           );
-          Navigator.pop(context, true); // Return true to indicate success
+          
+          if (verified == true && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Payment method added successfully'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context, true); // Return true to indicate success
+          }
         }
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to add payment method: ${e.toString()}'),
+              content: Text('Failed to request OTP: ${e.toString()}'),
               backgroundColor: Colors.red,
             ),
           );

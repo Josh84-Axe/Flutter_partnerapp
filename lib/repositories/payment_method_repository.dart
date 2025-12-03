@@ -10,7 +10,7 @@ class PaymentMethodRepository {
   /// Fetch list of payment methods
   Future<List<dynamic>> fetchPaymentMethods() async {
     try {
-      final response = await _dio.get('/partner/payment-methods/');
+      final response = await _dio.get('/partner/payment-methods/list/');
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {
@@ -24,13 +24,28 @@ class PaymentMethodRepository {
     }
   }
 
-  /// Create payment method
-  Future<Map<String, dynamic>?> createPaymentMethod(Map<String, dynamic> data) async {
+  /// Request OTP for creating payment method
+  Future<Map<String, dynamic>?> requestCreateOtp(Map<String, dynamic> data) async {
     try {
-      final response = await _dio.post('/partner/payment-methods/', data: data);
+      final response = await _dio.post('/partner/payment-methods/create/request-otp/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      if (kDebugMode) print('Create payment method error: $e');
+      if (kDebugMode) print('Request create OTP error: $e');
+      rethrow;
+    }
+  }
+
+  /// Verify OTP and create payment method
+  Future<Map<String, dynamic>?> verifyCreateOtp({
+    required Map<String, dynamic> data,
+    required String otp,
+  }) async {
+    try {
+      final payload = {...data, 'code': otp};
+      final response = await _dio.post('/partner/payment-methods/create/verify-otp/', data: payload);
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('Verify create OTP error: $e');
       rethrow;
     }
   }
@@ -46,13 +61,29 @@ class PaymentMethodRepository {
     }
   }
 
-  /// Update payment method
-  Future<Map<String, dynamic>?> updatePaymentMethod(String slug, Map<String, dynamic> data) async {
+  /// Request OTP for updating payment method
+  Future<Map<String, dynamic>?> requestUpdateOtp(String slug, Map<String, dynamic> data) async {
     try {
-      final response = await _dio.put('/partner/payment-methods/$slug/', data: data);
+      final response = await _dio.post('/partner/payment-methods/$slug/update/request-otp/', data: data);
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      if (kDebugMode) print('Update payment method error: $e');
+      if (kDebugMode) print('Request update OTP error: $e');
+      rethrow;
+    }
+  }
+
+  /// Verify OTP and update payment method
+  Future<Map<String, dynamic>?> verifyUpdateOtp({
+    required String slug,
+    required Map<String, dynamic> data,
+    required String otp,
+  }) async {
+    try {
+      final payload = {...data, 'code': otp};
+      final response = await _dio.post('/partner/payment-methods/$slug/update/verify-otp/', data: payload);
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('Verify update OTP error: $e');
       rethrow;
     }
   }
@@ -60,7 +91,7 @@ class PaymentMethodRepository {
   /// Delete payment method
   Future<bool> deletePaymentMethod(String slug) async {
     try {
-      await _dio.delete('/partner/payment-methods/$slug/');
+      await _dio.delete('/partner/payment-methods/$slug/delete/');
       return true;
     } catch (e) {
       if (kDebugMode) print('Delete payment method error: $e');
