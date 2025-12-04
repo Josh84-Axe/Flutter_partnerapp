@@ -80,6 +80,17 @@ class TransactionRepository {
       
       final responseData = response.data;
       
+      // Handle nested structure: data.paginate_data
+      if (responseData is Map && responseData['data'] is Map) {
+        final data = responseData['data'] as Map;
+        if (data['paginate_data'] is List) {
+          final transactions = data['paginate_data'] as List;
+          if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} plan transactions');
+          return transactions;
+        }
+      }
+      
+      // Fallback: check if data is directly a list
       if (responseData is Map && responseData['data'] is List) {
         final transactions = responseData['data'] as List;
         if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} plan transactions');
@@ -175,12 +186,25 @@ class TransactionRepository {
       if (kDebugMode) print('✅ [TransactionRepository] Response: ${response.data}');
       
       final responseData = response.data;
+      
+      // Handle nested structure: data.paginate_data
+      if (responseData is Map && responseData['data'] is Map) {
+        final data = responseData['data'] as Map;
+        if (data['paginate_data'] is List) {
+          final transactions = data['paginate_data'] as List;
+          if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} wallet transactions');
+          return transactions;
+        }
+      }
+      
+      // Fallback: check if data is directly a list
       if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+        final transactions = responseData['data'] as List;
+        if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} wallet transactions');
+        return transactions;
       }
-      if (responseData is List) {
-        return responseData;
-      }
+      
+      if (kDebugMode) print('⚠️ [TransactionRepository] No wallet transactions found');
       return [];
     } catch (e) {
       if (kDebugMode) print('❌ [TransactionRepository] Get wallet transactions error: $e');
