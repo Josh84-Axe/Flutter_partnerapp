@@ -94,6 +94,32 @@ class TransactionRepository {
     }
   }
 
+  /// Get assigned transaction details by ID
+  Future<Map<String, dynamic>> getAssignedTransactionDetails(String id) async {
+    try {
+      if (kDebugMode) print('📄 [TransactionRepository] Fetching assigned transaction details for: $id');
+      final response = await _dio.get('/partner/transactions/assigned/$id/details/');
+      if (kDebugMode) print('✅ [TransactionRepository] Assigned transaction details fetched');
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      if (kDebugMode) print('❌ [TransactionRepository] Get assigned transaction details error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get wallet transaction details by ID
+  Future<Map<String, dynamic>> getWalletTransactionDetails(String id) async {
+    try {
+      if (kDebugMode) print('📄 [TransactionRepository] Fetching wallet transaction details for: $id');
+      final response = await _dio.get('/partner/transactions/wallet/$id/details/');
+      if (kDebugMode) print('✅ [TransactionRepository] Wallet transaction details fetched');
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      if (kDebugMode) print('❌ [TransactionRepository] Get wallet transaction details error: $e');
+      rethrow;
+    }
+  }
+
   /// Get assigned wallet balance (for assigned plans)
   Future<Map<String, dynamic>> getAssignedWalletBalance() async {
     try {

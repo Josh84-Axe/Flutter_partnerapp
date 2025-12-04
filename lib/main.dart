@@ -73,6 +73,7 @@ import 'screens/assign_role_screen.dart';
 import 'screens/router_health_screen.dart';
 import 'screens/transaction_payment_history_screen.dart';
 import 'screens/transaction_history_screen.dart';
+import 'screens/transaction_details_screen.dart';
 import 'screens/add_payout_method_screen.dart';
 import 'screens/assign_router_screen.dart';
 import 'screens/email_verification_screen.dart';
@@ -168,6 +169,7 @@ class HotspotPartnerApp extends StatelessWidget {
         '/router-health': (context) => const RouterHealthScreen(),
         '/transaction-payment-history': (context) => const TransactionPaymentHistoryScreen(),
         '/transaction-history': (context) => const TransactionHistoryScreen(),
+        '/transaction-details': (context) => const TransactionDetailsScreen(),
         '/add-payout-method': (context) => const AddPayoutMethodScreen(),
         '/assign-router': (context) => const AssignRouterScreen(),
         '/security/password-2fa': (context) => const PasswordAndTwoFactorScreen(),

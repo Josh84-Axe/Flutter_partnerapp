@@ -945,6 +945,22 @@ class AppState with ChangeNotifier {
     ]);
   }
 
+  /// Get transaction details by ID and type
+  Future<Map<String, dynamic>> getTransactionDetails(String id, String type) async {
+    try {
+      if (_transactionRepository == null) _initializeRepositories();
+      
+      if (type == 'assigned') {
+        return await _transactionRepository!.getAssignedTransactionDetails(id);
+      } else {
+        return await _transactionRepository!.getWalletTransactionDetails(id);
+      }
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Get transaction details error: $e');
+      rethrow;
+    }
+  }
+
   /// Load withdrawal history
   Future<void> loadWithdrawals() async {
     try {

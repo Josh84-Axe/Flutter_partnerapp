@@ -297,52 +297,64 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            isPositive ? Icons.arrow_downward : Icons.arrow_upward,
-            color: color,
-            size: 20,
-          ),
-        ),
-        title: Text(
-          description,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(_formatDate(createdAt)),
-            if (type.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: _buildTypeBadge(type),
-              ),
-          ],
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '${isPositive ? '+' : ''}${CurrencyUtils.formatPrice(amount.abs(), appState.partnerCountry)}',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: color,
-                fontSize: 16,
-              ),
+      child: InkWell(
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            '/transaction-details',
+            arguments: {
+              'id': transaction['id']?.toString(),
+              'type': type,
+            },
+          );
+        },
+        child: ListTile(
+          leading: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 4),
-            _buildStatusBadge(status),
-          ],
+            child: Icon(
+              isPositive ? Icons.arrow_downward : Icons.arrow_upward,
+              color: color,
+              size: 20,
+            ),
+          ),
+          title: Text(
+            description,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              Text(_formatDate(createdAt)),
+              if (type.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: _buildTypeBadge(type),
+                ),
+            ],
+          ),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${isPositive ? '+' : ''}${CurrencyUtils.formatPrice(amount.abs(), appState.partnerCountry)}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 4),
+              _buildStatusBadge(status),
+            ],
+          ),
+          isThreeLine: type.isNotEmpty,
         ),
-        isThreeLine: type.isNotEmpty,
       ),
     );
   }
