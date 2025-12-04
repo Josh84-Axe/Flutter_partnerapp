@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
@@ -24,7 +25,14 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
 
   Future<void> _loadTransactionDetails() async {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    
+    if (kDebugMode) {
+      print('🔍 [TransactionDetails] Loading transaction details...');
+      print('   Arguments: $args');
+    }
+    
     if (args == null) {
+      if (kDebugMode) print('❌ [TransactionDetails] No arguments provided');
       setState(() {
         _error = 'No transaction ID provided';
         _isLoading = false;
@@ -35,7 +43,13 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
     final id = args['id']?.toString();
     final type = args['type']?.toString() ?? 'wallet';
 
-    if (id == null) {
+    if (kDebugMode) {
+      print('   Transaction ID: $id');
+      print('   Transaction Type: $type');
+    }
+
+    if (id == null || id == 'null' || id.isEmpty) {
+      if (kDebugMode) print('❌ [TransactionDetails] Invalid transaction ID: $id');
       setState(() {
         _error = 'Invalid transaction ID';
         _isLoading = false;
@@ -46,14 +60,23 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
     setState(() => _isLoading = true);
 
     try {
+      if (kDebugMode) print('📡 [TransactionDetails] Fetching details from API...');
       final appState = context.read<AppState>();
       final details = await appState.getTransactionDetails(id, type);
+      
+      if (kDebugMode) {
+        print('✅ [TransactionDetails] Details received:');
+        print('   Response: $details');
+      }
       
       setState(() {
         _transactionDetails = details['data'] as Map<String, dynamic>?;
         _isLoading = false;
       });
+      
+      if (kDebugMode) print('✅ [TransactionDetails] Details loaded successfully');
     } catch (e) {
+      if (kDebugMode) print('❌ [TransactionDetails] Error loading details: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;

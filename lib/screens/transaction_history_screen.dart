@@ -299,12 +299,22 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () {
+          final transactionId = transaction['id']?.toString();
+          final transactionType = type.isNotEmpty ? type : 'wallet';
+          
+          if (kDebugMode) {
+            print('🔍 [TransactionHistory] Navigating to details:');
+            print('   Transaction ID: $transactionId');
+            print('   Transaction Type: $transactionType');
+            print('   Full transaction data: $transaction');
+          }
+          
           Navigator.pushNamed(
             context,
             '/transaction-details',
             arguments: {
-              'id': transaction['id']?.toString(),
-              'type': type,
+              'id': transactionId,
+              'type': transactionType,
             },
           );
         },
