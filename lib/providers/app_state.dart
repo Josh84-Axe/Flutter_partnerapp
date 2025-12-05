@@ -985,8 +985,8 @@ class AppState with ChangeNotifier {
       if (kDebugMode) print('💸 [AppState] Requesting payout: $amount to method: $paymentMethodId');
       
       final withdrawalData = {
-        'amount': amount,
-        'payment_method_id': paymentMethodId,
+        'amount': amount.toString(),
+        'payment_method': paymentMethodId,
       };
       
       final result = await _transactionRepository!.createWithdrawal(withdrawalData);

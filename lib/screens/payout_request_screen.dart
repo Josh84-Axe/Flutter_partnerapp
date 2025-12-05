@@ -32,7 +32,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
           setState(() {
             // Select first method by default
             final firstMethod = appState.paymentMethods.first;
-            _selectedMethod = firstMethod['slug']?.toString() ?? firstMethod['id']?.toString() ?? '';
+            _selectedMethod = firstMethod['id']?.toString() ?? '';
             _calculateFees();
           });
         }
@@ -56,7 +56,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
       final appState = context.read<AppState>();
       // Find the method object that matches the selected slug
       final selectedMethodObj = appState.paymentMethods.firstWhere(
-        (m) => (m['slug']?.toString() ?? m['id']?.toString()) == _selectedMethod,
+        (m) => m['id']?.toString() == _selectedMethod,
         orElse: () => null,
       );
       
@@ -250,13 +250,13 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                           final methodType = method['method_type']?.toString() ?? '';
                           final provider = method['provider']?.toString() ?? '';
                           final accountNumber = method['account_number']?.toString() ?? '';
-                          final slug = method['slug']?.toString() ?? method['id']?.toString() ?? '';
+                          final id = method['id']?.toString() ?? '';
                           
                           return _buildMethodCard(
                             provider,
                             accountNumber,
                             methodType,
-                            slug,
+                            id,
                           );
                         }).toList(),
                       ),
@@ -467,9 +467,9 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
     );
   }
   
-  Widget _buildMethodCard(String provider, String accountNumber, String methodType, String slug) {
+  Widget _buildMethodCard(String provider, String accountNumber, String methodType, String id) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isSelected = _selectedMethod == slug;
+    final isSelected = _selectedMethod == id;
     final icon = methodType == 'mobile_money' ? Icons.phone_android : Icons.account_balance;
     
     return Card(
@@ -485,7 +485,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
       child: InkWell(
         onTap: () {
           setState(() {
-            _selectedMethod = slug;
+            _selectedMethod = id;
             _calculateFees();
           });
         },
