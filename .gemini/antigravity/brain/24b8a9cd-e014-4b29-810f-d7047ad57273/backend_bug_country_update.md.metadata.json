@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Documentation of backend bug where partner country update endpoint returns 500 error when attempting to change country from Togo to Ghana.",
+  "updatedAt": "2025-11-23T19:37:10.243258500Z"
+}

@@ -1,0 +1,41 @@
+# Task: Design and Implement New Internet Plan UI
+
+- [x] Generate UI mockup for validation <!-- id: 0 -->
+- [x] Validate mockup with user <!-- id: 1 -->
+- [x] Restore Internet Plan menu in Settings <!-- id: 2 -->
+- [x] Implement new Internet Plan screen UI <!-- id: 3 -->
+- [x] Verify functionality (Create, Edit, Delete) <!-- id: 4 -->
+
+# Task: Fix Forgot Password Flow
+
+- [x] Audit Forgot Password Flow <!-- id: 5 -->
+    - [x] Analyze [ForgotPasswordScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/forgot_password_screen.dart#8-14) and [PasswordRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#5-80) <!-- id: 6 -->
+    - [x] Verify API endpoints and payload <!-- id: 7 -->
+    - [x] Check OTP verification logic <!-- id: 8 -->
+    - [x] Check Password Reset logic <!-- id: 9 -->
+- [x] Fix Reset Code Email Failure <!-- id: 10 -->
+    - [x] Identify root cause of email failure <!-- id: 11 -->
+    - [x] Implement fix (Reverted to AuthRepository - PasswordRepository endpoints don't exist) <!-- id: 12 -->
+- [x] Verify Fix <!-- id: 13 -->
+
+# Task: Implement Transaction and Wallet Flow
+
+- [x] Analyze transaction and wallet flow <!-- id: 14 -->
+- [x] Update TransactionRepository with new endpoints <!-- id: 15 -->
+- [x] Update AppState with wallet management methods <!-- id: 16 -->
+- [x] Update WalletOverviewScreen with real data <!-- id: 17 -->
+- [x] Update PayoutRequestScreen with real data <!-- id: 18 -->
+- [x] Update RevenueBreakdownScreen with real data <!-- id: 19 -->
+- [x] Verify and Document <!-- id: 20 -->
+
+# Task: Fix Registration Form Fields
+
+- [x] Analyze registration form fields <!-- id: 21 -->
+- [x] Create implementation plan <!-- id: 22 -->
+- [x] Update AuthRepository.register() <!-- id: 23 -->
+- [x] Update AppState.register() <!-- id: 24 -->
+- [ ] Update LoginScreen form fields <!-- id: 25 -->
+    - [ ] Add Enterprise Name and Confirm Password <!-- id: 26 -->
+    - [ ] Update Country Dropdown (ISO codes) <!-- id: 27 -->
+    - [ ] Update Phone Default Logic <!-- id: 28 -->
+    - [ ] Ensure all fields are sent <!-- id: 29 -->

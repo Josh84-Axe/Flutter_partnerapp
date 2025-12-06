@@ -1,0 +1,9 @@
+# Task List
+
+- [/] Confirm APK Build <!-- id: 0 -->
+    - [ ] Run `flutter build apk` to verify build stability <!-- id: 1 -->
+    - [ ] Fix any build errors if they arise <!-- id: 2 -->
+- [ ] Setup and Run Tests on Emulator <!-- id: 3 -->
+    - [ ] Verify Android Emulator is running <!-- id: 4 -->
+    - [ ] Identify or Create "Functional UI Test Plan" <!-- id: 5 -->
+    - [ ] Run tests on the emulator <!-- id: 6 -->

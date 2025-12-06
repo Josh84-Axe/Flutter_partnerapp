@@ -1,0 +1,50 @@
+# Forgot Password Flow Investigation Plan
+
+## Goal
+Investigate why the reset code email is failing and fix the issue. Audit the entire flow.
+
+## Current State
+- Entry Point: [lib/feature/auth/forgot_password_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/forgot_password_screen.dart)
+- Repository: [lib/repositories/password_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart) (assumed)
+- Provider: [lib/providers/app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+## Investigation Steps
+
+### 1. Audit [ForgotPasswordScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/forgot_password_screen.dart#8-14)
+- Check how the email is collected and validated.
+- Check which [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#41-2008) method is called.
+- Check navigation logic after success/failure.
+
+### 2. Audit [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#41-2008)
+- Check the method called by the screen.
+- Verify how it calls the repository.
+- Check error handling.
+
+### 3. Audit Findings
+- **Current Implementation**: Uses [AuthRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#8-312) (Set A endpoints).
+    - Request: `/partner/password-reset/`
+    - Confirm: `/partner/password-reset-confirm/` (combines OTP and password reset)
+- **Alternative Implementation**: [PasswordRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#5-66) (Set B endpoints).
+    - Request: `/partner/password-reset-request-otp/`
+    - Verify OTP: `/partner/password-reset-otp-verify/`
+    - Reset: `/partner/reset-password/`
+- **Issue**: "Reset code email is failing" suggests `/partner/password-reset/` is incorrect or failing.
+- **Missing Step**: [VerifyPasswordResetOtpScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/verify_password_reset_otp_screen.dart#8-20) does NOT verify the OTP with the backend; it just navigates to the next screen.
+
+## Fix Plan
+
+### 1. Update [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#41-2008)
+- Switch from [AuthRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#8-312) to [PasswordRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#5-66) for password reset operations.
+- Update [requestPasswordReset](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#517-527) to use `_passwordRepository.requestPasswordResetOtp`.
+- Add [verifyPasswordResetOtp](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#38-51) method using `_passwordRepository.verifyPasswordResetOtp`.
+- Update [confirmPasswordReset](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#528-546) to use `_passwordRepository.resetPassword`.
+
+### 2. Update [VerifyPasswordResetOtpScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/verify_password_reset_otp_screen.dart#8-20)
+- Call `AppState.verifyPasswordResetOtp` before navigating to [ResetPasswordScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/reset_password_screen.dart#8-21).
+- Only navigate if verification is successful.
+
+### 3. Update [ResetPasswordScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/reset_password_screen.dart#8-21)
+- Ensure `AppState.confirmPasswordReset` passes the correct data to `PasswordRepository.resetPassword`.
+
+### 4. Verify
+- User to verify the flow.

@@ -1,0 +1,118 @@
+# Systematic Feature Rebuild Task List
+
+## Pre-Implementation
+- [ ] Review implementation plan
+- [ ] Commit payout tracking changes
+- [ ] Create feature branch: `feature/rebuild-lost-features`
+
+## Phase 1: Core AppState Infrastructure
+
+### Active Sessions Support
+- [x] Add `_activeSessions` field to AppState
+- [x] Add `activeSessions` getter
+- [x] Implement [loadActiveSessions()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#799-811) method
+- [x] Implement [disconnectSession()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/session_repository.dart#28-41) method
+- [x] Test active sessions methods
+
+### Hotspot Users Support
+- [x] Verify `_hotspotUsers` field exists
+- [x] Verify `hotspotUsers` getter exists
+- [x] Implement [loadHotspotUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1005-1018) method
+- [x] Implement [createHotspotUser()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1019-1033) method
+- [x] Implement [deleteHotspotUser()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#886-900) method
+- [x] Test hotspot user methods
+
+### Plan & Profile Enhancements
+- [x] Add `_sharedUsers`, `_rateLimits`, `_idleTimeouts` fields
+- [x] Add getters for shared users, rate limits, idle timeouts
+- [x] Implement [updatePlan()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#66-85) method
+- [x] Implement [createHotspotProfile()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#956-970) method
+- [x] Implement [updateHotspotProfile()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#971-985) method
+- [x] Implement [fetchSharedUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1299-1310) method
+- [x] Implement [fetchRateLimits()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#12-28) method
+- [x] Implement [fetchIdleTimeouts()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#220-236) method
+- [x] Test plan/profile methods
+
+### Email Verification Support
+- [x] Implement [confirmRegistration()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#175-190) method
+- [x] Implement [resendVerifyEmailOtp()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#334-353) method
+- [x] Test email verification methods
+
+### Phase 1 Verification
+- [ ] Integrate with AppState methods
+- [ ] Test hotspot users screen
+
+### Email Verification Screen
+- [ ] Create `email_verification_screen.dart`
+- [ ] Implement OTP input
+- [ ] Add resend OTP button with timer
+- [ ] Add success/error handling
+- [ ] Test email verification screen
+
+### OTP Verification Screen
+- [ ] Create `otp_verification_screen.dart`
+- [ ] Implement generic OTP widget
+- [ ] Make reusable for multiple flows
+- [ ] Test OTP screen
+
+### Phase 2 Verification
+- [ ] All screens display correctly
+- [ ] All CRUD operations work
+- [ ] Build succeeds
+- [ ] Manual testing passes
+- [ ] Commit Phase 2 changes
+
+## Phase 3: Enhanced Screens
+
+### Enhanced Plan Creation
+- [ ] Commit Phase 3 changes
+
+## Phase 4: Supporting Features
+
+### Permission Utilities
+- [ ] Create [permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart)
+- [ ] Define permission constants
+- [ ] Create permission mappings
+- [ ] Test permission utilities
+
+### Permission Dialog
+- [ ] Create `permission_denied_dialog.dart`
+- [ ] Implement reusable dialog
+- [ ] Test permission dialog
+
+### Subscription Repository (Optional)
+- [ ] Create [subscription_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/subscription_repository.dart)
+- [ ] Implement basic methods
+- [ ] Test subscription repository
+
+### Phase 4 Verification
+- [ ] All utilities functional
+- [ ] Build succeeds
+- [ ] Commit Phase 4 changes
+
+## Final Verification
+
+### Build & Test
+- [ ] Clean build succeeds
+- [ ] Windows build succeeds
+- [ ] All features manually tested
+- [ ] No runtime errors
+- [ ] Performance acceptable
+
+### Documentation
+- [ ] Update API documentation
+- [ ] Create feature documentation
+- [ ] Update walkthrough documents
+
+### Git Cleanup
+- [ ] All changes committed
+- [ ] Descriptive commit messages
+- [ ] Push to remote
+- [ ] Create PR if needed
+
+## Completion Criteria
+- [ ] All lost features restored
+- [ ] Code quality improved
+- [ ] All tests passing
+- [ ] Documentation complete
+- [ ] Changes committed and pushed

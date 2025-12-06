@@ -1,0 +1,13 @@
+# Task: Implement Forgotten Password Flow
+
+- [ ] Implement Forgotten Password UI in Login Screen <!-- id: 0 -->
+    - [ ] Add "Forgot Password?" button to Login Screen <!-- id: 1 -->
+    - [ ] Create [ForgotPasswordScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/forgot_password_screen.dart#4-10) (or dialog) for email input <!-- id: 2 -->
+    - [ ] Create `ResetPasswordScreen` (or dialog) for OTP/New Password input <!-- id: 3 -->
+- [ ] Implement Password Reset Logic <!-- id: 4 -->
+    - [x] Verify/Add [requestPasswordReset](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#24-37) in [AuthRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#7-227) <!-- id: 5 -->
+    - [x] Verify/Add `confirmPasswordReset` in [AuthRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#7-227) <!-- id: 6 -->
+    - [x] Expose methods in [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#35-1344) <!-- id: 7 -->
+- [ ] Verification <!-- id: 8 -->
+    - [ ] Verify UI presence of "Forgot Password?" button <!-- id: 9 -->
+    - [ ] Verify flow navigation <!-- id: 10 -->

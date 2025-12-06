@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Audit report of hardcoded currency symbols, mock data, and static lists in the codebase.",
+  "updatedAt": "2025-11-24T23:00:24.397444700Z"
+}

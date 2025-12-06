@@ -1,0 +1,28 @@
+# Task List - Config CRUD API Integration
+
+## Planning
+- [x] Analyze config screens structure <!-- id: 0 -->
+- [x] Create implementation plan <!-- id: 1 -->
+
+## AppState Updates
+- [/] Add CRUD methods for each config type <!-- id: 2 -->
+    - [ ] Rate Limit CRUD <!-- id: 3 -->
+    - [ ] Data Limit CRUD <!-- id: 4 -->
+    - [ ] Validity Period CRUD <!-- id: 5 -->
+    - [ ] Idle Timeout CRUD <!-- id: 6 -->
+    - [ ] Shared Users CRUD <!-- id: 7 -->
+
+## Screen Refactoring
+- [ ] Refactor Rate Limit Config Screen <!-- id: 8 -->
+- [ ] Refactor Data Limit Config Screen <!-- id: 9 -->
+- [ ] Refactor Validity Config Screen <!-- id: 10 -->
+- [ ] Refactor Idle Timeout Config Screen <!-- id: 11 -->
+- [ ] Refactor Shared Users Config Screen <!-- id: 12 -->
+
+## Minor Fixes
+- [ ] Fix CreateEditUserProfileScreen to use loadAllConfigurations <!-- id: 13 -->
+
+## Verification
+- [ ] Test create operations <!-- id: 14 -->
+- [ ] Test delete operations <!-- id: 15 -->
+- [ ] Verify data persistence <!-- id: 16 -->

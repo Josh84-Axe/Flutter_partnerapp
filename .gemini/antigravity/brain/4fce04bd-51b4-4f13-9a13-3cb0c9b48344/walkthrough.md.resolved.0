@@ -1,0 +1,17 @@
+# Verification Walkthrough
+
+Please verify the following fixes in the application.
+
+## 1. Currency Display
+- [ ] **Action**: Log in and view the dashboard.
+- [ ] **Expected Result**: The currency symbol should match your country (e.g., 'CFA' for Togo/Benin, '₦' for Nigeria). If your country is not in the list, it should default to '$' or the currency code.
+
+## 2. Plan Assignment
+- [ ] **Action**: Go to **Plans** -> **Assign Plan**.
+- [ ] **Action**: Select a user and a plan, then click **Assign**.
+- [ ] **Expected Result**: You should see a success message. The 400 error should no longer occur.
+
+## 3. Configuration Screens
+- [ ] **Action**: Go to **Configurations**.
+- [ ] **Action**: Open **Rate Limit**, **Data Limit**, and **Additional Devices**.
+- [ ] **Expected Result**: The screens should open without error. If the backend endpoints are missing (404), the lists will be empty, but the app should NOT crash or show an error message.

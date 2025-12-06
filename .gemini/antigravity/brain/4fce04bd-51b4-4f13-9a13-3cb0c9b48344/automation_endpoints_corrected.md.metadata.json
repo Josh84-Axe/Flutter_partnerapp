@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Summary document explaining the current status: endpoints are correct and work with http package, but fail with Dio in flutter test environment. Includes evidence, workarounds, and next steps.",
+  "updatedAt": "2025-11-22T13:03:04.379395900Z"
+}

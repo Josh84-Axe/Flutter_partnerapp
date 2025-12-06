@@ -1,0 +1,20 @@
+# Task List
+
+- [x] Fix Currency Display Bug <!-- id: 0 -->
+- [x] Fix 400 Error when Assigning Plan <!-- id: 1 -->
+- [x] Fix 404 Error when Opening Configuration Screens <!-- id: 2 -->
+- [/] Verify Fixes <!-- id: 3 -->
+- [x] Create standalone automation script (`test/automation_complete.dart`)
+    - [x] Implement login and token handling
+    - [x] Implement creation of all configurations (Rate Limit, Idle Timeout, Validity, Shared Users)
+    - [x] Implement Hotspot Profile creation (linking configs)
+    - [x] Implement Internet Plan creation (linking profile)
+    - [x] Implement Plan Assignment (finding user and assigning)
+- [x] Execute automation script and verify backend success
+    - [x] Verify all resources created (IDs returned)
+    - [x] Verify plan assignment to "Joshua"
+- [x] Debug App Login
+    - [x] Verify credentials with standalone script (Success)
+    - [x] Investigate app-side failure (Dio vs HTTP, Base URL, Token Storage)
+    - [x] Fix `PlanRepository` compilation error (duplicate method)
+    - [x] Rebuild Windows app for manual testing

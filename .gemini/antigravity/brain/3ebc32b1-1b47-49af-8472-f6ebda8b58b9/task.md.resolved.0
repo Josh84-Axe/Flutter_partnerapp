@@ -1,0 +1,7 @@
+# Task: Build Flutter Partner App
+
+- [ ] Explore project structure and identify build requirements <!-- id: 0 -->
+- [ ] Install dependencies (`flutter pub get`) <!-- id: 1 -->
+- [ ] Attempt to build the application <!-- id: 2 -->
+- [ ] Fix any build errors if they arise <!-- id: 3 -->
+- [ ] Verify the build <!-- id: 4 -->

@@ -1,0 +1,110 @@
+# Task: Design and Implement New Internet Plan UI
+
+- [x] Generate UI mockup for validation <!-- id: 0 -->
+- [x] Validate mockup with user <!-- id: 1 -->
+- [x] Restore Internet Plan menu in Settings <!-- id: 2 -->
+- [x] Implement new Internet Plan screen UI <!-- id: 3 -->
+- [x] Verify functionality (Create, Edit, Delete) <!-- id: 4 -->
+
+# Task: Fix Forgot Password Flow
+
+- [x] Audit Forgot Password Flow <!-- id: 5 -->
+    - [x] Analyze [ForgotPasswordScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/forgot_password_screen.dart#8-14) and [PasswordRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#5-80) <!-- id: 6 -->
+    - [x] Verify API endpoints and payload <!-- id: 7 -->
+    - [x] Check OTP verification logic <!-- id: 8 -->
+    - [x] Check Password Reset logic <!-- id: 9 -->
+- [x] Fix Reset Code Email Failure <!-- id: 10 -->
+    - [x] Identify root cause of email failure <!-- id: 11 -->
+    - [x] Implement fix (Reverted to AuthRepository - PasswordRepository endpoints don't exist) <!-- id: 12 -->
+- [x] Verify Fix <!-- id: 13 -->
+
+# Task: Implement Transaction and Wallet Flow
+
+- [x] Analyze transaction and wallet flow <!-- id: 14 -->
+- [x] Update TransactionRepository with new endpoints <!-- id: 15 -->
+- [x] Update AppState with wallet management methods <!-- id: 16 -->
+- [x] Update WalletOverviewScreen with real data <!-- id: 17 -->
+- [x] Update PayoutRequestScreen with real data <!-- id: 18 -->
+- [x] Update RevenueBreakdownScreen with real data <!-- id: 19 -->
+- [x] Verify and Document <!-- id: 20 -->
+# Task: Design and Implement New Internet Plan UI
+
+- [x] Generate UI mockup for validation <!-- id: 0 -->
+- [x] Validate mockup with user <!-- id: 1 -->
+- [x] Restore Internet Plan menu in Settings <!-- id: 2 -->
+- [x] Implement new Internet Plan screen UI <!-- id: 3 -->
+- [x] Verify functionality (Create, Edit, Delete) <!-- id: 4 -->
+
+# Task: Fix Forgot Password Flow
+
+- [x] Audit Forgot Password Flow <!-- id: 5 -->
+    - [x] Analyze [ForgotPasswordScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/forgot_password_screen.dart#8-14) and [PasswordRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#5-80) <!-- id: 6 -->
+    - [x] Verify API endpoints and payload <!-- id: 7 -->
+    - [x] Check OTP verification logic <!-- id: 8 -->
+    - [x] Check Password Reset logic <!-- id: 9 -->
+- [x] Fix Reset Code Email Failure <!-- id: 10 -->
+    - [x] Identify root cause of email failure <!-- id: 11 -->
+    - [x] Implement fix (Reverted to AuthRepository - PasswordRepository endpoints don't exist) <!-- id: 12 -->
+- [x] Verify Fix <!-- id: 13 -->
+
+# Task: Implement Transaction and Wallet Flow
+
+- [x] Analyze transaction and wallet flow <!-- id: 14 -->
+- [x] Update TransactionRepository with new endpoints <!-- id: 15 -->
+- [x] Update AppState with wallet management methods <!-- id: 16 -->
+- [x] Update WalletOverviewScreen with real data <!-- id: 17 -->
+- [x] Update PayoutRequestScreen with real data <!-- id: 18 -->
+- [x] Update RevenueBreakdownScreen with real data <!-- id: 19 -->
+- [x] Verify and Document <!-- id: 20 -->
+
+# Task: Fix Registration Form Fields
+
+- [x] Analyze registration form fields <!-- id: 21 -->
+- [x] Create implementation plan <!-- id: 22 -->
+- [x] Update AuthRepository.register() <!-- id: 23 -->
+- [x] Audit Permissions Root Cause <!-- id: 30 -->
+    - [x] Verify login API response format for permissions <!-- id: 31 -->
+    - [x] Identify discrepancy between API labels and internal constants <!-- id: 32 -->
+    - [x] Implement mapping in [PermissionMapping](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#26-68) <!-- id: 33 -->
+    - [x] Update [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#41-2075) to parse and map permissions from login/profile data <!-- id: 34 -->
+    - [x] Streamline permission loading logic <!-- id: 35 -->
+- [x] Update AppState.register() <!-- id: 24 -->
+- [x] Update LoginScreen form fields <!-- id: 25 -->
+    - [x] Add Enterprise Name and Confirm Password <!-- id: 26 -->
+    - [x] Update Country Dropdown (ISO codes) <!-- id: 27 -->
+    - [x] Update Phone Default Logic <!-- id: 28 -->
+    - [x] Ensure all fields are sent <!-- id: 29 -->
+
+# Task: Rewire Revenue and Wallet Endpoints
+
+- [x] Update PartnerRepository with [fetchCountersBalance](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#102-125) and [fetchWalletBalance](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#126-149) <!-- id: 36 -->
+- [x] Update AppState with revenue fields and new loading logic <!-- id: 37 -->
+- [x] Update DashboardScreen to use `totalRevenue` from AppState <!-- id: 38 -->
+- [x] Update RevenueBreakdownScreen to use `assignedRevenue` and `onlineRevenue` <!-- id: 39 -->
+- [x] Update WalletOverviewScreen to use `totalRevenue` and `walletBalance` <!-- id: 40 -->
+
+# Task: Investigate Registration Error
+
+- [x] Add try-catch and logging to RegistrationScreen._submit <!-- id: 41 -->
+- [x] Fix syntax error (missing build method) in RegistrationScreen <!-- id: 42 -->
+- [ ] Analyze detailed error logs from user <!-- id: 43 -->
+- [ ] Implement fix for NoSuchMethodError <!-- id: 44 -->
+
+# Task: Verify API Response Keys
+
+- [x] Curl `/partner/counters/balance/` to verify keys <!-- id: 45 -->
+- [x] Update AppState to use `online_revenue_counter` and `assinged_revenue_counter` <!-- id: 46 -->
+- [x] Curl `/partner/wallet/balance/` to verify keys <!-- id: 47 -->
+- [x] Update AppState to use `wallet_balance` instead of `balance` <!-- id: 48 -->
+- [x] Add `CurrencyUtils.parseAmount` method for safe numeric parsing <!-- id: 49 -->
+
+# Task: Fix Critical API Response Extraction
+
+- [x] Conduct comprehensive audit of registration and data display <!-- id: 50 -->
+- [x] Create implementation plan with root cause analysis <!-- id: 51 -->
+- [x] Fix PartnerRepository to extract 'data' field from API responses <!-- id: 52 -->
+- [x] Add comprehensive logging to AppState data loading methods <!-- id: 53 -->
+- [x] Improve registration error handling with user-facing messages <!-- id: 54 -->
+- [ ] Test registration flow end-to-end <!-- id: 55 -->
+- [ ] Verify dashboard displays correct revenue values <!-- id: 56 -->
+- [ ] Verify wallet displays correct balance <!-- id: 57 -->

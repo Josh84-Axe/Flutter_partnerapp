@@ -1,0 +1,7 @@
+# Implement Add Payment Method in Withdrawal Flow
+
+- [ ] Check payment method API endpoints <!-- id: 0 -->
+- [ ] Review current withdrawal workflow <!-- id: 1 -->
+- [ ] Review add payment method screen <!-- id: 2 -->
+- [ ] Integrate add payment method into withdrawal flow <!-- id: 3 -->
+- [ ] Test end-to-end workflow <!-- id: 4 -->

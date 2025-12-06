@@ -1,0 +1,44 @@
+# Currency Standardization and Real Data Integration Plan
+
+## Goal Description
+Standardize currency handling across the application by consolidating utility classes and refactoring key financial screens to use real data from [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081) and dynamic currency symbols based on the partner's country. This will eliminate hardcoded `$` symbols and mock data.
+
+## Proposed Changes
+
+### Utilities
+#### [MODIFY] [currency_utils.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart)
+- Merge functionality from [CurrencyHelper](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_helper.dart#3-50).
+- Ensure [formatPrice](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#88-93) and [getCurrencySymbol](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_helper.dart#27-42) are robust and universally used.
+- Add [getCurrencyCode](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_helper.dart#4-26) if needed from [CurrencyHelper](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_helper.dart#3-50).
+
+#### [DELETE] [currency_helper.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_helper.dart)
+- Remove this file after migrating logic to [CurrencyUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#2-94).
+
+### Screens
+#### [MODIFY] [transaction_payment_history_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/transaction_payment_history_screen.dart)
+- Replace hardcoded mock data with [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081) transactions.
+- Use [CurrencyUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#2-94) for formatting amounts.
+- Implement proper state management to reflect real wallet balance and income.
+
+#### [MODIFY] [revenue_breakdown_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/revenue_breakdown_screen.dart)
+- Replace hardcoded mock data.
+- Calculate revenue from actual transactions in [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081).
+- Use [CurrencyUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#2-94) for formatting.
+
+#### [MODIFY] [additional_device_config_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/additional_device_config_screen.dart)
+- Replace hardcoded `$` with `CurrencyUtils.getCurrencySymbol`.
+- Ensure input fields and display logic respect the dynamic currency.
+
+#### [MODIFY] [metric_card.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/metric_card.dart)
+- Update to use [CurrencyUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#2-94) exclusively.
+
+#### [MODIFY] [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+- Update import to [CurrencyUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#2-94).
+
+## Verification Plan
+
+### Manual Verification
+- **Currency Symbol:** Verify that changing the partner's country (mock or real) updates the currency symbol across all modified screens.
+- **Transactions:** Check that the "Transaction & Payout History" screen shows the actual transactions loaded in [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081).
+- **Revenue:** Check that the "Revenue Breakdown" screen calculates totals based on the transactions.
+- **Config:** Verify that the "Additional Device Configuration" screen shows the correct symbol.

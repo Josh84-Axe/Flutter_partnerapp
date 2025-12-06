@@ -1,0 +1,8 @@
+# Task: Debug Password Reset Error
+
+- [ ] Verify Password Reset API <!-- id: 0 -->
+    - [ ] Create `test/test_password_reset.dart` <!-- id: 1 -->
+    - [ ] Run test to check endpoint behavior and payload format <!-- id: 2 -->
+- [ ] Fix Password Reset Implementation <!-- id: 3 -->
+    - [ ] Update [PasswordRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#5-66) if payload is incorrect <!-- id: 4 -->
+    - [ ] Handle 400 errors gracefully in UI <!-- id: 5 -->

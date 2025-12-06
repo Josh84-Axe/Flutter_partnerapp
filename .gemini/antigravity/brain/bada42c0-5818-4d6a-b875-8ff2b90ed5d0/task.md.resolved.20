@@ -1,0 +1,97 @@
+# Systematic Feature Rebuild Task List
+
+## Pre-Implementation
+- [ ] Review implementation plan
+- [ ] Commit payout tracking changes
+- [ ] Create feature branch: `feature/rebuild-lost-features`
+
+## Phase 1: Core AppState Infrastructure
+
+### Active Sessions Support
+- [x] Add `_activeSessions` field to AppState
+- [x] Add `activeSessions` getter
+- [x] Implement [loadActiveSessions()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#814-826) method
+- [x] Implement [disconnectSession()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#853-870) method
+- [x] Test active sessions methods
+
+### Hotspot Users Support
+- [x] Verify `_hotspotUsers` field exists
+- [x] Verify `hotspotUsers` getter exists
+- [x] Implement [loadHotspotUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1005-1018) method
+- [x] Implement [createHotspotUser()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1019-1033) method
+- [x] Implement [deleteHotspotUser()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1049-1063) method
+- [x] Test hotspot user methods
+
+### Plan & Profile Enhancements
+- [x] Add `_sharedUsers`, `_rateLimits`, `_idleTimeouts` fields
+- [x] Add getters for shared users, rate limits, idle timeouts
+- [x] Implement [updatePlan()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#66-85) method
+- [x] Implement [createHotspotProfile()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#958-970) method
+- [x] Implement [updateHotspotProfile()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#999-1013) method
+- [x] Implement [fetchSharedUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#931-942) method
+- [x] Implement [fetchRateLimits()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1162-1173) method
+- [x] Implement [fetchIdleTimeouts()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1254-1265) method
+- [x] Test plan/profile methods
+
+### Email Verification Support
+- [x] Implement [confirmRegistration()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#175-190) method
+- [x] Implement [resendVerifyEmailOtp()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#207-222) method
+- [ ] All CRUD operations work
+- [ ] Build succeeds
+- [ ] Manual testing passes
+- [ ] Commit Phase 2 changes
+
+## Phase 3: Enhanced Screens
+
+### Enhanced Plan Creation
+- [ ] Commit Phase 3 changes
+
+## Phase 4: Supporting Features
+
+### Permission Utilities
+- [ ] Create [permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart)
+- [ ] Define permission constants
+- [ ] Create permission mappings
+- [ ] Test permission utilities
+
+### Permission Dialog
+- [ ] Create `permission_denied_dialog.dart`
+- [ ] Implement reusable dialog
+- [ ] Test permission dialog
+
+### Subscription Repository (Optional)
+- [ ] Create [subscription_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/subscription_repository.dart)
+- [ ] Implement basic methods
+- [ ] Test subscription repository
+
+### Phase 4 Verification
+- [ ] All utilities functional
+- [ ] Build succeeds
+- [ ] Commit Phase 4 changes
+
+## Final Verification
+
+### Build & Test
+- [ ] Clean build succeeds
+- [ ] Windows build succeeds
+- [ ] All features manually tested
+- [ ] No runtime errors
+- [ ] Performance acceptable
+
+### Documentation
+- [ ] Update API documentation
+- [ ] Create feature documentation
+- [ ] Update walkthrough documents
+
+### Git Cleanup
+- [ ] All changes committed
+- [ ] Descriptive commit messages
+- [ ] Push to remote
+- [ ] Create PR if needed
+
+## Completion Criteria
+- [ ] All lost features restored
+- [ ] Code quality improved
+- [ ] All tests passing
+- [ ] Documentation complete
+- [ ] Changes committed and pushed

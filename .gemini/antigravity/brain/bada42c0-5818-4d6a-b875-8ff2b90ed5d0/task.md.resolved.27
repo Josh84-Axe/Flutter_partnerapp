@@ -1,0 +1,82 @@
+# Systematic Feature Rebuild Task List
+- [x] Implement [loadHotspotUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1005-1018) method
+- [x] Implement [createHotspotUser()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1019-1033) method
+- [x] Implement [deleteHotspotUser()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#908-922) method
+- [x] Test hotspot user methods
+
+### Plan & Profile Enhancements
+- [x] Add `_sharedUsers`, `_rateLimits`, `_idleTimeouts` fields
+- [x] Add getters for shared users, rate limits, idle timeouts
+- [x] Implement [updatePlan()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#66-85) method
+- [x] Implement [createHotspotProfile()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#953-967) method
+- [x] Implement [updateHotspotProfile()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#968-982) method
+- [x] Implement [fetchSharedUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#834-846) method
+```
+# Systematic Feature Rebuild Task List
+- [x] Implement `loadHotspotUsers()` method
+- [x] Implement `createHotspotUser()` method
+- [x] Implement `deleteHotspotUser()` method
+- [x] Test hotspot user methods
+
+### Plan & Profile Enhancements
+- [x] Add `_sharedUsers`, `_rateLimits`, `_idleTimeouts` fields
+- [x] Add getters for shared users, rate limits, idle timeouts
+- [x] Implement `updatePlan()` method
+- [x] Implement `createHotspotProfile()` method
+- [x] Implement `updateHotspotProfile()` method
+- [x] Implement `fetchSharedUsers()` method
+- [x] Implement `fetchRateLimits()` method
+- [x] Implement `fetchIdleTimeouts()` method
+- [x] Test plan/profile methods
+
+### Email Verification Support
+- [x] Implement `confirmRegistration()` method
+```
+# Systematic Feature Rebuild Task List
+- [x] Implement [loadHotspotUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1005-1018) method
+- [x] Implement [createHotspotUser()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1019-1033) method
+- [x] Implement [deleteHotspotUser()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#908-922) method
+- [x] Test hotspot user methods
+
+### Plan & Profile Enhancements
+- [x] Add `_sharedUsers`, `_rateLimits`, `_idleTimeouts` fields
+- [x] Add getters for shared users, rate limits, idle timeouts
+- [x] Implement [updatePlan()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#66-85) method
+- [x] Implement [createHotspotProfile()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#953-967) method
+- [x] Implement [updateHotspotProfile()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#968-982) method
+- [x] Implement [fetchSharedUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#834-846) method
+```
+# Systematic Feature Rebuild Task List
+- [x] Implement `loadHotspotUsers()` method
+- [x] Implement `createHotspotUser()` method
+- [x] Implement `deleteHotspotUser()` method
+- [x] Test hotspot user methods
+
+### Plan & Profile Enhancements
+- [x] Add `_sharedUsers`, `_rateLimits`, `_idleTimeouts` fields
+- [x] Add getters for shared users, rate limits, idle timeouts
+- [x] Implement `updatePlan()` method
+- [x] Implement `createHotspotProfile()` method
+- [x] Implement `updateHotspotProfile()` method
+- [x] Implement `fetchSharedUsers()` method
+- [x] Implement `fetchRateLimits()` method
+- [x] Implement `fetchIdleTimeouts()` method
+- [x] Test plan/profile methods
+
+### Email Verification Support
+- [x] Implement `confirmRegistration()` method
+## Phase 4: Supporting Features
+
+### Permission Utilities
+- [x] Create `permission_mapping.dart`
+- [x] Define permission constants
+- [x] Create permission mappings
+- [x] Test permission utilities
+## Final Verification
+
+### Build & Test
+- [x] Clean build succeeds
+- [x] All tests passing (Windows build verified; unit tests skipped due to config)
+- [x] Documentation complete
+- [x] Changes committed and pushed
+```

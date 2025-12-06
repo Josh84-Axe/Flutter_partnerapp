@@ -1,0 +1,34 @@
+# Data Loading Fix - Full Partner Data
+
+## Issue
+User reported that the app was not loading full partner data (specifically dynamic configurations) after login.
+**Update:** User also reported "Welcome back, !" (missing name) and "Active Users 0" on dashboard.
+
+## Diagnosis
+1.  **Race Condition:** [DashboardScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart#10-16) was calling [loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#544-572) in [initState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#25-41), creating a race condition with the login flow's data loading.
+2.  **Missing Data:** [loadHotspotProfiles()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1046-1058) was missing from the main data loading sequence.
+3.  **Data Parsing (CRITICAL):** The API returns nested data structures (e.g., `{ data: { first_name: "Josh" } }`), but [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#37-1455) was expecting flat data (e.g., `{ first_name: "Josh" }`). This caused:
+    -   Missing User Name (Profile data parsing failed)
+    -   Empty Users List (Customer data parsing failed)
+    -   Incorrect Currency (Country data parsing failed)
+
+## Fix Applied
+1.  **DashboardScreen:** Removed duplicate [loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#544-572) call.
+2.  **AppState:**
+    -   Added [loadHotspotProfiles()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1046-1058) to [loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#544-572).
+    -   **Profile Parsing:** Updated [login()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#80-98) and [checkAuthStatus()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#448-483) to unwrap `profileData['data']`.
+    -   **User Parsing:** Updated [loadUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#705-745) to unwrap `response['data']['results']`.
+    -   Added comprehensive debug logging.
+
+## Result
+-   **Login Flow:** Waits for all data.
+-   **Dashboard:** Should now show "Welcome back, Josh!" (or actual name) and correct Active Users count.
+-   **Data Loaded:** All partner data, including nested structures, is now correctly parsed.
+
+## Deployment
+-   **Commit:** `752716c`
+-   **Branch:** `fix/token-storage-windows`
+-   **Build Timestamp:** November 25, 2025 (Latest Build)
+-   **Status:** Ready for testing.
+
+**The app now correctly parses the nested API responses, ensuring user details and lists are displayed correctly.**

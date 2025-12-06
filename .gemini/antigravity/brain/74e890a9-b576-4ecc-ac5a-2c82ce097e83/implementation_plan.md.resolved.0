@@ -1,0 +1,36 @@
+# Implementation Plan - Fix Plan UI and Assigned Users
+
+## Goal Description
+Fix two issues in the Partner App:
+1.  **Blank Dropdowns**: The Validity, Data Limit, and Shared Users dropdowns in [CreateEditInternetPlanScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#7-15) are empty. This is likely due to strict filtering expecting a `name` field when the API might return `value` or something else.
+2.  **Assigned Users Display**: Assigned users are not showing up in [ActiveSessionsScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart#8-14). This could be due to empty API response or mismatched data keys.
+
+## Proposed Changes
+
+### UI Layer
+
+#### [MODIFY] [create_edit_internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart)
+-   Update the `where` clause for dropdown items to allow items with `value` if `name` is missing.
+-   Update the `map` function to use `value` as the display text if `name` is null.
+-   Apply this change to Validity, Data Limit, and Shared Users dropdowns.
+
+#### [MODIFY] [active_sessions_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart)
+-   Add detailed logging in [_loadAssignedPlans](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart#65-80) to print the structure of the returned data (keys and values of the first item).
+-   (Conditional) Update data access keys if the logs reveal a mismatch (e.g., `user_name` instead of `customer_name`). *This will be done after observing the logs or if I can infer the correct keys from other parts of the code.*
+
+## Verification Plan
+
+### Manual Verification
+1.  **Dropdowns**:
+    -   Navigate to "Create Internet Plan" screen.
+    -   Verify that Validity, Data Limit, and Shared Users dropdowns are populated.
+    -   Select values and verify they are captured.
+2.  **Assigned Users**:
+    -   Navigate to "Active Sessions" screen.
+    -   Check the "Assigned Plans" tab.
+    -   Check the debug console for logs starting with `📦 [ActiveSessions]`.
+    -   Verify if users are listed.
+
+### Automated Tests
+-   Run `flutter test test/test_login_and_plans.dart` (if applicable/existing) or create a new test to verify the screen logic.
+-   Since these are UI/Integration issues involving API data structure, manual verification with debug logs is the primary method.

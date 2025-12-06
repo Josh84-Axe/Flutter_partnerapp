@@ -1,0 +1,68 @@
+€name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - devin/1763121919-api-alignment-patch  # Production branch
+  pull_request:
+    branches:
+      - devin/1759955345-initial-flutter-app  # PR previews
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.2'  # Match current Flutter version
+          channel: 'stable'
+          cache: true
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Build web app
+        run: flutter build web --release
+      
+      - name: Deploy to Cloudflare Pages (Production)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/devin/1763121919-api-alignment-patch'
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: wifi-4u-partner
+          directory: build/web
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: main  # Deploy to production environment
+      
+      - name: Deploy to Cloudflare Pages (Preview)
+        if: github.event_name == 'pull_request'
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: wifi-4u-partner
+          directory: build/web
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}  # Deploy to preview environment
+      
+      - name: Comment PR with preview URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.issue.number;
+            const previewUrl = `https://${context.payload.pull_request.head.ref}.wifi-4u-partner.pages.dev`;
+            
+            github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `ðŸš€ **Preview deployment ready!**\n\nYour changes are deployed at: ${previewUrl}\n\nThis preview will update automatically with new commits.`
+            });
+€"(424087c74cc459446587a45478e51ed4e9f2336e2vfile:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/.github/workflows/deploy-cloudflare-pages.yml:Hfile:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp

@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Corrected audit report showing plan assignment API requirements and clarifying the speed/rate limit issue between two different plan creation screens.",
+  "updatedAt": "2025-11-25T17:55:48.971336600Z"
+}

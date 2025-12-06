@@ -1,0 +1,33 @@
+# API Endpoint Checklist
+
+The following API endpoints are required to replace the hardcoded data identified in the "Data Limit Configuration" and "Subscription Management" screens. Please check your Swagger/OpenAPI documentation to verify if these endpoints exist or provide the correct paths.
+
+## 1. Data Limit Configuration
+**Current Status**: Hardcoded in [lib/screens/config/data_limit_config_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/data_limit_config_screen.dart).
+**Repository**: [lib/repositories/plan_config_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart) (Partial implementation exists).
+
+| Action | Proposed Endpoint | Description |
+| :--- | :--- | :--- |
+| **List** | `GET /partner/data-limit/` | Fetch all available data limit profiles (e.g., 10GB, 50GB). |
+| **Create** | `POST /partner/data-limit/create/` | Create a new data limit profile. |
+| **Update** | `PUT /partner/data-limit/{id}/update/` | Edit an existing data limit profile. |
+| **Delete** | `DELETE /partner/data-limit/{id}/delete/` | Remove a data limit profile. |
+
+> **Note**: [PlanConfigRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#5-270) currently implements List, Create, and Delete, but `Update` is missing.
+
+## 2. Subscription Management
+**Current Status**: Hardcoded in [lib/screens/subscription_management_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/subscription_management_screen.dart).
+**Repository**: No dedicated repository found (likely needs `SubscriptionRepository` or `PartnerRepository`).
+
+| Action | Proposed Endpoint | Description |
+| :--- | :--- | :--- |
+| **Get Current** | `GET /partner/subscription/` | Fetch the partner's current subscription status (Tier, Expiry, Features). |
+| **List Plans** | `GET /partner/subscription/plans/` | Fetch available subscription tiers (Basic, Standard, Premium) with pricing and features. |
+| **Upgrade/Change** | `POST /partner/subscription/change/` | Upgrade or downgrade the partner's subscription plan. |
+| **Cancel** | `POST /partner/subscription/cancel/` | Cancel the current subscription. |
+
+## 3. Action Required
+Please verify if these endpoints exist in your Swagger documentation (`https://api.tiknetafrica.com/v1/docs` or similar). 
+
+- If they **exist**, please confirm the exact paths.
+- If they **do not exist**, they need to be created by the backend team.

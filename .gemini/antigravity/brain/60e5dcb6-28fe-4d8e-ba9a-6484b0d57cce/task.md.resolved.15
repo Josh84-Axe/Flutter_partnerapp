@@ -1,0 +1,3 @@
+- [x] Add `integration_test` dependency <!-- id: 15 -->
+- [x] Create integration test for financial screens and subscription <!-- id: 16 -->
+- [x] Run integration tests on Windows <!-- id: 17 -->

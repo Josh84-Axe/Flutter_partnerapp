@@ -1,0 +1,28 @@
+# RBAC Quick Fix - Task Checklist
+
+## Phase 1: Immediate Fix (Option A)
+
+### Code Changes
+- [x] Update [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart) - Change role from 'Partner' to 'owner'
+  - [x] Line 238: [login()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#17-92) method
+  - [x] Line 281: [register()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#103-169) method  
+  - [x] Line 357: [registerWithDetails()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#309-388) method
+  - [x] Line 374: [registerWithDetails()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#309-388) temp user
+  - [x] Line 449: [checkAuthStatus()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#428-463) method
+- [x] Update [permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart)
+  - [x] Add 'partner': 'owner' to roleMapping
+  - [x] Add debug logging to hasPermission()
+  - [x] Import kDebugMode
+
+### Build & Test
+- [x] Rebuild application (161.3s, exit code 0)
+- [ ] Test login with sientey@hotmail.com
+- [ ] Verify user name displays in UI
+- [ ] Verify all navigation items visible
+- [ ] Test feature access (no permission errors)
+
+## Phase 2: Proper Solution (Future)
+- [ ] Coordinate with backend team
+- [ ] Backend adds role/permissions to API response
+- [ ] Update frontend to use API-provided role
+- [ ] Remove hardcoded role assignment

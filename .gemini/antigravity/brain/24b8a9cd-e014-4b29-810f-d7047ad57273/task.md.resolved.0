@@ -1,0 +1,14 @@
+# Root Cause Analysis and Fix Recommendations
+
+## Investigation Tasks
+- [/] Investigate Issue 1: Remove two decimals from amount formatting
+- [ ] Investigate Issue 2: Internet plan CRUD operations (edit/delete not working)
+- [ ] Investigate Issue 3: Add plan button showing blank config parameters
+- [ ] Investigate Issue 4: Created plans showing wrong plan details
+- [ ] Investigate Issue 5: Active session screen empty (assigned/hotspot users)
+- [ ] Investigate Issue 6: Hotspot profile CRUD operations (edit/delete not working)
+
+## Analysis Tasks
+- [ ] Document root causes for each issue
+- [ ] Recommend fixes for approval
+- [ ] Create implementation plan after approval

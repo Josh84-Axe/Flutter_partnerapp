@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Comprehensive comparison report between the official Swagger API documentation and our Flutter app implementation, identifying matches, discrepancies, and missing endpoints that need to be addressed.",
+  "updatedAt": "2025-11-22T14:27:40.515249700Z"
+}

@@ -1,0 +1,46 @@
+# Implementation Plan - Currency & Profile Fixes
+
+## Goal Description
+Fix currency formatting to meet international standards (no decimals, round up/down), implement dynamic currency symbols based on partner country with API/fallback, and correct partner profile loading (country, role).
+
+## User Review Required
+> [!IMPORTANT]
+> The `/partner/currency/` and `/partner/currency-code/` endpoints are returning 404. I will implement a client-side fallback map for common African countries (Ghana -> GHS, Cote d'Ivoire -> CFA, etc.) to ensure the app works while the API is being fixed.
+
+## Proposed Changes
+
+### Utils
+#### [MODIFY] [currency_utils.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart)
+- Update [formatPrice](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#18-25) to accept `currencySymbol` and `currencyCode`.
+- Implement rounding logic (round to nearest integer).
+- Implement formatting logic:
+    - **CFA/XOF/XAF:** `1.000 CFA` (Suffix, space separator, dot/comma for thousands)
+    - **GHS/USD/EUR/Others:** `GHS 2,500` (Prefix, space separator, comma for thousands)
+- Add `getCurrencyForCountry(String country)` helper with fallback map.
+
+### Providers
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Add `_currencySymbol` and `_currencyCode` state variables.
+- Update [loadProfile](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#585-593) (or `_loadUserData`) to:
+    - Correctly extract `country` from `profileData['country']`.
+    - Correctly extract `role` from `profileData['role']['name']`.
+    - Call `_fetchCurrencyInfo(country)` to set symbol and code.
+- Update [formatMoney](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#165-166) to use the stored `_currencySymbol` and `_currencyCode`.
+
+### Repositories
+#### [MODIFY] [partner_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart)
+- (Optional) Ensure [fetchCurrencySymbol](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#50-64) handles 404 gracefully (already does via try-catch).
+
+## Verification Plan
+
+### Automated Tests
+- None (UI/Logic changes).
+
+### Manual Verification
+1.  **Login** with `sientey@hotmail.com`.
+2.  **Verify Profile:** Check if "Ghana" and "Administrator" are correctly loaded in state (debug prints).
+3.  **Verify Currency:**
+    - Check if currency is "GHS".
+    - Check formatting in Dashboard: Should be `GHS 2,500` (no decimals).
+    - Check formatting in Wallet: Should be `GHS 2,500`.
+4.  **Test Fallback:** Temporarily hardcode country to "Ivory Coast" to verify "CFA" formatting (`1.000 CFA`).

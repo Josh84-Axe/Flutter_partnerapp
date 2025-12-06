@@ -1,0 +1,6 @@
+# Task: Build Release Application
+
+- [x] Build Windows Release <!-- id: 0 -->
+    - [x] Run `flutter build windows --release` <!-- id: 1 -->
+    - [x] Verify build output in `build/windows/x64/runner/Release` <!-- id: 2 -->
+- [x] Fix missing link in M3 screen <!-- id: 3 -->

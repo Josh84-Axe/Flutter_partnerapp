@@ -1,0 +1,105 @@
+# Internet Plan Creation Audit - Findings
+
+## Executive Summary
+Found **critical data mapping issues** between the UI form and API that prevent plan creation from working correctly.
+
+## Issues Identified
+
+### 🔴 **CRITICAL: Field Name Mismatch**
+
+**Problem**: The form sends field names that don't match what the API expects.
+
+**Form sends:**
+```dart
+{
+  'name': 'Premium Plan',
+  'price': 50.0,
+  'dataLimitGB': 100,          // ❌ Wrong field name
+  'validityDays': 30,          // ❌ Wrong field name  
+  'deviceAllowed': 3,          // ❌ Wrong field name
+  'userProfile': 'Premium',    // ❌ Wrong field name
+  'isActive': true
+}
+```
+
+**API expects** (based on `loadPlans` mapping):
+```dart
+{
+  'name': 'Premium Plan',
+  'price': 50.0,
+  'data_limit': 100,           // ✅ Correct
+  'validity': 43200,           // ✅ In minutes (30 days * 1440)
+  'shared_users': 3,           // ✅ Correct
+  'profile_name': 'Premium',   // ✅ Correct
+  'is_active': true            // ✅ Correct
+}
+```
+
+### 🟡 **MEDIUM: Unit Conversion Missing**
+
+**Problem**: `validityDays` is sent as days, but API expects minutes.
+
+**Current code** (line 216-218):
+```dart
+'validityDays': _selectedValidity != null
+    ? extractValue(_selectedValidity)
+    : 30,
+```
+
+**Should be**:
+```dart
+'validity': (_selectedValidity != null
+    ? extractValue(_selectedValidity)
+    : 30) * 1440,  // Convert days to minutes
+```
+
+### 🟡 **MEDIUM: Missing Profile ID**
+
+**Problem**: Form sends `userProfile` as a string ID, but doesn't send `profile_name`.
+
+**Current**: `'userProfile': 'abc123'`  
+**Needs**: Both `'profile': 'abc123'` AND `'profile_name': 'Premium'`
+
+### 🟢 **MINOR: Inconsistent Loading**
+
+**Problem**: `loadPlans()` uses `WalletRepository` instead of `PlanRepository`.
+
+**Location**: `app_state.dart` line 877  
+**Current**: `await _walletRepository!.fetchPlans()`  
+**Should be**: `await _planRepository!.fetchPlans()`
+
+## Affected Files
+
+1. **[create_edit_internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#L190-L236)** - `_savePlan()` method
+2. **[app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#L850-L906)** - `loadPlans()` method
+3. **[plan_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#L35-L51)** - `createPlan()` endpoint
+
+## Recommended Fix
+
+Update `_savePlan()` in `create_edit_internet_plan_screen.dart` to map fields correctly:
+
+```dart
+final data = {
+  'name': _nameController.text,
+  'price': double.tryParse(_priceController.text) ?? 0,
+  'data_limit': _selectedDataLimit != null              // ✅ Fixed field name
+      ? (_selectedDataLimit is String && HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
+          ? 999999
+          : extractValue(_selectedDataLimit))
+      : 10,
+  'validity': (_selectedValidity != null                // ✅ Fixed field name + conversion
+      ? extractValue(_selectedValidity)
+      : 30) * 1440,  // Convert days to minutes
+  'is_active': true,                                    // ✅ Fixed field name
+  'shared_users': _selectedAdditionalDevices != null    // ✅ Fixed field name
+      ? extractValue(_selectedAdditionalDevices)
+      : 1,
+  'profile': _selectedHotspotProfile ?? 'Basic',        // ✅ Send profile ID
+  'profile_name': _getProfileName(_selectedHotspotProfile), // ✅ Send profile name
+};
+```
+
+## Impact
+
+**Current State**: ❌ Plan creation fails silently or creates plans with incorrect data  
+**After Fix**: ✅ Plans created successfully with correct data mapping

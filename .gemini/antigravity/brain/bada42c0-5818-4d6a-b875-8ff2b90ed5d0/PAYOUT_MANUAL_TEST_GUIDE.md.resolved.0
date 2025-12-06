@@ -1,0 +1,283 @@
+# Payout Request Manual Testing Guide
+
+## Prerequisites
+- App running on Windows/Web/Mobile
+- Valid login credentials: `sientey@hotmail.com` / `Testing123`
+- Wallet with sufficient balance
+
+---
+
+## Test Flow
+
+### Step 1: Login
+1. Launch the app
+2. Enter email: `sientey@hotmail.com`
+3. Enter password: `Testing123`
+4. Click **Login**
+
+**Expected:** Successfully logged in and redirected to dashboard
+
+---
+
+### Step 2: Navigate to Wallet
+1. Click on **Wallet** or **Revenue** icon in navigation
+2. Or navigate to wallet overview screen
+
+**Expected:** Wallet screen displays with current balance
+
+---
+
+### Step 3: Open Payout Request
+1. Click **Request Payout** button
+2. Payout request screen opens
+
+**Expected:**
+- Withdrawable balance displayed at top
+- Amount input field visible
+- Payment method selection (Mobile Money / Bank Transfer)
+- Fee information card
+- Summary section
+
+---
+
+### Step 4: Enter Payout Amount
+1. Tap amount input field
+2. Enter: `50`
+3. Observe fee calculation
+
+**Expected:**
+- Amount Requested: 50
+- Fee (2% for Mobile Money): 1.00
+- You Will Receive: 49.00
+
+---
+
+### Step 5: Select Payment Method
+1. Tap **Mobile Money** button (should be selected by default)
+2. Observe fee information updates
+
+**Expected:**
+- Mobile Money selected (highlighted)
+- Fee: 2%
+- Processing Time: 1-2 hours
+
+**Alternative:** Tap **Bank Transfer**
+- Fee: 1.5%
+- Processing Time: 2-3 days
+
+---
+
+### Step 6: Review Summary
+Check the summary card displays:
+- ✓ Amount Requested: 50.00
+- ✓ Fees: -1.00 (or -0.75 for bank)
+- ✓ You Will Receive: 49.00 (or 49.25 for bank)
+
+---
+
+### Step 7: Submit Payout Request
+1. Click **Request Payout** button at bottom
+2. Wait for API call to complete
+
+**Expected:**
+- Loading indicator appears
+- Navigation to confirmation screen
+
+---
+
+### Step 8: Verify Confirmation Screen
+Check confirmation screen displays:
+- ✓ Success icon (green checkmark)
+- ✓ "Your Payout is Being Processed" message
+- ✓ Tracking Reference (e.g., `wdr_20251124_001` or similar)
+- ✓ Processing Time: 1-2 business days
+- ✓ Copy button for tracking reference
+
+---
+
+### Step 9: Test Tracking Reference Copy
+1. Click copy icon next to tracking reference
+2. Check for "Tracking reference copied" snackbar
+
+**Expected:** Tracking reference copied to clipboard
+
+---
+
+### Step 10: Navigate to Transaction History
+1. Click **View Transaction History** button
+2. Or navigate back to wallet
+
+**Expected:**
+- Redirected to home/wallet screen
+- New withdrawal transaction visible in history
+
+---
+
+## Verification Checklist
+
+### API Calls Made
+- ✅ `POST /partner/withdrawals/create/`
+  - Request: `{"amount": 50.0, "payment_method": "mobile_money"}`
+  - Response: Contains withdrawal ID
+
+- ✅ `GET /partner/wallet/balance/`
+  - Balance refreshed after payout
+
+- ✅ `GET /partner/wallet/all-transactions/`
+  - Transaction list updated
+
+### UI Elements
+- ✅ Withdrawable balance displayed
+- ✅ Amount input field functional
+- ✅ Payment method selection working
+- ✅ Fee calculation accurate (2% mobile, 1.5% bank)
+- ✅ Summary updates in real-time
+- ✅ Submit button enabled when amount > 0
+- ✅ Server tracking ID displayed (not local timestamp)
+- ✅ Copy functionality works
+
+### Data Flow
+- ✅ AppState.requestPayout() called
+- ✅ WalletRepository.createWithdrawal() executed
+- ✅ Withdrawal ID captured in AppState.lastWithdrawalId
+- ✅ PayoutSubmittedScreen reads ID from AppState
+- ✅ Balance and transactions refreshed
+
+---
+
+## Test Scenarios
+
+### Scenario 1: Successful Mobile Money Payout
+```
+Amount: 50
+Method: Mobile Money
+Fee: 1.00 (2%)
+Net: 49.00
+Expected: Success with tracking ID
+```
+
+### Scenario 2: Successful Bank Transfer Payout
+```
+Amount: 100
+Method: Bank Transfer
+Fee: 1.50 (1.5%)
+Net: 98.50
+Expected: Success with tracking ID
+```
+
+### Scenario 3: Small Amount Payout
+```
+Amount: 10
+Method: Mobile Money
+Fee: 0.20 (2%)
+Net: 9.80
+Expected: Success
+```
+
+### Scenario 4: Large Amount Payout
+```
+Amount: 500
+Method: Bank Transfer
+Fee: 7.50 (1.5%)
+Net: 492.50
+Expected: Success (if balance sufficient)
+```
+
+---
+
+## Expected API Responses
+
+### Successful Withdrawal Creation
+```json
+{
+  "statusCode": 201,
+  "error": false,
+  "message": "Withdrawal request created",
+  "data": {
+    "id": "wdr_20251124_001",
+    "amount": "50.00",
+    "payment_method": "mobile_money",
+    "status": "pending",
+    "created_at": "2025-11-24T15:24:15Z"
+  }
+}
+```
+
+### Updated Balance
+```json
+{
+  "statusCode": 200,
+  "data": {
+    "wallet_balance": "1200.75",
+    "currency": "GHS"
+  }
+}
+```
+
+---
+
+## Known Limitations
+
+⚠️ **Payout Method Persistence Not Implemented**
+- Users cannot save payment methods for reuse
+- Must enter payment details each time (currently not required for basic flow)
+- [AddPayoutMethodScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/add_payout_method_screen.dart#3-9) exists but doesn't persist data
+
+**Workaround:** Use the basic flow which only requires method selection (mobile_money/bank_transfer)
+
+---
+
+## Troubleshooting
+
+### Issue: Submit button disabled
+**Solution:** Ensure amount > 0 is entered
+
+### Issue: No tracking ID displayed
+**Solution:** Check API response includes [id](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1238-1251) field. Fallback to timestamp-based ID if API fails
+
+### Issue: Balance not updated
+**Solution:** Check [loadWalletBalance()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#606-622) is called after payout
+
+### Issue: Transaction not in history
+**Solution:** Check [loadTransactions()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#574-605) is called after payout
+
+---
+
+## Success Criteria
+
+✅ **All checks must pass:**
+1. User can enter payout amount
+2. Fee calculated correctly based on method
+3. Summary displays accurate amounts
+4. Payout request submits successfully
+5. Server tracking ID displayed (not local timestamp)
+6. Tracking reference can be copied
+7. Balance refreshes after payout
+8. Transaction appears in history
+9. No errors in console
+10. Smooth navigation flow
+
+---
+
+## Automated Test Script
+
+A test script is available at:
+```
+test/test_payout_simple.dart
+```
+
+**Note:** Requires network connectivity to run. Execute with:
+```bash
+dart test/test_payout_simple.dart
+```
+
+---
+
+## Next Steps After Testing
+
+If all tests pass:
+1. ✅ Mark payout tracking feature as complete
+2. 🔄 Implement payout method persistence (Priority 1)
+3. 🔄 Add withdrawal history screen
+4. 🔄 Implement status tracking
+5. 🔄 Add push notifications for status changes

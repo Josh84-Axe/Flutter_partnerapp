@@ -1,0 +1,7 @@
+# Implement Local Caching for Dashboard Data
+
+- [x] Create CacheService for storing/retrieving data <!-- id: 0 -->
+- [x] Add cache methods to AppState <!-- id: 1 -->
+- [/] Update loadDashboardData to use cache-first strategy <!-- id: 2 -->
+- [ ] Add cache invalidation logic <!-- id: 3 -->
+- [ ] Test cache persistence across app restarts <!-- id: 4 -->

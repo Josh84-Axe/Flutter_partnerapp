@@ -1,0 +1,86 @@
+# Implementation Plan: User/Worker Management Fixes
+
+## Problem Statement
+The user/worker management screen has multiple issues:
+1. Ellipsis menus not displaying options
+2. FAB (Add User/Worker) buttons not visible
+3. User creation form missing `first_name` and `phone` fields
+4. Worker creation form missing `phone`, `addresse`, `city`, `country` fields
+
+## Root Cause Analysis
+
+### Permission System Issues
+- Role constant changed to "Administrator" but API might return different role name
+- Permission ID-to-codename mapping requires fresh login
+- Debug logging added but needs user testing
+
+### Form Field Mismatches
+- Current user form only has `name`, `email`, `phone`, `role`
+- API expects `first_name` and `phone` (not full name)
+- Worker form has `first_name`, `last_name`, `email`, `username`, `password`, `role`
+- API expects additional fields: `phone`, `addresse`, `city`, `country`
+
+## Proposed Changes
+
+### 1. User Creation Dialog ([_showUserDialog](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/users_screen.dart#43-205) in UsersScreen)
+
+**Current Fields:**
+- name (TextField)
+- email (TextField)
+- phone (TextField)
+- role (Dropdown)
+
+**Required Changes:**
+- Replace `name` with `first_name`
+- Keep `phone` field
+- Update API payload to send `first_name` and `phone`
+
+### 2. Worker Creation Dialog ([CreateWorkerDialog](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/create_worker_dialog.dart#6-12))
+
+**Current Fields:**
+- first_name (TextFormField)
+- last_name (TextFormField)
+- email (TextFormField)
+- username (TextFormField)
+- password (TextFormField)
+- role (Dropdown)
+
+**Required Changes:**
+- Add `phone` field (TextFormField with phone validation)
+- Add `addresse` field (TextFormField)
+- Add `city` field (TextFormField)
+- Add `country` field (Dropdown or TextFormField)
+- Update API payload in `AppState.createWorker`
+
+### 3. Permission Debugging
+
+**Add Temporary Override:**
+- Create a method to bypass permission checks for testing
+- OR ensure logged-in user has "Administrator" role
+- Verify permission mapping is working
+
+## Implementation Steps
+
+1. **Fix User Dialog** - Update [_showUserDialog](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/users_screen.dart#43-205) in [users_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/users_screen.dart)
+2. **Fix Worker Dialog** - Update [create_worker_dialog.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/create_worker_dialog.dart)
+3. **Update API Payloads** - Modify [createUser](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1030-1044) and [createWorker](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1848-1862) in [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+4. **Test Permission System** - Verify FAB and ellipsis visibility
+
+## Verification Plan
+
+### Manual Testing
+1. Log in with Administrator account
+2. Check console for debug output showing role and permissions
+3. Verify FAB button appears on Users screen
+4. Click FAB on Customers tab → User creation dialog
+5. Click FAB on Workers tab → Worker creation dialog
+6. Fill all required fields and submit
+7. Click ellipsis on user/worker → Verify menu appears
+8. Test each menu action
+
+### Expected Results
+- FAB visible for Administrator role
+- User dialog has `first_name` and `phone` fields
+- Worker dialog has all 7 fields
+- Ellipsis menu shows appropriate options
+- API calls succeed with correct payload structure

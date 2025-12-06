@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_TASK",
+  "summary": "Task list updated for cleanup and fixes: remove mock data, fix persistence, fix CRUD.",
+  "updatedAt": "2025-11-20T19:14:25.621183100Z",
+  "version": "6"
+}

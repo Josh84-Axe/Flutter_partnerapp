@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Debugging guide for empty transaction history issue. Includes steps to check browser console logs, verify API responses, check authentication, and test endpoints directly.",
+  "updatedAt": "2025-12-04T20:59:01.000722800Z"
+}

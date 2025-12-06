@@ -1,0 +1,26 @@
+# Phone Number Formatting and Validation Implementation Plan
+
+## Goal Description
+Implement dynamic phone number formatting and validation across the entire application based on the partner's country. Users should see error messages if the number doesn't match the expected format.
+
+## User Review Required
+- None at this stage.
+
+## Proposed Changes
+### Dependencies
+- Check if a phone number formatting library (like `libphonenumber` or `intl_phone_number_input`) is already used or needs to be added.
+
+### Logic
+- Create a utility or service to handle phone number formatting and validation based on country code.
+- Retrieve partner's country from `AppState` or `AuthRepository`.
+
+### UI Components
+- Audit and update all `TextField` or `TextFormField` widgets used for phone numbers.
+- Apply input formatters.
+- Add validation logic to `validator` properties.
+
+## Verification Plan
+### Manual Verification
+- Test with different country codes (if possible to switch or mock).
+- Verify formatting happens as user types.
+- Verify error messages appear for invalid numbers.

@@ -1,0 +1,8 @@
+# Create GitHub Action for Cloudflare Deployment
+
+- [x] Check existing workflows <!-- id: 0 -->
+- [x] Create deployment workflow YAML <!-- id: 1 -->
+- [x] Configure Flutter web build <!-- id: 2 -->
+- [x] Add Cloudflare Pages deployment <!-- id: 3 -->
+- [x] Document required secrets <!-- id: 4 -->
+- [/] Test workflow <!-- id: 5 -->

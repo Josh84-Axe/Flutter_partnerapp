@@ -1,0 +1,145 @@
+# Session Walkthrough - Transaction History & Dashboard Integration
+
+## Overview
+This session focused on implementing transaction history with enhanced UX, fixing payment method creation, implementing global OTP ID support, and integrating transaction history with the dashboard.
+
+## Features Implemented
+
+### 1. Transaction History Screen ✅
+
+Created comprehensive transaction history screen with modern UX:
+
+**Location:** [transaction_history_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/transaction_history_screen.dart)
+
+**Features:**
+- **Tabbed Interface**: All / Assigned / Wallet transactions
+- **Real-time Search**: Search across descriptions, amounts, and IDs
+- **Date Filtering**: All, Today, This Week, This Month
+- **Pull-to-Refresh**: Swipe down to reload data
+- **Status Badges**: Visual indicators (Success ✅, Pending ⏳, Failed ❌)
+- **Type Indicators**: Distinguish Assigned vs Wallet transactions
+- **Smart Date Formatting**: "Today at 14:30", "Yesterday at 09:15"
+- **Empty States**: Helpful messages when no transactions found
+
+**API Integration:**
+- `/partner/transactions/assigned/` - Assigned plan transactions
+- `/partner/transactions/wallet/` - Online wallet transactions
+
+### 2. Payment Method Creation Fix ✅
+
+**Problem:** 404 error when creating payment methods
+
+**Root Cause:** Field name mismatch between app and API
+
+**Solution:**
+- Updated field mapping in [add_payout_method_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/add_payout_method_screen.dart#L366-L383)
+- Changed from: `method_type`, `provider`, `account_number`, `account_name`
+- Changed to: `name`, `numbers`, `account_holder_name`, `description`
+
+**Example Payload:**
+```json
+{
+  "name": "MTN Mobile Money",
+  "numbers": "+233 57 734 9444",
+  "account_holder_name": "Keti Akuele",
+  "description": "Mobile Money - MTN Mobile Money"
+}
+```
+
+### 3. Global OTP ID Implementation ✅
+
+**Requirement:** Backend now requires OTP ID for ALL OTP verification flows
+
+**Changes Made:**
+
+#### Registration Flow
+- Extract `otp_id` from registration response
+- Store in `_registrationOtpId` field
+- Pass to [verifyEmailOtp](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#243-266) method
+- [AuthRepository.register](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#L153-L189)
+- [AppState.register](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#L390-L407)
+- [AppState.confirmRegistration](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#L464-L488)
+
+#### Payment Method Flow
+- Extract `otp_id` from [requestCreateOtp](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#27-37) response
+- Store in `_paymentMethodOtpId` field
+- Pass to [verifyCreateOtp](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#38-53) method
+- [AppState.requestPaymentMethodOtp](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#L1367-L1395)
+- [AppState.verifyPaymentMethodOtp](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#L1397-L1429)
+
+**All OTP Flows Now Consistent:**
+1. ✅ Password Reset (already implemented)
+2. ✅ Registration (re-implemented)
+3. ✅ Payment Method Creation (newly implemented)
+
+### 4. Dashboard Integration ✅
+
+**Requirement:** Keep dashboard layout unchanged, but use new transaction history for revenue details
+
+**Implementation:**
+- Replaced modal-based revenue details with navigation
+- Clicking "Total Revenue" → Opens Transaction History Screen
+- Transactions already loaded via [loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#868-892)
+- [Dashboard revenue widget](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart#L115)
+- [Updated _showRevenueDetails](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart#L187-L190)
+
+## Files Modified
+
+### Repositories
+- [lib/repositories/transaction_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/transaction_repository.dart) - Updated endpoints
+- [lib/repositories/payment_method_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart) - Added OTP ID support
+- [lib/repositories/auth_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart) - Re-added OTP ID for registration
+
+### State Management
+- [lib/providers/app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart) - Added transaction fields, OTP ID fields, methods
+
+### UI Screens
+- [lib/screens/transaction_history_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/transaction_history_screen.dart) - **NEW** - Comprehensive transaction screen
+- [lib/screens/dashboard_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart) - Updated revenue details navigation
+- [lib/screens/add_payout_method_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/add_payout_method_screen.dart) - Fixed field mapping
+
+### Configuration
+- [lib/main.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/main.dart) - Added `/transaction-history` route
+
+## Testing Recommendations
+
+### Transaction History
+- [ ] Test with empty transaction lists
+- [ ] Test search functionality across all tabs
+- [ ] Test date filters (Today, This Week, This Month)
+- [ ] Test pull-to-refresh
+- [ ] Test tab switching
+- [ ] Verify status badges display correctly
+- [ ] Test on different screen sizes
+
+### Payment Methods
+- [ ] Test creating mobile money payment method
+- [ ] Test creating bank transfer payment method
+- [ ] Verify OTP is sent successfully
+- [ ] Test OTP verification
+- [ ] Verify payment method appears in list after creation
+
+### Registration
+- [ ] Test complete registration flow
+- [ ] Verify OTP ID is extracted and stored
+- [ ] Test OTP verification with OTP ID
+- [ ] Verify error handling for missing OTP ID
+
+### Dashboard
+- [ ] Click Total Revenue widget
+- [ ] Verify navigation to transaction history
+- [ ] Verify transactions are displayed
+- [ ] Test pull-to-refresh on dashboard
+- [ ] Verify transaction data loads correctly
+
+## Statistics
+
+- **Total Tasks Completed**: 115 checklist items
+- **Files Modified**: 7 files
+- **New Files Created**: 1 screen
+- **Commits**: 7 commits
+- **Lines of Code**: ~500 lines added
+
+## All Changes Pushed ✅
+
+All changes have been committed and pushed to `fix/token-storage-windows` branch.

@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Plan for refactoring static configuration lists to use real API data.",
+  "updatedAt": "2025-11-21T00:21:21.082361800Z",
+  "version": "2"
+}

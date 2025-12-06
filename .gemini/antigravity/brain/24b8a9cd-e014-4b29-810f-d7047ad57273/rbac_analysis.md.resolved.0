@@ -1,0 +1,453 @@
+# Role-Based Access Control (RBAC) Analysis
+
+## Executive Summary
+
+**Current Status**: ⚠️ **Partially Implemented**
+
+The application has a basic RBAC framework in place but **lacks enforcement** at the UI level. Roles and permissions are defined, but the app does not actively restrict functionality based on user roles.
+
+---
+
+## 1. Role Definition System
+
+### Backend Roles (From API)
+
+The backend provides 3 default roles:
+
+| Role | Slug | Permissions (IDs) | Description |
+|------|------|-------------------|-------------|
+| **Worker** | `worker-2` | [10, 3] | Limited access |
+| **Manager** | `manager-2` | [3, 4, 7, 8, 10, 11, 12] | Moderate access |
+| **Administrator** | `administrator-2` | [1-13] | Full access |
+
+**Source**: Test results from `/partner/roles/list/` endpoint
+
+### Frontend Role Constants
+
+**File**: [permissions.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart)
+
+```dart
+class Permissions {
+  static const String roleOwner = 'owner';
+  static const String roleWorker = 'worker';
+  
+  // Permission check methods
+  static bool canCreateWorkers(String role) => role == roleOwner;
+  static bool canAssignRouters(String role) => role == roleOwner;
+  static bool canCreatePlans(String role, List<String>? permissions);
+  static bool canViewUsers(String role, List<String>? permissions);
+  static bool canViewTransactions(String role, List<String>? permissions);
+  static bool canViewRouters(String role, List<String>? permissions);
+}
+```
+
+**Issue**: Frontend defines `owner` and `worker`, but backend uses `administrator-2`, `manager-2`, `worker-2`.
+
+---
+
+## 2. User Model with Roles
+
+**File**: [user_model.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart)
+
+```dart
+class UserModel {
+  final String role;                    // User's role
+  final List<String>? permissions;      // Permission strings
+  final List<String>? assignedRouters;  // For workers
+  // ... other fields
+}
+```
+
+**Data Flow**:
+1. User logs in
+2. Backend returns role and permissions
+3. Stored in [UserModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#1-97)
+4. Available via `AppState.currentUser`
+
+---
+
+## 3. Permission Enforcement Status
+
+### ❌ NOT Enforced in UI
+
+**Search Results**: 
+- ✅ Permission checks defined in [permissions.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart)
+- ❌ **ZERO** usages of `Permissions.can*()` methods in screens
+- ❌ **ZERO** checks for `currentUser.role` in UI code
+- ❌ **ZERO** conditional rendering based on permissions
+
+### Where Permissions SHOULD Be Checked
+
+Based on codebase analysis, these screens should have permission checks:
+
+| Screen | Current Status | Should Check |
+|--------|----------------|--------------|
+| [internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart) | ❌ No checks | Create/Edit/Delete plans |
+| `users_screen.dart` | ❌ No checks | View/Create/Edit users |
+| [collaborators_management_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/collaborators_management_screen.dart) | ❌ No checks | Create workers |
+| [assign_role_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/assign_role_screen.dart) | ❌ No checks | Assign roles |
+| `create_role_screen.dart` | ❌ No checks | Create/Edit roles |
+| `router_settings_screen.dart` | ❌ No checks | Assign routers |
+| `wallet_overview_screen.dart` | ❌ No checks | View transactions |
+
+---
+
+## 4. Current Permission System
+
+### Defined Permissions (Frontend)
+
+**File**: [create_role_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_role_screen.dart)
+
+```dart
+final Map<String, bool> _permissions = {
+  'dashboard_access': false,
+  'user_create': false,
+  'user_read': false,
+  'user_update': false,
+  'user_delete': false,
+  'plan_create': false,
+  'plan_read': false,
+  'plan_update': false,
+  'plan_delete': false,
+  'transaction_viewing': false,
+  'router_management': false,
+  'settings_access': false,
+};
+```
+
+**Issue**: These are string-based permissions but not mapped to backend permission IDs.
+
+### Backend Permission IDs
+
+From test results, backend uses **numeric IDs** (1-13), not strings:
+- Worker: [10, 3]
+- Manager: [3, 4, 7, 8, 10, 11, 12]
+- Administrator: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+
+**Mapping Unknown**: No documentation of what each ID represents.
+
+---
+
+## 5. User Restriction Messages
+
+### ❌ NO Restriction Messages
+
+**Current Behavior**:
+- All users see all features
+- All buttons are clickable
+- No permission denied messages
+- Backend may reject unauthorized actions
+
+**Expected Behavior**:
+- Hide features user cannot access
+- Show "Permission Denied" message if clicked
+- Graceful degradation of UI
+
+---
+
+## 6. Implementation Gaps
+
+### Critical Gaps
+
+1. **No Permission Enforcement** ⚠️
+   - UI doesn't check `currentUser.role`
+   - All features visible to all users
+   - Backend is the only enforcement layer
+
+2. **Role Mismatch** ⚠️
+   - Frontend: `owner`, `worker`
+   - Backend: `administrator-2`, `manager-2`, `worker-2`
+   - No mapping between them
+
+3. **Permission ID Mapping** ⚠️
+   - Backend uses numeric IDs (1-13)
+   - Frontend uses strings (`create_plans`, etc.)
+   - No translation layer
+
+4. **No User Feedback** ⚠️
+   - No "Access Denied" messages
+   - No visual indicators of restricted features
+   - Users discover restrictions by error
+
+---
+
+## 7. Recommended Implementation
+
+### Phase 1: Permission Mapping
+
+**Create**: `lib/utils/permission_mapping.dart`
+
+```dart
+class PermissionMapping {
+  // Backend ID to Frontend permission mapping
+  static const Map<int, String> idToPermission = {
+    1: 'dashboard_access',
+    2: 'settings_access',
+    3: 'user_read',
+    4: 'user_create',
+    5: 'user_update',
+    6: 'user_delete',
+    7: 'plan_read',
+    8: 'plan_create',
+    9: 'plan_update',
+    10: 'plan_delete',
+    11: 'transaction_viewing',
+    12: 'router_management',
+    13: 'worker_management',
+  };
+  
+  // Role slug mapping
+  static const Map<String, String> roleMapping = {
+    'administrator-2': 'owner',
+    'manager-2': 'manager',
+    'worker-2': 'worker',
+  };
+  
+  static bool hasPermission(UserModel user, String permission) {
+    // Check if user is owner (full access)
+    final normalizedRole = roleMapping[user.role] ?? user.role;
+    if (normalizedRole == 'owner') return true;
+    
+    // Check specific permission
+    if (user.permissions == null) return false;
+    
+    // Find permission ID
+    final permissionId = idToPermission.entries
+        .firstWhere((e) => e.value == permission, orElse: () => MapEntry(0, ''))
+        .key;
+    
+    return user.permissions!.contains(permissionId.toString());
+  }
+}
+```
+
+### Phase 2: Update Permissions Class
+
+```dart
+class Permissions {
+  static bool canCreateWorkers(UserModel user) {
+    return PermissionMapping.hasPermission(user, 'worker_management');
+  }
+  
+  static bool canAssignRouters(UserModel user) {
+    return PermissionMapping.hasPermission(user, 'router_management');
+  }
+  
+  static bool canCreatePlans(UserModel user) {
+    return PermissionMapping.hasPermission(user, 'plan_create');
+  }
+  
+  static bool canViewUsers(UserModel user) {
+    return PermissionMapping.hasPermission(user, 'user_read');
+  }
+  
+  static bool canViewTransactions(UserModel user) {
+    return PermissionMapping.hasPermission(user, 'transaction_viewing');
+  }
+}
+```
+
+### Phase 3: UI Enforcement
+
+**Example**: Internet Plan Screen
+
+```dart
+Widget build(BuildContext context) {
+  final appState = context.watch<AppState>();
+  final currentUser = appState.currentUser;
+  final canCreate = Permissions.canCreatePlans(currentUser!);
+  final canEdit = Permissions.canEditPlans(currentUser);
+  final canDelete = Permissions.canDeletePlans(currentUser);
+  
+  return Scaffold(
+    // ... app bar
+    body: ListView.builder(
+      itemBuilder: (context, index) {
+        return Card(
+          child: Row(
+            children: [
+              // ... plan details
+              if (canEdit)
+                IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed: () => _editPlan(plan),
+                ),
+              if (canDelete)
+                IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () => _deletePlan(plan),
+                ),
+            ],
+          ),
+        );
+      },
+    ),
+    floatingActionButton: canCreate
+        ? FloatingActionButton(
+            onPressed: () => _createPlan(),
+            child: Icon(Icons.add),
+          )
+        : null,
+  );
+}
+```
+
+### Phase 4: Permission Denied Messages
+
+**Create**: `lib/widgets/permission_denied_dialog.dart`
+
+```dart
+void showPermissionDenied(BuildContext context, String action) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Row(
+        children: [
+          Icon(Icons.lock, color: Colors.red),
+          SizedBox(width: 8),
+          Text('Access Denied'),
+        ],
+      ),
+      content: Text(
+        'You do not have permission to $action. '
+        'Please contact your administrator.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('OK'),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+**Usage**:
+
+```dart
+onPressed: () {
+  if (!Permissions.canCreatePlans(currentUser)) {
+    showPermissionDenied(context, 'create plans');
+    return;
+  }
+  _createPlan();
+}
+```
+
+---
+
+## 8. Implementation Priority
+
+### High Priority (Immediate)
+
+1. ✅ Create permission mapping system
+2. ✅ Update [Permissions](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#1-29) class to use [UserModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#1-97)
+3. ✅ Add permission checks to critical screens:
+   - Internet Plans (create/edit/delete)
+   - Users Management
+   - Collaborators Management
+   - Role Assignment
+
+### Medium Priority (Next Sprint)
+
+4. ✅ Add permission denied messages
+5. ✅ Hide restricted UI elements
+6. ✅ Add visual indicators for restricted features
+
+### Low Priority (Future)
+
+7. ⚠️ Add permission-based navigation
+8. ⚠️ Create admin dashboard for permission management
+9. ⚠️ Add audit log for permission changes
+
+---
+
+## 9. Testing Recommendations
+
+### Test Scenarios
+
+1. **Worker Role**
+   - Should NOT see: Create plan, Delete user, Assign roles
+   - Should see: Assigned routers only
+   - Should get: Permission denied messages
+
+2. **Manager Role**
+   - Should see: Most features except worker management
+   - Should NOT see: Create workers, Assign roles
+   - Should get: Permission denied for restricted actions
+
+3. **Administrator Role**
+   - Should see: All features
+   - Should NOT get: Any permission denied messages
+
+### Test Script
+
+Create `test/test_rbac_enforcement.dart` to verify:
+- Permission checks work correctly
+- UI hides restricted features
+- Permission denied messages appear
+- Backend rejects unauthorized actions
+
+---
+
+## 10. Current vs. Desired State
+
+### Current State ❌
+
+```
+User Logs In
+    ↓
+All Features Visible
+    ↓
+User Clicks Restricted Feature
+    ↓
+Backend Returns 403 Error
+    ↓
+Generic Error Message
+```
+
+### Desired State ✅
+
+```
+User Logs In
+    ↓
+Load User Role & Permissions
+    ↓
+UI Renders Based on Permissions
+    ↓
+Restricted Features Hidden/Disabled
+    ↓
+If Clicked: "Permission Denied" Message
+    ↓
+Backend Validates (Defense in Depth)
+```
+
+---
+
+## Conclusion
+
+### Summary
+
+| Aspect | Status | Notes |
+|--------|--------|-------|
+| Role Definition | ✅ Complete | Backend provides 3 roles |
+| Permission System | ⚠️ Partial | Defined but not enforced |
+| UI Enforcement | ❌ Missing | No permission checks in UI |
+| User Messages | ❌ Missing | No restriction feedback |
+| Backend Enforcement | ✅ Assumed | Backend likely validates |
+
+### Recommendation
+
+**Implement RBAC enforcement in UI immediately** to:
+1. Improve user experience
+2. Prevent confusion
+3. Reduce backend errors
+4. Enhance security (defense in depth)
+
+**Estimated Effort**: 2-3 days for full implementation
+
+---
+
+**Analysis Date**: 2025-11-23  
+**Status**: RBAC framework exists but not enforced ⚠️

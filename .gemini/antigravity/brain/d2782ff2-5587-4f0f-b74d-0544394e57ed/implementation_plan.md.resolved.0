@@ -1,0 +1,53 @@
+# Fix Plan UI Discrepancy
+
+The [PlanModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/plan_model.dart#1-52) currently expects fields that do not exist in the API response, causing the UI to display incorrect or missing information (e.g., "null GB", "null days"). This plan outlines the steps to synchronize the model with the API and update the UI accordingly.
+
+## User Review Required
+> [!IMPORTANT]
+> The [PlanModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/plan_model.dart#1-52) will be significantly updated to match the actual API response. This includes changing field names and types (e.g., `price` from `double` to `String` or handling both, adding `formattedValidity`, `sharedUsersLabel`).
+
+## Proposed Changes
+
+### Models
+
+#### [MODIFY] [plan_model.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/plan_model.dart)
+- Update [PlanModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/plan_model.dart#1-52) fields to match API response:
+    - `price`: Handle as `String` or `num` (API returns string "10.00").
+    - `priceDisplay`: Add field for formatted price (e.g., "10 GHS").
+    - `validity`: Rename `validityDays` to `validity` (which seems to be an ID) or `validityValue` (e.g., "30m").
+    - `formattedValidity`: Add field for display (e.g., "30 Minutes").
+    - `dataLimit`: Rename `dataLimitGB` to `dataLimit` (can be null).
+    - `sharedUsers`: Rename `deviceAllowed` to `sharedUsers` (ID) or `sharedUsersValue` (count).
+    - `sharedUsersLabel`: Add field for display (e.g., "1 device").
+- Update `fromJson` to correctly parse these fields.
+- Update [toJson](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/plan_model.dart#38-51) to map back to what the API expects (or keep it compatible if `create/update` endpoints use different schemas).
+
+### Screens
+
+#### [MODIFY] [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+- Update UI to use new model fields:
+    - Use `formattedValidity` instead of constructing "X days".
+    - Use `priceDisplay` or format `price` correctly.
+    - Use `sharedUsersLabel` or `sharedUsersValue`.
+    - Handle `dataLimit` being null (display "Unlimited").
+
+#### [MODIFY] [internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart)
+- Update UI to use new model fields similar to [PlansScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#9-15).
+
+### Tests
+
+#### [NEW] [plan_model_test.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/test/models/plan_model_test.dart)
+- Add unit tests to verify `PlanModel.fromJson` correctly parses the API response structure observed.
+
+## Verification Plan
+
+### Automated Tests
+- Run the new unit test: `flutter test test/models/plan_model_test.dart`
+
+### Manual Verification
+- Run the app and navigate to the Plans screen.
+- Verify that plans (e.g., "30 Minutes", "CONNECT EXTRA") display correct information:
+    - Price: "10.00 GHS" / "15.00 GHS"
+    - Validity: "30 Minutes" / "1 Day"
+    - Data Limit: "Unlimited" (since it's null in API) or correct value.
+    - Devices: "1 device"

@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Root cause analysis explaining audit methodology and findings. Documents that audit was based on code analysis (currency_utils.dart, app_state.dart, UI components) rather than live API calls due to endpoint access issues. Explains discrepancy between user-provided endpoint (/partner/subscription-plans/check/) and actual code endpoint (/partner/subscription-plan/check/). Confirms currency handling is dynamic based on code review, with Togo mapped to CFA. Identifies that actual country value depends on API response which couldn't be verified due to 405 errors.",
+  "updatedAt": "2025-11-24T11:53:28.790982500Z"
+}

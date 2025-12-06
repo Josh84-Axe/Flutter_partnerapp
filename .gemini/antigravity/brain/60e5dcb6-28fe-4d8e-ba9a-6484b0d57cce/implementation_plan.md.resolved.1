@@ -1,0 +1,33 @@
+# Subscription and Hotspot Profile Implementation Plan
+
+## Goal Description
+Verify the implementation of hotspot profile creation and implement missing subscription endpoints (`/partner/subscription-plan/check/` and `/partner/subscription-plan/purchase/`) to enable partner subscription management.
+
+## Proposed Changes
+
+### Repositories
+#### [NEW] [subscription_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/subscription_repository.dart)
+- Create a new repository to handle subscription-related API calls.
+- Implement `checkSubscriptionStatus` using `/partner/subscription-plan/check/`.
+- Implement [purchaseSubscription](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#917-932) using `/partner/subscription-plan/purchase/`.
+
+#### [MODIFY] [hotspot_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/hotspot_repository.dart)
+- Verify `createHotspotProfile` implementation matches the requirement `/partner/hotspot/profiles/create/`.
+- Ensure proper error handling and response parsing.
+
+### State Management
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Integrate `SubscriptionRepository`.
+- Add methods to check subscription status and purchase plans.
+- Update [loadDashboardData](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#423-447) to include subscription check.
+
+## Verification Plan
+
+### Automated Tests
+- Create unit tests for `SubscriptionRepository` to verify API calls.
+
+### Manual Verification
+- **Hotspot Profile:** Attempt to create a hotspot profile via the UI (if accessible) or verify the repository method is called correctly.
+- **Subscription:**
+    - Call `checkSubscriptionStatus` and verify the response.
+    - Call [purchaseSubscription](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#917-932) and verify the flow.

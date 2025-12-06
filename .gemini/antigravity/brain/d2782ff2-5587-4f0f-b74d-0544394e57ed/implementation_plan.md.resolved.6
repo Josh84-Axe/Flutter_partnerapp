@@ -1,0 +1,225 @@
+# Fix Registration Form - Implementation Plan
+
+## Goal
+
+Update the registration form to collect and send all required fields to the backend according to the exact payload structure.
+
+## Required Backend Payload
+
+```json
+{
+  "first_name": "John",
+  "email": "john@gmail.com",
+  "phone": "+22890112233",
+  "addresse": "Amoutiévé",
+  "city": "Lomé",
+  "country": "TG",
+  "entreprise_name": "John Business",
+  "number_of_router": 1,
+  "password": "string",
+  "password2": "string"
+}
+```
+
+## Changes Required
+
+### 1. Update Login Screen Form Fields
+
+#### [MODIFY] [login_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/login_screen.dart)
+
+**Add Missing Fields**:
+- Add `_enterpriseNameController` for "entreprise_name"
+- Add `_password2Controller` for password confirmation
+
+**Update Existing Fields**:
+- Rename `_nameController` → represents "first_name"
+- Update `_addressController` → represents "addresse" (note spelling)
+- Update country dropdown to use **ISO country codes** (TG, US, FR, etc.)
+- Update phone input to default based on selected country
+
+**Field Mapping**:
+| Form Field | Backend Field | Controller | Required |
+|------------|---------------|------------|----------|
+| First Name | `first_name` | `_nameController` | ✅ Yes |
+| Email | `email` | `_emailController` | ✅ Yes |
+| Phone | `phone` | `_phoneController` | ✅ Yes |
+| Address | `addresse` | `_addressController` | ✅ Yes |
+| City | `city` | `_cityController` | ✅ Yes |
+| Country | `country` | `_selectedCountry` | ✅ Yes |
+| Enterprise Name | `entreprise_name` | `_enterpriseNameController` | ✅ Yes |
+| Number of Routers | `number_of_router` | `_numberOfRoutersController` | ✅ Yes |
+| Password | `password` | `_passwordController` | ✅ Yes |
+| Confirm Password | `password2` | `_password2Controller` | ✅ Yes |
+
+---
+
+### 2. Update Country Dropdown
+
+**Current**: Hardcoded list of country names  
+**New**: Use country package with ISO codes
+
+**Implementation**:
+```dart
+// Use country_picker package or create map
+final Map<String, String> countries = {
+  'TG': 'Togo',
+  'US': 'United States',
+  'FR': 'France',
+  'BE': 'Belgium',
+  'CA': 'Canada',
+  'CI': 'Ivory Coast',
+  'SN': 'Senegal',
+  'GB': 'United Kingdom',
+  'DE': 'Germany',
+  'ES': 'Spain',
+  'IT': 'Italy',
+  'NG': 'Nigeria',
+  'GH': 'Ghana',
+  'KE': 'Kenya',
+  'ZA': 'South Africa',
+};
+```
+
+---
+
+### 3. Update Phone Input Default
+
+**Current**: Always defaults to Togo (TG)  
+**New**: Default based on selected country
+
+**Implementation**:
+```dart
+InternationalPhoneNumberInput(
+  initialValue: PhoneNumber(isoCode: _selectedCountry ?? 'TG'),
+  // Update when country changes
+)
+```
+
+---
+
+### 4. Update AuthRepository
+
+#### [MODIFY] [auth_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart)
+
+**Update [register()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#316-372) method signature**:
+
+```dart
+Future<Map<String, dynamic>?> register({
+  required String firstName,
+  required String email,
+  required String phone,
+  required String address,
+  required String city,
+  required String country,
+  required String enterpriseName,
+  required int numberOfRouter,
+  required String password,
+  required String password2,
+}) async {
+  final response = await _dio.post(
+    '/partner/register/',
+    data: {
+      'first_name': firstName,
+      'email': email,
+      'phone': phone,
+      'addresse': address,  // Note: backend uses 'addresse'
+      'city': city,
+      'country': country,
+      'entreprise_name': enterpriseName,
+      'number_of_router': numberOfRouter,
+      'password': password,
+      'password2': password2,
+    },
+  );
+  return response.data;
+}
+```
+
+---
+
+### 5. Update AppState
+
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+**Update [register()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#316-372) method**:
+
+```dart
+Future<bool> register({
+  required String firstName,
+  required String email,
+  required String phone,
+  required String address,
+  required String city,
+  required String country,
+  required String enterpriseName,
+  required int numberOfRouter,
+  required String password,
+  required String password2,
+}) async {
+  _setLoading(true);
+  try {
+    await _authRepository!.register(
+      firstName: firstName,
+      email: email,
+      phone: phone,
+      address: address,
+      city: city,
+      country: country,
+      enterpriseName: enterpriseName,
+      numberOfRouter: numberOfRouter,
+      password: password,
+      password2: password2,
+    );
+    _setLoading(false);
+    return true;
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    return false;
+  }
+}
+```
+
+---
+
+## Validation Rules
+
+### All Fields Required
+
+1. **First Name**: Not empty
+2. **Email**: Valid email format
+3. **Phone**: Valid phone number
+4. **Address**: Not empty
+5. **City**: Not empty
+6. **Country**: Must select
+7. **Enterprise Name**: Not empty
+8. **Number of Routers**: Must be ≥ 1
+9. **Password**: Min 6 characters
+10. **Confirm Password**: Must match password
+
+---
+
+## Implementation Order
+
+1. ✅ Update `AuthRepository.register()` method
+2. ✅ Update `AppState.register()` method
+3. ✅ Add missing controllers to [LoginScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/login_screen.dart#8-14)
+4. ✅ Add Enterprise Name field
+5. ✅ Add Confirm Password field
+6. ✅ Update country dropdown with ISO codes
+7. ✅ Make Address and City required
+8. ✅ Make Number of Routers required (≥ 1)
+9. ✅ Update phone default based on country
+10. ✅ Update form submission to send all fields
+
+---
+
+## Testing Checklist
+
+- [ ] All 10 fields display correctly
+- [ ] All fields validate properly
+- [ ] Country dropdown shows ISO codes
+- [ ] Phone defaults to selected country
+- [ ] Password confirmation matches
+- [ ] Form submits with all fields
+- [ ] Backend receives correct payload

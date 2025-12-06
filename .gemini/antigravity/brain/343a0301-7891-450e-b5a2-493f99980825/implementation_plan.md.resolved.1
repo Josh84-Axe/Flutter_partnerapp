@@ -1,0 +1,37 @@
+# Implement Subscription Widget
+
+## Goal Description
+Display the partner's current subscription plan and an expiration countdown on the dashboard, using real data from the API.
+
+## User Review Required
+None.
+
+## Proposed Changes
+### Models
+#### [MODIFY] [subscription_model.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/subscription_model.dart)
+- Update `fromJson` to handle the API response structure:
+  - `tier` from `plan.name`
+  - `renewalDate` from `end_date`
+  - `monthlyFee` from `plan.price`
+  - `isActive` from `active`
+
+### Providers
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Update [_initializeRepositories](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#72-101) or [login](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#17-79)/[checkAuthStatus](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#489-527) to parse the `subscription` field from the profile response.
+- Instantiate [SubscriptionModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/subscription_model.dart#1-40) with the parsed data.
+
+### UI
+#### [MODIFY] [subscription_plan_card.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/subscription_plan_card.dart)
+- Add a countdown indicator (e.g., "Expires in X days").
+- Improve styling to match the "full widget" request.
+
+#### [MODIFY] [dashboard_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart)
+- Ensure the widget is placed correctly "on top of revenue and Active users" (already there, just verifying).
+
+## Verification Plan
+### Manual Verification
+- Run the app.
+- Login with `sientey@hotmail.com`.
+- Verify the dashboard shows the "Standare" plan.
+- Verify the expiration date matches the API response (Dec 24, 2025).
+- Verify the countdown shows the correct remaining days.

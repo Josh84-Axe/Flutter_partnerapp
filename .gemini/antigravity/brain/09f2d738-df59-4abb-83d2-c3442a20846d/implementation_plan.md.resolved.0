@@ -1,0 +1,39 @@
+# Fix RouterRepository Endpoint
+
+The [RouterRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#5-152) is currently attempting to fetch routers from `/partner/routers/list/`, which returns a 404 error. The correct approach, as identified in previous diagnostic reports, is to extract router information from the `/partner/plans/` endpoint.
+
+## User Review Required
+
+> [!IMPORTANT]
+> This change modifies how routers are fetched. Instead of a dedicated endpoint, they will be extracted from the plans response. This assumes that all relevant routers are associated with at least one plan.
+
+## Proposed Changes
+
+### `lib/repositories`
+
+#### [MODIFY] [router_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart)
+
+- Change `fetchRouters` to call `/partner/plans/` instead of `/partner/routers/list/`.
+- Implement logic to extract unique routers from the plans response.
+- The response structure for plans is expected to contain a `routers` list within each plan object.
+
+```dart
+// OLD
+final response = await _dio.get('/partner/routers/list/');
+
+// NEW
+final response = await _dio.get('/partner/plans/');
+// Extract routers from response.data['data'] (list of plans)
+// Each plan has a 'routers' list
+// Deduplicate routers by ID
+```
+
+## Verification Plan
+
+### Automated Tests
+- Run `flutter test` to ensure no regressions.
+- Since I cannot run the app on a physical device or emulator, I will rely on the code compilation and existing tests.
+
+### Manual Verification
+- I will verify that the code compiles successfully.
+- I will review the code to ensure the extraction logic handles the expected JSON structure correctly (based on the diagnostic report).

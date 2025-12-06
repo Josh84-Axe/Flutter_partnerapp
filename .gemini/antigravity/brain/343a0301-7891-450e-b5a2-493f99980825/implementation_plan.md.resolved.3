@@ -1,0 +1,41 @@
+# Implement Local Caching for Dashboard Data
+
+## Goal
+Add local caching to show dashboard data instantly from cache, then update in background. Improves perceived performance and enables offline viewing.
+
+## Proposed Changes
+
+### Services
+#### [NEW] [cache_service.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/cache_service.dart)
+- Create `CacheService` using SharedPreferences
+- Methods: `saveData()`, `getData()`, `clearCache()`, `isCacheValid()`
+- Cache expiry: 5 minutes for critical data, 15 minutes for non-critical
+
+### Providers
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Add `CacheService` instance
+- Update [loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#564-622):
+  1. Load from cache immediately (instant UI)
+  2. Fetch from API in background
+  3. Update cache with fresh data
+- Add cache invalidation on logout
+
+### Strategy
+**Cache-First Pattern:**
+```
+1. Check cache → Show cached data instantly
+2. Fetch API → Update in background
+3. Save to cache → Ready for next time
+```
+
+**Benefits:**
+- Instant dashboard on subsequent logins
+- Works offline with stale data
+- Smooth user experience
+
+## Verification Plan
+### Manual Testing
+- Login → Verify instant dashboard from cache
+- Force close app → Reopen → Verify cached data shows
+- Wait 5 min → Verify cache refreshes
+- Test offline mode

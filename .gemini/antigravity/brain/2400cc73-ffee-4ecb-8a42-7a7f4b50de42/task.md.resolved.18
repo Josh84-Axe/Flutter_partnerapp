@@ -1,0 +1,9 @@
+# Outstanding API Features Implementation
+
+- [ ] Implement outstanding features <!-- id: 0 -->
+    - [ ] Check Swagger for subscription endpoint <!-- id: 1 -->
+    - [ ] Implement subscription loading if endpoint exists <!-- id: 2 -->
+    - [ ] Implement dashboard data usage statistics <!-- id: 3 -->
+    - [ ] Remove unused setUseRemoteApi method <!-- id: 4 -->
+    - [ ] Test implementations <!-- id: 5 -->
+    - [ ] Generate final report <!-- id: 6 -->

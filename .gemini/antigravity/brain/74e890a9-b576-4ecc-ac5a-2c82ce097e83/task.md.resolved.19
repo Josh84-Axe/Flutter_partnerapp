@@ -1,0 +1,15 @@
+# Currency Format Normalization
+
+## Tasks
+
+- [ ] Update Core Utilities <!-- id: 0 -->
+    - [ ] Update `CurrencyUtils.formatPrice()` with explicit locale <!-- id: 1 -->
+    - [ ] Update `MetricCard.formatCurrency()` with explicit locale <!-- id: 2 -->
+    - [ ] Update `MetricCard.formatNumber()` with thousand separators <!-- id: 3 -->
+- [ ] Fix Direct Price Formatting <!-- id: 4 -->
+    - [ ] Replace `.toStringAsFixed()` in plan_assignment_screen.dart <!-- id: 5 -->
+    - [ ] Replace direct concatenation in additional_device_config_screen.dart <!-- id: 6 -->
+- [ ] Verification <!-- id: 7 -->
+    - [ ] Test large numbers (>999) show comma separators <!-- id: 8 -->
+    - [ ] Test all currencies display correctly <!-- id: 9 -->
+    - [ ] Test decimal places are consistent (2 digits) <!-- id: 10 -->

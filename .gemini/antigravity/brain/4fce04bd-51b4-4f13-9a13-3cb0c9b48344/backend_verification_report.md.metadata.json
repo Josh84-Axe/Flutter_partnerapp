@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Verification report showing that configuration and plan data was successfully created via POST endpoints, but cannot be retrieved because GET/LIST endpoints return 404 Not Found. Includes evidence and recommendations for backend team.",
+  "updatedAt": "2025-11-22T13:24:25.516005800Z"
+}

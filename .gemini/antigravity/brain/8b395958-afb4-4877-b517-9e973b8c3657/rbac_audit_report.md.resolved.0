@@ -1,0 +1,337 @@
+# RBAC Implementation Audit Report
+
+## Executive Summary
+The application has a **partial RBAC implementation** with UI components and permission checking utilities, but **lacks backend integration and persistent storage**. Roles are currently stored in-memory only and do not persist across sessions or connect to the API.
+
+---
+
+## ✅ Existing Components
+
+### Models
+#### [RoleModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/role_model.dart)
+- ✅ Basic structure with [id](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/country_utils.dart#128-132), `name`, `permissions`
+- ✅ JSON serialization (`fromJson`, [toJson](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#79-96))
+- ⚠️ Permissions stored as `Map<String, bool>` (simple key-value)
+
+### Permission Utilities
+#### [Permissions](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart)
+- ✅ Permission checking methods for all major features
+- ✅ Role-based checks (`roleOwner`, `roleWorker`)
+- ✅ Permission-based checks using [PermissionConstants](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#1-25)
+- ✅ Covers: Plans, Users, Routers, Transactions, Roles, Payouts
+
+#### [PermissionConstants](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart)
+- ✅ Centralized permission string constants
+- ✅ Human-readable labels for UI display
+- ✅ 13 defined permissions
+
+### UI Screens
+1. **[UserRoleScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/user_role_screen.dart)**
+   - ✅ Lists all roles
+   - ✅ Shows permission count per role
+   - ✅ Edit and Delete actions
+   - ✅ Create new role button
+
+2. **[CreateRoleScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_role_screen.dart)**
+   - ✅ Create/Edit role form
+   - ✅ Permission toggles organized by category
+   - ✅ 13 permissions grouped into 6 sections
+   - ⚠️ Uses [TextField](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/partner_profile_screen.dart#243-273) (not `TextFormField` - no validation)
+
+3. **[AssignRoleScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/assign_role_screen.dart)** *(Not examined in detail)*
+
+4. **[RolePermissionScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/role_permission_screen.dart)** *(Not examined in detail)*
+
+### State Management
+#### AppState (lib/providers/app_state.dart)
+- ✅ `List<RoleModel> _roles` - in-memory storage
+- ✅ [createRole()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1746-1751) - adds to local list
+- ✅ [updateRole()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1752-1759) - updates local list
+- ✅ [deleteRole()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1760-1764) - removes from local list
+- ❌ **No API calls** - all operations are local only
+- ❌ **No persistence** - roles lost on app restart
+
+### Widgets
+#### [PermissionDeniedDialog](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/permission_denied_dialog.dart)
+- ✅ Reusable dialog for permission errors
+- ✅ Shows required permission
+- ✅ Custom message support
+
+---
+
+## ❌ Missing Components
+
+### Critical Gaps
+
+#### 1. **Role Repository** ❌
+**Status**: Does not exist
+
+**Required**: `lib/repositories/role_repository.dart`
+
+**Missing Methods**:
+```dart
+class RoleRepository {
+  Future<List<Map<String, dynamic>>> fetchRoles();
+  Future<Map<String, dynamic>> createRole(Map<String, dynamic> data);
+  Future<Map<String, dynamic>> updateRole(String id, Map<String, dynamic> data);
+  Future<void> deleteRole(String id);
+  Future<Map<String, dynamic>> assignRoleToUser(String userId, String roleId);
+}
+```
+
+**Impact**: Roles cannot be saved to or loaded from the backend.
+
+---
+
+#### 2. **API Integration in AppState** ❌
+**Status**: Methods exist but don't call API
+
+**Current Implementation** (AppState):
+```dart
+Future<void> createRole(Map<String, dynamic> roleData) async {
+  final newRole = RoleModel.fromJson(roleData);
+  _roles.add(newRole);  // ❌ Only adds to local list
+  notifyListeners();
+}
+```
+
+**Required Implementation**:
+```dart
+Future<void> createRole(Map<String, dynamic> roleData) async {
+  _setLoading(true);
+  try {
+    if (_roleRepository == null) _initializeRepositories();
+    await _roleRepository!.createRole(roleData);  // ✅ API call
+    await loadRoles();  // ✅ Reload from API
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+```
+
+**Impact**: Changes are not persisted; roles disappear on app restart.
+
+---
+
+#### 3. **User-Role Assignment** ❌
+**Status**: No implementation found
+
+**Missing**:
+- No method to assign a role to a user
+- No UI to select/change user roles
+- [UserModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#1-97) may not have a `role_id` field
+- No API endpoint integration for role assignment
+
+**Required**:
+- `AppState.assignRoleToUser(userId, roleId)`
+- UI screen or dialog for role assignment
+- Update [UserModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#1-97) to include `roleId` or `role` object
+
+---
+
+#### 4. **Permission Enforcement in UI** ⚠️
+**Status**: Partially implemented
+
+**Found**:
+- Permission checking methods exist in [Permissions](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#3-85) class
+- `PermissionDeniedDialog` widget available
+
+**Missing**:
+- **No systematic UI enforcement** - screens don't check permissions before rendering
+- Navigation items not hidden based on permissions
+- Action buttons (Edit, Delete, Create) not disabled based on permissions
+
+**Example of Missing Enforcement**:
+```dart
+// Current: No permission check
+FilledButton(
+  onPressed: () => Navigator.pushNamed('/create-plan'),
+  child: Text('Create Plan'),
+)
+
+// Required: Permission-based visibility
+if (Permissions.canCreatePlans(userRole, userPermissions))
+  FilledButton(
+    onPressed: () => Navigator.pushNamed('/create-plan'),
+    child: Text('Create Plan'),
+  )
+```
+
+---
+
+#### 5. **Role Loading on App Start** ❌
+**Status**: Not implemented
+
+**Missing**:
+- No `loadRoles()` method in [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#39-1765)
+- Roles not fetched during [loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#582-640) or [fetchProfile()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#10-22)
+- No initialization of roles from API
+
+**Required**:
+```dart
+Future<void> loadRoles() async {
+  try {
+    if (_roleRepository == null) _initializeRepositories();
+    final rolesData = await _roleRepository!.fetchRoles();
+    _roles = rolesData.map((data) => RoleModel.fromJson(data)).toList();
+    notifyListeners();
+  } catch (e) {
+    _setError(e.toString());
+  }
+}
+```
+
+---
+
+#### 6. **Current User Role & Permissions** ⚠️
+**Status**: Incomplete
+
+**Found**:
+- [UserModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#1-97) has a `role` field (String)
+- No `permissions` field in [UserModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#1-97)
+
+**Missing**:
+- User's actual permissions not loaded from API
+- No `currentUserRole` getter in [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#39-1765)
+- No `currentUserPermissions` getter in [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#39-1765)
+
+**Required**:
+```dart
+// In AppState
+String? get currentUserRole => _currentUser?.role;
+List<String>? get currentUserPermissions => _currentUser?.permissions;
+
+// In UserModel
+final List<String>? permissions;
+```
+
+---
+
+#### 7. **Form Validation** ⚠️
+**Status**: Missing in CreateRoleScreen
+
+**Issue**: [CreateRoleScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_role_screen.dart#6-14) uses [TextField](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/partner_profile_screen.dart#243-273) instead of `TextFormField`
+
+**Impact**: No validation for role name (can create roles with empty names)
+
+**Fix Required**: Convert to `TextFormField` with validator
+
+---
+
+### Minor Gaps
+
+#### 8. **Permission Mismatch** ⚠️
+**Issue**: Permission keys in [CreateRoleScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_role_screen.dart#6-14) don't match [PermissionConstants](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#1-25)
+
+**CreateRoleScreen permissions**:
+```dart
+'dashboard_access', 'user_create', 'user_read', 'user_update', 'user_delete',
+'plan_create', 'plan_read', 'plan_update', 'plan_delete',
+'transaction_viewing', 'router_management', 'settings_access'
+```
+
+**PermissionConstants**:
+```dart
+'create_plans', 'view_plans', 'edit_plans', 'delete_plans',
+'view_users', 'create_users', 'edit_users', 'delete_users',
+'view_routers', 'assign_routers', 'manage_routers',
+'view_transactions', 'manage_roles'
+```
+
+**Impact**: Permission checks in code won't match permissions set in UI
+
+**Fix**: Align [CreateRoleScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_role_screen.dart#6-14) to use [PermissionConstants](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#1-25)
+
+---
+
+#### 9. **Localization** ⚠️
+**Status**: Incomplete
+
+**Missing l10n keys** (likely):
+- `enter_role_name`, `role_created`, `role_updated`, `role_deleted`
+- `delete_role_confirm`, `permissions_enabled`
+- Permission labels for all 13 permissions
+
+---
+
+#### 10. **Role-Based Navigation** ❌
+**Status**: Not implemented
+
+**Missing**:
+- No navigation guard checking permissions
+- All routes accessible regardless of role
+- No conditional rendering of navigation items
+
+**Required**:
+- Middleware/guard for route protection
+- Conditional `NavigationRail` items based on permissions
+
+---
+
+## 📋 Implementation Priority
+
+### High Priority (Blocking)
+1. ✅ Create `RoleRepository` with API integration
+2. ✅ Update [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#39-1765) role methods to call API
+3. ✅ Implement `loadRoles()` and call on app start
+4. ✅ Add user role/permissions to [UserModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#1-97) and load from API
+5. ✅ Implement user-role assignment functionality
+
+### Medium Priority (Important)
+6. ✅ Fix permission key mismatch between UI and constants
+7. ✅ Add form validation to [CreateRoleScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_role_screen.dart#6-14)
+8. ✅ Implement UI permission enforcement (hide/disable based on role)
+9. ✅ Add role-based navigation guards
+
+### Low Priority (Nice to Have)
+10. ✅ Complete localization for all RBAC strings
+11. ✅ Add audit logging for role changes
+12. ✅ Implement role templates/presets
+
+---
+
+## 🔧 Recommended Implementation Steps
+
+### Phase 1: Backend Integration
+1. Create `role_repository.dart` with CRUD operations
+2. Update [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#39-1765) to use `RoleRepository`
+3. Add `loadRoles()` to app initialization
+4. Test role persistence
+
+### Phase 2: User-Role Linking
+1. Update [UserModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#1-97) to include `roleId` and `permissions`
+2. Implement `assignRoleToUser()` in repository and AppState
+3. Create UI for role assignment
+4. Update user profile to show assigned role
+
+### Phase 3: Permission Enforcement
+1. Fix permission key mismatch
+2. Add permission checks to all action buttons
+3. Implement navigation guards
+4. Hide/show menu items based on permissions
+
+### Phase 4: Polish
+1. Add form validation to [CreateRoleScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_role_screen.dart#6-14)
+2. Complete localization
+3. Add error handling and user feedback
+4. Test all permission scenarios
+
+---
+
+## 📊 Summary Statistics
+
+| Component | Status | Count |
+|-----------|--------|-------|
+| **Models** | ✅ Exists | 1 ([RoleModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/role_model.dart#1-28)) |
+| **Repositories** | ❌ Missing | 0 (need `RoleRepository`) |
+| **UI Screens** | ✅ Exists | 4 screens |
+| **Permission Constants** | ✅ Exists | 13 permissions |
+| **Permission Checks** | ✅ Exists | 15+ methods |
+| **API Integration** | ❌ Missing | 0% |
+| **UI Enforcement** | ⚠️ Partial | ~10% |
+| **Persistence** | ❌ None | In-memory only |
+
+**Overall RBAC Completion**: ~35% (UI exists, backend missing)

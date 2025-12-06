@@ -1,0 +1,314 @@
+# RBAC Permission Fix - Implementation Plan
+
+## Problem Summary
+
+The RBAC (Role-Based Access Control) system is blocking functionalities for the owner account (sientey@hotmail.com). Investigation revealed:
+
+1. **Root Cause**: [UserModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#1-97) is created with hardcoded role `'Partner'` during login
+2. **Permission Mapping Issue**: The role `'Partner'` doesn't match any role in `PermissionMapping.roleMapping`
+3. **Expected Roles**: The permission system expects roles like `'owner'`, `'admin'`, `'administrator-2'`, `'manager'`, `'worker'`
+4. **Current Behavior**: Since `'Partner'` doesn't map to `'owner'`, permission checks fail
+5. **Hardcoded Workaround**: There's a hardcoded check for `sientey@hotmail.com` in `PermissionMapping.isOwner()` but it's not being used everywhere
+
+## Recommended Approach: Two-Phase Implementation
+
+> [!IMPORTANT]
+> **Industry Standard**: Option C (Backend API returns role/permissions) is the industry standard and most robust approach, used by Auth0, AWS IAM, Firebase, and all major enterprise applications.
+>
+> **Recommended Strategy**:
+> - **Phase 1 (Immediate)**: Implement Option A as quick fix to unblock functionality today
+> - **Phase 2 (Proper Solution)**: Coordinate with backend team to implement Option C
+>
+> This provides immediate functionality while establishing proper long-term architecture.
+
+### Why Option C is Best
+
+**Industry Standard Benefits**:
+- ✅ Single source of truth (backend database)
+- ✅ Server-side authorization (secure)
+- ✅ Flexible permissions without app updates
+- ✅ Scalable for complex RBAC models
+- ✅ Multi-platform consistency
+- ✅ Audit trail capability
+
+**Why NOT Option B (Email-Based)**:
+- ❌ Security vulnerability
+- ❌ Not maintainable
+- ❌ Considered an anti-pattern
+- ❌ No granular permissions
+
+## Active Sessions Logic (New)
+Implement logic to differentiate "Online Users" from "Assigned Users".
+- **Online Users**: Active sessions (from routers) MINUS Assigned Users.
+- **Assigned Users**: Users with assigned plans.
+
+### Changes
+#### [MODIFY] [active_sessions_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart)
+- Rename tabs to "Assigned Users" and "Online Users".
+- Fetch active sessions via AppState.
+- Implement filtering logic.
+- Update UI to show IP, MAC, Uptime.
+
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Add [loadActiveSessions](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1398-1409) method.
+- Add `_activeSessions` list.
+
+## Proposed Changes (RBAC)
+
+### 1. Fix UserModel Role Assignment
+
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+Update all locations where [UserModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#1-97) is created to use `'owner'` role instead of `'Partner'`:
+
+**Lines to modify:**
+- Line 238: [login()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#17-92) method - Change `role: 'Partner'` to `role: 'owner'`
+- Line 281: [register()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#103-169) method - Change `role: 'Partner'` to `role: 'owner'`
+- Line 357: [registerWithDetails()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#309-388) method - Change `role: 'owner'`
+- Line 374: [registerWithDetails()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#309-388) temp user - Change `role: 'owner'`
+- Line 449: [checkAuthStatus()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#428-438) method - Change `role: 'owner'`
+
+**Rationale**: Partner accounts should have owner-level access to all features. Using `'owner'` role ensures `PermissionMapping.hasPermission()` returns `true` for all permissions (line 42 in permission_mapping.dart).
+
+---
+
+### 2. Enhance Permission Mapping
+
+#### [MODIFY] [permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart)
+
+Add `'partner'` to the role mapping to handle both cases:
+
+```dart
+static const Map<String, String> roleMapping = {
+  'administrator-2': 'owner',
+  'admin': 'owner',
+  'manager-2': 'manager',
+  'worker-2': 'worker',
+  'owner': 'owner',
+  'partner': 'owner',  // ADD THIS LINE
+  'manager': 'manager',
+  'worker': 'worker',
+};
+```
+
+**Rationale**: This provides backward compatibility if any code still uses `'Partner'` or `'partner'` role.
+
+---
+
+### 3. Add Debug Logging
+
+#### [MODIFY] [permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart)
+
+Add debug logging to [hasPermission()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#36-78) method to help diagnose permission issues:
+
+```dart
+static bool hasPermission(UserModel? user, String permission) {
+  if (user == null) {
+    if (kDebugMode) print('🔒 [Permission] User is null');
+    return false;
+  }
+
+  // Normalize role
+  final normalizedRole = roleMapping[user.role.toLowerCase()] ?? user.role.toLowerCase();
+  if (kDebugMode) print('🔒 [Permission] Checking $permission for role: ${user.role} (normalized: $normalizedRole)');
+
+  // Owner/Administrator has all permissions
+  if (normalizedRole == 'owner') {
+    if (kDebugMode) print('✅ [Permission] Owner has all permissions');
+    return true;
+  }
+  
+  // ... rest of method
+}
+```
+
+---
+
+### 4. Update UserModel to Include Permissions
+
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+If the API returns permissions data, include it in the UserModel:
+
+```dart
+_currentUser = UserModel(
+  id: profileData['id']?.toString() ?? '1',
+  name: profileData['first_name']?.toString() ?? 'Partner',
+  email: profileData['email']?.toString() ?? email,
+  role: 'owner',  // Changed from 'Partner'
+  isActive: true,
+  createdAt: DateTime.now(),
+  country: profileData['country']?.toString() ?? profileData['country_name']?.toString(),
+  permissions: profileData['permissions'] != null 
+      ? List<String>.from(profileData['permissions'])
+      : null,  // ADD THIS
+);
+```
+
+---
+
+## Verification Plan
+
+### 1. Manual Testing
+
+**Test Steps:**
+1. Launch the application:
+   ```powershell
+   .\build\windows\x64\runner\Release\hotspot_partner_app.exe
+   ```
+
+2. Login with owner credentials:
+   - Email: sientey@hotmail.com
+   - Password: Testing
+
+3. Verify Dashboard displays correctly:
+   - User name should display (not "Welcome back, !")
+   - Statistics cards should show data
+   - Navigation drawer should be accessible
+
+4. Check Navigation Access:
+   - Open navigation drawer (hamburger menu)
+   - Verify all menu items are visible (not just Dashboard, Users, Plans, Wallet)
+   - Expected menu items:
+     - Dashboard
+     - Hotspot Users
+     - Email Users
+     - Plans
+     - Active Sessions
+     - Configurations
+     - Workers/Collaborators
+     - Wallet
+     - Settings
+     - Support
+
+5. Test Feature Access:
+   - Navigate to "Hotspot Users" - should load without permission errors
+   - Navigate to "Email Users" - should load
+   - Navigate to "Plan Configuration" - should load
+   - Navigate to "Active Sessions" - should load
+   - Navigate to "Workers" - should load
+
+6. Check Console Logs:
+   - Look for permission debug logs
+   - Verify role is logged as "owner" not "Partner"
+   - No permission denied errors
+
+### 2. Automated Test Script
+
+Create a test script to verify role assignment:
+
+**File**: [test/verify_rbac_fix.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/test/verify_rbac_fix.dart)
+
+```dart
+import 'package:dio/dio.dart';
+
+void main() async {
+  print('Testing RBAC Fix...');
+  
+  final dio = Dio(BaseOptions(baseUrl: 'https://tiknetafrica.com'));
+  
+  // Test login
+  final response = await dio.post(
+    '/partner/login/',
+    data: {
+      'email': 'sientey@hotmail.com',
+      'password': 'Testing',
+    },
+  );
+  
+  print('Login successful: ${response.statusCode == 200}');
+  
+  // Get profile
+  final accessToken = response.data['data']['access'];
+  final profileResponse = await dio.get(
+    '/partner/profile/',
+    options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+  );
+  
+  print('Profile data: ${profileResponse.data}');
+  print('Has role field: ${profileResponse.data.containsKey('role')}');
+  print('Has permissions field: ${profileResponse.data.containsKey('permissions')}');
+}
+```
+
+**Run command:**
+```bash
+dart test/verify_rbac_fix.dart
+```
+
+### 3. Build and Deploy
+
+After making changes:
+
+1. Rebuild the application:
+   ```powershell
+   flutter build windows --release
+   ```
+
+2. Verify build succeeds with 0 errors
+
+3. Run the manual tests above
+
+### 4. User Acceptance Testing
+
+**Request user to verify:**
+- [ ] Can access all navigation menu items
+- [ ] Can create/edit/delete hotspot users
+- [ ] Can create/edit/delete email users
+- [ ] Can create/edit plans
+- [ ] Can view active sessions
+- [ ] Can manage workers/collaborators
+- [ ] No permission denied errors appear
+
+---
+
+## Alternative Approaches
+
+If the above approach doesn't work, consider:
+
+### Option B: Email-Based Owner Detection
+
+Modify [permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart) to check if user is a partner account:
+
+```dart
+static bool isOwner(UserModel? user) {
+  if (user == null) return false;
+  
+  // Check if email is a partner account (contains specific domain or pattern)
+  if (user.email.contains('@')) {
+    // All authenticated partner accounts are owners
+    return true;
+  }
+  
+  return getNormalizedRole(user) == 'owner';
+}
+```
+
+### Option C: Request Backend Changes
+
+If the API should return role/permissions, request backend team to:
+1. Add `role` field to `/partner/profile/` response
+2. Add `permissions` array to profile response
+3. Document the role values (owner, manager, worker)
+
+---
+
+## Risks and Considerations
+
+1. **API Response Format**: If API doesn't return role/permissions, we rely on hardcoded logic
+2. **Security**: Ensure all partner accounts should have owner access
+3. **Multi-tenancy**: If different partners have different permission levels, need backend support
+4. **Backward Compatibility**: Existing code may expect `'Partner'` role
+
+---
+
+## Success Criteria
+
+- ✅ User can login successfully
+- ✅ User name displays in navigation drawer
+- ✅ All navigation menu items are visible
+- ✅ All features are accessible (no permission errors)
+- ✅ Role is correctly set to `'owner'` in UserModel
+- ✅ Permission checks pass for all operations
+- ✅ No console errors related to permissions
+

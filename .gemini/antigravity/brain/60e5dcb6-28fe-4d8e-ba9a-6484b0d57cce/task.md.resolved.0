@@ -1,0 +1,8 @@
+# Currency Implementation Investigation
+
+- [ ] Search for currency-related keywords and symbols in the codebase <!-- id: 0 -->
+- [ ] Analyze "Plan Price Tag" implementation <!-- id: 1 -->
+- [ ] Analyze "Wallets" implementation <!-- id: 2 -->
+- [ ] Analyze "Transaction" implementation <!-- id: 3 -->
+- [ ] Analyze "Revenue" implementation <!-- id: 4 -->
+- [ ] Determine how currency symbol is applied globally or locally <!-- id: 5 -->

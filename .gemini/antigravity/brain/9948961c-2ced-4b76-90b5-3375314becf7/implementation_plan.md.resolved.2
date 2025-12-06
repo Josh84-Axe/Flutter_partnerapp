@@ -1,0 +1,38 @@
+# Build and Test Implementation Plan
+
+## Goal Description
+The goal is to confirm that the Flutter Partner App can be built as an APK/Windows executable and to run functional UI tests. Additionally, fix the invalid credential error preventing login.
+
+## User Review Required
+
+> [!WARNING]
+> **Critical Login Bug Fixed**: The app was using the wrong endpoint (`/auth/login/`) and wrong repository ([PartnerRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#5-141)) for login. Fixed to use [AuthRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#7-298) with `/partner/login/` endpoint.
+
+## Proposed Changes
+
+### Authentication Fix
+
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Change `AppState.login()` to use `_authRepository.login()` instead of `_partnerRepository.login()`
+- Remove token extraction logic from AppState (already handled in AuthRepository)
+- Simplify login flow to rely on AuthRepository's proper implementation
+
+### Build Verification
+- ✅ Windows build completed successfully in 203.7s
+- ❌ APK build failed due to Gradle issues (deprioritized)
+
+### Test Execution
+- Check for connected devices/emulators.
+- Create `integration_test/app_test.dart` to automate the "Functional UI Test Plan".
+- **Phase 1 Scope**:
+    - **Login**: Enter credentials, tap login, verify dashboard.
+    - **Dashboard**: Verify widgets load.
+- Run `flutter test integration_test/app_test.dart`.
+
+## Verification Plan
+
+### Automated Tests
+- `flutter build windows` ✅ Completed
+- Test login with credentials: `sientey@hotmail.com` / `Testing123`
+- `flutter test integration_test/app_test.dart` should pass on the emulator.
+

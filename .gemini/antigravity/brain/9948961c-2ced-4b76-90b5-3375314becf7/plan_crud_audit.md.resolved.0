@@ -1,0 +1,251 @@
+# Internet Plan CRUD Audit
+
+## Two Plan Creation Locations Confirmed
+
+### 1. **PlansScreen** (Inline Dialog)
+**Location:** [lib/screens/plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart) (Line 37-191)  
+**Access:** Plans menu → "Create Plan" button  
+**UI Type:** Dialog popup
+
+### 2. **CreateEditInternetPlanScreen** (Separate Screen)
+**Location:** [lib/screens/create_edit_internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart)  
+**Access:** Via navigation (from main.dart route)  
+**UI Type:** Full screen form
+
+---
+
+## Field Comparison
+
+| Field | PlansScreen Dialog | CreateEditInternetPlanScreen | Match? |
+|-------|-------------------|------------------------------|--------|
+| Plan Name | ✅ TextField | ✅ TextField | ✅ |
+| Price | ✅ TextField | ✅ TextField | ✅ |
+| Data Limit | ✅ Dynamic dropdown | ✅ Dynamic dropdown | ✅ |
+| Validity | ✅ Dynamic dropdown | ✅ Dynamic dropdown | ✅ |
+| **Speed/Rate Limit** | ✅ **Dynamic dropdown** | ❌ **MISSING** | ❌ |
+| Devices Allowed | ✅ Dynamic dropdown | ✅ Dynamic dropdown | ✅ |
+| Hotspot Profile | ✅ Dropdown (static) | ✅ Dropdown (dynamic) | ⚠️ |
+
+### ❌ Critical Difference Found
+
+**PlansScreen** has a Speed dropdown (Line 102-115):
+```dart
+DropdownButtonFormField<dynamic>(
+  value: selectedSpeed,
+  decoration: InputDecoration(labelText: 'speed'.tr()),
+  items: appState.rateLimits.map(...).toList(),
+  onChanged: (value) => setState(() => selectedSpeed = value),
+)
+```
+
+**CreateEditInternetPlanScreen** does NOT have this field - it hardcodes speed to 50 Mbps.
+
+---
+
+## CRUD Operations Audit
+
+### ✅ CREATE
+
+**Both screens call:** `context.read<AppState>().createPlan(data)`
+
+**AppState Method:** (Line 850-865)
+```dart
+Future<void> createPlan(Map<String, dynamic> planData) async {
+  _setLoading(true);
+  try {
+    if (_planRepository == null) _initializeRepositories();
+    await _planRepository!.createPlan(planData);
+    await loadPlans(); // Reload list
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+```
+
+**API Endpoint:** `/partner/plans/create/`  
+**Status:** ✅ **Working**
+
+---
+
+### ✅ READ
+
+**Method:** `AppState.loadPlans()`
+
+**AppState Method:** (Line 735-760)
+```dart
+Future<void> loadPlans() async {
+  _setLoading(true);
+  try {
+    if (_planRepository == null) _initializeRepositories();
+    final plansData = await _planRepository!.fetchPlans();
+    
+    _plans = plansData.map((json) => PlanModel.fromJson(json)).toList();
+    _setLoading(false);
+    notifyListeners();
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+  }
+}
+```
+
+**API Endpoint:** `/partner/plans/`  
+**Status:** ✅ **Working**
+
+---
+
+### ✅ UPDATE
+
+**Method:** `AppState.updatePlan(String planId, Map<String, dynamic> planData)`
+
+**AppState Method:** (Line 867-880)
+```dart
+Future<void> updatePlan(String planId, Map<String, dynamic> planData) async {
+  _setLoading(true);
+  try {
+    if (_planRepository == null) _initializeRepositories();
+    await _planRepository!.updatePlan(planId, planData);
+    await loadPlans(); // Reload list
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+```
+
+**API Endpoint:** `/partner/plans/{planSlug}/update/`  
+**Status:** ✅ **Working**
+
+**Used By:** [CreateEditInternetPlanScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#7-15) (Line 228)
+
+---
+
+### ✅ DELETE
+
+**Method:** `AppState.deletePlan(String planId)`
+
+**AppState Method:** (Line 882-898)
+```dart
+Future<void> deletePlan(String planId) async {
+  _setLoading(true);
+  try {
+    if (_planRepository == null) _initializeRepositories();
+    final success = await _planRepository!.deletePlan(planId);
+    if (success) {
+      await loadPlans(); // Reload list
+    }
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+```
+
+**API Endpoint:** `/partner/plans/{planSlug}/delete/`  
+**Status:** ✅ **Working**
+
+**Used By:** [PlansScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#11-17) (Line 307)
+
+---
+
+## Data Submission Comparison
+
+### PlansScreen Dialog
+```dart
+final data = {
+  'name': nameController.text,
+  'price': double.parse(priceController.text),
+  'dataLimitGB': extractValue(selectedDataLimit),
+  'validityDays': extractValue(selectedValidity),
+  'speedMbps': extractValue(selectedSpeed),        // ✅ From dropdown
+  'deviceAllowed': extractValue(selectedDeviceAllowed),
+  'userProfile': selectedProfile,
+};
+```
+
+### CreateEditInternetPlanScreen
+```dart
+final data = {
+  'name': _nameController.text,
+  'price': double.tryParse(_priceController.text) ?? 0,
+  'dataLimitGB': extractValue(_selectedDataLimit),
+  'validityDays': extractValue(_selectedValidity),
+  'speedMbps': 50,                                  // ❌ HARDCODED
+  'isActive': true,                                 // ❌ HARDCODED
+  'deviceAllowed': extractValue(_selectedAdditionalDevices),
+  'userProfile': _selectedHotspotProfile ?? 'Basic',
+};
+```
+
+---
+
+## Issues Found
+
+### 🔴 Critical Issue: Speed Field Missing
+
+**CreateEditInternetPlanScreen** is missing the Speed/Rate Limit dropdown that exists in **PlansScreen**.
+
+**Impact:**
+- Plans created via CreateEditInternetPlanScreen always have 50 Mbps speed
+- Users cannot select custom speeds
+- Inconsistent with PlansScreen functionality
+
+### ⚠️ Minor Issue: Hotspot Profile Source
+
+- **PlansScreen:** Uses static list from `HotspotConfigurationService.getUserProfiles()`
+- **CreateEditInternetPlanScreen:** Uses dynamic `appState.hotspotProfiles`
+
+**Recommendation:** Both should use dynamic `appState.hotspotProfiles`
+
+---
+
+## Recommendations
+
+### 1. Add Speed Dropdown to CreateEditInternetPlanScreen
+
+Add this field after Data Limit dropdown:
+```dart
+DropdownButtonFormField<dynamic>(
+  value: _selectedSpeed,
+  decoration: InputDecoration(
+    labelText: 'speed'.tr(),
+    border: const OutlineInputBorder(),
+  ),
+  items: appState.rateLimits.map((speed) {
+    final label = speed is Map ? (speed['name'] ?? 'Unknown') : speed.toString();
+    return DropdownMenuItem(value: speed, child: Text(label));
+  }).toList(),
+  onChanged: (value) => setState(() => _selectedSpeed = value),
+)
+```
+
+### 2. Update PlansScreen to Use Dynamic Hotspot Profiles
+
+Replace line 135-138 with:
+```dart
+items: appState.hotspotProfiles.isEmpty
+    ? [DropdownMenuItem(value: 'Basic', child: Text('Basic'))]
+    : appState.hotspotProfiles
+        .map((p) => DropdownMenuItem(value: p.id, child: Text(p.name)))
+        .toList(),
+```
+
+---
+
+## Summary
+
+| Operation | Status | API Endpoint | Notes |
+|-----------|--------|--------------|-------|
+| **CREATE** | ✅ Working | `/partner/plans/create/` | Both screens call same method |
+| **READ** | ✅ Working | `/partner/plans/` | Loads all plans |
+| **UPDATE** | ✅ Working | `/partner/plans/{id}/update/` | Only in CreateEditInternetPlanScreen |
+| **DELETE** | ✅ Working | `/partner/plans/{id}/delete/` | Only in PlansScreen |
+
+**Conclusion:** CRUD is fully functional, but the two creation methods are NOT identical. CreateEditInternetPlanScreen needs the Speed dropdown added.

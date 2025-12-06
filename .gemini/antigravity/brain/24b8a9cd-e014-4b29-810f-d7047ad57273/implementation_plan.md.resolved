@@ -1,0 +1,66 @@
+# RBAC Enforcement Implementation Plan
+
+## Goal
+
+Add role-based access control enforcement to critical screens in the Flutter Partner App to restrict functionality based on user permissions.
+
+## User Review Required
+
+> [!WARNING]
+> **Translation File Issue**: The [en.json](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/l10n/en.json) file has 600+ duplicate key errors. This plan avoids modifying it to prevent further corruption. Permission denied messages will use hardcoded English strings temporarily.
+
+## Proposed Changes
+
+### Core Infrastructure (✅ Complete)
+
+#### [NEW] [permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart)
+- Maps backend permission IDs (1-13) to frontend permission strings
+- Provides role normalization (administrator-2 → owner, etc.)
+- Helper methods: [hasPermission()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#34-63), [isOwner()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#82-86), [isManager()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#87-91), [isWorker()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#92-96)
+
+#### [MODIFY] [permissions.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart)
+- Updated all permission check methods to accept `UserModel?` instead of role strings
+- Added comprehensive permission checks for all features
+- Deprecated old role constants
+
+#### [NEW] [permission_denied_dialog.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/permission_denied_dialog.dart)
+- [showPermissionDenied()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/permission_denied_dialog.dart#4-31) - Dialog for permission errors
+- [showPermissionDeniedSnackbar()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/permission_denied_dialog.dart#32-53) - Less intrusive snackbar
+- [PermissionGuard](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/permission_denied_dialog.dart#55-83) widget - Conditionally renders children
+- [PermissionButton](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/permission_denied_dialog.dart#85-116) widget - Button with permission check
+
+---
+
+### Screen Enforcement
+
+#### [MODIFY] [internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart)
+- Hide "New Plan" FAB if user lacks `plan_create` permission
+- Hide edit button if user lacks `plan_update` permission
+- Hide delete button if user lacks `plan_delete` permission
+- Show permission denied message if restricted action attempted
+
+#### [MODIFY] [collaborators_management_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/collaborators_management_screen.dart)
+- Hide "Add Collaborator" button if user lacks `worker_management` permission
+- Disable collaborator actions for non-owners
+
+#### [MODIFY] [assign_role_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/assign_role_screen.dart)
+- Only allow role assignment if user has `worker_management` permission
+- Show permission denied if unauthorized
+
+#### [MODIFY] [wallet_overview_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/wallet_overview_screen.dart)
+- Hide "Request Payout" button if user lacks `transaction_viewing` permission
+
+---
+
+## Verification Plan
+
+### Manual Testing
+1. Login as owner/administrator - verify all features visible
+2. Login as manager - verify limited features visible
+3. Login as worker - verify minimal features visible
+4. Attempt restricted actions - verify permission denied messages appear
+
+### Code Review
+- Verify all permission checks use `currentUser` from [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#35-1418)
+- Verify UI elements properly hidden/disabled based on permissions
+- Verify no breaking changes to existing functionality

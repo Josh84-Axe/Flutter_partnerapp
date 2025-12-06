@@ -1,0 +1,366 @@
+# Payout & Payment Methods API Reference
+
+## Wallet & Transaction Endpoints
+
+### 1. Get Wallet Balance
+```
+GET /partner/wallet/balance/
+```
+**Repository:** `WalletRepository.fetchBalance()`
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "error": false,
+  "message": "Balance fetched",
+  "data": {
+    "wallet_balance": "1250.75",
+    "currency": "GHS"
+  }
+}
+```
+
+---
+
+### 2. Get All Transactions
+```
+GET /partner/wallet/all-transactions/
+```
+**Repository:** `WalletRepository.fetchAllTransactions()`
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "error": false,
+  "data": [
+    {
+      "id": "txn_001",
+      "amount_paid": "150.00",
+      "payment_reference": "Withdrawal wdr_20251124_001",
+      "payment_method": "mobile_money",
+      "gateway": "MtnMomo",
+      "status": "completed",
+      "created_at": "2025-11-24T14:33:14Z"
+    }
+  ]
+}
+```
+
+---
+
+### 3. Get Filtered Transactions
+```
+GET /partner/wallet/transactions/
+```
+**Repository:** `WalletRepository.fetchTransactions({filters})`
+
+**Query Parameters:**
+- `search` - Search term
+- `status` - Transaction status
+- `type` - Transaction type
+- `period` - Time period
+- `start_date` - Start date (YYYY-MM-DD)
+- `end_date` - End date (YYYY-MM-DD)
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "data": {
+    "paginate_data": [...],
+    "total": 42,
+    "page": 1,
+    "pageSize": 20
+  }
+}
+```
+
+---
+
+### 4. Get Transaction Details ✨ NEW
+```
+GET /partner/wallet/transactions/{id}/details/
+```
+**Repository:** `WalletRepository.fetchTransactionDetails(transactionId)`
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "error": false,
+  "message": "Transaction details",
+  "data": {
+    "id": "txn_001",
+    "amount_paid": "150.00",
+    "payment_reference": "Withdrawal wdr_20251124_001",
+    "payment_method": "mobile_money",
+    "gateway": "MtnMomo",
+    "status": "completed",
+    "created_at": "2025-11-24T14:33:14Z",
+    "metadata": {
+      "tracking_ref": "TXN1690458794000",
+      "fee": "3.00",
+      "net_amount": "147.00"
+    }
+  }
+}
+```
+
+---
+
+## Withdrawal Endpoints
+
+### 5. Create Withdrawal
+```
+POST /partner/withdrawals/create/
+```
+**Repository:** `WalletRepository.createWithdrawal(requestData)`
+
+**Request:**
+```json
+{
+  "amount": 150.00,
+  "payment_method": "mobile_money"
+}
+```
+
+**Response:**
+```json
+{
+  "statusCode": 201,
+  "error": false,
+  "message": "Withdrawal request created",
+  "data": {
+    "id": "wdr_20251124_001",
+    "amount": "150.00",
+    "payment_method": "mobile_money",
+    "status": "pending",
+    "created_at": "2025-11-24T14:33:14Z"
+  }
+}
+```
+
+---
+
+### 6. Get Withdrawals
+```
+GET /partner/withdrawals/
+```
+**Repository:** `WalletRepository.fetchWithdrawals({filters})`
+
+**Query Parameters:**
+- `search` - Search term
+- `status` - Withdrawal status (pending/approved/rejected)
+- `period` - Time period
+- `start_date` - Start date
+- `end_date` - End date
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "data": [
+    {
+      "id": "wdr_20251124_001",
+      "amount": "150.00",
+      "payment_method": "mobile_money",
+      "status": "pending",
+      "created_at": "2025-11-24T14:33:14Z"
+    }
+  ]
+}
+```
+
+---
+
+## Payment Method Endpoints
+
+### 7. List Payment Methods ✨ UPDATED
+```
+GET /partner/payment-methods/list/
+```
+**Repository:** `PaymentMethodRepository.fetchPaymentMethods()`
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "error": false,
+  "data": [
+    {
+      "id": "pm_001",
+      "slug": "mtn-mobile-money-123",
+      "type": "mobile_money",
+      "provider": "MTN",
+      "mobile_number": "0551234567",
+      "account_holder_name": "John Doe",
+      "is_default": true,
+      "created_at": "2025-11-20T10:00:00Z"
+    },
+    {
+      "id": "pm_002",
+      "slug": "ecobank-account-456",
+      "type": "bank_transfer",
+      "bank_name": "Ecobank",
+      "account_number": "1234567890",
+      "account_holder_name": "John Doe",
+      "swift_iban": "GH001234567890",
+      "is_default": false,
+      "created_at": "2025-11-22T14:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 8. Create Payment Method
+```
+POST /partner/payment-methods/create/
+```
+**Repository:** `PaymentMethodRepository.createPaymentMethod(data)`
+
+**Request (Mobile Money):**
+```json
+{
+  "type": "mobile_money",
+  "provider": "MTN",
+  "mobile_number": "0551234567",
+  "account_holder_name": "John Doe"
+}
+```
+
+**Request (Bank Transfer):**
+```json
+{
+  "type": "bank_transfer",
+  "bank_name": "Ecobank",
+  "account_number": "1234567890",
+  "account_holder_name": "John Doe",
+  "swift_iban": "GH001234567890"
+}
+```
+
+**Response:**
+```json
+{
+  "statusCode": 201,
+  "error": false,
+  "message": "Payment method created",
+  "data": {
+    "id": "pm_003",
+    "slug": "mtn-mobile-money-789",
+    "type": "mobile_money",
+    "provider": "MTN",
+    "mobile_number": "0551234567",
+    "account_holder_name": "John Doe",
+    "is_default": false,
+    "created_at": "2025-11-24T15:20:00Z"
+  }
+}
+```
+
+---
+
+### 9. Get Payment Method Details
+```
+GET /partner/payment-methods/{slug}/
+```
+**Repository:** `PaymentMethodRepository.getPaymentMethodDetails(slug)`
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "data": {
+    "id": "pm_001",
+    "slug": "mtn-mobile-money-123",
+    "type": "mobile_money",
+    "provider": "MTN",
+    "mobile_number": "0551234567",
+    "account_holder_name": "John Doe",
+    "is_default": true
+  }
+}
+```
+
+---
+
+### 10. Update Payment Method
+```
+PUT /partner/payment-methods/{slug}/update/
+```
+**Repository:** `PaymentMethodRepository.updatePaymentMethod(slug, data)`
+
+**Request:**
+```json
+{
+  "mobile_number": "0559876543",
+  "is_default": true
+}
+```
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "message": "Payment method updated",
+  "data": {
+    "id": "pm_001",
+    "slug": "mtn-mobile-money-123",
+    "mobile_number": "0559876543",
+    "is_default": true
+  }
+}
+```
+
+---
+
+### 11. Delete Payment Method
+```
+DELETE /partner/payment-methods/{slug}/delete/
+```
+**Repository:** `PaymentMethodRepository.deletePaymentMethod(slug)`
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "message": "Payment method deleted successfully"
+}
+```
+
+---
+
+## Repository Method Summary
+
+### WalletRepository
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| [fetchBalance()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/wallet_repository.dart#10-31) | GET /partner/wallet/balance/ | Get wallet balance |
+| [fetchAllTransactions()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/wallet_repository.dart#61-80) | GET /partner/wallet/all-transactions/ | Get all transactions |
+| [fetchTransactions({filters})](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/wallet_repository.dart#81-134) | GET /partner/wallet/transactions/ | Get filtered transactions |
+| [fetchTransactionDetails(id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/wallet_repository.dart#190-210) | GET /partner/wallet/transactions/{id}/details/ | Get transaction details ✨ |
+| [fetchWithdrawals({filters})](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/wallet_repository.dart#135-172) | GET /partner/withdrawals/ | Get withdrawal requests |
+| [createWithdrawal(data)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/wallet_repository.dart#173-189) | POST /partner/withdrawals/create/ | Create withdrawal |
+
+### PaymentMethodRepository
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| [fetchPaymentMethods()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#10-26) | GET /partner/payment-methods/list/ | List all methods ✨ |
+| [createPaymentMethod(data)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#27-37) | POST /partner/payment-methods/create/ | Create new method |
+| [getPaymentMethodDetails(slug)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#38-48) | GET /partner/payment-methods/{slug}/ | Get method details |
+| [updatePaymentMethod(slug, data)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#49-59) | PUT /partner/payment-methods/{slug}/update/ | Update method |
+| [deletePaymentMethod(slug)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#60-70) | DELETE /partner/payment-methods/{slug}/delete/ | Delete method |
+
+---
+
+## Changes Made
+
+✨ **Added:**
+- `WalletRepository.fetchTransactionDetails()` - New method for transaction details endpoint
+- Updated `PaymentMethodRepository.fetchPaymentMethods()` to use `/list/` endpoint
+
+✅ **All endpoints are now properly mapped to repository methods**

@@ -1,0 +1,82 @@
+# Implementation Plan - Config CRUD API Integration
+
+## Goal
+Connect all configuration management screens to the API using [PlanConfigRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#5-270), replacing local mock data with real server data.
+
+## User Review Required
+
+> [!WARNING]
+> The API does **NOT** provide UPDATE endpoints for configurations. Edit functionality will be removed from config screens. Users can only Create and Delete configurations.
+
+## Proposed Changes
+
+### AppState Methods
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+Add CRUD methods for each configuration type:
+
+**Rate Limits:**
+- [createRateLimit(Map<String, dynamic> data)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#29-39) → calls `planConfigRepository.createRateLimit()`
+- [deleteRateLimit(int id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#51-61) → calls `planConfigRepository.deleteRateLimit()`
+
+**Data Limits:**
+- [createDataLimit(Map<String, dynamic> data)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#81-91) → calls `planConfigRepository.createDataLimit()`
+- [deleteDataLimit(int id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#103-113) → calls `planConfigRepository.deleteDataLimit()`
+
+**Validity Periods:**
+- [createValidityPeriod(Map<String, dynamic> data)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#185-195) → calls `planConfigRepository.createValidityPeriod()`
+- [deleteValidityPeriod(int id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#207-217) → calls `planConfigRepository.deleteValidityPeriod()`
+
+**Idle Timeouts:**
+- [createIdleTimeout(Map<String, dynamic> data)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#237-247) → calls `planConfigRepository.createIdleTimeout()`
+- [deleteIdleTimeout(int id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#259-269) → calls `planConfigRepository.deleteIdleTimeout()`
+
+**Shared Users:**
+- [createSharedUsers(Map<String, dynamic> data)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#133-143) → calls `planConfigRepository.createSharedUsers()`
+- [deleteSharedUsers(int id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#155-165) → calls `planConfigRepository.deleteSharedUsers()`
+
+---
+
+### Configuration Screens
+
+All screens follow the same pattern:
+
+#### [MODIFY] [rate_limit_config_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/rate_limit_config_screen.dart)
+#### [MODIFY] [data_limit_config_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/data_limit_config_screen.dart)
+#### [MODIFY] [plan_validity_config_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/plan_validity_config_screen.dart)
+#### [MODIFY] [idle_time_config_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/idle_time_config_screen.dart)
+#### [MODIFY] [shared_user_config_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/shared_user_config_screen.dart)
+
+**Changes for each screen:**
+1. Remove local `_configs` list
+2. Use `context.watch<AppState>()` to get data from state
+3. Call [loadAllConfigurations()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#557-573) in [initState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart#24-28)
+4. **Remove Edit button** (no API support)
+5. Update Create dialog to call `appState.createXXX()`
+6. Update Delete dialog to call `appState.deleteXXX()`
+7. Show loading state while API calls are in progress
+
+---
+
+### Minor Fix
+#### [MODIFY] [create_edit_user_profile_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_user_profile_screen.dart)
+
+Replace lines 35-36:
+```dart
+context.read<AppState>().fetchRateLimits();
+context.read<AppState>().fetchIdleTimeouts();
+```
+
+With:
+```dart
+context.read<AppState>().loadAllConfigurations();
+```
+
+## Verification Plan
+
+### Manual Verification
+1. Navigate to each config screen
+2. Verify data loads from API
+3. Create a new configuration → verify it appears in the list
+4. Delete a configuration → verify it's removed
+5. Verify changes persist after app restart

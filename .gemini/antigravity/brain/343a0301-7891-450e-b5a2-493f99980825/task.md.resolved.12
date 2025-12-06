@@ -1,0 +1,9 @@
+# Implement Active Session Screen
+
+- [x] Explore codebase for active session logic and dashboard integration <!-- id: 0 -->
+- [x] Create implementation plan for Active Session screen <!-- id: 1 -->
+- [x] Create ActiveSessionScreen with Tabs (Already exists) <!-- id: 2 -->
+- [x] Implement Assigned Users Tab (Reviewing existing logic) <!-- id: 3 -->
+- [x] Implement Online Users Tab with Disconnect (Reviewing existing logic) <!-- id: 4 -->
+- [x] Update Dashboard Quick Action <!-- id: 5 -->
+- [/] Verify implementation <!-- id: 6 -->

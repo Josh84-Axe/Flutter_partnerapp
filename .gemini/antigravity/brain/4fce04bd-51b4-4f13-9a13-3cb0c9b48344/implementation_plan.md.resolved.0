@@ -1,0 +1,58 @@
+# Implementation Plan - Fix Reported Errors
+
+## Goal Description
+Address three specific issues reported by the user:
+1.  **Currency Display Bug**: The app defaults to '$' for unknown countries.
+2.  **Plan Assignment Error (400)**: Assigning a plan fails with a 400 Bad Request.
+3.  **Configuration Screens Error (404)**: Opening configuration screens results in 404 errors.
+
+## User Review Required
+> [!IMPORTANT]
+> **Plan Assignment Payload**: I am changing the payload key from `user_id` to `customer_id` based on the hypothesis that the backend expects `customer_id`. If this is incorrect, we may need to revert or try `uuid`.
+
+> [!WARNING]
+> **Configuration Endpoints**: The 404 errors suggest the endpoints `/partner/rate-limits/`, etc., might not exist or are named differently. I will add graceful error handling to prevent crashes, but the features might remain unavailable until the backend endpoints are confirmed.
+
+## Proposed Changes
+
+### Core Utils
+
+#### [MODIFY] [currency_utils.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart)
+- Add a more comprehensive list of countries and currencies.
+- Implement a fallback mechanism to use the currency code (e.g., 'XOF') if the symbol is not found, or a default based on region.
+
+### Repositories
+
+#### [MODIFY] [plan_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart)
+- Update [assignPlan](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#783-797) to use `customer_id` instead of `user_id`.
+- Add detailed error logging to print the response body when a 400 error occurs, to help debug if the fix doesn't work immediately.
+
+#### [MODIFY] [plan_config_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart)
+- Update fetch methods ([fetchRateLimits](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#12-28), [fetchDataLimits](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#64-80), etc.) to catch 404 errors specifically and return an empty list (or null) instead of throwing, allowing the UI to load even if the config is missing.
+
+#### [MODIFY] [additional_device_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/additional_device_repository.dart)
+- Update [fetchAdditionalDevices](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1267-1278) to catch 404 errors and return an empty list.
+
+### Screens
+
+#### [MODIFY] [additional_device_config_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/additional_device_config_screen.dart)
+- Improve error handling in [_loadConfigs](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/additional_device_config_screen.dart#24-40) to show a user-friendly message if the feature is unavailable.
+
+## Verification Plan
+
+### Automated Tests
+- None available for these specific API interactions.
+
+### Manual Verification
+1.  **Currency**:
+    - Log in and check the dashboard.
+    - Verify that the currency symbol matches the partner's country (e.g., 'CFA' for Togo/Benin, '₦' for Nigeria).
+2.  **Plan Assignment**:
+    - Go to "Plans" -> "Assign Plan".
+    - Select a user and a plan.
+    - Click "Assign".
+    - Verify success message and no 400 error.
+3.  **Configuration Screens**:
+    - Go to "Configurations".
+    - Open "Rate Limit", "Data Limit", "Additional Devices".
+    - Verify that the screens open without error (even if empty).

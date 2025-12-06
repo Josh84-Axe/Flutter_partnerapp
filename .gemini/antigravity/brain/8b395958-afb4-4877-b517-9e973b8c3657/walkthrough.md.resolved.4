@@ -1,0 +1,141 @@
+# User/Worker Management Fixes - Walkthrough
+
+## Summary
+Fixed user and worker creation forms to match API requirements and updated permission system to use "Administrator" role.
+
+## Changes Made
+
+### 1. User Creation Form ([users_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/users_screen.dart#L44-L107))
+
+**Before:**
+- Had fields: `name`, `email`, `phone`, `role`, `permissions`
+- Complex form with role selection and permission checkboxes
+
+**After:**
+- Simplified to only: `first_name`, `phone`
+- Removed role/permission selection (users are always customers)
+- API payload now sends:
+  ```json
+  {
+    "first_name": "string",
+    "phone": "string"
+  }
+  ```
+
+### 2. Worker Creation Form ([create_worker_dialog.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/create_worker_dialog.dart))
+
+**Added Fields:**
+- ✅ `phone` - Phone number field with validation
+- ✅ `addresse` - Address field (note: API uses "addresse" not "address")
+- ✅ `city` - City field
+- ✅ `country` - Country field
+
+**Complete API Payload:**
+```json
+{
+  "first_name": "string",
+  "last_name": "string",
+  "email": "user@example.com",
+  "phone": "string",
+  "addresse": "string",
+  "city": "string",
+  "country": "string",
+  "username": "string",
+  "password": "string",
+  "role": "role_slug"
+}
+```
+
+### 3. Permission System ([permissions.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#L4))
+
+**Changed:**
+- `roleOwner` constant from `'owner'` → `'Administrator'`
+- All permission checks now look for "Administrator" role
+
+### 4. Debug Logging ([users_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/users_screen.dart#L431-L437))
+
+**Added debug output when ellipsis menu is clicked:**
+```
+🔍 [UsersScreen] Current user role: Administrator
+🔍 [UsersScreen] Current user permissions: [create_users, edit_users, ...]
+🔍 [UsersScreen] canEditUsers: true
+🔍 [UsersScreen] canViewUsers: true
+🔍 [UsersScreen] canDeleteUsers: true
+```
+
+## What Still Needs Testing
+
+### ⚠️ Critical: Permission System
+The FAB and ellipsis menus are still gated by permissions. To see them, you need:
+
+1. **Log out and log back in** - This ensures permission ID-to-codename mapping is applied
+2. **Check your role** - Must be "Administrator" (or have explicit permissions)
+3. **Check debug console** - When clicking ellipsis, verify permissions are strings not IDs
+
+**Expected Debug Output:**
+```
+🔍 [UsersScreen] Current user role: Administrator
+🔍 [UsersScreen] Current user permissions: [create_users, edit_users, delete_users, view_users]
+```
+
+**If you see IDs instead:**
+```
+🔍 [UsersScreen] Current user permissions: [10, 3, 5, 7]  ❌ PROBLEM!
+```
+This means the permission mapping didn't apply - need to investigate further.
+
+### Test Checklist
+
+#### User Creation
+- [ ] Navigate to Users screen
+- [ ] Click FAB on "Customers" tab
+- [ ] Verify dialog shows only "First Name" and "Phone" fields
+- [ ] Fill in both fields
+- [ ] Submit and verify API call succeeds
+- [ ] Check user appears in list
+
+#### Worker Creation  
+- [ ] Navigate to Users screen
+- [ ] Click FAB on "Workers" tab
+- [ ] Verify dialog shows all 10 fields:
+  - First Name, Last Name
+  - Email
+  - Phone
+  - Address
+  - City, Country
+  - Username, Password
+  - Role (dropdown)
+- [ ] Fill in all fields
+- [ ] Submit and verify API call succeeds
+- [ ] Check worker appears in list
+
+#### Ellipsis Menu
+- [ ] Click ellipsis (⋮) on any user
+- [ ] Verify menu shows: Edit, View Details, Block/Unblock, Delete
+- [ ] Click ellipsis (⋮) on any worker
+- [ ] Verify menu shows: Assign/Change Role, Delete
+
+## Known Issues
+
+### 1. FAB Not Visible
+**Cause:** Permission check failing
+**Solution:** Ensure logged-in user has "Administrator" role or explicit `create_users` permission
+
+### 2. Empty Ellipsis Menu
+**Cause:** User lacks all permissions (edit, view, delete)
+**Solution:** Assign appropriate permissions to user role
+
+### 3. Permission IDs Not Mapped
+**Cause:** Permission mapping only happens on fresh login
+**Solution:** Log out and log back in
+
+## API Field Name Note
+
+⚠️ The API uses `addresse` (with an 'e') not `address`. This is intentional to match the backend schema.
+
+## Next Steps
+
+1. **Test with real login** - Use actual credentials to verify permission system
+2. **Create test user** - Verify user creation with first_name/phone
+3. **Create test worker** - Verify worker creation with all 7 fields
+4. **Share debug output** - If issues persist, share console logs showing role/permissions

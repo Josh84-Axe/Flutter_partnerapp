@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_WALKTHROUGH",
+  "summary": "Comprehensive walkthrough documenting the implementation of worker management enhancements including View Details, Edit Worker, and Assign Router functionality. Includes what was changed, how to test each feature, and known API endpoint assumptions.",
+  "updatedAt": "2025-11-29T10:18:02.484775800Z",
+  "version": "5"
+}

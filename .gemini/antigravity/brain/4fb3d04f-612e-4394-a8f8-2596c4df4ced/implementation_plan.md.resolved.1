@@ -1,0 +1,19 @@
+# Implementation Plan - Payment Method Integration
+
+## Goal Description
+Complete the integration of payment methods for withdrawals.
+
+## Proposed Changes
+### Exploration
+- [x] Analyze [WalletRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/wallet_repository.dart#5-211), [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#38-1684), and relevant screens.
+- [x] Identified bug in [PayoutRequestScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart#9-15) fee calculation.
+
+### Implementation
+#### [MODIFY] [payout_request_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart)
+- Fix [_calculateFees](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart#39-47) to use the `method_type` of the selected payment method instead of the `slug`.
+- Ensure `_selectedMethod` logic correctly identifies the method type.
+
+## Verification Plan
+### Manual Verification
+- Run the app (if possible) or verify logic by code review.
+- Check if fee updates correctly when switching between Mobile Money and Bank Transfer methods.

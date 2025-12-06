@@ -1,0 +1,156 @@
+# Systematic Feature Rebuild Task List
+
+## Pre-Implementation
+- [ ] Review implementation plan
+- [ ] Commit payout tracking changes
+- [ ] Create feature branch: `feature/rebuild-lost-features`
+
+## Phase 1: Core AppState Infrastructure
+
+### Active Sessions Support
+- [x] Add `_activeSessions` field to AppState
+- [x] Add `activeSessions` getter
+- [x] Implement [loadActiveSessions()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#732-744) method
+- [x] Implement [disconnectSession()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1410-1424) method
+- [x] Test active sessions methods
+
+### Hotspot Users Support
+- [x] Verify `_hotspotUsers` field exists
+- [x] Verify `hotspotUsers` getter exists
+- [x] Implement [loadHotspotUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1005-1018) method
+- [x] Implement [createHotspotUser()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#778-792) method
+- [x] Implement [deleteHotspotUser()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1049-1063) method
+- [x] Test hotspot user methods
+
+### Plan & Profile Enhancements
+- [ ] Add `_sharedUsers`, `_rateLimits`, `_idleTimeouts` fields
+- [ ] Add getters for shared users, rate limits, idle timeouts
+- [ ] Implement [updatePlan()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#66-85) method
+- [ ] Implement [createHotspotProfile()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#958-970) method
+- [ ] Implement `updateHotspotProfile()` method
+- [ ] Implement [fetchSharedUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1299-1310) method
+- [ ] Implement [fetchRateLimits()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1162-1173) method
+- [ ] Implement [fetchIdleTimeouts()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1254-1265) method
+- [ ] Test plan/profile methods
+
+### Email Verification Support
+- [ ] Implement [confirmRegistration()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#389-401) method
+- [ ] Implement [resendVerifyEmailOtp()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#207-222) method
+- [ ] Test email verification methods
+
+### Phase 1 Verification
+- [ ] Build succeeds without errors
+- [ ] All AppState methods compile
+- [ ] Commit Phase 1 changes
+
+## Phase 2: Core Screens
+
+### Active Sessions Screen
+- [ ] Create [active_sessions_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart)
+- [ ] Implement two-tab layout
+- [ ] Implement session list display
+- [ ] Implement username matching logic
+- [ ] Add disconnect session functionality
+- [ ] Add pull-to-refresh
+- [ ] Test active sessions screen
+
+### Enhanced Hotspot Users Management
+- [ ] Update `hotspot_users_management_screen.dart`
+- [ ] Implement user list display
+- [ ] Add create user dialog
+- [ ] Add delete user confirmation
+- [ ] Integrate with AppState methods
+- [ ] Test hotspot users screen
+
+### Email Verification Screen
+- [ ] Create `email_verification_screen.dart`
+- [ ] Implement OTP input
+- [ ] Add resend OTP button with timer
+- [ ] Add success/error handling
+- [ ] Test email verification screen
+
+### OTP Verification Screen
+- [ ] Create `otp_verification_screen.dart`
+- [ ] Implement generic OTP widget
+- [ ] Make reusable for multiple flows
+- [ ] Test OTP screen
+
+### Phase 2 Verification
+- [ ] All screens display correctly
+- [ ] All CRUD operations work
+- [ ] Build succeeds
+- [ ] Manual testing passes
+- [ ] Commit Phase 2 changes
+
+## Phase 3: Enhanced Screens
+
+### Enhanced Plan Creation
+- [ ] Update `create_edit_internet_plan_screen.dart`
+- [ ] Add shared users dropdown
+- [ ] Integrate with AppState.sharedUsers
+- [ ] Use AppState.updatePlan() for editing
+- [ ] Test plan creation enhancements
+
+### Enhanced Profile Creation
+- [ ] Update `create_edit_user_profile_screen.dart`
+- [ ] Add rate limits dropdown
+- [ ] Add idle timeouts dropdown
+- [ ] Integrate with AppState getters
+- [ ] Test profile creation enhancements
+
+### Phase 3 Verification
+- [ ] Dropdowns populate correctly
+- [ ] Form validations work
+- [ ] Data saves to API
+- [ ] Build succeeds
+- [ ] Commit Phase 3 changes
+
+## Phase 4: Supporting Features
+
+### Permission Utilities
+- [ ] Create [permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart)
+- [ ] Define permission constants
+- [ ] Create permission mappings
+- [ ] Test permission utilities
+
+### Permission Dialog
+- [ ] Create `permission_denied_dialog.dart`
+- [ ] Implement reusable dialog
+- [ ] Test permission dialog
+
+### Subscription Repository (Optional)
+- [ ] Create [subscription_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/subscription_repository.dart)
+- [ ] Implement basic methods
+- [ ] Test subscription repository
+
+### Phase 4 Verification
+- [ ] All utilities functional
+- [ ] Build succeeds
+- [ ] Commit Phase 4 changes
+
+## Final Verification
+
+### Build & Test
+- [ ] Clean build succeeds
+- [ ] Windows build succeeds
+- [ ] All features manually tested
+- [ ] No runtime errors
+- [ ] Performance acceptable
+
+### Documentation
+- [ ] Update API documentation
+- [ ] Create feature documentation
+- [ ] Update walkthrough documents
+
+### Git Cleanup
+- [ ] All changes committed
+- [ ] Descriptive commit messages
+- [ ] Push to remote
+- [ ] Create PR if needed
+
+## Completion Criteria
+- [ ] All lost features restored
+- [ ] Code quality improved
+- [ ] All tests passing
+- [ ] Documentation complete
+- [ ] Changes committed and pushed

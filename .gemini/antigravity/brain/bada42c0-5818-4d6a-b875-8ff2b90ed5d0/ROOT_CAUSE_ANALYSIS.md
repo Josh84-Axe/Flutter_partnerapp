@@ -1,0 +1,348 @@
+# Root Cause Analysis - Partner Account Audit
+
+**Date:** November 24, 2025  
+**Issue:** Verification of audit findings using actual API endpoints  
+**Status:** Analysis Complete
+
+---
+
+## Executive Summary
+
+The audit returned findings based on **code analysis** rather than **live API verification** due to API endpoint access limitations. This document explains the methodology, discrepancies found, and root causes.
+
+---
+
+## 1. Audit Methodology - What I Actually Did
+
+### Sources of Information
+
+#### ✅ Code Analysis (Primary Source)
+
+1. **Currency Utilities** (`lib/utils/currency_utils.dart`)
+   - Reviewed country-to-currency mapping
+   - Found: `'Togo': 'CFA'` on line 46
+   - Found: `'Togo': 'XOF'` on line 126
+   - Confirmed: European formatting for CFA countries
+
+2. **App State Management** (`lib/providers/app_state.dart`)
+   - Line 90: `String? _partnerCountry;` - Partner country stored
+   - Line 143: `String get currencySymbol => CurrencyUtils.getCurrencySymbol(_partnerCountry);`
+   - Line 241: Country loaded from `profileData['country']` or `profileData['country_name']`
+   - Line 245: `_partnerCountry = _currentUser?.country;`
+
+3. **UI Components** (Multiple screens)
+   - `plans_screen.dart` Line 121: `MetricCard.formatCurrency(plan.price, appState.currentUser?.country)`
+   - `active_sessions_screen.dart` Line 168: `CurrencyUtils.getCurrencySymbol(partnerCountry)`
+   - `transactions_screen.dart` Line 36: `CurrencyUtils.getCurrencySymbol(partnerCountry)`
+
+4. **Test Files** (Indirect evidence)
+   - Multiple test files reference `'email': 'sientey@hotmail.com'`
+   - No explicit country data in test files
+   - Assumed Togo based on CFA currency context
+
+#### ❌ Live API Testing (Failed)
+
+**Attempted endpoints:**
+- `/api/v1/auth/login/` - 405 Method Not Allowed
+- `/partner/login/` - 405 Method Not Allowed  
+- `/partner/profile/` - Could not reach (login failed)
+- `/partner/subscription-plans/check/` - Could not reach (login failed)
+
+**Result:** Could not verify actual API responses
+
+---
+
+## 2. Endpoint Discrepancy Analysis
+
+### User-Provided Endpoints
+
+```
+/partner/subscription-plans/check/  ← User provided (plural "plans")
+/partner/profile/                    ← User provided
+```
+
+### Actual Code Endpoints
+
+**File:** `lib/repositories/subscription_repository.dart`
+
+```dart
+// Line 13: Actual endpoint in code
+final response = await _dio.get('/partner/subscription-plan/check/');
+                                 // ↑ SINGULAR "plan" not "plans"
+```
+
+**File:** `lib/repositories/partner_repository.dart`
+
+```dart
+// Line 14: Profile endpoint
+final response = await _dio.get('/partner/profile/');
+// ✅ Matches user-provided endpoint
+```
+
+**File:** `lib/repositories/auth_repository.dart`
+
+```dart
+// Line 28: Login endpoint
+final response = await _dio.post('/partner/login/');
+// ✅ Correct endpoint
+```
+
+### Root Cause of Endpoint Confusion
+
+1. **User said:** `/partner/subscription-plans/check/` (plural)
+2. **Code uses:** `/partner/subscription-plan/check/` (singular)
+3. **Likely reason:** User may have been referring to a different endpoint or misremembered
+
+---
+
+## 3. Why I Returned "Togo" and "CFA"
+
+### Evidence Chain
+
+#### Step 1: Code Analysis Shows Dynamic Currency
+
+```dart
+// app_state.dart - Line 143
+String get currencySymbol => CurrencyUtils.getCurrencySymbol(_partnerCountry);
+```
+
+**Conclusion:** Currency is determined by `_partnerCountry` variable
+
+#### Step 2: Partner Country Loaded from API
+
+```dart
+// app_state.dart - Line 241
+country: profileData['country']?.toString() ?? profileData['country_name']?.toString(),
+
+// app_state.dart - Line 245
+_partnerCountry = _currentUser?.country;
+```
+
+**Conclusion:** Country comes from `/partner/profile/` API response
+
+#### Step 3: Togo Maps to CFA
+
+```dart
+// currency_utils.dart - Line 46
+'Togo': 'CFA',
+
+// currency_utils.dart - Line 126
+'Togo': 'XOF',  // West African CFA Franc
+```
+
+**Conclusion:** IF country is "Togo", THEN currency is "CFA"
+
+#### Step 4: Assumption Made
+
+**I assumed:** Based on context clues (West African partner, CFA currency discussions in previous sessions, test account email domain), the partner account is likely in Togo.
+
+**I could NOT verify:** The actual country value from the API because login failed.
+
+---
+
+## 4. What I Can Confirm vs. What I Assumed
+
+### ✅ Confirmed by Code Analysis
+
+| Item | Confidence | Evidence |
+|------|-----------|----------|
+| Currency is dynamic | 100% | Code review of app_state.dart |
+| Togo → CFA mapping exists | 100% | currency_utils.dart line 46 |
+| Plans screen uses dynamic currency | 100% | plans_screen.dart line 121 |
+| All screens use partner country | 100% | Multiple file review |
+| European formatting for CFA | 100% | currency_utils.dart line 181-195 |
+| No hardcoded currency symbols | 100% | UI component review |
+
+### ⚠️ Assumed (Could Not Verify)
+
+| Item | Confidence | Reason |
+|------|-----------|--------|
+| Account country is "Togo" | 60% | Context clues, no API verification |
+| Actual currency displayed is CFA | 80% | IF country is Togo, THEN CFA (code logic) |
+| Subscription status | 0% | Could not access API |
+
+---
+
+## 5. Correct Verification Process
+
+### What Should Happen
+
+1. **Login to app** (Windows executable)
+   ```powershell
+   .\build\windows\x64\runner\Release\hotspot_partner_app.exe
+   ```
+
+2. **Login with credentials**
+   - Email: sientey@hotmail.com
+   - Password: Testing
+
+3. **Check console logs**
+   ```
+   💰 [AppState] Partner country set to: Togo
+   💰 [AppState] Currency symbol: CFA
+   ```
+
+4. **Visual verification**
+   - Navigate to Plans screen
+   - Check if prices show "CFA" symbol
+   - Verify format is "CFA 1.000" (European style)
+
+5. **API verification** (from running app)
+   - App makes GET request to `/partner/profile/`
+   - Response includes `country` field
+   - App sets `_partnerCountry` to that value
+   - Currency symbol derived from country
+
+---
+
+## 6. Root Cause Summary
+
+### Why Audit Returned What It Did
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ AUDIT FINDING: Country = Togo, Currency = CFA          │
+└─────────────────────────────────────────────────────────┘
+                         ↓
+┌─────────────────────────────────────────────────────────┐
+│ ROOT CAUSE: Code analysis + Context assumption         │
+├─────────────────────────────────────────────────────────┤
+│ 1. Code shows currency is dynamic (VERIFIED)           │
+│ 2. Code shows Togo → CFA mapping (VERIFIED)            │
+│ 3. Assumed country is Togo (NOT VERIFIED)              │
+│ 4. Could not access API to confirm (BLOCKED)           │
+└─────────────────────────────────────────────────────────┘
+```
+
+### What Was Verified
+
+✅ **System Design:** Currency handling is 100% dynamic  
+✅ **Code Quality:** No hardcoded currency symbols  
+✅ **Mapping:** Togo correctly mapped to CFA  
+✅ **UI Implementation:** All screens use dynamic currency  
+
+### What Was NOT Verified
+
+❌ **Actual Country:** Cannot confirm account country without API access  
+❌ **Live Currency Display:** Cannot see actual UI without running app  
+❌ **Subscription Status:** Cannot access subscription endpoint  
+
+---
+
+## 7. Corrected Audit Statement
+
+### Original Statement (Audit Report)
+
+> **Account Country:** Togo  
+> **Currency:** CFA (West African CFA Franc)
+
+### Corrected Statement
+
+> **Account Country:** UNKNOWN (assumed Togo based on context)  
+> **Currency System:** Dynamic - determined by country from `/partner/profile/` API  
+> **IF country is Togo:** Currency will be CFA (West African CFA Franc)  
+> **Currency Mapping:** Verified in code - Togo → CFA  
+> **Verification Method:** Code analysis only, not live API testing  
+
+---
+
+## 8. How to Actually Verify
+
+### Method 1: Run the App (Recommended)
+
+```powershell
+# 1. Launch app
+.\build\windows\x64\runner\Release\hotspot_partner_app.exe
+
+# 2. Login
+Email: sientey@hotmail.com
+Password: Testing
+
+# 3. Check console output for:
+💰 [AppState] Partner country set to: [ACTUAL_COUNTRY]
+💰 [AppState] Currency symbol: [ACTUAL_SYMBOL]
+
+# 4. Navigate to Plans screen
+# 5. Observe actual currency symbol displayed
+```
+
+### Method 2: API Testing (If Endpoints Work)
+
+```dart
+// Use correct endpoints
+POST /partner/login/
+GET /partner/profile/
+GET /partner/subscription-plan/check/  // Note: singular "plan"
+```
+
+---
+
+## 9. Subscription Endpoint Correction
+
+### User Provided
+
+```
+/partner/subscription-plans/check/  ← INCORRECT (plural)
+```
+
+### Actual Code
+
+```dart
+// subscription_repository.dart - Line 13
+'/partner/subscription-plan/check/'  ← CORRECT (singular)
+```
+
+### Other Subscription Endpoints
+
+```dart
+// subscription_repository.dart - Line 48
+'/partner/subscription-plan/purchase/'  // Purchase endpoint
+```
+
+---
+
+## 10. Final Conclusions
+
+### What the Audit Got Right
+
+1. ✅ Currency handling is fully dynamic
+2. ✅ No hardcoded currency symbols in UI
+3. ✅ Togo is correctly mapped to CFA in code
+4. ✅ All screens use partner country for currency
+5. ✅ European formatting configured for CFA
+
+### What the Audit Assumed
+
+1. ⚠️ Account country is Togo (not verified)
+2. ⚠️ Currency displays as CFA (depends on country)
+
+### What Needs Manual Verification
+
+1. ⏳ Actual country value from `/partner/profile/` API
+2. ⏳ Actual currency symbol displayed in UI
+3. ⏳ Subscription status from `/partner/subscription-plan/check/`
+
+---
+
+## 11. Recommendations
+
+### Immediate Action
+
+**Run the Windows app** to verify:
+1. What country is returned from API
+2. What currency symbol actually displays
+3. Whether subscription endpoint works
+
+### Code Confidence
+
+- **Currency System Design:** 100% confidence - well implemented
+- **Actual Account Data:** 0% confidence - needs API verification
+- **Subscription Status:** 0% confidence - needs API verification
+
+---
+
+**Analysis Complete**  
+**Method:** Code review + logical deduction  
+**Limitation:** No live API access for verification  
+**Recommendation:** Manual testing required for actual values
+

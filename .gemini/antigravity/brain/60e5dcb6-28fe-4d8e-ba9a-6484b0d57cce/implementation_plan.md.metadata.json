@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Fixing config loading issues by adding `fetchAdditionalDevices` to `loadDashboardData` and removing duplicate `fetchIdleTimeouts`.",
+  "updatedAt": "2025-11-22T11:28:27.599796Z",
+  "version": "10"
+}

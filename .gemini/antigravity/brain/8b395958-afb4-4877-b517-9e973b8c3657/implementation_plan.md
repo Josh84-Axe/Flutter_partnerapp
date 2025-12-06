@@ -1,0 +1,28 @@
+# Role Display and Assignment Fixes
+
+## Goal
+Ensure "User Roles & Permissions" screen displays all roles (default and created) and "Assign Role" screen targets Workers and lists all available roles.
+
+## User Review Required
+> [!IMPORTANT]
+> "Assign Role" screen will be updated to show **Workers** only, as per previous requirements. It will no longer show regular Users (Customers).
+
+## Proposed Changes
+
+### Role Management
+#### [MODIFY] [role_permission_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/role_permission_screen.dart)
+- Convert to `StatefulWidget`.
+- Add `initState` to call `appState.loadRoles()`.
+
+#### [MODIFY] [assign_role_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/assign_role_screen.dart)
+- Update to use `appState.workers` instead of `appState.users`.
+- Add `initState` to call `appState.loadWorkers()` and `appState.loadRoles()`.
+- Replace hardcoded role options ('Administrator', 'Manager', 'Worker') with dynamic list from `appState.roles`.
+
+## Verification Plan
+### Automated Tests
+- None (UI logic changes).
+
+### Manual Verification
+1.  **Role Display**: Navigate to "User Roles & Permissions". Verify 3 default roles + any created roles appear.
+2.  **Assign Role**: Click "Assign Role to User". Verify list shows Workers. Click a worker. Verify bottom sheet shows ALL roles (including custom ones).

@@ -1,0 +1,354 @@
+# Implementation Plan: Bug Fixes for Flutter Partner App
+
+## Overview
+Implementing fixes for 6 reported issues with custom currency rounding logic and complete CRUD operations.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Custom Rounding Logic**: Amounts will be rounded using standard rounding (>= 0.50 rounds up, < 0.50 rounds down), then displayed without decimals.
+> - Example: CFA 2500.60 → CFA 2501
+> - Example: GHS 2500.30 → GHS 2500
+
+---
+
+## Proposed Changes
+
+### Issue #1: Currency Amount Rounding
+
+#### [MODIFY] [currency_utils.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart)
+
+**Changes**:
+- Update [formatPrice()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#202-217) method to round amounts using standard rounding (>= 0.50 up, < 0.50 down)
+- Change `decimalDigits` from 2 to 0
+- Apply rounding before formatting
+
+**Implementation**:
+```dart
+static String formatPrice(double price, String? country) {
+  final symbol = getCurrencySymbol(country);
+  final locale = getLocaleForCountry(country);
+  
+  // Round using standard rounding: >= 0.50 rounds up, < 0.50 rounds down
+  final roundedPrice = price.roundToDouble();
+  
+  final formatter = NumberFormat.currency(
+    symbol: symbol,
+    decimalDigits: 0,  // Changed from 2 to 0
+    locale: locale,
+  );
+  
+  return formatter.format(roundedPrice);
+}
+```
+
+---
+
+### Issue #2: Internet Plan CRUD Operations
+
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+**Add missing methods** after [createPlan()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#798-813) method (around line 812):
+
+```dart
+Future<void> updatePlan(String planSlug, Map<String, dynamic> planData) async {
+  _setLoading(true);
+  try {
+    if (_planRepository == null) _initializeRepositories();
+    
+    await _planRepository!.updatePlan(planSlug, planData);
+    await loadPlans();
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+
+Future<void> deletePlan(String planSlug) async {
+  _setLoading(true);
+  try {
+    if (_planRepository == null) _initializeRepositories();
+    
+    final success = await _planRepository!.deletePlan(planSlug);
+    if (success) {
+      await loadPlans();
+    }
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+```
+
+#### [MODIFY] [internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart)
+
+**Update delete dialog** (lines 24-51) to actually call AppState:
+
+```dart
+void _showDeleteDialog(PlanModel plan) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('delete_plan'.tr()),
+      content: Text('delete_plan_confirm'.tr(namedArgs: {'name': plan.name})),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('cancel'.tr()),
+        ),
+        FilledButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            try {
+              await context.read<AppState>().deletePlan(plan.id);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('plan_deleted_successfully'.tr())),
+                );
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: $e')),
+                );
+              }
+            }
+          },
+          style: FilledButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.error,
+            foregroundColor: Theme.of(context).colorScheme.onError,
+          ),
+          child: Text('delete'.tr()),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+#### [MODIFY] [create_edit_internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart)
+
+**Update [_savePlan()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#258-287) method** (lines 258-286) to handle both create and update:
+
+```dart
+void _savePlan() async {
+  if (_nameController.text.isEmpty || _priceController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('fill_required_fields'.tr())),
+    );
+    return;
+  }
+
+  final data = {
+    'name': _nameController.text,
+    'price': double.tryParse(_priceController.text) ?? 0,
+    'validity': _selectedValidityId,
+    'data_limit': _selectedDataLimitId,
+    'shared_users': _selectedSharedUsersId,
+    'profile': _selectedHotspotProfileId,
+    'is_active': true,
+  };
+
+  try {
+    final appState = context.read<AppState>();
+    if (widget.planData != null && widget.planData!['id'] != null) {
+      // Update existing plan
+      await appState.updatePlan(widget.planData!['id'].toString(), data);
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('plan_updated'.tr())),
+        );
+      }
+    } else {
+      // Create new plan
+      await appState.createPlan(data);
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('plan_created'.tr())),
+        );
+      }
+    }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+}
+```
+
+---
+
+### Issue #3: Blank Config Parameters
+
+**No code changes needed** - already implemented correctly. Will verify during testing.
+
+**Verification steps**:
+1. Navigate to Plans screen
+2. Click "Add Plan" button
+3. Verify dropdowns populate with data
+4. If still blank, add pre-loading in `PlansScreen.initState()`
+
+---
+
+### Issue #4: Plan Details Mapping
+
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+**Update [loadPlans()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#662-691) method** (lines 662-690) to add logging and verify mapping:
+
+Add debug logging to verify API response structure and ensure proper mapping.
+
+**Testing approach**:
+1. Create a plan via the app
+2. Log the API response from [fetchPlans()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#10-30)
+3. Compare created plan data vs. displayed plan data
+4. Adjust mapping if needed
+
+---
+
+### Issue #5: Active Sessions Screen
+
+**Endpoint confirmed**: `/partner/assigned-plans/`
+
+**Verification steps**:
+1. Test API endpoint directly to verify it returns data
+2. Ensure assigned plans exist in the system
+3. Add error handling UI to show API errors
+4. Test refresh functionality
+
+**No code changes needed** - screen already implements correct logic. Issue is likely empty data from API.
+
+---
+
+### Issue #6: Hotspot Profile CRUD Operations
+
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+**Add missing methods** after [createHotspotProfile()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#943-955) method (around line 954):
+
+```dart
+Future<void> updateHotspotProfile(String profileSlug, Map<String, dynamic> profileData) async {
+  _setLoading(true);
+  try {
+    if (_hotspotRepository == null) _initializeRepositories();
+    
+    await _hotspotRepository!.updateProfile(profileSlug, profileData);
+    await loadHotspotProfiles();
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+
+Future<void> deleteHotspotProfile(String profileSlug) async {
+  _setLoading(true);
+  try {
+    if (_hotspotRepository == null) _initializeRepositories();
+    
+    final success = await _hotspotRepository!.deleteProfile(profileSlug);
+    if (success) {
+      await loadHotspotProfiles();
+    }
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+```
+
+#### [MODIFY] [hotspot_user_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/hotspot_user_screen.dart)
+
+**Update delete dialog** (lines 22-48) to actually call AppState:
+
+```dart
+void _showDeleteDialog(HotspotProfileModel profile) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('delete_confirm_title'.tr()),
+      content: Text('delete_confirm_message'.tr()),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('cancel'.tr()),
+        ),
+        FilledButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            try {
+              await context.read<AppState>().deleteHotspotProfile(profile.id);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('delete_profile'.tr())),
+                );
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: $e')),
+                );
+              }
+            }
+          },
+          style: FilledButton.styleFrom(
+            backgroundColor: AppTheme.errorRed,
+          ),
+          child: Text('delete'.tr()),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+#### [NEW] [create_edit_hotspot_profile_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_hotspot_profile_screen.dart)
+
+**Note**: Need to verify if this screen exists. If it doesn't, the edit functionality won't work. The screen should handle both create and update operations similar to the plan screen.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Unit test for currency rounding logic
+- Test AppState CRUD methods with mock repositories
+
+### Manual Verification
+1. **Currency Rounding**:
+   - Test various amounts (e.g., 2500.60, 2500.30, 2500.50)
+   - Verify correct rounding in all currency displays
+   
+2. **Plan CRUD**:
+   - Create a new plan
+   - Edit the plan and verify changes persist
+   - Delete the plan and verify it's removed
+   
+3. **Config Parameters**:
+   - Open create plan screen
+   - Verify all dropdowns populate
+   
+4. **Plan Details**:
+   - Create a plan with specific values
+   - Verify displayed details match created values
+   
+5. **Active Sessions**:
+   - Assign plans to users
+   - Verify they appear in Active Sessions screen
+   - Create hotspot users and verify they appear
+   
+6. **Hotspot Profile CRUD**:
+   - Create a new hotspot profile
+   - Edit the profile and verify changes persist
+   - Delete the profile and verify it's removed

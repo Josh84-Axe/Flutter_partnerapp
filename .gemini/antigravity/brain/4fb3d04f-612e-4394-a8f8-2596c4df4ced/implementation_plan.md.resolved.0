@@ -1,0 +1,14 @@
+# Implementation Plan - Payment Method Integration
+
+## Goal Description
+Complete the integration of payment methods for withdrawals.
+
+## Proposed Changes
+### Exploration
+- Analyze `WalletRepository`, `AppState`, and relevant screens.
+
+### Implementation
+- TBD based on analysis.
+
+## Verification Plan
+- Manual verification of the flow.

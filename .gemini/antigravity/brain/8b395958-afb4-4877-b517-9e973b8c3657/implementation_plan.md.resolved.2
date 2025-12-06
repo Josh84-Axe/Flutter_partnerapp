@@ -1,0 +1,47 @@
+# Global Form Validation Enforcement
+
+## Goal
+Ensure all form inputs across the application are required and validated before submission to the backend.
+
+## Scope
+Audit and update validation logic in all screens containing user input forms.
+
+## Proposed Changes
+
+### Authentication
+#### [MODIFY] [LoginScreenM3](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/login_screen_m3.dart)
+- Ensure Email and Password are required.
+
+#### [MODIFY] [RegistrationScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/registration_screen.dart)
+- Ensure Name, Email, Phone, Password, Confirm Password are required.
+
+### Profile & Settings
+#### [MODIFY] [PartnerProfileScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/partner_profile_screen.dart)
+- Validate all profile fields (Name, Email, Phone, Address, etc.).
+
+#### [MODIFY] [CreateEditUserProfileScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_user_profile_screen.dart)
+- Ensure Profile Name, Rate Limit, Idle Time, and Router selection are required.
+
+### Plans & Management
+#### [MODIFY] [CreateEditInternetPlanScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart)
+- Validate Plan Name, Price, Duration, Data Limit, Speed, etc.
+
+#### [MODIFY] [AddRouterScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/add_router_screen.dart)
+- Ensure Router Name, IP Address/Identifier, Location are required.
+
+### Financial
+#### [MODIFY] [AddPayoutMethodScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/add_payout_method_screen.dart)
+- Validate Mobile Money Number and Provider selection.
+
+### Configurations
+#### [MODIFY] Configuration Screens
+- `DataLimitConfigScreen`, `IdleTimeConfigScreen`, `PlanValidityConfigScreen`, `RateLimitConfigScreen`, `AdditionalDeviceConfigScreen`.
+- Ensure new configuration values are not empty.
+
+## Verification Plan
+### Manual Verification
+- Open each screen.
+- Attempt to submit the form without entering data.
+- Verify that error messages appear ("This field is required" or similar).
+- Enter invalid data (where applicable) and verify validation.
+- Enter valid data and verify submission proceeds.

@@ -1,0 +1,43 @@
+# Implementation Plan - Forgotten Password Flow
+
+## Goal Description
+Implement the functional Forgotten Password flow by connecting existing UI screens to the [PasswordRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#5-66) via [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#35-1313).
+
+## Proposed Changes
+
+### State Management
+
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+-   Add [requestPasswordResetOtp(String email)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#24-37) method.
+-   Add [resetPassword(String email, String otp, String newPassword)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#52-65) method.
+-   Ensure [PasswordRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#5-66) is initialized.
+
+### UI Layer
+
+#### [MODIFY] [forgot_password_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/forgot_password_screen.dart)
+-   Inject [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#35-1313).
+-   Call [requestPasswordResetOtp](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#24-37) on submit.
+-   Navigate to `/reset-email-sent` with `email` argument on success.
+
+#### [MODIFY] [reset_email_sent_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/reset_email_sent_screen.dart)
+-   Retrieve `email` from arguments.
+-   Pass `email` to `/set-new-password` navigation.
+
+#### [MODIFY] [set_new_password_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/set_new_password_screen.dart)
+-   Retrieve `email` from arguments.
+-   Add `_otpController` and a corresponding `TextFormField` for OTP input.
+-   Call [resetPassword](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#52-65) on submit.
+-   Navigate to `/password-success` on success.
+
+## Verification Plan
+
+### Manual Verification
+1.  **Forgot Password**:
+    -   Go to Login -> Forgot Password.
+    -   Enter email -> Submit.
+    -   Verify API call and navigation to "Email Sent" screen.
+2.  **Reset Password**:
+    -   Click "Continue" on "Email Sent" screen.
+    -   Verify "Set New Password" screen has OTP field.
+    -   Enter OTP and New Password -> Submit.
+    -   Verify API call and navigation to "Success" screen.

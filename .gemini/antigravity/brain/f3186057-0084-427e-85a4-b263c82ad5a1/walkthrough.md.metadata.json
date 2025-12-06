@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_WALKTHROUGH",
+  "summary": "Comprehensive walkthrough documenting the redesign of subscription management and internet plan screens, including the complete integration of subscription API endpoints, improved plan CRUD interface, enhanced debugging capabilities, and cleaner UI design focused on better API representation.",
+  "updatedAt": "2025-11-27T20:04:45.773078700Z",
+  "version": "1"
+}

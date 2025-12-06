@@ -1,0 +1,67 @@
+# Cloudflare Pages Auto-Deployment Setup
+
+## ✅ What Was Created
+
+### GitHub Action Workflow
+Created [.github/workflows/deploy-fix-token-storage.yml](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/.github/workflows/deploy-fix-token-storage.yml)
+
+**Triggers**: Automatically on push to `fix/token-storage-windows` branch
+
+**What it does**:
+1. Checks out code
+2. Sets up Flutter (v3.24.5 stable)
+3. Gets dependencies
+4. Builds web app with CanvasKit renderer
+5. Deploys to Cloudflare Pages
+6. Posts deployment status to commit
+
+## 🔑 Required Secrets
+
+To enable deployment, configure these secrets in GitHub:
+
+**Settings → Secrets and variables → Actions → New repository secret**
+
+| Secret Name | Value | Where to Find |
+|------------|-------|---------------|
+| `CLOUDFLARE_API_TOKEN` | Your API token | [Cloudflare Dashboard](https://dash.cloudflare.com/profile/api-tokens) → Create Token → Edit Cloudflare Workers → Use template |
+| `CLOUDFLARE_ACCOUNT_ID` | Your account ID | Cloudflare Dashboard → Right sidebar |
+
+## 🚀 Deployment URL
+
+Once the workflow runs, your app will be deployed to:
+```
+https://fix-token-storage-windows.wifi-4u-partner.pages.dev
+```
+
+## 📋 Next Steps
+
+1. **Configure Secrets** (if not already done):
+   - Go to GitHub repository settings
+   - Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
+
+2. **Verify Deployment**:
+   - Check [GitHub Actions tab](https://github.com/Josh84-Axe/Flutter_partnerapp/actions)
+   - Wait for workflow to complete (~2-3 minutes)
+   - Visit deployment URL
+
+3. **Test Features**:
+   - Login with test credentials
+   - Verify instant dashboard load (caching)
+   - Test Active Sessions screen
+   - Confirm subscription widget displays
+
+## 🔄 How It Works
+
+```
+Push to branch → GitHub Action triggers → Build Flutter web → Deploy to Cloudflare → Live!
+```
+
+Every push to `fix/token-storage-windows` will automatically trigger a new deployment.
+
+## 📦 What Was Committed
+
+- ✅ GitHub Action workflow file
+- ✅ Fixed routes in [main.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/main.dart)
+- ✅ Pushed to `fix/token-storage-windows` branch
+
+**Commit**: `227df31` - "feat: add GitHub Action for auto-deploy to Cloudflare Pages"

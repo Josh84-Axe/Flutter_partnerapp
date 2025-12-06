@@ -1,0 +1,11 @@
+# Task: Fix Password Reset Endpoints
+
+- [x] Verify Endpoints <!-- id: 0 -->
+    - [x] Create [test/test_password_reset_v2.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/test/test_password_reset_v2.dart) <!-- id: 1 -->
+    - [x] Test `/partner/password-reset/verify-otp/` (User provided) <!-- id: 2 -->
+    - [x] Test `/partner/password-reset/request-otp/` (Guessed) <!-- id: 3 -->
+    - [x] Test `/partner/password-reset/send-otp/` (Guessed) <!-- id: 4 -->
+- [x] Update Repository <!-- id: 5 -->
+    - [x] Update [PasswordRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#5-94) with correct endpoints <!-- id: 6 -->
+- [ ] Verify Flow <!-- id: 7 -->
+    - [ ] Manual test of the full flow <!-- id: 8 -->

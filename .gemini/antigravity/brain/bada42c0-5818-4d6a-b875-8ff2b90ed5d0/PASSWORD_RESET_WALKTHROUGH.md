@@ -1,0 +1,178 @@
+# Password Reset Backend Integration - Walkthrough
+
+## Overview
+Completed full backend integration for the password reset flow, connecting the UI screens to the authentication API.
+
+## Changes Made
+
+### 1. AppState Methods (lib/providers/app_state.dart)
+
+Added two new methods for password reset:
+
+#### `requestPasswordReset(String email)`
+- **Purpose:** Sends OTP to user's email for password reset
+- **Backend:** Calls `AuthRepository.requestPasswordReset()`
+- **API Endpoint:** `/partner/password-reset/`
+- **Stores:** Email in `_registrationEmail` for later use
+- **Returns:** `bool` - success/failure
+
+#### `confirmPasswordReset({email, otp, newPassword})`
+- **Purpose:** Confirms password reset with OTP and sets new password
+- **Backend:** Calls `AuthRepository.confirmPasswordReset()`
+- **API Endpoint:** `/partner/password-reset-confirm/`
+- **Clears:** Stored email after successful reset
+- **Returns:** `bool` - success/failure
+
+### 2. ForgotPasswordScreen Integration
+
+**File:** `lib/screens/forgot_password_screen.dart`
+
+**Changes:**
+- Added `Provider` and `AppState` imports
+- Updated `_submit()` method to call `appState.requestPasswordReset()`
+- Added loading indicator during API call
+- Navigate to `/otp-validation` on success with arguments:
+  - `email`: User's email
+  - `type`: `'password_reset'`
+- Show error snackbar on failure
+
+**Flow:**
+1. User enters email
+2. Validates email format
+3. Calls backend API to send OTP
+4. Shows loading spinner
+5. On success → Navigate to OTP validation
+6. On failure → Show error message
+
+### 3. OTPValidationScreen Enhancement
+
+**File:** `lib/screens/otp_validation_screen.dart`
+
+**Changes:**
+- Updated `_verifyCode()` to handle `type` parameter
+- Check if `type == 'password_reset'`
+- Extract `email` from route arguments
+- Navigate to `/set-new-password` with:
+  - `email`: User's email
+  - `otp`: 6-digit code entered
+
+**Flow:**
+1. User enters 6-digit OTP
+2. Auto-submits when all digits entered
+3. If password reset type → Navigate to SetNewPasswordScreen
+4. If other type → Original behavior (callback)
+
+### 4. SetNewPasswordScreen Integration
+
+**File:** `lib/screens/set_new_password_screen.dart`
+
+**Changes:**
+- Added `Provider` and `AppState` imports
+- Updated `_submit()` method to call `appState.confirmPasswordReset()`
+- Extract `email` and `otp` from route arguments
+- Added loading indicator during API call
+- Navigate to `/password-success` on success
+- Show error snackbar on failure
+
+**Flow:**
+1. User enters new password (with validation)
+2. User confirms password
+3. Validates password requirements
+4. Calls backend API with email, OTP, and new password
+5. Shows loading spinner
+6. On success → Navigate to success screen
+7. On failure → Show error message
+
+## Complete Password Reset Flow
+
+```
+┌─────────────────────────┐
+│  ForgotPasswordScreen   │
+│  (Enter Email)          │
+└───────────┬─────────────┘
+            │
+            │ requestPasswordReset(email)
+            │ ↓ Backend sends OTP
+            │
+┌───────────▼─────────────┐
+│  OTPValidationScreen    │
+│  (Enter 6-digit OTP)    │
+└───────────┬─────────────┘
+            │
+            │ Validates OTP locally
+            │
+┌───────────▼─────────────┐
+│  SetNewPasswordScreen   │
+│  (Enter New Password)   │
+└───────────┬─────────────┘
+            │
+            │ confirmPasswordReset(email, otp, newPassword)
+            │ ↓ Backend confirms & resets
+            │
+┌───────────▼─────────────┐
+│  PasswordSuccessScreen  │
+│  (Success Message)      │
+└─────────────────────────┘
+```
+
+## Backend API Integration
+
+### AuthRepository Methods (Already Existed)
+
+**`requestPasswordReset(String email)`**
+- Endpoint: `POST /partner/password-reset/`
+- Payload: `{"email": "user@example.com"}`
+- Response: Success confirmation
+
+**`confirmPasswordReset({email, otp, newPassword})`**
+- Endpoint: `POST /partner/password-reset-confirm/`
+- Payload:
+  ```json
+  {
+    "email": "user@example.com",
+    "otp": "123456",
+    "new_password": "NewSecurePass123!"
+  }
+  ```
+- Response: Success confirmation
+
+## Error Handling
+
+All screens include comprehensive error handling:
+
+1. **Network Errors:** Caught and displayed as snackbar
+2. **Validation Errors:** Form validation before API call
+3. **API Errors:** Backend error messages shown to user
+4. **Loading States:** Spinner shown during API calls
+5. **Missing Data:** Checks for required route arguments
+
+## Testing Checklist
+
+- [ ] Enter email on ForgotPasswordScreen
+- [ ] Verify OTP sent to email
+- [ ] Enter OTP on OTPValidationScreen
+- [ ] Verify navigation to SetNewPasswordScreen
+- [ ] Enter new password with requirements
+- [ ] Verify password reset confirmation
+- [ ] Test error cases (invalid email, wrong OTP, weak password)
+- [ ] Test loading states
+- [ ] Test navigation flow
+
+## Files Modified
+
+1. `lib/providers/app_state.dart` - Added password reset methods
+2. `lib/screens/forgot_password_screen.dart` - Backend integration
+3. `lib/screens/otp_validation_screen.dart` - Password reset flow handling
+4. `lib/screens/set_new_password_screen.dart` - Backend confirmation
+
+## Commit
+
+```
+feat(auth): complete password reset backend integration
+
+- Add requestPasswordReset() and confirmPasswordReset() to AppState
+- Integrate ForgotPasswordScreen with backend (sends OTP via email)
+- Update OTPValidationScreen to handle password reset flow
+- Update SetNewPasswordScreen to confirm password reset with OTP
+- Complete end-to-end password reset flow with backend API
+```

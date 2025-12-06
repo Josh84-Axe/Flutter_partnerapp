@@ -1,0 +1,38 @@
+# Complete RBAC Implementation
+
+## Phase 1: Repository Layer
+- [x] Create [RoleRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/role_repository.dart#5-81) with all role endpoints <!-- id: 1 -->
+- [ ] Update [CollaboratorRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart#5-142) with worker endpoints <!-- id: 2 -->
+- [ ] Test repository methods <!-- id: 3 -->
+
+## Phase 2: State Management
+- [ ] Add role management to [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#39-1765) <!-- id: 4 -->
+- [ ] Add worker/collaborator management to [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#39-1765) <!-- id: 5 -->
+- [ ] Distinguish users vs workers in state <!-- id: 6 -->
+
+## Phase 3: UI - Users Screen
+- [ ] Locate/update Users screen (bottom nav) <!-- id: 7 -->
+- [ ] Add tabs: "Customers" and "Workers" <!-- id: 8 -->
+- [ ] Add "Create User" button <!-- id: 9 -->
+- [ ] Add "Create Worker" button <!-- id: 10 -->
+- [ ] Implement create user dialog/screen <!-- id: 11 -->
+- [ ] Implement create worker dialog/screen <!-- id: 12 -->
+
+## Phase 4: Worker Management
+- [ ] Create worker list view <!-- id: 13 -->
+- [ ] Add assign role functionality <!-- id: 14 -->
+- [ ] Add update role functionality <!-- id: 15 -->
+- [ ] Add delete worker functionality <!-- id: 16 -->
+
+## Phase 5: Role Management
+- [ ] Update [CreateRoleScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_role_screen.dart#6-14) with API integration <!-- id: 17 -->
+- [ ] Update [UserRoleScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/user_role_screen.dart#7-106) with API integration <!-- id: 18 -->
+- [ ] Fix permission key mismatch <!-- id: 19 -->
+- [ ] Add form validation <!-- id: 20 -->
+
+## Phase 6: Testing & Verification
+- [ ] Test user creation <!-- id: 21 -->
+- [ ] Test worker creation <!-- id: 22 -->
+- [ ] Test role assignment <!-- id: 23 -->
+- [ ] Test role CRUD operations <!-- id: 24 -->
+- [ ] Verify persistence across sessions <!-- id: 25 -->

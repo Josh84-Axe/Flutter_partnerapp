@@ -1,0 +1,46 @@
+# Cloudflare Pages Auto-Deployment Setup
+
+## Goal
+Create a GitHub Action that automatically deploys the Flutter web app to Cloudflare Pages whenever code is pushed to the `fix/token-storage-windows` branch.
+
+## Implementation
+
+### GitHub Workflow
+#### [NEW] [deploy-fix-token-storage.yml](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/.github/workflows/deploy-fix-token-storage.yml)
+- Triggers on push to `fix/token-storage-windows` branch
+- Builds Flutter web app with CanvasKit renderer
+- Deploys to Cloudflare Pages preview environment
+- Posts deployment status to commit
+
+### Required Secrets
+The following secrets must be configured in GitHub repository settings:
+
+| Secret Name | Description | How to Get |
+|------------|-------------|------------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API token with Pages permissions | Cloudflare Dashboard → My Profile → API Tokens |
+| `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID | Cloudflare Dashboard → Account ID (right sidebar) |
+
+> **Note**: `GITHUB_TOKEN` is automatically provided by GitHub Actions.
+
+### Deployment URL
+Once deployed, the app will be available at:
+```
+https://fix-token-storage-windows.wifi-4u-partner.pages.dev
+```
+
+## Verification Plan
+
+### After Pushing Workflow
+1. Push the workflow file to GitHub
+2. Check Actions tab for workflow run
+3. Verify build succeeds
+4. Check deployment URL
+5. Test caching functionality in deployed app
+
+### Testing Checklist
+- [ ] Workflow triggers on push
+- [ ] Flutter build completes successfully  
+- [ ] Cloudflare deployment succeeds
+- [ ] App loads at preview URL
+- [ ] Login works correctly
+- [ ] Caching works (instant dashboard on repeat login)

@@ -1,0 +1,30 @@
+# Fix Plan Assignment Logic
+
+## Goal Description
+Fix the issue where plan assignment failures are not reported to the user, and the UI falsely indicates success.
+
+## User Review Required
+> [!IMPORTANT]
+> This is a bug fix. The previous implementation did not wait for the API response, so it always showed "Plan assigned" even if the backend returned an error.
+
+## Proposed Changes
+
+### UI Logic
+#### [MODIFY] [assign_user_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/assign_user_screen.dart)
+-   Update [_showConfirmation](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/assign_user_screen.dart#147-201) method.
+-   Make the `onPressed` callback `async`.
+-   Show a loading indicator (or disable button) while assigning.
+-   `await appState.assignPlan(...)`.
+-   Wrap in `try-catch` block.
+-   On success: Close dialogs and show success SnackBar.
+-   On error: Keep dialog open (or close and reopen?) and show error SnackBar.
+
+## Verification Plan
+
+### Manual Verification
+1.  **Navigate**: Go to Plans screen -> Select a Plan -> Assign to User.
+2.  **Action**: Select a user and confirm assignment.
+3.  **Verify**:
+    -   Loading state should appear.
+    -   If successful, success message appears.
+    -   If failed (e.g., network error), error message appears.

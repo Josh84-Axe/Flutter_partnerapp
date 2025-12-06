@@ -1,0 +1,25 @@
+# Worker Management Minor Improvements
+
+## Tasks
+
+- [/] Update Collaborator Creation Form
+  - [/] Add first_name field (required)
+  - [ ] Add last_name field (optional)
+  - [ ] Update validation
+
+- [ ] Wire Assign Role Screen to Backend
+  - [ ] Replace snackbar with API call
+  - [ ] Add loading state
+  - [ ] Reload user list after assignment
+
+- [ ] Update Role Creation
+  - [ ] Change permissions from strings to IDs
+  - [ ] Update form validation
+
+- [ ] Create OTP Verification Screen
+  - [ ] Create new screen file
+  - [ ] Add OTP input field
+  - [ ] Add resend OTP button
+  - [ ] Add timer for expiration
+  - [ ] Wire to backend API
+  - [ ] Navigate to password setup

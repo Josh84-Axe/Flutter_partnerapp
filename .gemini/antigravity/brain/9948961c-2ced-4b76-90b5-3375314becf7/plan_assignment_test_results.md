@@ -1,0 +1,86 @@
+# Plan Assignment Test Results
+
+## Test Execution Summary
+
+✅ **Found User:** Joshua (username: `joshua_62fcb2d3`, hotspot_user_id: `2714`)  
+✅ **Found Plan:** "30 Minutes" (plan_id: `37`)  
+❌ **Assignment Failed:** Server returned 500 error
+
+## Server Response
+
+```json
+{
+  "statusCode": 500,
+  "error": true,
+  "message": "Internal server error.",
+  "data": {},
+  "exception": "No User matches the given query."
+}
+```
+
+## Root Cause
+
+The API endpoint `/partner/assign-plan/` expects:
+```json
+{
+  "customer_id": "<customer_id>",  // NOT hotspot_user_id
+  "plan_id": "<plan_id>"
+}
+```
+
+**The Issue:**  
+- Hotspot users (from `/partner/hotspot/users/`) have IDs like `2714`
+- But these are NOT the same as customer IDs
+- The assignment API is looking for a "User" (customer) record, not a hotspot user
+
+## Bug Found in AppState
+
+**File:** `lib/providers/app_state.dart`  
+**Line:** 906
+
+**Current Code (WRONG):**
+```dart
+await _planRepository!.assignPlan({'user_id': userId, 'plan_id': planId});
+```
+
+**Should Be:**
+```dart
+await _planRepository!.assignPlan({'customer_id': userId, 'plan_id': planId});
+```
+
+The parameter name is wrong - it's sending `user_id` but the API expects `customer_id`.
+
+## Recommendation
+
+The app needs to clarify the user flow:
+1. Are we assigning plans to **Customers** (from `/partner/customer/list/`)?
+2. Or to **Hotspot Users** (from `/partner/hotspot/users/`)?
+
+These appear to be two different entities in the system.
+
+---
+
+## Additional Findings
+
+### Available Users in System:
+- kate_499ece55
+- true_f1b2dfad
+- max_43b65d4c
+- plumber2_6de67c67
+- imac_c7d055e3
+- **joshua_62fcb2d3** ✅
+- roland_08e295dd
+- eric_0c440598
+- ashraf_277aea90
+
+### Available Plans:
+- 30 Minutes (ID: 37)
+- Plus 4 other plans
+
+### Correct API Parameters:
+```json
+{
+  "customer_id": "string",  // Must be a valid customer ID
+  "plan_id": "string"       // Plan ID from /partner/plans/
+}
+```

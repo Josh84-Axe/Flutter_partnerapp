@@ -1,0 +1,15 @@
+# Task: Cleanup and Fix Flutter Partner App
+
+- [x] **Remove Mock Data** <!-- id: 5 -->
+    - [x] Identify all sources of mock data <!-- id: 6 -->
+    - [x] Replace/Remove mock data with real API calls <!-- id: 7 -->
+- [x] **Investigate & Fix Data Persistence** <!-- id: 8 -->
+    - [x] Analyze current persistence mechanism (SharedPrefs/SecureStorage) <!-- id: 9 -->
+    - [x] Fix state loss on refresh/close <!-- id: 10 -->
+- [x] **Fix CRUD Actions** <!-- id: 11 -->
+    - [x] Audit API services and repositories <!-- id: 12 -->
+    - [x] Debug and fix Create/Read/Update/Delete flows <!-- id: 13 -->
+- [x] **Verification** <!-- id: 14 -->
+    - [x] Verify persistence works <!-- id: 15 -->
+    - [x] Verify CRUD operations work <!-- id: 16 -->
+    - [x] Rebuild Windows App for Confirmation <!-- id: 17 -->

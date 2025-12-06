@@ -1,0 +1,13 @@
+# Task: Fix Plan UI and Assigned Users
+
+- [ ] Fix Blank Dropdowns in Create/Edit Plan Screen <!-- id: 0 -->
+    - [ ] Investigate `CreateEditInternetPlanScreen` for data loading logic <!-- id: 1 -->
+    - [ ] Verify `PlanConfigRepository` or relevant providers are fetching data correctly <!-- id: 2 -->
+    - [ ] Fix the issue causing empty lists <!-- id: 3 -->
+- [ ] Fix Assigned Users Display in Active Session Screen <!-- id: 4 -->
+    - [ ] Investigate Active Session Screen implementation <!-- id: 5 -->
+    - [ ] Verify data fetching for assigned users <!-- id: 6 -->
+    - [ ] Fix the display issue <!-- id: 7 -->
+- [ ] Verification <!-- id: 8 -->
+    - [ ] Verify Dropdowns are populated <!-- id: 9 -->
+    - [ ] Verify Assigned Users are visible <!-- id: 10 -->

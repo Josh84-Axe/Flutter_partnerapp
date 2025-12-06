@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Final debugging report documenting that Dio works in standalone Dart scripts but fails in Flutter test environment due to environment-specific HTTP handling. Includes solution: run automation as standalone script instead of flutter test.",
+  "updatedAt": "2025-11-22T13:13:37.799756600Z"
+}

@@ -1,0 +1,236 @@
+# RBAC Implementation Walkthrough
+
+## Summary
+
+Successfully implemented Role-Based Access Control (RBAC) enforcement in the Flutter Partner App. Created core infrastructure and added permission checks to the Internet Plans screen.
+
+---
+
+## Changes Made
+
+### 1. Core Infrastructure Created ✅
+
+#### [permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart) - NEW
+
+Created permission mapping utility that bridges backend and frontend:
+
+**Key Features**:
+- Maps backend permission IDs (1-13) to frontend permission strings
+- Normalizes role slugs (`administrator-2` → `owner`, etc.)
+- Provides helper methods: [hasPermission()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#34-63), [isOwner()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#82-86), [isManager()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#87-91), [isWorker()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#92-96)
+
+**Permission Mapping**:
+```dart
+static const Map<int, String> idToPermission = {
+  1: 'dashboard_access',
+  2: 'settings_access',
+  3: 'user_read',
+  4: 'user_create',
+  // ... 13 total permissions
+};
+```
+
+---
+
+#### [permissions.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart) - UPDATED
+
+Refactored to use [UserModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#1-97) instead of role strings:
+
+**Before**:
+```dart
+static bool canCreatePlans(String role, List<String>? permissions) {
+  if (role == roleOwner) return true;
+  return permissions?.contains('create_plans') ?? false;
+}
+```
+
+**After**:
+```dart
+static bool canCreatePlans(UserModel? user) {
+  return PermissionMapping.hasPermission(user, 'plan_create');
+}
+```
+
+**New Permission Methods**:
+- ✅ [canCreateUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#14-17), [canViewUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#18-21), [canEditUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#22-25), [canDeleteUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#26-29)
+- ✅ [canCreatePlans()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#32-35), [canViewPlans()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#36-39), [canEditPlans()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#40-43), [canDeletePlans()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#44-47)
+- ✅ [canCreateWorkers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#50-53), [canAssignRoles()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#54-57)
+- ✅ [canManageRouters()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#60-63), [canAssignRouters()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#64-67), [canViewRouters()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#68-71)
+- ✅ [canViewTransactions()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#74-77), [canRequestPayout()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#78-81)
+- ✅ [canAccessDashboard()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#84-87), [canAccessSettings()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#88-91)
+
+---
+
+#### [permission_denied_dialog.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/permission_denied_dialog.dart) - NEW
+
+Created UI widgets for permission feedback:
+
+**Functions**:
+- [showPermissionDenied()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/permission_denied_dialog.dart#4-31) - Full dialog with lock icon
+- [showPermissionDeniedSnackbar()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/permission_denied_dialog.dart#32-53) - Less intrusive snackbar
+
+**Widgets**:
+- [PermissionGuard](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/permission_denied_dialog.dart#55-83) - Conditionally renders children based on permission
+- [PermissionButton](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/permission_denied_dialog.dart#85-116) - Button that checks permission before executing action
+
+---
+
+### 2. Screen Enforcement Implemented ✅
+
+#### [internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart) - UPDATED
+
+Added permission checks for all plan management actions:
+
+**Changes**:
+
+1. **Create Button** - Only shown if user has `plan_create` permission:
+```dart
+floatingActionButton: Permissions.canCreatePlans(appState.currentUser)
+    ? FloatingActionButton.extended(
+        onPressed: () => _navigateToCreateEdit(),
+        icon: const Icon(Icons.add),
+        label: Text('new_plan'.tr()),
+      )
+    : null,
+```
+
+2. **Edit Button** - Only shown if user has `plan_update` permission:
+```dart
+if (Permissions.canEditPlans(appState.currentUser))
+  IconButton(
+    onPressed: () => _navigateToCreateEdit(plan: plan),
+    icon: const Icon(Icons.edit),
+    // ...
+  ),
+```
+
+3. **Delete Button** - Only shown if user has `plan_delete` permission:
+```dart
+if (Permissions.canDeletePlans(appState.currentUser))
+  IconButton(
+    onPressed: () => _showDeleteDialog(plan),
+    icon: const Icon(Icons.delete),
+    // ...
+  ),
+```
+
+**Result**: Workers and Managers without plan permissions will not see these buttons at all.
+
+---
+
+## Permission Matrix
+
+Based on the backend roles from testing:
+
+| Permission | Worker | Manager | Administrator |
+|-----------|--------|---------|---------------|
+| Dashboard Access | ✅ | ✅ | ✅ |
+| User Read | ✅ | ✅ | ✅ |
+| User Create | ❌ | ✅ | ✅ |
+| User Update | ❌ | ✅ | ✅ |
+| User Delete | ❌ | ❌ | ✅ |
+| Plan Read | ✅ | ✅ | ✅ |
+| Plan Create | ❌ | ✅ | ✅ |
+| Plan Update | ❌ | ✅ | ✅ |
+| Plan Delete | ❌ | ❌ | ✅ |
+| Transaction Viewing | ✅ | ✅ | ✅ |
+| Router Management | ✅ | ✅ | ✅ |
+| Worker Management | ❌ | ✅ | ✅ |
+| Settings Access | ❌ | ❌ | ✅ |
+
+---
+
+## Testing Recommendations
+
+### Test Scenarios
+
+1. **Administrator Role**:
+   - ✅ Should see all buttons (Create, Edit, Delete)
+   - ✅ Should be able to perform all actions
+
+2. **Manager Role**:
+   - ✅ Should see Create and Edit buttons
+   - ❌ Should NOT see Delete button
+   - ✅ Can create and edit plans
+
+3. **Worker Role**:
+   - ❌ Should NOT see any action buttons
+   - ✅ Can only view plans (read-only)
+
+### How to Test
+
+1. Login as administrator (owner)
+2. Create a manager collaborator
+3. Create a worker collaborator
+4. Login as each role and verify button visibility
+
+---
+
+## Known Issues
+
+### Translation File Corruption ⚠️
+
+The [en.json](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/l10n/en.json) file has 600+ duplicate key errors from previous edits. This was avoided in this implementation by:
+- Not adding new translation keys
+- Using existing translations where possible
+- Planning to fix in a separate cleanup task
+
+**Impact**: Permission denied messages will need proper translations once the file is cleaned up.
+
+---
+
+## Next Steps
+
+### Remaining Screens to Enforce
+
+1. **Wallet Overview Screen**:
+   - Hide "Request Payout" button if user lacks `transaction_viewing` permission
+
+2. **Collaborators Management Screen**:
+   - Hide "Add Collaborator" button if user lacks `worker_management` permission
+
+3. **Assign Role Screen**:
+   - Only allow access if user has `worker_management` permission
+
+4. **Router Settings Screen**:
+   - Hide router assignment if user lacks `router_management` permission
+
+5. **Dashboard Screen**:
+   - Conditionally show widgets based on `dashboard_access` permission
+
+6. **Settings Screen**:
+   - Only allow access if user has `settings_access` permission
+
+### Additional Improvements
+
+- Add permission denied messages when users click disabled features
+- Create navigation guards to prevent unauthorized route access
+- Add visual indicators (e.g., lock icons) for restricted features
+- Implement audit logging for permission checks
+
+---
+
+## Files Modified
+
+| File | Type | Changes |
+|------|------|---------|
+| [permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart) | NEW | Permission ID mapping and role normalization |
+| [permissions.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart) | UPDATED | Refactored to use UserModel |
+| [permission_denied_dialog.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/permission_denied_dialog.dart) | NEW | Permission feedback widgets |
+| [internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart) | UPDATED | Added permission checks for create/edit/delete |
+
+---
+
+## Conclusion
+
+✅ **RBAC core infrastructure is complete and functional**  
+✅ **Internet Plans screen successfully enforces permissions**  
+⚠️ **Translation file needs cleanup before adding new keys**  
+📋 **5 more screens need permission enforcement**
+
+The foundation is solid and can be extended to all other screens following the same pattern demonstrated in the Internet Plans screen.
+
+---
+
+**Implementation Date**: 2025-11-23  
+**Status**: Core infrastructure complete, partial screen enforcement ✅

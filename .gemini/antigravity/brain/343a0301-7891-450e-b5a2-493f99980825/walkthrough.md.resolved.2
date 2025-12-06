@@ -1,0 +1,41 @@
+# Implement Active Session Screen Walkthrough
+
+## Changes Made
+
+### Dashboard Update
+Updated [dashboard_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart):
+- Changed "Hotspot Users" quick action to "Active Sessions"
+- Updated icon from `Icons.people` to `Icons.devices`
+- Changed route from `/hotspot-user` to `/active-sessions`
+
+### Routing
+Updated [main.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/main.dart):
+- Added import for [ActiveSessionsScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart#6-12)
+- Added `/active-sessions` route pointing to [ActiveSessionsScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart#6-12)
+
+### Active Sessions Screen
+The [active_sessions_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart) already existed with:
+- **Two tabs**: "Online Users" and "Assigned Users"
+- **Online Users Tab**: Lists active sessions with disconnect functionality
+- **Assigned Users Tab**: Lists assigned plans with online/offline status indicators
+- **Disconnect Feature**: Confirmation dialog and API call to disconnect sessions
+
+## Verification Results
+
+### Manual Verification Required
+To verify the implementation:
+1. Run the app
+2. Navigate to Dashboard
+3. Click "Active Sessions" button
+4. Verify:
+   - Screen opens with two tabs
+   - "Online Users" tab shows active sessions
+   - "Assigned Users" tab shows assigned plans with online status
+   - Disconnect button works for online users
+
+### Code Review
+- ✅ Dashboard quick action updated
+- ✅ Route configured correctly
+- ✅ Screen has both required tabs
+- ✅ Session disconnection logic implemented
+- ✅ Online/offline status indicator present

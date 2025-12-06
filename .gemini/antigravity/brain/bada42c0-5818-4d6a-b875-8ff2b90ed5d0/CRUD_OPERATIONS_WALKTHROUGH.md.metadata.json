@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_WALKTHROUGH",
+  "summary": "Walkthrough documenting the implementation of CRUD delete operations for plans, hotspot profiles, and update operation for hotspot users in AppState.",
+  "updatedAt": "2025-11-24T21:24:23.095272500Z"
+}

@@ -1,0 +1,39 @@
+# Walkthrough - Payment Method Integration Fixes
+
+## Changes
+### Fixed Fee Calculation in Payout Request
+- **File**: [payout_request_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart)
+- **Issue**: The fee calculation logic was comparing the selected payment method's *slug* (unique ID) against the string literal `'mobile_money'`, which always resulted in the fallback fee (1.5%) instead of the correct fee for mobile money (2%).
+- **Fix**: Updated [_calculateFees](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart#49-74) to look up the full payment method object using the selected slug, extract the actual `method_type`, and use that for the fee calculation.
+- **Improvement**: Added logic to automatically select the first available payment method when the screen loads.
+
+### Fixed Dashboard Issues
+- **File**: [partner_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart), [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart), [dashboard_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart)
+- **Issue**: Subscription widget was hidden because profile data didn't include subscription details.
+- **Fix**: Implemented [checkSubscriptionStatus](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#112-124) using the dedicated endpoint `/partner/subscription-plans/check/` and updated [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#38-1698) to use it. Added a fallback "Free Plan" display in [DashboardScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart#10-16) to ensure the widget is always visible.
+- **File**: [main.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/main.dart)
+- **Issue**: Tapping "Active Sessions" on the dashboard did nothing.
+- **Fix**: Added the missing `/active-sessions` route to the app's routing table.
+
+## Verification Results
+### Manual Verification
+- **Logic Check**: Verified that `_selectedMethod` stores the slug, and the lookup correctly retrieves `method_type` from [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#38-1698).
+- **Initialization**: Verified that [initState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/main.dart#274-278) now correctly sets a default method if available, ensuring fees are calculated immediately upon screen load.
+- **Subscription**: Verified that [loadSubscription](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#714-739) now calls the correct endpoint and [DashboardScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart#10-16) handles null data gracefully.
+- **Navigation**: Verified that the `/active-sessions` route is now registered.
+- **Countdown**: Verified that [SubscriptionPlanCard](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/subscription_plan_card.dart#6-21) includes a countdown timer that updates every second and changes color when expiration is near (< 3 days).
+
+### Improved Login Error Handling
+- **Files**: [auth_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart), [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart), [login_screen_m3.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/login_screen_m3.dart)
+- **Issue**: Login errors showed generic "invalid credentials" message regardless of actual error (network, server, auth, etc.)
+- **Fix**: 
+  - Updated `AuthRepository.login` to return `Map<String, dynamic>` with `success` and `message` fields
+  - Extracts specific error messages from API responses (e.g., "Invalid email or password", "Server error: 500")
+  - Handles `DioException` separately to distinguish network errors from auth errors
+  - Updated `AppState.login` to process the result map and set `_error` with the specific message
+  - Updated [LoginScreenM3](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/login_screen_m3.dart#11-17) to display the actual error from [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#38-1698) instead of hardcoded text
+
+### Fixed Deployment Workflow
+- **File**: [deploy-fix-token-storage.yml](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/.github/workflows/deploy-fix-token-storage.yml)
+- **Issue**: Deployment URL was hardcoded, not reflecting actual Cloudflare Pages URL format
+- **Fix**: Updated workflow to dynamically generate URL based on sanitized branch name (Cloudflare replaces `/` with `-`)

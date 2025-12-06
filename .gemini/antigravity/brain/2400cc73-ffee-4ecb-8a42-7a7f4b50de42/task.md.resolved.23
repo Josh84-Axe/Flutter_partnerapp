@@ -1,0 +1,9 @@
+# APK Build & Android Testing
+
+- [/] Build and test APK <!-- id: 0 -->
+    - [x] Check Android emulator availability <!-- id: 1 -->
+    - [x] Build APK (debug) <!-- id: 2 -->
+    - [/] Launch Android emulator <!-- id: 3 -->
+    - [ ] Install APK on emulator <!-- id: 4 -->
+    - [ ] Run functional UI tests <!-- id: 5 -->
+    - [ ] Document test results <!-- id: 6 -->

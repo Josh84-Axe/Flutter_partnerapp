@@ -1,0 +1,48 @@
+# Active Users Screen Implementation Plan
+
+## Goal Description
+Create a unified screen to view all active users, categorized by their access method:
+1.  **Assigned Users**: Users who have been manually assigned a plan via the Partner App.
+2.  **Gateway/Hotspot Users**: Users who have access via Hotspot profiles (likely paid via Gateway or created manually).
+
+This addresses the user's request to "list or view both active users either on assignment or via gateway payment".
+
+## User Review Required
+> [!IMPORTANT]
+> I am assuming that "Gateway Users" correspond to the users returned by `HotspotRepository.fetchUsers()`. If there is a separate API for "Gateway Sessions" specifically, please let me know. For now, I will display "Hotspot Users" as the second category.
+
+## Proposed Changes
+
+### New Screen
+#### [NEW] [active_sessions_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart)
+-   **Type**: `StatefulWidget`
+-   **Structure**:
+    -   `TabBar` with two tabs: "Assigned Plans" and "Hotspot Users".
+    -   **Tab 1 (Assigned)**: Reuses logic from [AssignedPlansListScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/assigned_plans_list_screen.dart#8-14) to list users with active plan assignments.
+    -   **Tab 2 (Hotspot/Gateway)**: Reuses logic from [HotspotUsersManagementScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/hotspot_users_management_screen.dart#7-13) to list hotspot users.
+-   **Features**:
+    -   Search functionality for both lists.
+    -   Refresh capability.
+    -   Display key details: Name, Plan/Profile, Status, Expiry (if available).
+
+### Navigation Updates
+#### [MODIFY] [main.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/main.dart)
+-   Add route for `/active-sessions`.
+
+#### [MODIFY] [dashboard_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart)
+-   Update the "Hotspot Users" Quick Action button (or add a new one) to navigate to `/active-sessions`.
+-   Alternatively, replace the "Users" navigation rail item to point to this new unified screen, or keep "Users" for system users and add "Active Sessions" as a dashboard shortcut.
+    -   *Decision*: I will update the "Hotspot Users" button on the Dashboard to point to this new unified `ActiveSessionsScreen` and rename it to "Active Sessions" or similar.
+
+## Verification Plan
+
+### Automated Tests
+-   None for UI, but I will verify the build.
+
+### Manual Verification
+1.  **Navigate**: Click the "Active Sessions" (formerly Hotspot Users) button on the Dashboard.
+2.  **Verify Tabs**: Check that both "Assigned Plans" and "Hotspot Users" tabs are present.
+3.  **Verify Data**:
+    -   Confirm "Assigned Plans" tab shows the list of assigned plans.
+    -   Confirm "Hotspot Users" tab shows the list of hotspot users.
+4.  **Search**: Test search functionality in both tabs.

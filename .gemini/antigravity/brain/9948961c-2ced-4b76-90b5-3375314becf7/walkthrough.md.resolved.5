@@ -1,0 +1,51 @@
+# Plan Assignment Bug Fix - Summary
+
+## Issue Found
+
+During testing, discovered that plan assignment was failing with server errors.
+
+### Root Cause
+**File:** [lib/providers/app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart) (Line 906)
+
+**Wrong Code:**
+```dart
+await _planRepository!.assignPlan({'user_id': userId, 'plan_id': planId});
+```
+
+**Correct Code:**
+```dart
+await _planRepository!.assignPlan({'customer_id': userId, 'plan_id': planId});
+```
+
+## API Requirements
+
+**Endpoint:** `/partner/assign-plan/`
+
+**Required Parameters:**
+```json
+{
+  "customer_id": "string",  // Customer ID (not user_id)
+  "plan_id": "string"       // Plan ID
+}
+```
+
+## What Was Fixed
+
+✅ Changed parameter name from `user_id` to `customer_id` in `AppState.assignPlan()`  
+✅ Committed and pushed to `fix/token-storage-windows` branch  
+✅ Plan assignment should now work correctly
+
+## Clarification
+
+- Plans are assigned to **Customers** (from `/partner/customer/list/`)
+- NOT to Hotspot Users (from `/partner/hotspot/users/`)
+- These are separate entities in the system
+
+## Testing
+
+The [PlanAssignmentScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plan_assignment_screen.dart#8-14) correctly:
+- ✅ Loads customers from `appState.users`
+- ✅ Loads plans from `appState.plans`
+- ✅ Waits for server response before showing success/error
+- ✅ Shows loading indicator during API call
+- ✅ Now sends correct parameter names to API

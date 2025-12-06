@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_WALKTHROUGH",
+  "summary": "Walkthrough of RBAC permission fix implementation. Documents the root cause (hardcoded 'Partner' role not matching permission mappings), code changes made (5 UserModel updates, role mapping addition, debug logging), successful build completion, and manual testing instructions. Includes before/after comparison, verification steps, and Phase 2 recommendations for proper backend API implementation.",
+  "updatedAt": "2025-11-24T11:37:24.442298Z"
+}

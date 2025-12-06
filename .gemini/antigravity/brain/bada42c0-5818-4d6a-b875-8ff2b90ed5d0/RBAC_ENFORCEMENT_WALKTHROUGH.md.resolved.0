@@ -1,0 +1,238 @@
+# RBAC Enforcement Implementation - Walkthrough
+
+## Overview
+Implemented role-based access control (RBAC) across the UI to restrict features based on user permissions. Started with comprehensive permission utilities and demonstrated enforcement in InternetPlanScreen.
+
+## Changes Made
+
+### 1. Extended Permissions Class ([lib/utils/permissions.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart))
+
+Added comprehensive permission check methods for all resource types:
+
+#### Plan Management Permissions
+```dart
+static bool canViewPlans(String role, List<String>? permissions)
+static bool canCreatePlans(String role, List<String>? permissions)
+static bool canEditPlans(String role, List<String>? permissions)
+static bool canDeletePlans(String role, List<String>? permissions)
+```
+
+#### User Management Permissions
+```dart
+static bool canViewUsers(String role, List<String>? permissions)
+static bool canCreateUsers(String role, List<String>? permissions)
+static bool canEditUsers(String role, List<String>? permissions)
+static bool canDeleteUsers(String role, List<String>? permissions)
+```
+
+#### Router Management Permissions
+```dart
+static bool canManageRouters(String role, List<String>? permissions)
+```
+
+#### Role Management Permissions
+```dart
+static bool canManageRoles(String role, List<String>? permissions) // Owner only
+```
+
+#### Payout Permissions
+```dart
+static bool canRequestPayout(String role) // Owner only
+static bool canViewPayouts(String role, List<String>? permissions)
+```
+
+**Permission Logic:**
+- **Owner role:** Always returns `true` (full access)
+- **Worker role:** Checks if specific permission exists in user's permissions list
+- Uses [PermissionConstants](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#1-25) for consistent permission strings
+
+### 2. InternetPlanScreen RBAC Integration
+
+**File:** [lib/screens/internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart)
+
+#### Added Imports
+```dart
+import '../utils/permissions.dart';
+import '../utils/permission_mapping.dart';
+import '../widgets/permission_denied_dialog.dart';
+```
+
+#### Permission-Protected Create/Edit
+```dart
+void _navigateToCreateEdit({PlanModel? plan}) {
+  final user = context.read<AppState>().currentUser;
+  if (user == null) return;
+  
+  // Check permission based on whether creating or editing
+  final hasPermission = plan == null
+      ? Permissions.canCreatePlans(user.role, user.permissions)
+      : Permissions.canEditPlans(user.role, user.permissions);
+  
+  if (!hasPermission) {
+    PermissionDeniedDialog.show(
+      context,
+      requiredPermission: plan == null 
+          ? PermissionConstants.createPlans 
+          : PermissionConstants.editPlans,
+    );
+    return;
+  }
+  
+  // Proceed with navigation
+  Navigator.of(context).pushNamed('/create-edit-plan', arguments: plan?.toJson());
+}
+```
+
+#### Permission-Protected Delete
+```dart
+void _showDeleteDialog(PlanModel plan) {
+  final user = context.read<AppState>().currentUser;
+  if (user == null) return;
+  
+  if (!Permissions.canDeletePlans(user.role, user.permissions)) {
+    PermissionDeniedDialog.show(
+      context,
+      requiredPermission: PermissionConstants.deletePlans,
+    );
+    return;
+  }
+  
+  // Show delete confirmation dialog
+  // Calls appState.deletePlan() on confirmation
+}
+```
+
+#### Conditional UI Elements
+
+**Edit/Delete Buttons (only show if user has permission):**
+```dart
+if (Permissions.canEditPlans(
+  appState.currentUser?.role ?? '',
+  appState.currentUser?.permissions,
+))
+  IconButton(
+    onPressed: () => _navigateToCreateEdit(plan: plan),
+    icon: const Icon(Icons.edit),
+  ),
+
+if (Permissions.canDeletePlans(
+  appState.currentUser?.role ?? '',
+  appState.currentUser?.permissions,
+))
+  IconButton(
+    onPressed: () => _showDeleteDialog(plan),
+    icon: const Icon(Icons.delete),
+  ),
+```
+
+**Create Plan FAB (only show if user can create plans):**
+```dart
+floatingActionButton: Permissions.canCreatePlans(
+  appState.currentUser?.role ?? '',
+  appState.currentUser?.permissions,
+)
+    ? FloatingActionButton.extended(
+        onPressed: () => _navigateToCreateEdit(),
+        icon: const Icon(Icons.add),
+        label: Text('new_plan'.tr()),
+      )
+    : null,
+```
+
+## RBAC Pattern
+
+### 1. Permission Check Before Action
+```dart
+void _onAction() {
+  final user = context.read<AppState>().currentUser;
+  if (user == null) return;
+  
+  if (!Permissions.canDoAction(user.role, user.permissions)) {
+    PermissionDeniedDialog.show(context, requiredPermission: 'action_permission');
+    return;
+  }
+  
+  // Proceed with action
+}
+```
+
+### 2. Conditional UI Rendering
+```dart
+if (Permissions.canDoAction(user.role, user.permissions))
+  ActionButton(onPressed: _onAction),
+```
+
+### 3. Permission Denied Feedback
+```dart
+PermissionDeniedDialog.show(
+  context,
+  requiredPermission: PermissionConstants.somePermission,
+);
+```
+
+## User Experience
+
+### Owner Role
+- ✅ Sees all buttons (Create, Edit, Delete)
+- ✅ Can perform all actions
+- ✅ No permission denied dialogs
+
+### Worker with Limited Permissions
+- ⚠️ Only sees buttons for permitted actions
+- ⚠️ Sees permission denied dialog if attempting unauthorized action
+- ⚠️ Cannot bypass restrictions
+
+### Worker with No Permissions
+- ❌ No action buttons visible
+- ❌ Read-only access to plan list
+- ❌ Permission denied on any action attempt
+
+## Remaining Screens to Implement
+
+### High Priority
+- [ ] **UsersScreen** - User management RBAC
+- [ ] **PayoutRequestScreen** - Owner-only payout requests
+- [ ] **RolePermissionScreen** - Owner-only role management
+
+### Medium Priority
+- [ ] **RoutersScreen** - Router management RBAC
+- [ ] **UserProfileScreen** - Hotspot profile RBAC
+- [ ] **Configuration Screens** - Owner-only configuration
+
+## Testing Checklist
+
+- [ ] Test as owner - all features accessible
+- [ ] Test as worker with create_plans permission
+- [ ] Test as worker without create_plans permission
+- [ ] Test permission denied dialog appears
+- [ ] Test edit button hidden without edit_plans permission
+- [ ] Test delete button hidden without delete_plans permission
+- [ ] Test FAB hidden without create_plans permission
+
+## Files Modified
+
+1. [lib/utils/permissions.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart) - Extended with all permission methods
+2. [lib/screens/internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart) - RBAC enforcement demo
+
+## Commit
+
+```
+feat(rbac): implement permission-based access control
+
+- Extend Permissions class with comprehensive permission check methods
+- Add permission checks for plans (create, view, edit, delete)
+- Add permission checks for users (create, view, edit, delete)
+- Add permission checks for routers, roles, and payouts
+- Implement RBAC in InternetPlanScreen with permission-based UI
+- Hide/show create, edit, delete buttons based on user permissions
+- Show PermissionDeniedDialog when unauthorized actions attempted
+- Integrate deletePlan() API call in delete confirmation dialog
+```
+
+## Next Steps
+
+1. Apply same RBAC pattern to UsersScreen
+2. Apply to PayoutRequestScreen (owner only)
+3. Apply to RolePermissionScreen (owner only)
+4. Apply to remaining screens as needed
+5. Test with different user roles and permissions

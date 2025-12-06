@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Plan to remove mock data, fix persistence, and repair CRUD operations.",
+  "updatedAt": "2025-11-20T19:14:25.652817800Z",
+  "version": "1"
+}

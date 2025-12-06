@@ -1,0 +1,34 @@
+# Speed/Rate Limit Field Removal - Summary
+
+## What Was Done
+
+Removed speed/rate limit field from BOTH plan creation screens, as speed is already configured in the hotspot profile.
+
+### Changes Made:
+
+#### 1. PlansScreen (Dialog)
+**File:** [lib/screens/plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+
+**Removed:**
+- Speed dropdown field (lines 102-115)
+- `selectedSpeed` variable declaration
+- Speed validation check
+- `'speedMbps': extractValue(selectedSpeed)` from data submission
+
+#### 2. CreateEditInternetPlanScreen (Full Screen)
+**File:** [lib/screens/create_edit_internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart)
+
+**Removed:**
+- `'speedMbps': 50` hardcoded value from data submission
+
+## Result
+
+✅ Both plan creation methods now work identically  
+✅ No speed field in either screen  
+✅ Speed is configured via hotspot profile (as intended)
+
+## Commits
+
+1. `b558211` - Removed speed dropdown from PlansScreen
+2. `be43c7c` - Removed hardcoded speedMbps from CreateEditInternetPlanScreen
+3. Pushed to `fix/token-storage-windows` branch

@@ -1,0 +1,25 @@
+# Walkthrough - Forgotten Password Flow
+
+## Changes
+
+### 1. State Management ([AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#35-1344))
+-   Added [requestPasswordResetOtp(String email)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#24-37): Calls API to send OTP.
+-   Added [resetPassword(String email, String otp, String newPassword)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#170-187): Calls API to reset password.
+
+### 2. UI Implementation
+-   **LoginScreenM3**:
+    -   Added "Forgot Password?" button below the password field.
+-   **ForgotPasswordScreen**:
+    -   Now calls [requestPasswordResetOtp](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#24-37) on submit.
+    -   Navigates to [ResetEmailSentScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/reset_email_sent_screen.dart#5-80) on success, passing the email.
+    -   Shows loading indicator and error messages.
+-   **ResetEmailSentScreen**:
+    -   Retrieves the email argument.
+    -   Passes the email to [SetNewPasswordScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/set_new_password_screen.dart#7-13) when "Continue" is clicked.
+-   **SetNewPasswordScreen**:
+    -   Added an OTP input field.
+    -   Tap "Reset Password".
+    -   **Verify**: You should see a loading indicator, then navigate to the "Password Reset Successful" screen.
+4.  **Login with New Password**:
+    -   Navigate back to Login.
+    -   Try logging in with the new password.

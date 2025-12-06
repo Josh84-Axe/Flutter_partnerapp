@@ -1,0 +1,365 @@
+# Flutter Partner App - Functional UI Test Plan
+
+**Date:** 2025-11-25  
+**APK:** `build\app\outputs\flutter-apk\app-debug.apk`  
+**Status:** ✅ APK Built Successfully
+
+---
+
+## 🎯 Test Objectives
+
+Verify all major UI flows and API integrations work correctly on Android device/emulator.
+
+---
+
+## 📱 Testing Methods
+
+### Option 1: Physical Android Device (Recommended)
+```bash
+# Connect device via USB
+# Enable USB debugging on device
+flutter run
+```
+
+### Option 2: Android Studio Emulator
+1. Open Android Studio
+2. Tools → Device Manager
+3. Start `Medium_Phone_API_36.1` emulator
+4. Run: `flutter run`
+
+### Option 3: Manual APK Installation
+```bash
+# Install APK on connected device
+adb install build\app\outputs\flutter-apk\app-debug.apk
+```
+
+### Option 4: Web Testing (Fallback)
+```bash
+flutter run -d chrome
+```
+
+---
+
+## 🧪 Functional Test Scenarios
+
+### 1. Authentication Flow ✅
+
+#### Test 1.1: Login
+**Steps:**
+1. Launch app
+2. Enter credentials: `sientey@hotmail.com` / `Testing123`
+3. Tap "Login"
+
+**Expected:**
+- ✅ Loading indicator appears
+- ✅ Successful login
+- ✅ Navigate to Dashboard
+
+#### Test 1.2: Registration
+**Steps:**
+1. Tap "Create Account"
+2. Fill in registration form
+3. Submit
+
+**Expected:**
+- ✅ Form validation works
+- ✅ API call succeeds
+- ✅ Navigate to verification screen
+
+#### Test 1.3: Password Reset
+**Steps:**
+1. Tap "Forgot Password"
+2. Enter email
+3. Submit
+
+**Expected:**
+- ✅ Reset email sent
+- ✅ Confirmation message shown
+
+---
+
+### 2. Dashboard Screen ✅
+
+#### Test 2.1: Dashboard Data Loading
+**Steps:**
+1. Login successfully
+2. View dashboard
+
+**Expected:**
+- ✅ Wallet balance displays correctly
+- ✅ Recent transactions load
+- ✅ Quick stats show real data
+- ✅ Currency symbol displays correctly
+
+#### Test 2.2: Navigation
+**Steps:**
+1. Tap each dashboard card/button
+
+**Expected:**
+- ✅ Navigate to correct screens
+- ✅ No crashes
+- ✅ Back button works
+
+---
+
+### 3. Wallet & Transactions ✅
+
+#### Test 3.1: Wallet Overview
+**Steps:**
+1. Navigate to Wallet
+2. View balance and transactions
+
+**Expected:**
+- ✅ Balance displays with correct currency
+- ✅ Transaction history loads
+- ✅ Pagination works
+
+#### Test 3.2: Payout Request
+**Steps:**
+1. Tap "Request Payout"
+2. Enter amount
+3. Select payment method
+4. Submit
+
+**Expected:**
+- ✅ Fee calculation works
+- ✅ Amount validation works
+- ✅ API call succeeds
+- ✅ Navigate to confirmation screen
+
+---
+
+### 4. Users/Customers Management ✅
+
+#### Test 4.1: View Customers
+**Steps:**
+1. Navigate to Users/Customers
+2. View list
+
+**Expected:**
+- ✅ Customer list loads from API
+- ✅ Search works
+- ✅ Pagination works
+
+#### Test 4.2: Customer Details
+**Steps:**
+1. Tap on a customer
+2. View details
+
+**Expected:**
+- ✅ Customer details display
+- ✅ Transaction history loads
+- ✅ All data is real (no mock data)
+
+---
+
+### 5. Internet Plans ✅
+
+#### Test 5.1: View Plans
+**Steps:**
+1. Navigate to Internet Plans
+2. View list
+
+**Expected:**
+- ✅ Plans load from API
+- ✅ All plan details display correctly
+- ✅ Pricing shows with correct currency
+
+#### Test 5.2: Create Plan
+**Steps:**
+1. Tap "Create Plan"
+2. Fill in form (name, price, data limit, etc.)
+3. Submit
+
+**Expected:**
+- ✅ Form validation works
+- ✅ Dropdowns populate from API
+- ✅ Plan creation succeeds
+- ✅ New plan appears in list
+
+---
+
+### 6. Routers Management ✅
+
+#### Test 6.1: View Routers
+**Steps:**
+1. Navigate to Routers
+2. View list
+
+**Expected:**
+- ✅ Router list loads
+- ✅ Status indicators work
+- ✅ Connected users count displays
+
+#### Test 6.2: Router Details
+**Steps:**
+1. Tap on a router
+2. View details
+
+**Expected:**
+- ✅ Router details display
+- ✅ Configuration options load
+- ✅ Real-time data updates
+
+---
+
+### 7. Hotspot Management ✅
+
+#### Test 7.1: Hotspot Profiles
+**Steps:**
+1. Navigate to Hotspot
+2. View profiles
+
+**Expected:**
+- ✅ Profiles load from API
+- ✅ Profile details display correctly
+
+#### Test 7.2: Hotspot Users
+**Steps:**
+1. View hotspot users
+2. Check user details
+
+**Expected:**
+- ✅ Users list loads
+- ✅ User details display
+- ✅ Edit/Delete functions work
+
+---
+
+### 8. Configuration Screens ✅
+
+#### Test 8.1: Rate Limits
+**Steps:**
+1. Navigate to Rate Limit Config
+2. View/Edit rate limits
+
+**Expected:**
+- ✅ List loads from API
+- ✅ Create/Edit works
+- ✅ No hardcoded data
+
+#### Test 8.2: Data Limits
+**Steps:**
+1. Navigate to Data Limit Config
+2. View/Edit data limits
+
+**Expected:**
+- ✅ List loads from API
+- ✅ CRUD operations work
+- ✅ Real data only
+
+---
+
+### 9. Profile & Settings ✅
+
+#### Test 9.1: View Profile
+**Steps:**
+1. Navigate to Profile
+2. View profile details
+
+**Expected:**
+- ✅ Profile data loads from API
+- ✅ All fields display correctly
+
+#### Test 9.2: Update Profile
+**Steps:**
+1. Edit profile fields
+2. Save changes
+
+**Expected:**
+- ✅ Changes save successfully
+- ✅ UI updates with new data
+
+---
+
+### 10. Error Handling ✅
+
+#### Test 10.1: Network Errors
+**Steps:**
+1. Disable internet
+2. Try to load data
+
+**Expected:**
+- ✅ Error message displays
+- ✅ Retry option available
+- ✅ No crashes
+
+#### Test 10.2: Invalid Data
+**Steps:**
+1. Enter invalid data in forms
+2. Submit
+
+**Expected:**
+- ✅ Validation errors show
+- ✅ Helpful error messages
+- ✅ Form doesn't submit
+
+---
+
+## 📊 Test Results Template
+
+| Test ID | Test Name | Status | Notes |
+|---------|-----------|--------|-------|
+| 1.1 | Login | ⬜ | |
+| 1.2 | Registration | ⬜ | |
+| 1.3 | Password Reset | ⬜ | |
+| 2.1 | Dashboard Loading | ⬜ | |
+| 2.2 | Dashboard Navigation | ⬜ | |
+| 3.1 | Wallet Overview | ⬜ | |
+| 3.2 | Payout Request | ⬜ | |
+| 4.1 | View Customers | ⬜ | |
+| 4.2 | Customer Details | ⬜ | |
+| 5.1 | View Plans | ⬜ | |
+| 5.2 | Create Plan | ⬜ | |
+| 6.1 | View Routers | ⬜ | |
+| 6.2 | Router Details | ⬜ | |
+| 7.1 | Hotspot Profiles | ⬜ | |
+| 7.2 | Hotspot Users | ⬜ | |
+| 8.1 | Rate Limits | ⬜ | |
+| 8.2 | Data Limits | ⬜ | |
+| 9.1 | View Profile | ⬜ | |
+| 9.2 | Update Profile | ⬜ | |
+| 10.1 | Network Errors | ⬜ | |
+| 10.2 | Invalid Data | ⬜ | |
+
+**Legend:** ⬜ Not Tested | ✅ Pass | ❌ Fail | ⚠️ Partial
+
+---
+
+## 🐛 Bug Reporting Template
+
+```markdown
+### Bug: [Title]
+**Severity:** Critical / High / Medium / Low
+**Screen:** [Screen Name]
+**Steps to Reproduce:**
+1. Step 1
+2. Step 2
+3. Step 3
+
+**Expected:** [What should happen]
+**Actual:** [What actually happened]
+**Screenshots:** [If applicable]
+```
+
+---
+
+## ✅ Success Criteria
+
+- ✅ All authentication flows work
+- ✅ All screens load data from API
+- ✅ No mock/hardcoded data visible
+- ✅ Currency displays correctly
+- ✅ CRUD operations work
+- ✅ Error handling works
+- ✅ No crashes during normal use
+
+---
+
+## 📝 Notes
+
+- **API Base URL:** `https://api.tiknetafrica.com/v1`
+- **Test Credentials:** `sientey@hotmail.com` / `Testing123`
+- **Build Time:** 652.8s
+- **Flutter Version:** 3.38.2
+- **Android SDK:** 36.1.0

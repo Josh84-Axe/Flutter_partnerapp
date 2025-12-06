@@ -1,0 +1,78 @@
+# Transaction History Implementation Plan
+
+## Overview
+Implement transaction history feature that combines assigned and wallet transactions to display total revenue on the dashboard, with separate detail views for each transaction type.
+
+## Endpoints
+
+### For Dashboard Total Revenue Widget
+Combine data from both:
+- `/partner/transactions/assigned/` - Assigned plan transactions
+- `/partner/transactions/wallet/` - Online wallet transactions
+
+### For Detail Views
+- **Assigned Revenue Details**: `/partner/transactions/assigned/`
+- **Online Revenue Details**: `/partner/transactions/wallet/`
+
+## Required Changes
+
+### 1. Update TransactionRepository
+
+**Current Issues:**
+- `fetchAssignedPlanTransactions()` uses `/partner/transactions/assigned-plans/` (incorrect)
+- `getWalletTransactions()` uses `/partner/wallet/transactions/` (incorrect)
+
+**Changes Needed:**
+- Update `fetchAssignedPlanTransactions()` to use `/partner/transactions/assigned/`
+- Update `getWalletTransactions()` to use `/partner/transactions/wallet/`
+- Add method to fetch combined transactions for total revenue
+
+### 2. Update AppState
+
+Add methods to:
+- Fetch assigned transactions
+- Fetch wallet transactions  
+- Calculate total revenue (sum of both)
+- Store transaction data in state
+
+### 3. Update Dashboard Screen
+
+**Total Revenue Widget:**
+- Display combined revenue from both endpoints
+- On click → navigate to combined transaction history screen
+
+**Assigned Revenue Widget:**
+- Display revenue from `/partner/transactions/assigned/`
+- On click → navigate to assigned transactions screen
+
+**Online Revenue Widget:**
+- Display revenue from `/partner/transactions/wallet/`
+- On click → navigate to wallet transactions screen
+
+### 4. Create/Update Transaction Screens
+
+**Option A: Single Screen with Tabs**
+- Tab 1: All Transactions (combined)
+- Tab 2: Assigned Transactions
+- Tab 3: Wallet Transactions
+
+**Option B: Separate Screens**
+- `AllTransactionsScreen` - Shows combined data
+- `AssignedTransactionsScreen` - Shows assigned only
+- `WalletTransactionsScreen` - Shows wallet only
+
+## Implementation Steps
+
+1. [x] Update `TransactionRepository` endpoints
+2. [ ] Add transaction fetching methods to `AppState`
+3. [ ] Update dashboard revenue widgets with real data
+4. [ ] Create transaction detail screens
+5. [ ] Add navigation from dashboard to transaction screens
+6. [ ] Test with real API data
+
+## Questions for User
+
+1. **Screen Structure**: Do you prefer Option A (single screen with tabs) or Option B (separate screens)?
+2. **Transaction Model**: Should we update `TransactionModel` to handle both assigned and wallet transaction formats?
+3. **Filtering**: Do you want filtering by date range, status, or type on the transaction screens?
+4. **Pagination**: Should transaction lists support pagination/infinite scroll?

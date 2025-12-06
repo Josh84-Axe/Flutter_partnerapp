@@ -1,0 +1,7 @@
+# Task: Refactor Subscription Management
+
+- [ ] Analyze `SubscriptionManagementScreen` for hardcoded data <!-- id: 0 -->
+- [ ] Investigate data sources (API/Models) <!-- id: 1 -->
+- [ ] Update `AppState` / Repositories <!-- id: 2 -->
+- [ ] Integrate real data into UI <!-- id: 3 -->
+- [ ] Verify changes <!-- id: 4 -->

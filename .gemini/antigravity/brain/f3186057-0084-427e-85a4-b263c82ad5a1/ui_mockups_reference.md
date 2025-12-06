@@ -1,0 +1,58 @@
+# Internet Plans UI Mockups
+
+## Bottom Navigation "Plans" Tab
+
+This is how the Internet Plans should appear when accessed from the bottom navigation bar.
+
+![Bottom Nav Plans View](file:///C:/Users/ELITEX21012G2/.gemini/antigravity/brain/f3186057-0084-427e-85a4-b263c82ad5a1/uploaded_image_0_1764284027790.jpg)
+
+**Key Features**:
+- Card-based layout with rounded corners
+- Plan name as title (bold, large font)
+- Price displayed prominently on the right
+- Green icon chips showing:
+  - 🔽 Data Limit (e.g., "0 GB")
+  - 💻 Device Allowed (e.g., "14 devices")
+  - 📅 Validity (e.g., "1 days")
+- **Green "Assign to User" button** at the bottom of each card
+- Floating action button (+) for creating new plans
+- Search bar at the top
+
+---
+
+## Settings "Internet Plans" View
+
+This is how the Internet Plans should appear when accessed from Settings & Preferences.
+
+![Settings Internet Plans View](file:///C:/Users/ELITEX21012G2/.gemini/antigravity/brain/f3186057-0084-427e-85a4-b263c82ad5a1/uploaded_image_1_1764284027790.jpg)
+
+**Key Features**:
+- Simpler, more compact card layout
+- Plan name as title (bold)
+- Single-line subtitle: "X GB | Y Mbps | Z days" (gray text)
+- Price below subtitle
+- **Edit button** (green circle with pencil icon) on the right
+- **Delete button** (red circle with trash icon) on the right
+- **NO "Assign to User" button**
+- Floating action button (+) for creating new plans
+- Back button in app bar
+
+---
+
+## Key Differences
+
+| Feature | Bottom Nav (Plans Tab) | Settings (Internet Plans) |
+|---------|----------------------|---------------------------|
+| **Layout** | Card with detailed info chips | Compact card with inline info |
+| **Info Display** | Icon chips (vertical layout) | Single line text (horizontal) |
+| **Actions** | Assign to User button | Edit + Delete buttons |
+| **Navigation** | No back button (tab) | Back button present |
+| **Use Case** | Assigning plans to users | Managing/editing plans |
+
+---
+
+## Implementation Priority
+
+1. ✅ `PlansScreen` already has the Assign button - just needs styling updates
+2. 🔄 `InternetPlanScreen` needs redesign to match Settings mockup
+3. ✅ Routing is already configured correctly

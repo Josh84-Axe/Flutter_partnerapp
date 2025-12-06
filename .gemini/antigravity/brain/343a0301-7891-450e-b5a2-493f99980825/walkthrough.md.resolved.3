@@ -1,0 +1,66 @@
+# Fix Intermittent Login Failures
+
+## Problem Identified
+
+The login was failing intermittently because [loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#552-580) uses `Future.wait()` to load multiple resources in parallel. If **any** of these API calls failed (users, routers, plans, transactions, etc.), the entire `Future.wait()` would throw an exception, causing the login to fail even though authentication was successful.
+
+## Root Cause
+
+In [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart):
+
+```dart
+// Before fix - line 262
+await loadDashboardData(); // If this throws, login fails!
+```
+
+The [loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#552-580) method loads 8+ resources:
+- Users
+- Routers  
+- Plans
+- Transactions
+- Wallet balance
+- Notifications
+- Subscription
+- Hotspot profiles
+
+If ANY of these fail, the login appears to fail.
+
+## Solution Implemented
+
+Wrapped [loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#552-580) in try-catch blocks in two critical locations:
+
+### 1. Login Method (line 262-268)
+```dart
+// Load dashboard data in background - don't block login if it fails
+try {
+  await loadDashboardData();
+} catch (e) {
+  if (kDebugMode) print('⚠️ [AppState] Dashboard data load failed (non-blocking): $e');
+  // Don't fail login if dashboard data fails to load
+}
+```
+
+### 2. Check Auth Status Method (line 543-549)
+```dart
+// Load dashboard data in background - don't block auth check if it fails
+try {
+  await loadDashboardData();
+} catch (e) {
+  if (kDebugMode) print('⚠️ [AppState] Dashboard data load failed (non-blocking): $e');
+  // Don't fail auth check if dashboard data fails to load
+}
+```
+
+## Impact
+
+✅ **Login will now succeed** even if some dashboard resources fail to load
+✅ **User can still access the app** with partial data
+✅ **Errors are logged** for debugging but don't block authentication
+✅ **Better user experience** - login is more reliable
+
+## Testing Recommendations
+
+1. Test login with poor network connection
+2. Test login when some API endpoints are slow/failing
+3. Verify dashboard still loads available data
+4. Check debug logs for any resource loading failures

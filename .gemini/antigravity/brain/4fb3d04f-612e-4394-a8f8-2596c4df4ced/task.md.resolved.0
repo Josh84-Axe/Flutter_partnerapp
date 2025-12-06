@@ -1,0 +1,8 @@
+# Payment Method Integration
+
+- [ ] Analyze current state of Payment Method integration
+- [ ] Implement/Update Payment Method Models
+- [ ] Implement/Update Wallet Repository
+- [ ] Implement/Update Add Payout Method Screen
+- [ ] Implement/Update Payout Request Screen
+- [ ] Verify Flow

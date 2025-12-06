@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Comprehensive investigation report of Internet plan CRUD operations, analyzing the data flow from UI to API, identifying potential issues with configuration dropdowns, data transformation, and API field mapping. Includes detailed findings, root cause analysis, and recommended fixes.",
+  "updatedAt": "2025-11-27T19:12:59.177297900Z"
+}

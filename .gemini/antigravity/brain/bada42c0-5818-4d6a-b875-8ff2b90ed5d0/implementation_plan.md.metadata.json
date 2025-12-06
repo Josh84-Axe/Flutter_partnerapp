@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Updated plan to focus on removing hardcoded data, currency symbols, and enabling real API integration.",
+  "updatedAt": "2025-11-24T23:09:19.708561600Z",
+  "version": "6"
+}

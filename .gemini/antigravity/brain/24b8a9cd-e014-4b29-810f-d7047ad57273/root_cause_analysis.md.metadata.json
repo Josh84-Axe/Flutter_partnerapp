@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Comprehensive root cause analysis for 6 reported issues in the Flutter Partner App, including detailed findings, root causes, and recommended fixes for: amount formatting, Internet plan CRUD, plan configuration parameters, plan details display, active session screen, and hotspot profile CRUD.",
+  "updatedAt": "2025-11-23T18:33:17.901620900Z"
+}

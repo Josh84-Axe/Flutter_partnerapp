@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Documentation confirming that the Active Sessions screen already uses the correct API endpoints as requested by the user. Includes endpoint details, data flow, and current implementation status.",
+  "updatedAt": "2025-11-27T22:58:57.571058900Z"
+}

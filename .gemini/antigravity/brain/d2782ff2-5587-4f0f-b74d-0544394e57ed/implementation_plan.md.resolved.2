@@ -1,0 +1,204 @@
+# Fix Data Limit Dropdown - Remove GB Suffix and Add Unlimited Option
+
+## Problem Statement
+
+The data limit dropdown has two issues:
+1. **GB suffix is displayed** - Values show as "5 GB", "10 GB" but should show just "5", "10"
+2. **No Unlimited option** - Need to add an "Unlimited" option that sends `null` to the API
+
+## Current Implementation Analysis
+
+### Data Limit Dropdown ([plans_screen.dart:348-371](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#L348-L371))
+
+```dart
+DropdownButtonFormField<dynamic>(
+  value: _selectedDataLimit,
+  items: appState.dataLimits.isEmpty
+      ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
+      : appState.dataLimits.map((limit) {
+          return DropdownMenuItem(
+            value: limit, 
+            child: Text(_getLabel(limit, 'data_limit'))  // ❌ Adds " GB" suffix
+          );
+        }).toList(),
+  // ...
+)
+```
+
+### Label Generation ([plans_screen.dart:488-498](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#L488-L498))
+
+```dart
+String _getLabel(dynamic item, String type) {
+  if (item is! Map) return item.toString();
+  
+  if (item['name'] != null) return item['name'].toString();
+  
+  switch (type) {
+    case 'data_limit':
+      if (item['gb'] != null) return '${item['gb']} GB';      // ❌ Adds GB
+      if (item['value'] != null) return '${item['value']} GB'; // ❌ Adds GB
+      if (item['limit'] != null) return '${item['limit']} GB'; // ❌ Adds GB
+      break;
+    // ...
+  }
+}
+```
+
+### Unlimited Handling ([plans_screen.dart:538-541](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#L538-L541))
+
+```dart
+final dataLimitId = _selectedDataLimit is String && 
+    HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
+    ? null  // ✅ Already sends null for unlimited
+    : extractId(_selectedDataLimit, 'data_limit');
+```
+
+## Proposed Solution
+
+### 1. Update [_getLabel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#488-513) Method - Remove GB Suffix
+
+**Change from:**
+```dart
+case 'data_limit':
+  if (item['gb'] != null) return '${item['gb']} GB';
+  if (item['value'] != null) return '${item['value']} GB';
+  if (item['limit'] != null) return '${item['limit']} GB';
+  break;
+```
+
+**Change to:**
+```dart
+case 'data_limit':
+  if (item['gb'] != null) return item['gb'].toString();
+  if (item['value'] != null) return item['value'].toString();
+  if (item['limit'] != null) return item['limit'].toString();
+  break;
+```
+
+### 2. Add "Unlimited" Option to Dropdown
+
+**Change from:**
+```dart
+items: appState.dataLimits.isEmpty
+    ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
+    : appState.dataLimits.map((limit) {
+        return DropdownMenuItem(
+          value: limit, 
+          child: Text(_getLabel(limit, 'data_limit'))
+        );
+      }).toList(),
+```
+
+**Change to:**
+```dart
+items: appState.dataLimits.isEmpty
+    ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
+    : [
+        // Add Unlimited option first
+        const DropdownMenuItem(
+          value: 'unlimited',  // Special string value
+          child: Text('Unlimited'),
+        ),
+        // Then add all configured data limits
+        ...appState.dataLimits.map((limit) {
+          return DropdownMenuItem(
+            value: limit, 
+            child: Text(_getLabel(limit, 'data_limit'))
+          );
+        }),
+      ],
+```
+
+### 3. Update Unlimited Check Logic
+
+**Change from:**
+```dart
+final dataLimitId = _selectedDataLimit is String && 
+    HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
+    ? null
+    : extractId(_selectedDataLimit, 'data_limit');
+```
+
+**Change to:**
+```dart
+final dataLimitId = _selectedDataLimit == 'unlimited'
+    ? null
+    : extractId(_selectedDataLimit, 'data_limit');
+```
+
+### 4. Update Validator (Optional)
+
+The validator currently requires a value. We should allow "unlimited" as a valid selection:
+
+**Change from:**
+```dart
+validator: (value) {
+  if (value == null) {
+    return 'Please select a data limit';
+  }
+  return null;
+},
+```
+
+**Change to:**
+```dart
+validator: (value) {
+  if (value == null) {
+    return 'Please select a data limit';
+  }
+  return null;
+},
+// No change needed - 'unlimited' is not null, so it passes validation
+```
+
+## Files to Modify
+
+### [lib/screens/plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+
+**Lines to modify:**
+1. **Lines 356-363**: Add "Unlimited" option to dropdown items
+2. **Lines 495-497**: Remove " GB" suffix from data limit labels
+3. **Lines 538-541**: Simplify unlimited check to `_selectedDataLimit == 'unlimited'`
+
+## Testing Plan
+
+### Manual Testing
+
+1. **Verify GB Suffix Removed**
+   - Navigate to Create Plan screen
+   - Open Data Limit dropdown
+   - **Expected**: Values show as "5", "10", "20" (no "GB" suffix)
+
+2. **Verify Unlimited Option**
+   - Open Data Limit dropdown
+   - **Expected**: "Unlimited" appears as first option
+   - Select "Unlimited"
+   - **Expected**: Dropdown shows "Unlimited" as selected
+
+3. **Create Plan with Unlimited Data**
+   - Fill in all fields
+   - Select "Unlimited" for Data Limit
+   - Click "Create Plan"
+   - **Expected**: Plan created successfully
+   - **Verify in logs**: `data_limit: null` in the request payload
+
+4. **Create Plan with Limited Data**
+   - Fill in all fields
+   - Select a numeric value (e.g., "10")
+   - Click "Create Plan"
+   - **Expected**: Plan created successfully
+   - **Verify in logs**: `data_limit: <config_id>` in the request payload
+
+5. **Edit Existing Plan**
+   - Edit a plan with unlimited data
+   - **Expected**: "Unlimited" is pre-selected in dropdown
+   - Change to a numeric value
+   - **Expected**: Update works correctly
+
+## Notes
+
+> [!IMPORTANT]
+> The "unlimited" string value is a special marker used only in the UI. When saving, it's converted to `null` before sending to the API.
+
+> [!TIP]
+> If the API returns plans with `data_limit: null`, we may need to handle pre-selecting "Unlimited" when editing such plans. This would require checking in [initState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#274-282) if `widget.planData['data_limit']` is null and setting `_selectedDataLimit = 'unlimited'`.

@@ -1,0 +1,22 @@
+# Task: Refactor Subscription & Router Management
+
+- [x] Refactor [SubscriptionManagementScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/subscription_management_screen.dart#6-12) (Fix duplicate class) <!-- id: 0 -->
+- [x] Implement [purchaseSubscription](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#787-802) in [PartnerRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#5-68) (Endpoint: `/partner/purchase-subscription-plan/`) <!-- id: 1 -->
+- [x] Update [RouterRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#5-152) endpoints <!-- id: 5 -->
+    - [x] [fetchRouters](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#10-35) -> `/partner/routers/list/`
+    - [x] [addRouter](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#82-98) -> `/partner/routers-add/`
+    - [x] [deleteRouter](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#113-125) -> `/partner/routers/{id}/delete/`
+    - [x] `getRouterDetails` -> `/partner/routers/{slug}/details/`
+    - [x] [updateRouter](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#99-112) -> `/partner/routers/{slug}/update/`
+    - [x] Add [rebootRouter](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#751-763), [restartHotspot](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#764-776), [getRouterResources](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#777-786), `getActiveUsers`
+- [x] Update [SessionRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/session_repository.dart#5-42) endpoints <!-- id: 6 -->
+    - [x] [fetchActiveSessions](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/session_repository.dart#10-27) -> `/partner/sessions/active/`
+- [x] Integrate real data into Subscription UI <!-- id: 3 -->
+- [x] Verify changes <!-- id: 4 -->
+- [ ] Refactor Static Configuration Lists <!-- id: 7 -->
+    - [/] Update [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-894) to load all config lists (Rate, Validity, Idle, Shared Users) <!-- id: 8 -->
+    - [ ] Refactor [CreateEditInternetPlanScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#7-15) to use [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-894) <!-- id: 9 -->
+    - [ ] Refactor `CreateEditUserProfileScreen` to use [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-894) <!-- id: 10 -->
+    - [ ] Refactor `PlansScreen` to use [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-894) <!-- id: 11 -->
+    - [ ] Remove [HotspotConfigurationService](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/hotspot_configuration_service.dart#1-44) static lists <!-- id: 12 -->
+

@@ -1,0 +1,10 @@
+# Task: Fix Data Limit Dropdown
+
+- [x] Analyze current implementation <!-- id: 0 -->
+- [x] Identify issues (GB suffix, no unlimited option) <!-- id: 1 -->
+- [x] Create implementation plan <!-- id: 2 -->
+- [x] Remove GB suffix from _getLabel method <!-- id: 3 -->
+- [x] Add "Unlimited" option to dropdown <!-- id: 4 -->
+- [x] Update unlimited check logic <!-- id: 5 -->
+- [x] Remove Internet Plan from Settings menu <!-- id: 7 -->
+- [x] Test dropdown display and plan creation <!-- id: 6 -->

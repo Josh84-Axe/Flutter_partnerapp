@@ -1,0 +1,30 @@
+# Phone Number Formatting Walkthrough
+
+## Changes Implemented
+- **Dependency**: Added `intl_phone_number_input` to [pubspec.yaml](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/pubspec.yaml).
+- **Registration Screen**: Replaced the phone number text field with `InternationalPhoneNumberInput`. It defaults to Togo (TG) but allows selection.
+- **Partner Profile Screen**: Updated the contact number field to use `InternationalPhoneNumberInput`, initializing with the partner's country from [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#39-1765).
+- **Add Payout Method Screen**: Updated the Mobile Money number field to use `InternationalPhoneNumberInput`, initializing with the partner's country.
+- **Login Screen**: Updated the registration form within the login screen to use `InternationalPhoneNumberInput`.
+
+## Verification Steps
+### 1. Registration
+1.  Navigate to the Registration screen (or toggle "Don't have an account?" on Login).
+2.  Verify the phone number field shows the country flag (default Togo).
+3.  Enter a phone number.
+4.  Verify that the input formats automatically (e.g., spacing).
+5.  Try to submit with an invalid number and check for error messages.
+
+### 2. Partner Profile
+1.  Log in and go to **Settings > Partner Profile**.
+2.  Verify the "Contact Number" field shows the correct country flag based on your profile.
+3.  Update the number and save.
+
+### 3. Add Payout Method
+1.  Go to **Wallet > Withdraw > Add Payment Method**.
+2.  Select **Mobile Money**.
+3.  Verify the "Mobile Money Number" field uses the international format and defaults to your country.
+
+## Key Logic
+- **Default Country**: The app defaults to 'Togo' (TG) if the partner's country is not set or recognized.
+- **Dynamic Country**: For logged-in users, the country is fetched from their profile (`AppState.partnerCountry`) and converted to an ISO code using [CountryUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/country_utils.dart#2-143).

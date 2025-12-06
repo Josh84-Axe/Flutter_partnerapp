@@ -1,0 +1,31 @@
+# Data Loading Fix - Full Partner Data
+
+## Issue
+User reported that the app was not loading full partner data (specifically dynamic configurations) after login.
+
+## Diagnosis
+- **API Login:** Verified working correctly (Status 200, tokens received).
+- **Root Cause:** [DashboardScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart#10-16) was calling [loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#538-566) in [initState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/rate_limit_config_screen.dart#15-21), creating a race condition with the login flow's data loading. Additionally, [loadHotspotProfiles()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1025-1037) was missing from the main data loading sequence.
+
+## Fix Applied
+1.  **DashboardScreen:** Removed duplicate [loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#538-566) call from [initState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/rate_limit_config_screen.dart#15-21).
+2.  **AppState:**
+    -   Added [loadHotspotProfiles()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1025-1037) to [loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#538-566).
+    -   Added comprehensive debug logging to track the loading of Users, Routers, Plans, Profiles, and Configurations.
+    -   Ensured [loadAllConfigurations()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#567-595) is called and waited for.
+
+## Result
+-   **Login Flow:** Now waits for all data to load before navigating.
+-   **Data Loaded:**
+    -   Users, Routers, Plans, Transactions
+    -   Wallet Balance, Notifications, Subscription
+    -   **Hotspot Profiles** (Fixed)
+    -   **All Dynamic Configurations** (Rate Limits, Data Limits, etc.)
+
+## Deployment
+-   **Commit:** `ceee35c`
+-   **Branch:** `fix/token-storage-windows`
+-   **Build Timestamp:** November 25, 2025 (Latest Clean Build)
+-   **Status:** Ready for testing.
+
+**The app now correctly loads all necessary data upon login, ensuring dynamic configurations are available for plan creation.**

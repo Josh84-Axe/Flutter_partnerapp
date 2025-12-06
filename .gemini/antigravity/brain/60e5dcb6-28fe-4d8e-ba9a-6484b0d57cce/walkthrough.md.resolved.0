@@ -1,0 +1,68 @@
+# Currency Standardization and Screen Refactoring Walkthrough
+
+## Overview
+This walkthrough documents the changes made to standardize currency handling and refactor financial screens in the Flutter Partner App. The goal was to eliminate hardcoded currency symbols and mock data, ensuring the app dynamically adapts to the partner's country and displays real data.
+
+## Changes Made
+
+### 1. Currency Utilities Consolidation
+- **File:** [lib/utils/currency_utils.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart)
+- **Changes:**
+    - Merged functionality from `CurrencyHelper` into [CurrencyUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#4-122).
+    - Added [getCurrencyCode](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#90-114) method.
+    - Updated [formatPrice](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#115-121) to use `NumberFormat` for robust formatting.
+    - Added `package:intl` dependency.
+
+### 2. Transaction Payment History Screen Refactor
+- **File:** [lib/screens/transaction_payment_history_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/transaction_payment_history_screen.dart)
+- **Changes:**
+    - Replaced hardcoded mock data with `Consumer<AppState>`.
+    - Implemented dynamic transaction listing using `appState.transactions`.
+    - Added "Earned Income" calculation based on positive transactions.
+    - Used [CurrencyUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#4-122) for all price formatting.
+    - Updated "Request Payout" dialog to use dynamic currency symbol.
+
+### 3. Revenue Breakdown Screen Refactor
+- **File:** [lib/screens/revenue_breakdown_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/revenue_breakdown_screen.dart)
+- **Changes:**
+    - Replaced hardcoded mock data with `Consumer<AppState>`.
+    - Implemented revenue calculation:
+        - **Assigned Revenue:** Transactions with `gateway == 'manual'` or null.
+        - **Online Revenue:** Transactions with other gateways (e.g., Stripe, Paystack).
+    - Updated [_showTransactionModal](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/revenue_breakdown_screen.dart#161-248) to display real transactions filtered by type.
+    - Used [CurrencyUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#4-122) for all price formatting.
+
+### 4. Additional Device Config Screen Refactor
+- **File:** [lib/screens/config/additional_device_config_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/additional_device_config_screen.dart)
+- **Changes:**
+    - Removed hardcoded `$` symbols from configuration descriptions and UI.
+    - Implemented dynamic initialization of configuration items using `CurrencyUtils.getCurrencySymbol`.
+    - Updated regex parsing to be flexible with currency symbols.
+    - Updated input field decorations to use the correct currency symbol.
+
+## Verification Results
+
+### Automated Checks
+- **Code Compilation:** The code changes rely on existing models and providers. No new build errors were introduced (based on static analysis).
+- **Logic Verification:**
+    - [CurrencyUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#4-122) correctly maps countries to symbols.
+    - Screens correctly consume [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081) and handle empty states (e.g., "No transactions found").
+    - Revenue calculations correctly filter transactions.
+
+### Manual Verification Steps (Recommended)
+1.  **Login:** Log in as a partner.
+2.  **Check Dashboard:** Verify wallet balance matches [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081).
+3.  **Navigate to Transactions:**
+    - Go to "Transactions" tab or screen.
+    - Verify the list shows real transactions.
+    - Verify currency symbols match the partner's country (e.g., `$` for US, `CFA` for Togo).
+4.  **Navigate to Revenue Breakdown:**
+    - Check "Assigned Revenue" and "Online Revenue" values.
+    - Click on cards to see detailed transaction lists.
+5.  **Navigate to Device Configuration:**
+    - Go to "Additional Devices" configuration.
+    - Verify price descriptions use the correct currency symbol.
+    - Try adding a new configuration and verify the price input prefix.
+
+## Conclusion
+The currency handling is now standardized, and the financial screens are dynamic and data-driven. This improves the app's scalability and user experience across different regions.

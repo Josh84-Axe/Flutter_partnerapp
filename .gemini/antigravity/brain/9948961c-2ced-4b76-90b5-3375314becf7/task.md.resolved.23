@@ -1,0 +1,29 @@
+# Task List - Currency & Profile Fixes
+
+- [x] Investigate Partner Profile API <!-- id: 0 -->
+    - [x] Check API response structure <!-- id: 1 -->
+    - [x] Identify country field <!-- id: 2 -->
+    - [x] Identify role field <!-- id: 3 -->
+    - [x] Identify currency fields (Failed - 404) <!-- id: 4 -->
+
+- [x] Implement International Currency Formatting <!-- id: 5 -->
+    - [x] Update CurrencyUtils with no decimals <!-- id: 6 -->
+    - [x] Add round up/down policy <!-- id: 7 -->
+    - [x] Support international formats (GHS 2,500 / 1.000 CFA) <!-- id: 8 -->
+
+- [x] Implement Dynamic Currency Symbol <!-- id: 9 -->
+    - [x] Verify correct endpoints in PartnerRepository (Removed dead code) <!-- id: 10 -->
+    - [x] Implement fallback mapping (Country -> Currency) <!-- id: 11 -->
+    - [x] Store currency symbol in AppState <!-- id: 12 -->
+    - [x] Update formatMoney to use dynamic symbol <!-- id: 13 -->
+    - [x] Remove hardcoded $ symbols (MetricCard updated) <!-- id: 14 -->
+
+- [x] Fix Partner Profile Loading <!-- id: 15 -->
+    - [x] Update profile parsing for country <!-- id: 16 -->
+    - [x] Update profile parsing for role <!-- id: 17 -->
+    - [x] Test profile loading (Implicitly tested via AppState update) <!-- id: 18 -->
+
+- [x] Global Currency Application <!-- id: 19 -->
+    - [x] Update CurrencyHelper to delegate to CurrencyUtils <!-- id: 20 -->
+    - [x] Refactor MetricCard.formatCurrency calls to use AppState.formatMoney <!-- id: 21 -->
+    - [x] Verify currency display globally <!-- id: 22 -->

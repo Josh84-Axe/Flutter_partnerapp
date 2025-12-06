@@ -1,0 +1,28 @@
+# Implementation Plan - Refactor Subscription Management
+
+Refactor [SubscriptionManagementScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/subscription_management_screen.dart#6-12) and [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-834) to replace hardcoded subscription data with real data fetched from the Partner Profile API.
+
+## User Review Required
+> [!IMPORTANT]
+> **Assumption**: The partner's subscription details are expected to be embedded in the `/partner/profile/` response under a `subscription` or `plan` key. If the backend does not provide this yet, the UI will show "No subscription information available".
+> **Available Plans**: The list of plans available for the Partner to upgrade to (Basic, Standard, Premium, Enterprise) will remain hardcoded for now, as [PlanRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#5-137) appears to manage plans the Partner *creates* for their customers, not plans the Partner *consumes*.
+
+## Proposed Changes
+
+### State Management
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Update [loadSubscription](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#402-412) to extract data from `_partnerProfileData`.
+- Implement mapping logic from profile JSON to [SubscriptionModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/subscription_model.dart#1-40).
+
+### UI Components
+#### [MODIFY] [subscription_management_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/subscription_management_screen.dart)
+- **Fix Critical Bug**: Remove duplicate class definition.
+- Update to use `AppState.subscription` for the "Current Plan" section.
+- Improve "No Subscription" state.
+
+## Verification Plan
+
+### Manual Verification
+- **Compile Check**: Ensure the app compiles without errors after removing the duplicate class.
+- **Code Review**: Verify that `SubscriptionModel.fromJson` handles potential nulls safely.
+- **Logic Check**: Verify [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-834) notifies listeners when profile data (and thus subscription data) is loaded.

@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_WALKTHROUGH",
+  "summary": "Walkthrough documenting the fix for Windows app login failure, including platform-specific token storage implementation and enhanced logging.",
+  "updatedAt": "2025-11-22T17:42:38.920770800Z",
+  "version": "2"
+}

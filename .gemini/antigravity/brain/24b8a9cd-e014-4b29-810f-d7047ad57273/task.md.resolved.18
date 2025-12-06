@@ -1,0 +1,23 @@
+# RBAC Implementation Task List
+
+## Phase 1: Core Infrastructure
+- [x] Create permission mapping utility
+- [x] Update Permissions class to use UserModel
+- [x] Create permission denied dialog widget
+
+## Phase 2: Critical Screen Enforcement
+- [x] Internet Plans screen (create/edit/delete)
+- [x] Wallet/Transactions screen
+- [x] Collaborators Management screen
+- [x] Role Assignment screen
+
+## Phase 3: Additional Screens
+- [x] Router Settings screen
+- [x] Dashboard screen
+- [x] Settings screen
+
+## Phase 4: Testing & Verification
+- [/] Create RBAC test script
+- [/] Test Worker role restrictions
+- [/] Test Manager role permissions
+- [/] Test Administrator full access

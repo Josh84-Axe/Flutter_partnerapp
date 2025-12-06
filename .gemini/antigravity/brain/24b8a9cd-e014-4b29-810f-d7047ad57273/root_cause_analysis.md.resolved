@@ -1,0 +1,182 @@
+# Root Cause Analysis Report
+## Flutter Partner App - Bug Fixes
+
+---
+
+## Issue 1: Remove Two Decimals from Amount Formatting
+
+### Current Behavior
+All monetary amounts display with 2 decimal places (e.g., `CFA 1,500.00`)
+
+### Root Cause
+**NOT A BUG** - This is intentional and follows standard currency formatting practices.
+
+**Location**: [currency_utils.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#L205-L216)
+```dart
+static String formatPrice(double price, String? country) {
+  final symbol = getCurrencySymbol(country);
+  final locale = getLocaleForCountry(country);
+  
+  final formatter = NumberFormat.currency(
+    symbol: symbol,
+    decimalDigits: 2,  // ← Intentionally set to 2
+    locale: locale,
+  );
+  
+  return formatter.format(price);
+}
+```
+
+### Recommendation
+**Change decimal places from 2 to 0** if you want whole numbers only (e.g., `CFA 1,500` instead of `CFA 1,500.00`).
+
+> [!CAUTION]
+> Removing decimals may cause issues with fractional currency amounts. Ensure this aligns with your business requirements.
+
+---
+
+## Issue 2: Internet Plan CRUD - Edit/Delete Not Working
+
+### Current Behavior
+- Edit button navigates to edit screen but doesn't save changes
+- Delete button shows confirmation dialog but doesn't actually delete the plan
+
+### Root Cause
+**Missing AppState methods** - The UI calls edit/delete but AppState doesn't have these methods implemented.
+
+**Evidence**:
+1. [internet_plan_screen.dart:114](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart#L114) - Edit button calls [_navigateToCreateEdit(plan: plan)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart#17-23)
+2. [internet_plan_screen.dart:36-40](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart#L36-L40) - Delete dialog only shows snackbar, doesn't call AppState
+3. [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart) - **No [updatePlan()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#78-91) or [deletePlan()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#92-104) methods exist**
+4. [plan_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart) - Repository HAS the methods ([updatePlan()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#78-91), [deletePlan()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#92-104))
+
+### Recommended Fix
+1. **Add missing methods to AppState**:
+   - [updatePlan(String planSlug, Map<String, dynamic> planData)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#78-91)
+   - [deletePlan(String planSlug)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#92-104)
+2. **Wire delete dialog** in [internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart) to call `appState.deletePlan(plan.id)`
+3. **Fix edit flow** in [create_edit_internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart) to call [updatePlan()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#78-91) when editing
+
+---
+
+## Issue 3: Add Plan Button Shows Blank Config Parameters
+
+### Current Behavior
+When clicking "Add Plan" button in Plans bottom navigation, dropdowns for validity, data limit, and shared users appear blank.
+
+### Root Cause Analysis
+**PARTIALLY FIXED** - The code already has proper loading logic, but there may be timing issues.
+
+**Evidence from** [create_edit_internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#L41-L80):
+- Lines 41-80: [_loadConfigurationData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#41-81) properly fetches validity, data limits, and shared users
+- Lines 50-61: Checks if data is empty and fetches from API
+- Lines 133-146: Dropdowns correctly use `appState.validityPeriods`, `appState.dataLimits`, `appState.sharedUsers`
+
+**Potential Issues**:
+1. **Race condition**: Data might not be loaded before screen renders
+2. **Navigation from wrong screen**: If navigating from [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart) instead of the proper route
+
+### Recommended Fix
+1. **Verify navigation route** - Ensure the "Add Plan" button uses the correct route
+2. **Add loading indicator** while fetching config data
+3. **Pre-load config data** in `PlansScreen.initState()` to avoid delays
+
+---
+
+## Issue 4: Created Plans Show Wrong Plan Details
+
+### Current Behavior
+Plans created on the app display incorrect details on the Plan bottom navigation screen.
+
+### Root Cause
+**Data mapping mismatch** between API response and display logic.
+
+**Evidence**:
+1. [app_state.dart:662-690](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#L662-L690) - [loadPlans()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#662-691) maps API data to `PlanModel`
+2. API returns validity in **minutes**, converted to days: `validityDays = (validityMinutes / 1440).ceil()`
+3. API doesn't provide `speedMbps`, hardcoded to `10`
+4. Plan creation in [create_edit_internet_plan_screen.dart:271-278](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#L271-L278) sends IDs, but display expects different format
+
+**Mismatch**:
+- **Create**: Sends `validity` (ID), `data_limit` (ID), `shared_users` (ID)
+- **Display**: Expects `validityDays` (number), `dataLimitGB` (number), `deviceAllowed` (number)
+
+### Recommended Fix
+1. **Verify API response** after plan creation to ensure correct data structure
+2. **Update [createPlan](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#51-64) payload** to match API expectations
+3. **Reload plans immediately** after creation (already done, but verify it works)
+4. **Add logging** to compare created plan data vs. fetched plan data
+
+---
+
+## Issue 5: Active Session Screen Empty (Assigned/Hotspot Users)
+
+### Current Behavior
+Active Session screen shows empty lists for both assigned plans and hotspot users.
+
+### Root Cause
+**Data loading implemented but may fail silently**.
+
+**Evidence from** [active_sessions_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart):
+- Lines 37-63: [_loadData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart#37-64) fetches both assigned plans and hotspot users
+- Lines 65-74: [_loadAssignedPlans()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart#65-75) calls `appState.planRepository.fetchAssignedPlans()`
+- Lines 76-85: [_loadHotspotUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart#76-86) calls `appState.loadHotspotUsers()`
+- Lines 161-213: Displays assigned plans list
+- Lines 215-269: Displays hotspot users list
+
+**Potential Issues**:
+1. **API returns empty data** - No assigned plans or hotspot users exist
+2. **Silent API errors** - Errors are caught but only logged to console
+3. **Data not persisted** - Data loaded into local state, not AppState
+
+### Recommended Fix
+1. **Check API responses** - Verify `/partner/assigned-plans/` and `/partner/hotspot/users/list/` return data
+2. **Add error UI** - Show error messages to user instead of just logging
+3. **Test with real data** - Create assigned plans and hotspot users to verify display
+4. **Add refresh button** - Already exists (line 123), ensure it works
+
+---
+
+## Issue 6: Hotspot Profile CRUD - Edit/Delete Not Working
+
+### Current Behavior
+- Edit button navigates to edit screen but doesn't save changes
+- Delete button shows confirmation dialog but doesn't actually delete the profile
+
+### Root Cause
+**Same as Issue #2** - Missing AppState methods for update and delete.
+
+**Evidence**:
+1. [hotspot_user_screen.dart:125](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/hotspot_user_screen.dart#L125) - Edit button calls [_navigateToCreateEdit(profile: profile)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart#17-23)
+2. [hotspot_user_screen.dart:34-38](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/hotspot_user_screen.dart#L34-L38) - Delete dialog only shows snackbar
+3. [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart) - **No `updateHotspotProfile()` or `deleteHotspotProfile()` methods**
+4. [hotspot_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/hotspot_repository.dart) - Repository HAS the methods
+
+### Recommended Fix
+1. **Add missing methods to AppState**:
+   - `updateHotspotProfile(String profileSlug, Map<String, dynamic> profileData)`
+   - `deleteHotspotProfile(String profileSlug)`
+2. **Wire delete dialog** to call `appState.deleteHotspotProfile(profile.id)`
+3. **Fix edit flow** to call `updateHotspotProfile()` when editing
+
+---
+
+## Summary of Fixes
+
+| Issue | Root Cause | Fix Complexity | Priority |
+|-------|-----------|----------------|----------|
+| 1. Amount Decimals | Intentional design | Low (1 line change) | Low |
+| 2. Plan CRUD | Missing AppState methods | Medium (3 methods) | **High** |
+| 3. Blank Config | Timing/loading issue | Low (verification) | Medium |
+| 4. Wrong Plan Details | Data mapping mismatch | Medium (investigation) | **High** |
+| 5. Empty Sessions | API/data loading | Medium (testing) | **High** |
+| 6. Hotspot CRUD | Missing AppState methods | Medium (3 methods) | **High** |
+
+---
+
+## Next Steps
+
+1. **Approve fixes** for Issues #2, #4, #5, and #6 (critical CRUD operations)
+2. **Decide on Issue #1** - Keep 2 decimals or change to 0?
+3. **Verify Issue #3** - May already be working, needs testing
+4. **Create implementation plan** after approval

@@ -1,0 +1,30 @@
+- **Fixed Duplicate Class**: Removed the duplicate [SubscriptionManagementScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/subscription_management_screen.dart#6-12) class definition.
+- **Real Data Integration**: The screen now displays the current plan fetched from the Partner Profile.
+- **Purchase Flow**: Implemented the "Upgrade" button to call the `/partner/purchase-subscription-plan/` endpoint.
+
+### Router Management
+- **Updated Endpoints**:
+    - List: `/partner/routers/list/`
+    - Add: `/partner/routers-add/`
+    - Delete: `/partner/routers/{id}/delete/`
+    - Details: `/partner/routers/{slug}/details/`
+    - Update: `/partner/routers/{slug}/update/`
+- **New Features**: Added support for:
+    - Rebooting Router
+    - Restarting Hotspot
+    - Viewing Active Users
+    - Viewing Router Resources
+
+### Session Management
+- **Updated Endpoint**: Active sessions are now fetched from `/partner/sessions/active/`.
+
+## Verification Results
+
+### Automated Checks
+- **Static Analysis**: Code structure is valid.
+- **Endpoint Verification**: All requested endpoints have been mapped in the repositories.
+
+### Manual Verification Steps
+1.  **Subscription**: Go to "Subscription Management". Verify "Current Plan" loads. Click "Upgrade" on a plan to test the purchase flow.
+2.  **Routers**: Go to the Router list. Verify routers load. Open details to see if resource usage loads. Try "Reboot" (if UI button exists, or add one to test).
+3.  **Sessions**: Check the "Active Sessions" list to verify data loading.

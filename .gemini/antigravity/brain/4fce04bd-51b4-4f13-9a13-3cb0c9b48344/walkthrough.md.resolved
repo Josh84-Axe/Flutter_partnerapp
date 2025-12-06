@@ -1,0 +1,76 @@
+# Windows App Login Fix - Walkthrough
+
+## Problem
+The Windows app was failing to log in, even though the backend API was working correctly (verified via standalone automation script).
+
+## Root Cause
+**FlutterSecureStorage on Windows** - The app was using `FlutterSecureStorage` for token storage on all platforms, which can fail on Windows without proper keyring configuration.
+
+## Solution Implemented
+
+### 1. Platform-Specific Token Storage
+Modified [token_storage.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/api/token_storage.dart) to use:
+- **Windows & Web**: `SharedPreferences` (avoids keyring issues)
+- **Android & iOS**: `FlutterSecureStorage` (maintains security best practices)
+
+```dart
+TokenStorage({FlutterSecureStorage? storage})
+    : _secureStorage = (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) 
+        ? null 
+        : (storage ?? const FlutterSecureStorage());
+```
+
+### 2. Enhanced Logging
+Added comprehensive debug logging to [auth_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart):
+- Base URL verification
+- Request/response data
+- Token extraction status
+- Detailed error messages with Dio exception types
+
+### 3. Restored Missing Methods
+Fixed compilation errors by restoring:
+- [confirmRegistration(String email, String code)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#358-370) - Email verification
+- [resendVerifyEmailOtp(String email)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#208-226) - Resend OTP
+- `businessName` parameter in [register()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#230-277) method
+
+## Changes Made
+
+### [token_storage.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/api/token_storage.dart)
+- Implemented platform detection for storage selection
+- Added logging for save/retrieve operations
+- Maintained backward compatibility with mobile platforms
+
+### [auth_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart)
+- Added detailed logging throughout login flow
+- Restored all missing authentication methods
+- Enhanced error handling with Dio exception details
+
+## Verification
+
+### Build Status
+✅ **Windows Release Build**: Successful
+```
+√ Built build\windows\x64\runner\Release\hotspot_partner_app.exe
+```
+
+### Next Steps for User
+1. Run the app: [build\windows\x64\runner\Release\hotspot_partner_app.exe](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/build/windows/x64/runner/Release/hotspot_partner_app.exe)
+2. Attempt login with: `sientey@hotmail.com` / `Testing123`
+3. Check console output for detailed debug logs
+4. Verify successful login and navigation to dashboard
+
+## Expected Behavior
+With the new logging, you should see output like:
+```
+🔑 [TokenStorage] Initializing SharedPreferences for Windows
+🔐 [AuthRepository] Login request for: sientey@hotmail.com
+🌐 [AuthRepository] Base URL: https://api.tiknetafrica.com/v1
+✅ [AuthRepository] Login response status: 200
+📦 [AuthRepository] Login response data: {...}
+✅ [AuthRepository] Login successful - saving tokens
+🔑 [TokenStorage] Saving tokens...
+✅ [TokenStorage] Tokens saved to SharedPreferences (Windows)
+```
+
+## Security Note
+This change **does not** reduce security on mobile platforms. Android and iOS continue to use `FlutterSecureStorage`, which stores tokens in the system keychain/keystore. Only Windows and Web use `SharedPreferences`, which is appropriate for desktop environments.

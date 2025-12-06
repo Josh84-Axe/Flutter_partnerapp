@@ -1,0 +1,32 @@
+# Task List - API Integration Audit
+
+- [/] Audit Authentication Endpoints <!-- id: 0 -->
+    - [ ] Review AuthRepository endpoints <!-- id: 1 -->
+    - [ ] Verify login/register/password reset <!-- id: 2 -->
+    
+- [ ] Audit Partner Endpoints <!-- id: 3 -->
+    - [ ] Review PartnerRepository endpoints <!-- id: 4 -->
+    - [ ] Verify profile and dashboard <!-- id: 5 -->
+
+- [ ] Audit Wallet & Transaction Endpoints <!-- id: 6 -->
+    - [ ] Review WalletRepository endpoints <!-- id: 7 -->
+    - [ ] Review TransactionRepository endpoints <!-- id: 8 -->
+
+- [ ] Audit Customer Management Endpoints <!-- id: 9 -->
+    - [ ] Review CustomerRepository endpoints <!-- id: 10 -->
+
+- [ ] Audit Plan & Configuration Endpoints <!-- id: 11 -->
+    - [ ] Review PlanRepository endpoints <!-- id: 12 -->
+    - [ ] Review PlanConfigRepository endpoints <!-- id: 13 -->
+
+- [ ] Audit Hotspot & Router Endpoints <!-- id: 14 -->
+    - [ ] Review HotspotRepository endpoints <!-- id: 15 -->
+    - [ ] Review RouterRepository endpoints <!-- id: 16 -->
+
+- [ ] Audit Session Management Endpoints <!-- id: 17 -->
+    - [ ] Review SessionRepository endpoints <!-- id: 18 -->
+
+- [ ] Create Comprehensive Report <!-- id: 19 -->
+    - [ ] Document working endpoints <!-- id: 20 -->
+    - [ ] Document integration status <!-- id: 21 -->
+    - [ ] Identify gaps or issues <!-- id: 22 -->

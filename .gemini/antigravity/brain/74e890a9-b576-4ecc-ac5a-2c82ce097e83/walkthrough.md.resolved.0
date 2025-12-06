@@ -1,0 +1,33 @@
+# Walkthrough - Fix Plan UI and Assigned Users
+
+## Changes
+
+### 1. Fixed Blank Dropdowns in Create/Edit Plan Screen
+-   **Issue**: Dropdowns for Validity, Data Limit, and Shared Users were empty because the code strictly filtered for items with a `name` property, but the API might return `value` or other keys.
+-   **Fix**: Updated [CreateEditInternetPlanScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#7-15) to:
+    -   Relax the filter to check for [id](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1141-1157) instead of `name`.
+    -   Use `value` as a fallback display text if `name` is missing.
+
+### 2. Fixed Assigned Users Display in Active Session Screen
+-   **Issue**: Assigned users were not displaying correctly because the code expected keys like `price` and `expiry_date` which were missing from the API response.
+-   **Fix**: Updated [ActiveSessionsScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart#8-14) to:
+    -   Map `status` from `is_active` boolean.
+    -   Display `plan_validity` instead of `expiry_date`.
+    -   Display `formatted_purchased_at` as "Purchased".
+    -   Hide the Price field if it is null.
+
+## Verification Results
+
+### Automated Verification
+-   Ran `dart test/test_login_and_plans.dart` to verify API response structure for assigned plans.
+-   Confirmed that the API returns a list of assigned plans with keys like `customer_name`, `plan_name`, `plan_validity`, `is_active`, etc.
+
+### Manual Verification Required
+Please verify the following in the app:
+1.  **Create Plan Screen**:
+    -   Open "Create Internet Plan".
+    -   Check if Validity, Data Limit, and Shared Users dropdowns are now populated.
+2.  **Active Sessions Screen**:
+    -   Open "Active Sessions".
+    -   Check the "Assigned Plans" tab.
+    -   Verify that users are listed with their plan details (Name, Plan, Validity, Status).

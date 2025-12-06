@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Test results showing plan assignment API requirements and the bug found in AppState.assignPlan() method.",
+  "updatedAt": "2025-11-25T18:15:32.035267200Z"
+}

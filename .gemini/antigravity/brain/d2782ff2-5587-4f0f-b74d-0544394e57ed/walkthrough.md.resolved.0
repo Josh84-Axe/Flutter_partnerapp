@@ -1,0 +1,186 @@
+# Plan Creation 400 Error - Fix Walkthrough
+
+## Problem
+
+When attempting to create a new internet plan through the app, users encountered a **400 Bad Request** error with the message:
+> "DioException [bad response]: This exception was thrown because the response has a status code of 400 and RequestOptions.validateStatus was configured to throw for this status code."
+
+## Investigation
+
+### Error Analysis
+
+The 400 error indicated that the request payload contained invalid data or incorrect field types that the API couldn't process.
+
+### Root Causes Identified
+
+Through thorough investigation of the codebase, I identified **5 critical issues** in the [`_savePlan` method](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#L508-L603):
+
+1. **Profile Type Mismatch**
+   - **Issue**: Sending `profile` as a **string** (e.g., "Basic" or profile.id)
+   - **Expected**: API expects `profile` as an **integer ID**
+   - **Evidence**: [PlanModel.fromJson](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/plan_model.dart#L56) shows `profileId: json['profile']` (int type)
+
+2. **Read-Only Field Sent**
+   - **Issue**: Sending `profile_name` in create/update requests
+   - **Expected**: `profile_name` is a computed field returned by the API, not accepted in requests
+
+3. **Data Limit - Value Instead of ID**
+   - **Issue**: Extracting and sending GB value (e.g., 5 for "5 GB")
+   - **Expected**: Should send the data limit configuration **ID**
+
+4. **Validity - Minutes Instead of ID**
+   - **Issue**: Converting to minutes (days * 1440) and sending the computed value
+   - **Expected**: Should send the validity configuration **ID**
+
+5. **Shared Users - Count Instead of ID**
+   - **Issue**: Extracting user count value (e.g., 3 for "3 Users")
+   - **Expected**: Should send the shared users configuration **ID**
+
+## Implementation
+
+### Changes Made to [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+
+#### 1. Updated `_selectedProfile` Type
+```diff
+- String? _selectedProfile;
++ int? _selectedProfile;
+```
+
+#### 2. Updated Hotspot Profile Dropdown
+```diff
+- DropdownButtonFormField<String>(
++ DropdownButtonFormField<int>(
+    value: _selectedProfile,
+    items: appState.hotspotProfiles.isEmpty
+-       ? [const DropdownMenuItem(value: 'Basic', child: Text('Basic'))]
++       ? []
+        : appState.hotspotProfiles
+            .map((profile) => DropdownMenuItem(
+-                 value: profile.id,
++                 value: int.tryParse(profile.id),
+                  child: Text(profile.name),
+                ))
+            .toList(),
++   validator: (value) {
++     if (value == null) {
++       return 'Please select a hotspot profile';
++     }
++     return null;
++   },
+```
+
+#### 3. Replaced `extractValue` with [extractId](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#523-537) Helper
+
+**Old approach** - Extracted numeric values:
+```dart
+int extractValue(dynamic item, String context) {
+  if (item is Map) {
+    final value = int.tryParse(
+      item['value']?.toString() ?? 
+      item['days']?.toString() ?? 
+      item['gb']?.toString() ?? 
+      // ... extracting VALUES
+    ) ?? 0;
+    return value;
+  }
+  // ...
+}
+```
+
+**New approach** - Extracts configuration IDs:
+```dart
+int? extractId(dynamic item, String context) {
+  if (kDebugMode) print('🔍 [CreatePlan] Extracting ID from $context: $item');
+  
+  if (item is Map) {
+    final id = item['id'];
+    if (kDebugMode) print('   Extracted ID: $id');
+    return id is int ? id : (id is String ? int.tryParse(id) : null);
+  } else if (item is int) {
+    return item;
+  } else if (item is String) {
+    return int.tryParse(item);
+  }
+  return null;
+}
+```
+
+#### 4. Updated Request Payload
+
+**Before:**
+```dart
+final data = {
+  'name': _nameController.text,
+  'price': double.parse(_priceController.text),
+  'data_limit': dataLimitValue,        // ❌ Sending GB value
+  'validity': validityMinutes,          // ❌ Sending minutes
+  'is_active': true,
+  'shared_users': sharedUsersValue,     // ❌ Sending count
+  'profile': _selectedProfile ?? 'Basic', // ❌ String
+  'profile_name': getProfileName(_selectedProfile), // ❌ Read-only field
+};
+```
+
+**After:**
+```dart
+final data = {
+  'name': _nameController.text,
+  'price': double.parse(_priceController.text),
+  'data_limit': dataLimitId,           // ✅ Sending config ID
+  'validity': validityId,              // ✅ Sending config ID
+  'is_active': true,
+  'shared_users': sharedUsersId,       // ✅ Sending config ID
+  'profile': _selectedProfile,         // ✅ Integer ID
+  // ✅ profile_name removed
+};
+```
+
+## Verification
+
+### Code Analysis
+- ✅ `flutter analyze` shows **0 errors** (only warnings about deprecated methods)
+- ✅ All changes committed and pushed to repository
+
+### Testing Checklist
+
+The user should now test the following scenarios:
+
+1. **Create New Plan**
+   - Navigate to Plans screen → Click "Create Plan"
+   - Fill in all fields:
+     - Plan Name: "Test Family Plan"
+     - Price: 90
+     - Data Limit: Select "null GB" (unlimited)
+     - Validity: Select "1d Days"
+     - Device Allowed: Select "3 Users"
+     - Hotspot User Profile: Select "Daily"
+   - Click "Create Plan"
+   - **Expected**: Plan created successfully without 400 error
+   - **Verify**: New plan appears in the list
+
+2. **Edit Existing Plan**
+   - Click edit on any plan
+   - Modify any field
+   - Click "Update Plan"
+   - **Expected**: Plan updated successfully
+   - **Verify**: Changes reflected in the plan list
+
+3. **Check API Logs**
+   - Enable debug mode
+   - Check console for `📦 [CreatePlan] Plan data:` log
+   - **Verify**: 
+     - `profile` is an integer
+     - `profile_name` is NOT in the payload
+     - `data_limit`, `validity`, `shared_users` are IDs (integers)
+
+## Summary
+
+The fix addresses the root cause of the 400 error by ensuring the API request payload matches the expected structure:
+- Configuration fields now send **IDs** instead of extracted values
+- Profile field is now an **integer** instead of a string
+- Read-only `profile_name` field is no longer sent
+
+**Files Modified:**
+- [lib/screens/plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart) - Updated [_savePlan](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#514-587) method and profile dropdown
+
+**Commit:** `Fix plan creation 400 error - send configuration IDs instead of values`

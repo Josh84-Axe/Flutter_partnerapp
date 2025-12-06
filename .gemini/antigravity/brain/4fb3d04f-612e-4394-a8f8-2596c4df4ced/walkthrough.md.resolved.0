@@ -1,0 +1,13 @@
+# Walkthrough - Payment Method Integration Fixes
+
+## Changes
+### Fixed Fee Calculation in Payout Request
+- **File**: [payout_request_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart)
+- **Issue**: The fee calculation logic was comparing the selected payment method's *slug* (unique ID) against the string literal `'mobile_money'`, which always resulted in the fallback fee (1.5%) instead of the correct fee for mobile money (2%).
+- **Fix**: Updated [_calculateFees](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart#49-74) to look up the full payment method object using the selected slug, extract the actual `method_type`, and use that for the fee calculation.
+- **Improvement**: Added logic to automatically select the first available payment method when the screen loads.
+
+## Verification Results
+### Manual Verification
+- **Logic Check**: Verified that `_selectedMethod` stores the slug, and the lookup correctly retrieves `method_type` from [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#38-1684).
+- **Initialization**: Verified that [initState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart#24-42) now correctly sets a default method if available, ensuring fees are calculated immediately upon screen load.

@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Implementation plan for redesigning Internet Plans screens. Defines two distinct views: Bottom Nav (with Assign buttons) and Settings (with Edit/Delete only). Includes design specifications, routing configuration, and verification steps.",
+  "updatedAt": "2025-11-27T22:56:04.163127600Z",
+  "version": "1"
+}

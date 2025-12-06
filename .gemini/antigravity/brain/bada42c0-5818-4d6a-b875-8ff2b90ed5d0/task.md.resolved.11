@@ -1,0 +1,66 @@
+# RBAC Quick Fix - Task Checklist
+
+## Phase 1: Immediate Fix (Option A)
+
+### Code Changes
+- [x] Update [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart) - Change role from 'Partner' to 'owner'
+  - [x] Line 238: [login()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#218-260) method
+  - [x] Line 281: [register()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#261-308) method  
+  - [x] Line 357: [registerWithDetails()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#309-388) method
+  - [x] Line 374: [registerWithDetails()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#309-388) temp user
+  - [x] Line 449: [checkAuthStatus()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#428-438) method
+- [x] Update [permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart)
+  - [x] Add 'partner': 'owner' to roleMapping
+  - [x] Add debug logging to hasPermission()
+  - [x] Import kDebugMode
+
+### Build & Test
+- [x] Rebuild application (161.3s, exit code 0)
+- [ ] Test login with sientey@hotmail.com
+- [ ] Verify user name displays in UI
+- [ ] Verify all navigation items visible
+- [ ] Test feature access (no permission errors)
+
+## Phase 1.5: Profile & Currency Fixes
+### Audit & Investigation
+- [x] Audit partner account configuration (Country: Ghana, Currency: GH₵)
+- [x] Identify root cause of missing profile data (nested 'data' field in API response)
+- [x] Identify root cause of $ currency symbol (old build + missing country data)
+
+### Code Changes
+- [x] Update [partner_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart)
+  - [x] Fix [fetchProfile()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#10-33) to extract nested 'data' field
+  - [x] Fix [fetchDashboard()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#34-57) to extract nested 'data' field
+- [x] Verify API endpoints (Login works, Profile works, Subscription 404)
+
+### Build & Verification
+- [x] Clean build cache (`flutter clean`)
+- [x] Rebuild application with fixes (Verified timestamp: 12:52 PM)
+- [x] Implement robust currency handling (trimming, fallbacks)
+- [x] Verify GH₵ currency symbol displays (User confirmed)
+- [x] Verify user name (Josh John) displays (User confirmed)
+
+### Active Sessions Logic
+- [x] Inspect API response structures for linking
+- [x] Update AppState to fetch active sessions
+- [x] Implement filtering logic (Active - Assigned)
+- [x] Rename tabs to "Assigned Users" and "Online Users"
+- [x] Update UI to show IP, MAC, Uptime, Data Usage
+- [x] Rebuild and verify (Verified timestamp: 1:23 PM)
+
+### Refined Logic & Disconnect (New)
+- [x] Add disconnectSession to AppState
+- [x] Merge session data into Assigned Users (Show Online status)
+- [x] Add Disconnect button to Assigned Users and Online Users
+- [x] Rebuild and verify (Verified timestamp: 1:47 PM)
+
+### Fix Matching Logic
+- [x] Debug matching logic (identified trim/suffix issue)
+- [x] Update ActiveSessionsScreen with robust matching (trim + split)
+- [x] Rebuild and verify (Verified timestamp: 2:05 PM)
+
+## Phase 2: Proper Solution (Future)
+- [ ] Coordinate with backend team
+- [ ] Backend adds role/permissions to API response
+- [ ] Update frontend to use API-provided role
+- [ ] Remove hardcoded role assignment

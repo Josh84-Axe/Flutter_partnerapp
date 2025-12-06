@@ -1,0 +1,15 @@
+# Task: Refactor Subscription & Router Management
+
+- [ ] Refactor [SubscriptionManagementScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/subscription_management_screen.dart#6-12) (Fix duplicate class) <!-- id: 0 -->
+- [x] Implement [purchaseSubscription](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#52-67) in [PartnerRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#5-68) (Endpoint: `/partner/purchase-subscription-plan/`) <!-- id: 1 -->
+- [x] Update [RouterRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#5-152) endpoints <!-- id: 5 -->
+    - [x] [fetchRouters](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#10-35) -> `/partner/routers/list/`
+    - [x] [addRouter](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#82-98) -> `/partner/routers-add/`
+    - [x] [deleteRouter](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#113-125) -> `/partner/routers/{id}/delete/`
+    - [x] `getRouterDetails` -> `/partner/routers/{slug}/details/`
+    - [x] [updateRouter](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#99-112) -> `/partner/routers/{slug}/update/`
+    - [x] Add [rebootRouter](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#126-138), [restartHotspot](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#139-151), `getRouterResources`, `getActiveUsers`
+- [x] Update [SessionRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/session_repository.dart#5-42) endpoints <!-- id: 6 -->
+    - [x] [fetchActiveSessions](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/session_repository.dart#10-27) -> `/partner/sessions/active/`
+- [ ] Integrate real data into Subscription UI <!-- id: 3 -->
+- [ ] Verify changes <!-- id: 4 -->

@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_WALKTHROUGH",
+  "summary": "Walkthrough of locale-specific currency formatting implementation. Documents the changes made to support European format (1.000,00) for CFA/EUR currencies and US format (1,000.00) for other currencies.",
+  "updatedAt": "2025-11-23T16:27:53.918245500Z",
+  "version": "5"
+}

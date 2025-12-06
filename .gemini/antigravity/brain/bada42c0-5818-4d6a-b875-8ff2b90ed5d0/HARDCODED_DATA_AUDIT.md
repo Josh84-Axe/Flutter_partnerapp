@@ -1,0 +1,49 @@
+# Audit Report: Hardcoded Data & Currency Symbols
+
+## Executive Summary
+This audit identifies instances of hardcoded currency symbols, mock data generation, and static data lists within the codebase. Addressing these is critical for internationalization, dynamic configuration, and production readiness.
+
+## 1. Hardcoded Currency Symbols
+The following files contain hardcoded currency symbols or logic that defaults to specific currencies (primarily USD).
+
+| File | Location | Issue |
+|------|----------|-------|
+| `lib/widgets/metric_card.dart` | Line 81-82 | Hardcoded `$` as fallback and in `NumberFormat`. |
+| `lib/utils/currency_utils.dart` | Multiple Lines | Hardcoded map of country names to currency symbols (e.g., `'Kenya': 'KSh'`). Defaults to `$`. |
+| `lib/utils/currency_helper.dart` | Multiple Lines | Similar hardcoded maps (`countryToCurrency`, `currencyToSymbol`). Defaults to `USD` or `$`. |
+| `lib/widgets/data_usage_card.dart` | Line 33, 40, 44 | Hardcoded units `%` and `GB` (localization issue, not strictly currency). |
+
+**Recommendation:**
+- Refactor `currency_utils.dart` and `currency_helper.dart` to fetch currency configuration from the backend or use a robust internationalization library.
+- Replace hardcoded symbols in widgets with dynamic formatters based on the user's locale or profile settings.
+
+## 2. Mock Data & Test Artifacts
+The following files contain logic for generating mock data or flags to bypass real API calls.
+
+| File | Location | Issue |
+|------|----------|-------|
+| `lib/services/auth_service.dart` | Line 13, 40, 106 | Generates mock JWT tokens and IDs (`mock_jwt_token_...`, `partner_...`). |
+| `lib/providers/app_state.dart` | Multiple Lines | Extensive comments about "FORCE REMOTE API" and bypassing mock data. Contains logic to toggle between mock and real data. |
+| `lib/screens/report_preview_screen.dart` | Line 17, 93 | `sampleData` list used for UI preview. |
+| `lib/screens/onboarding/explore_demo_screen.dart` | Line 23 | Explicit text mentioning "sample data" for demo mode. |
+| `lib/services/api/api_config.dart` | Line 14 | Comments referencing mock data flags. |
+
+**Recommendation:**
+- Ensure `AppState` logic correctly respects the production environment and doesn't accidentally fallback to mock data.
+- Review `auth_service.dart` to ensure mock token generation is strictly unreachable in production builds.
+
+## 3. Static Data Lists
+The following files contain hardcoded lists that should likely be dynamic or localized.
+
+| File | Variable | Issue |
+|------|----------|-------|
+| `lib/screens/registration_screen.dart` | `_countries` | Hardcoded list of country names. Should be fetched from API or a standard library. |
+| `lib/screens/login_screen.dart` | `_countries` | Same as above. |
+| `lib/screens/partner_profile_screen.dart` | `_paymentMethods` | Hardcoded list of payment methods. Should be dynamic based on available gateways. |
+| `lib/screens/reporting_screen.dart` | `_reportTypes`, `_generatedReports` | Hardcoded report types. |
+| `lib/screens/onboarding/carousel_screen.dart` | `_slides` | Static onboarding content. (Acceptable if content is static). |
+| `lib/screens/config/*.dart` | `_configs` | Configuration screens (Data Limit, Validity, etc.) use static lists for UI options. |
+
+**Recommendation:**
+- Move country lists to a centralized constant file or fetch from an API to ensure consistency.
+- Fetch payment methods and report types from the backend to allow for dynamic updates without app releases.

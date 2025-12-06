@@ -1,0 +1,44 @@
+- [x] Add `integration_test` dependency <!-- id: 15 -->
+- [x] Create integration test for financial screens and subscription <!-- id: 16 -->
+- [x] Fix Plan Configuration Forms (Rate Limit, Idle Timeout, Shared Users, Validity)
+    - [x] Ensure all forms have required fields validation
+    - [x] Normalize parameters sent to backend (Single value for Rate Limit, Idle Timeout, Validity, Shared Users)
+    - [x] Normalize parameters for Additional Devices (Send value + price)
+    - [x] Enforce Data Formats and Placeholders
+        - [x] Rate Limit: `2M/2M`
+        - [x] Idle Timeout: `5m, 10m` (Verified working with backend!)
+        - [x] Validity: `30m, 1h, 1d, 7d`
+        - [x] Shared Users: `1, 2, 3...`
+        - [x] Additional Devices: Placeholders
+    - [/] Fix 404 errors for configuration endpoints
+        - [x] Data Limit: Changed from `/partner/data-limit/list/` to `/partner/data-limit/`
+        - [ ] Shared Users: Verify correct endpoint (currently 404 on `/partner/shared-users/`)
+        - [ ] Additional Devices: Verify correct endpoint (currently `/partner/additional-devices/`)
+    - [ ] Verify backend fixes for Shared Users (500 Error) and intermittent 500s
+    - [ ] Implement Update functionality for all configurations
+- [x] Run integration tests on Windows <!-- id: 17 -->
+- [x] Fix Hotspot Profile Form
+    - [x] Add Rate Limit dropdown (from rate limit configurations)
+    - [x] Add Idle Time dropdown (from idle timeout configurations)
+    - [x] Add Router dropdown (from router list)
+    - [x] Fix save functionality to use correct API
+- [x] Display Hotspot Profiles in UI
+    - [x] Update HotspotProfileModel with correct fields
+    - [x] Ensure profiles are loaded on login
+    - [x] Update HotspotUserScreen to show human-readable description
+
+- [x] Unified Active Users Screen
+    - [x] Create ActiveSessionsScreen with Tabs (Assigned/Hotspot)
+    - [x] Update Main Navigation/Dashboard to link to ActiveSessionsScreen
+    - [x] Verify data loading for both tabs
+
+- [x] Fix Plan Assignment Logic
+    - [x] Update AssignUserScreen to await API call
+    - [x] Add error handling and loading state
+    - [x] Verify fix
+
+- [/] Fix Currency Display
+    - [ ] Update AppState to correctly load and store partner country
+    - [ ] Update WalletOverviewScreen to use AppState currency logic
+    - [ ] Update InternetPlanScreen to use AppState currency logic
+    - [ ] Verify fix

@@ -1,0 +1,64 @@
+# Implement Add Payment Method in Withdrawal Flow
+
+## Goal
+Integrate the "Add Payment Method" functionality into the withdrawal workflow, allowing users to add payment methods before requesting payouts.
+
+## Current State
+
+### ✅ Available
+- **Payment Method Repository**: All CRUD endpoints exist
+  - [fetchPaymentMethods()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#87-99) - GET `/partner/payment-methods/list/`
+  - [createPaymentMethod()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#27-37) - POST `/partner/payment-methods/create/`
+  - [getPaymentMethodDetails()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#38-48) - GET `/partner/payment-methods/{slug}/`
+  - [updatePaymentMethod()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#49-59) - PUT `/partner/payment-methods/{slug}/update/`
+  - [deletePaymentMethod()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#60-70) - DELETE `/partner/payment-methods/{slug}/delete/`
+
+- **Add Payment Method Screen**: UI exists but not connected to API
+- **Payout Request Screen**: Exists but doesn't check for payment methods
+
+### ❌ Missing
+- API integration in [AddPayoutMethodScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/add_payout_method_screen.dart#3-9)
+- Payment method selection in [PayoutRequestScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart#9-15)
+- AppState methods for payment methods
+- Navigation flow from payout to add payment method
+
+## Proposed Changes
+
+### AppState ([app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart))
+- Add `_paymentMethods` list
+- Add `loadPaymentMethods()` method
+- Add [createPaymentMethod()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#27-37) method
+- Add [deletePaymentMethod()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/payment_method_repository.dart#60-70) method
+
+### Add Payment Method Screen ([add_payout_method_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/add_payout_method_screen.dart))
+- Update [_saveDetails()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/add_payout_method_screen.dart#328-346) to call `AppState.createPaymentMethod()`
+- Add loading state during API call
+- Handle success/error responses
+- Return result to calling screen
+
+### Payout Request Screen ([payout_request_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart))
+- Load payment methods on init
+- Replace hardcoded payment method buttons with dynamic list
+- Add "Add Payment Method" button if list is empty
+- Navigate to add payment method screen
+- Refresh list after adding new method
+
+## API Data Format
+
+### Create Payment Method Request:
+```json
+{
+  "method_type": "mobile_money" | "bank_transfer",
+  "provider": "MTN Mobile Money",
+  "account_number": "+233579602075",
+  "account_name": "Josh John",
+  "swift_code": "optional"
+}
+```
+
+## Verification Plan
+1. Test adding mobile money payment method
+2. Test adding bank transfer payment method
+3. Verify payment methods appear in payout request screen
+4. Test selecting payment method for payout
+5. Test error handling (invalid data, API errors)

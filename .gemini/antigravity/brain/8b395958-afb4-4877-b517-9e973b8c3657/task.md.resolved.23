@@ -1,0 +1,41 @@
+# User/Worker Management UI Fixes
+
+## Issues to Fix
+- [x] Ellipsis menu not working on user/worker tabs
+- [x] Add User/Worker FAB buttons not visible
+- [x] User creation form missing required fields
+- [x] Worker creation form missing required fields
+
+## New Requirements: Worker Management Enhancements
+- [ ] Add Edit Worker to menu
+- [ ] Add View Worker Details to menu
+- [ ] Add Assign Router to menu
+- [ ] Implement router assignment system
+
+## Implementation Tasks
+
+### Phase 1: Model Updates
+- [ ] Add `assignedRouters` field to [WorkerModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/worker_model.dart#1-60)
+- [ ] Update `fromJson` and [toJson](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/worker_model.dart#46-59) methods
+
+### Phase 2: Repository Methods
+- [ ] Add `fetchCollaboratorDetails` to [CollaboratorRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart#5-142)
+- [ ] Add `updateCollaborator` to [CollaboratorRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart#5-142)
+- [ ] Add `assignRouter` to [CollaboratorRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart#5-142)
+
+### Phase 3: AppState Methods
+- [ ] Add `fetchWorkerDetails` to [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#41-1973)
+- [ ] Add [updateWorker](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1941-1955) to [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#41-1973)
+- [ ] Add `assignRouterToWorker` to [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#41-1973)
+
+### Phase 4: UI Implementation
+- [ ] Update [_showWorkerMenu](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/users_screen.dart#525-603) with new options
+- [ ] Create `_showWorkerDetailsDialog`
+- [ ] Create `_showEditWorkerDialog`
+- [ ] Create `_showAssignRouterDialog`
+
+### Phase 5: Testing
+- [ ] Test View Worker Details
+- [ ] Test Edit Worker
+- [ ] Test Assign Router
+- [ ] Verify worker sees only assigned routers

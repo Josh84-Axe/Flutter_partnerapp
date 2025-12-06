@@ -1,0 +1,48 @@
+# Reporting Feature Implementation Plan
+
+## Goal
+Make the "Data export and reporting" screen fully functional by replacing hardcoded data with real API integrations for generating, listing, and downloading reports.
+
+## User Review Required
+> [!IMPORTANT]
+> I am assuming the following API endpoints based on standard patterns. Please confirm if these match your backend:
+> - **Generate Report**: `POST /partner/reports/generate/`
+> - **List Reports**: `GET /partner/reports/`
+> - **Download Report**: `GET /partner/reports/{id}/download/`
+
+## Proposed Changes
+
+### 1. Repository Layer
+#### [NEW] [report_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/report_repository.dart)
+- [generateReport(String type, DateTimeRange range, String format)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/reporting_screen.dart#55-72)
+- `fetchReports()`
+- `downloadReport(String id)`
+
+### 2. State Management
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Add `_reports` list
+- Add [generateReport](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/reporting_screen.dart#55-72) method
+- Add `loadReports` method
+- Add `downloadReport` method
+
+### 3. UI Layer
+#### [MODIFY] [reporting_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/reporting_screen.dart)
+- Replace hardcoded `_generatedReports` with `appState.reports`
+- Update [_generateReport](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/reporting_screen.dart#55-72) to call `appState.generateReport`
+- Implement download button functionality
+- Add loading states
+
+#### [MODIFY] [report_preview_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/report_preview_screen.dart)
+- Ensure it displays real data or remove if generation is direct.
+
+## Verification Plan
+### Automated Tests
+- Verify API calls are made with correct parameters.
+
+### Manual Verification
+1. Navigate to Reporting screen.
+2. Verify list of past reports loads.
+3. Select report type, date range, and format.
+4. Click "Generate Report".
+5. Verify new report appears in list.
+6. Click download icon and verify file download.

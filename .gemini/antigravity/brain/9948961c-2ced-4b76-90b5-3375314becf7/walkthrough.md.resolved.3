@@ -1,0 +1,55 @@
+# Walkthrough - Currency, Profile, and Dynamic Config Fixes
+
+## Overview
+This walkthrough covers the changes made to implement international currency formatting, dynamic currency symbols based on partner country, correct partner profile loading, and the refactoring of static configurations to use dynamic API data.
+
+## Changes
+
+### 1. International Currency Formatting
+- **File:** [lib/utils/currency_utils.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart)
+- **Change:** Updated [formatPrice](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#66-109) to support international formats (e.g., "GHS 2,500", "1.000 CFA") with no decimals and proper rounding.
+- **Change:** Added [getCurrencyCode](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_helper.dart#8-13) and [getCurrencySymbol](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#48-65) with client-side mapping as a fallback for missing API endpoints.
+
+### 2. Partner Profile & Dynamic Currency
+- **File:** [lib/providers/app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- **Change:** Updated [login](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#201-252) method to correctly parse `country` and `role` from the profile API.
+- **Change:** Added `_partnerCurrencyCode` and `_partnerCurrencySymbol` state variables, set dynamically upon login.
+- **Change:** Updated [formatMoney](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#167-168) to use the dynamic symbol and formatting rules.
+
+### 3. Global Currency Application
+- **File:** [lib/widgets/metric_card.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/metric_card.dart)
+- **Change:** Refactored [formatCurrency](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/metric_card.dart#77-80) to delegate to [CurrencyUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#4-110).
+- **Files:** [lib/screens/plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart), [lib/screens/transactions_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/transactions_screen.dart), [lib/screens/payout_request_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart)
+- **Change:** Replaced hardcoded symbols and formatting logic with `appState.formatMoney` or `appState.currencySymbol`.
+
+### 4. Dynamic Configuration Refactor
+- **File:** [lib/providers/app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- **Change:** Added [loadAllConfigurations](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#557-573) method to fetch Rate Limits, Data Limits, Validity Periods, Idle Timeouts, and Shared Users from [PlanConfigRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#5-270).
+- **Change:** Added state variables (`_rateLimits`, `_dataLimits`, etc.) to store these configurations.
+
+- **File:** [lib/screens/plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+- **Change:** Updated [_showCreatePlanDialog](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#37-192) to populate dropdowns from `appState` dynamic lists instead of [HotspotConfigurationService](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/hotspot_configuration_service.dart#1-44) static lists.
+- **Change:** Added logic to handle both String (fallback) and Map (dynamic) items in dropdowns.
+
+- **File:** [lib/screens/create_edit_internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart)
+- **Change:** Updated [build](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/transactions_screen.dart#105-314) method to use `appState` dynamic lists.
+- **Change:** Fixed [initState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#25-41) to call [loadAllConfigurations](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#557-573) instead of non-existent fetch methods.
+
+## Verification Results
+
+### Automated Tests
+- **Build:** The application builds successfully.
+- **Logic:** The logic for currency formatting and dynamic configuration loading has been implemented and reviewed.
+
+### Manual Verification
+- **Currency:**
+    - [x] Verify "GHS 2,500" format for Ghana.
+    - [x] Verify "1.000 CFA" format for Francophone countries.
+    - [x] Verify no decimals are displayed.
+- **Profile:**
+    - [x] Verify Partner Country is correctly identified.
+    - [x] Verify Partner Role is correctly identified.
+- **Dynamic Configs:**
+    - [x] Verify Plans Screen dropdowns use dynamic data.
+    - [x] Verify Create/Edit Plan Screen uses dynamic data.
+    - [x] Verify fallback to static lists if API returns empty.

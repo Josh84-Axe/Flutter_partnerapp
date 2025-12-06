@@ -1,0 +1,33 @@
+# Fix Currency Display
+
+## Goal Description
+Ensure the correct currency symbol (e.g., CFA) is displayed throughout the app instead of the default '$'.
+
+## User Review Required
+> [!NOTE]
+> This fix involves updating how the partner's country is stored and accessed. It ensures that even after app restart, the correct currency is derived from the user's profile.
+
+## Proposed Changes
+
+### State Management
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+-   Update [login](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#17-79) method to pass `country` to [UserModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#1-97) constructor.
+-   Update [loadProfiles](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#536-555) method to:
+    -   Set `_partnerCountry` from the fetched profile data.
+    -   Update `_currentUser` with the fetched profile data (including country).
+
+### UI Components
+#### [MODIFY] [wallet_overview_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/wallet_overview_screen.dart)
+-   Replace `MetricCard.formatCurrency(..., partnerCountry)` with `appState.formatMoney(...)`.
+
+#### [MODIFY] [internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/internet_plan_screen.dart)
+-   Replace `CurrencyUtils.formatPrice(..., partnerCountry)` with `appState.formatMoney(...)`.
+
+## Verification Plan
+
+### Manual Verification
+1.  **Login**: Log in to the app.
+2.  **Dashboard**: Verify currency symbol in Revenue card.
+3.  **Wallet**: Verify currency symbol in Balance and Transaction list.
+4.  **Plans**: Verify currency symbol in Internet Plans list.
+5.  **Restart**: Restart the app (without logging out) and verify currency persists.

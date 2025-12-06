@@ -1,0 +1,32 @@
+# Implementation Plan - Payment Method Integration
+
+## Goal Description
+Complete the integration of payment methods for withdrawals.
+
+## Proposed Changes
+### Exploration
+- [x] Analyze [WalletRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/wallet_repository.dart#5-211), [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#38-1684), and relevant screens.
+- [x] Identified bug in [PayoutRequestScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart#9-15) fee calculation.
+- [x] Identified missing route for `/active-sessions` in [main.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/main.dart).
+- [x] Identified [DashboardScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart#10-16) hides subscription widget if null.
+- [x] User provided endpoint `/partner/subscription-plans/check/` for subscription status.
+
+### Implementation
+#### [MODIFY] [partner_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart)
+- Add `checkSubscriptionStatus()` method to call `/partner/subscription-plans/check/`.
+
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Update [loadSubscription()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#711-725) to use `_partnerRepository.checkSubscriptionStatus()` instead of relying solely on profile data.
+
+#### [MODIFY] [dashboard_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart)
+- Update subscription widget logic to show a "Free Plan" or placeholder card if `appState.subscription` is null, instead of hiding it.
+
+#### [MODIFY] [main.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/main.dart)
+- Add `/active-sessions`: [(context) => const ActiveSessionsScreen()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/main.dart#85-104) to the `routes` map.
+
+## Verification Plan
+### Manual Verification
+- Run the app (if possible) or verify logic by code review.
+- Check if fee updates correctly when switching between Mobile Money and Bank Transfer methods.
+- Verify `/active-sessions` route exists.
+- Verify Dashboard shows a subscription card even if data is missing.

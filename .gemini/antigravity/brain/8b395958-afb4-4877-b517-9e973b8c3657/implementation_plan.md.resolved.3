@@ -1,0 +1,479 @@
+# Complete RBAC Implementation Plan
+
+## Overview
+Implement full RBAC functionality with clear distinction between **Users** (customers) and **Workers** (collaborators), including role assignment and management.
+
+## Key Clarifications
+- **Users** = Customers (hotspot users who purchase plans)
+- **Workers** = Collaborators (staff members with assigned roles/permissions)
+- [CollaboratorRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart#5-142) already exists with all necessary endpoints ✅
+
+---
+
+## Phase 1: Create RoleRepository
+
+### [NEW] [role_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/role_repository.dart)
+
+**Purpose**: Dedicated repository for role management (currently mixed in [CollaboratorRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart#5-142))
+
+**Methods**:
+```dart
+class RoleRepository {
+  Future<List<dynamic>> fetchRoles();
+  Future<Map<String, dynamic>?> createRole(Map<String, dynamic> data);
+  Future<Map<String, dynamic>?> getRoleDetails(String slug);
+  Future<Map<String, dynamic>?> updateRole(String slug, Map<String, dynamic> data);
+  Future<bool> deleteRole(String slug);
+}
+```
+
+**API Endpoints**:
+- `GET /partner/roles/list/`
+- `POST /partner/roles/create/`
+- `GET /partner/roles/{slug}/`
+- `PUT /partner/roles/{slug}/update/`
+- `DELETE /partner/roles/{slug}/delete/`
+
+---
+
+## Phase 2: Update AppState
+
+### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+#### Add Repository
+```dart
+RoleRepository? _roleRepository;
+List<dynamic> _workers = []; // Collaborators
+```
+
+#### Role Management Methods
+Replace current in-memory methods with API calls:
+
+```dart
+// Load roles from API
+Future<void> loadRoles() async {
+  try {
+    if (_roleRepository == null) _initializeRepositories();
+    final rolesData = await _roleRepository!.fetchRoles();
+    _roles = rolesData.map((data) => RoleModel.fromJson(data)).toList();
+    notifyListeners();
+  } catch (e) {
+    _setError(e.toString());
+  }
+}
+
+// Create role
+Future<void> createRole(Map<String, dynamic> roleData) async {
+  _setLoading(true);
+  try {
+    await _roleRepository!.createRole(roleData);
+    await loadRoles();
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+
+// Update role
+Future<void> updateRole(String slug, Map<String, dynamic> roleData) async {
+  _setLoading(true);
+  try {
+    await _roleRepository!.updateRole(slug, roleData);
+    await loadRoles();
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+
+// Delete role
+Future<void> deleteRole(String slug) async {
+  _setLoading(true);
+  try {
+    await _roleRepository!.deleteRole(slug);
+    await loadRoles();
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+```
+
+#### Worker/Collaborator Management Methods
+```dart
+// Load workers
+Future<void> loadWorkers() async {
+  try {
+    if (_collaboratorRepository == null) _initializeRepositories();
+    _workers = await _collaboratorRepository!.fetchCollaborators();
+    notifyListeners();
+  } catch (e) {
+    _setError(e.toString());
+  }
+}
+
+// Create worker
+Future<void> createWorker(Map<String, dynamic> workerData) async {
+  _setLoading(true);
+  try {
+    await _collaboratorRepository!.createCollaborator(workerData);
+    await loadWorkers();
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+
+// Assign role to worker
+Future<void> assignRoleToWorker(String username, String roleSlug) async {
+  _setLoading(true);
+  try {
+    await _collaboratorRepository!.assignRole(username, {'role': roleSlug});
+    await loadWorkers();
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+
+// Update worker role
+Future<void> updateWorkerRole(String username, String roleSlug) async {
+  _setLoading(true);
+  try {
+    await _collaboratorRepository!.updateRole(username, {'role': roleSlug});
+    await loadWorkers();
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+
+// Delete worker
+Future<void> deleteWorker(String username) async {
+  _setLoading(true);
+  try {
+    await _collaboratorRepository!.deleteCollaborator(username);
+    await loadWorkers();
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+```
+
+#### Add Getters
+```dart
+List<dynamic> get workers => _workers;
+```
+
+---
+
+## Phase 3: Update Users Screen
+
+### [MODIFY] [users_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/users_screen.dart)
+
+**Current State**: Shows list of users (customers)
+
+**Required Changes**:
+1. Add **TabBar** with two tabs: "Customers" and "Workers"
+2. Add **Floating Action Buttons** for each tab
+3. Implement separate lists for customers and workers
+
+**UI Structure**:
+```dart
+DefaultTabController(
+  length: 2,
+  child: Scaffold(
+    appBar: AppBar(
+      title: Text('Users'),
+      bottom: TabBar(
+        tabs: [
+          Tab(text: 'Customers', icon: Icon(Icons.people)),
+          Tab(text: 'Workers', icon: Icon(Icons.badge)),
+        ],
+      ),
+    ),
+    body: TabBarView(
+      children: [
+        _buildCustomersTab(),  // Existing user list
+        _buildWorkersTab(),    // New worker list
+      ],
+    ),
+    floatingActionButton: _buildFAB(),  // Context-aware FAB
+  ),
+)
+```
+
+**Floating Action Button Logic**:
+```dart
+Widget _buildFAB() {
+  return _tabController.index == 0
+      ? FloatingActionButton.extended(
+          onPressed: () => _showCreateUserDialog(),
+          icon: Icon(Icons.person_add),
+          label: Text('Create User'),
+        )
+      : FloatingActionButton.extended(
+          onPressed: () => _showCreateWorkerDialog(),
+          icon: Icon(Icons.badge),
+          label: Text('Create Worker'),
+        );
+}
+```
+
+---
+
+## Phase 4: Create User Dialog
+
+### [NEW] [create_user_dialog.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/create_user_dialog.dart)
+
+**Purpose**: Dialog/bottom sheet for creating new customers
+
+**Fields**:
+- Name (required)
+- Email (required)
+- Phone (required, with international formatting)
+- Initial Plan (optional dropdown)
+
+**API**: Uses existing `CustomerRepository.createCustomer()`
+
+---
+
+## Phase 5: Create Worker Dialog
+
+### [NEW] [create_worker_dialog.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/create_worker_dialog.dart)
+
+**Purpose**: Dialog/bottom sheet for creating new workers (collaborators)
+
+**Fields**:
+- Full Name (required)
+- Email (required)
+- Username (required)
+- Password (required)
+- Role (required dropdown - from available roles)
+
+**API**: `POST /partner/collaborators/create/`
+
+**Payload**:
+```json
+{
+  "full_name": "John Doe",
+  "email": "john@example.com",
+  "username": "johndoe",
+  "password": "SecurePass123",
+  "role": "role-slug"
+}
+```
+
+---
+
+## Phase 6: Workers List View
+
+### [NEW] [workers_list_widget.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/workers_list_widget.dart)
+
+**Purpose**: Display list of workers with role management
+
+**Features**:
+- List of workers with name, email, role
+- **Assign Role** button (if no role assigned)
+- **Change Role** button (if role already assigned)
+- **Delete** button
+
+**Card Design**:
+```dart
+Card(
+  child: ListTile(
+    leading: CircleAvatar(child: Icon(Icons.badge)),
+    title: Text(worker.fullName),
+    subtitle: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(worker.email),
+        Chip(label: Text(worker.role ?? 'No Role')),
+      ],
+    ),
+    trailing: PopupMenuButton(
+      items: [
+        PopupMenuItem(
+          child: Text('Change Role'),
+          onTap: () => _showRoleDialog(worker),
+        ),
+        PopupMenuItem(
+          child: Text('Delete'),
+          onTap: () => _deleteWorker(worker),
+        ),
+      ],
+    ),
+  ),
+)
+```
+
+---
+
+## Phase 7: Role Assignment Dialog
+
+### [NEW] [assign_role_dialog.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/assign_role_dialog.dart)
+
+**Purpose**: Assign or update role for a worker
+
+**UI**:
+- Dropdown with all available roles
+- Save button
+
+**API**:
+- Assign: `POST /partner/collaborators/{username}/assign-role/`
+- Update: `PUT /partner/collaborators/{username}/update-role/`
+
+---
+
+## Phase 8: Update Role Screens
+
+### [MODIFY] [create_role_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_role_screen.dart)
+
+**Changes**:
+1. ✅ Add Form validation (convert TextField to TextFormField)
+2. ✅ Fix permission keys to match [PermissionConstants](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#1-25)
+3. ✅ Integrate with `AppState.createRole()` / [updateRole()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1752-1759)
+4. ✅ Use role `slug` instead of generated [id](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/country_utils.dart#128-132)
+
+**Permission Mapping Fix**:
+```dart
+// OLD (incorrect)
+'user_create', 'user_read', 'user_update', 'user_delete'
+
+// NEW (correct - matches PermissionConstants)
+'create_users', 'view_users', 'edit_users', 'delete_users'
+```
+
+### [MODIFY] [user_role_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/user_role_screen.dart)
+
+**Changes**:
+1. ✅ Call `AppState.loadRoles()` on init
+2. ✅ Use `AppState.deleteRole(slug)` instead of [deleteRole(id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart#131-141)
+3. ✅ Pass `slug` to edit screen
+
+---
+
+## Phase 9: Update UserModel
+
+### [MODIFY] [user_model.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart)
+
+**Add Fields**:
+```dart
+final String? roleId;
+final String? roleName;
+final List<String>? permissions;
+```
+
+**Update fromJson**:
+```dart
+roleId: json['role_id']?.toString(),
+roleName: json['role_name']?.toString(),
+permissions: (json['permissions'] as List?)?.map((e) => e.toString()).toList(),
+```
+
+---
+
+## Phase 10: Create Worker Model
+
+### [NEW] [worker_model.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/worker_model.dart)
+
+```dart
+class WorkerModel {
+  final String id;
+  final String username;
+  final String fullName;
+  final String email;
+  final String? roleSlug;
+  final String? roleName;
+  final List<String>? permissions;
+  final bool isActive;
+  final DateTime createdAt;
+
+  WorkerModel({
+    required this.id,
+    required this.username,
+    required this.fullName,
+    required this.email,
+    this.roleSlug,
+    this.roleName,
+    this.permissions,
+    required this.isActive,
+    required this.createdAt,
+  });
+
+  factory WorkerModel.fromJson(Map<String, dynamic> json) {
+    return WorkerModel(
+      id: json['id'].toString(),
+      username: json['username'],
+      fullName: json['full_name'] ?? json['name'],
+      email: json['email'],
+      roleSlug: json['role']?.toString(),
+      roleName: json['role_name']?.toString(),
+      permissions: (json['permissions'] as List?)?.map((e) => e.toString()).toList(),
+      isActive: json['is_active'] ?? true,
+      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
+    );
+  }
+}
+```
+
+---
+
+## Verification Plan
+
+### Manual Testing
+1. **Role Management**
+   - Create a new role with specific permissions
+   - Edit role permissions
+   - Delete role
+   - Verify persistence across app restarts
+
+2. **Worker Management**
+   - Create new worker with role assignment
+   - View worker list
+   - Change worker role
+   - Delete worker
+
+3. **User Management**
+   - Create new customer
+   - Verify customers appear in "Customers" tab
+   - Verify workers appear in "Workers" tab
+
+4. **Permission Enforcement** (Future Phase)
+   - Test UI visibility based on permissions
+   - Test action availability based on role
+
+---
+
+## Summary of Changes
+
+| Component | Action | Files |
+|-----------|--------|-------|
+| **Repositories** | Create | `role_repository.dart` |
+| **Models** | Create | `worker_model.dart` |
+| **Models** | Modify | [user_model.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart) (add role fields) |
+| **State** | Modify | [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart) (add role/worker methods) |
+| **Screens** | Modify | [users_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/users_screen.dart) (add tabs, FABs) |
+| **Screens** | Modify | [create_role_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_role_screen.dart) (API integration) |
+| **Screens** | Modify | [user_role_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/user_role_screen.dart) (API integration) |
+| **Widgets** | Create | `create_user_dialog.dart` |
+| **Widgets** | Create | `create_worker_dialog.dart` |
+| **Widgets** | Create | `workers_list_widget.dart` |
+| **Widgets** | Create | `assign_role_dialog.dart` |
+
+**Total**: 4 new files, 5 modified files

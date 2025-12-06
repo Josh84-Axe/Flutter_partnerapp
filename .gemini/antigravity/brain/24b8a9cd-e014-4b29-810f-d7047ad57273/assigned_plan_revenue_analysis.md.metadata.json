@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Analysis of assigned plan revenue flow showing that plan assignment does NOT automatically add revenue to dashboard or wallet. The system only tracks transactions from the wallet/transaction API endpoints, not plan assignments.",
+  "updatedAt": "2025-11-23T19:06:42.823760600Z"
+}

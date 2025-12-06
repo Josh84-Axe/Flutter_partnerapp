@@ -1,0 +1,34 @@
+# Implementation Plan - Debug Windows App Login Failure
+
+## Goal
+Identify and fix the cause of the login failure in the Windows app. The standalone automation script works, confirming the backend is functional. The issue is likely within the app's `Dio` configuration, `TokenStorage` (FlutterSecureStorage on Windows), or error handling.
+
+## User Review Required
+> [!IMPORTANT]
+> I may need to switch from `FlutterSecureStorage` to `SharedPreferences` for Windows if the secure storage implementation is causing issues (common on Windows without proper keyring setup).
+
+## Proposed Changes
+
+### Debugging & Logging
+#### [MODIFY] [auth_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart)
+- Add detailed `print` statements to trace the login flow.
+- Log the exact response data and any exceptions.
+
+#### [MODIFY] [token_storage.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/api/token_storage.dart)
+- Add logging to `saveTokens` and `getAccessToken`.
+- **Fix**: Implement platform-specific storage logic:
+    - **Windows & Web**: Use `SharedPreferences` (avoids keyring issues on Windows).
+    - **Android & iOS**: Continue using `FlutterSecureStorage` (best practice for mobile security).
+    - This ensures we don't downgrade security on mobile while fixing the Windows crash.
+
+### Configuration Verification
+#### [MODIFY] [api_client_factory.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/api/api_client_factory.dart)
+- Verify `BaseOptions` match the working standalone script (headers, timeouts).
+
+## Verification Plan
+
+### Manual Verification
+1.  **Run the App**: Rebuild and run the Windows app.
+2.  **Attempt Login**: Try to log in with `sientey@hotmail.com` / `Testing123`.
+3.  **Check Logs**: Observe the console output for the added debug logs.
+4.  **Verify Fix**: If `TokenStorage` is the issue, confirm that switching to `SharedPreferences` resolves it.

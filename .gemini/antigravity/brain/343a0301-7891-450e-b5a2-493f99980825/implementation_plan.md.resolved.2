@@ -1,0 +1,47 @@
+# Implement Active Session Screen
+
+## Goal Description
+Replace the "Hotspot Users" quick action on the dashboard with an "Active Session" screen. This screen will have two tabs: "Assigned Users" and "Online Users", listing active users and allowing session disconnection.
+
+## User Review Required
+None.
+
+## Proposed Changes
+### UI
+#### [MODIFY] [dashboard_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart)
+- Update the "Hotspot Users" quick action button:
+  - Change label to "Active Sessions" (or similar).
+  - Change icon if appropriate (e.g., `Icons.devices`).
+  - Update navigation route to `/active-sessions`.
+
+#### [MODIFY] [active_sessions_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart)
+- Ensure the screen has two tabs: "Online Users" and "Assigned Users".
+- **Online Users Tab**:
+  - List active sessions from `AppState.activeSessions`.
+  - Show user details (username, IP, MAC, uptime, data usage).
+  - Add "Disconnect" button for each session.
+- **Assigned Users Tab**:
+  - List assigned plans from `AppState.assignedPlans`.
+  - Show user details (customer name, plan name, status).
+  - Indicate online status if the user has an active session.
+
+#### [MODIFY] [main.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/main.dart)
+- Ensure `/active-sessions` route is defined and points to [ActiveSessionsScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart#6-12).
+
+### Providers
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Ensure [loadActiveSessions](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#999-1011) and [loadAssignedPlans](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1012-1024) are available and functioning.
+- Ensure [disconnectSession](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1038-1055) is available.
+
+## Verification Plan
+### Manual Verification
+- Run the app.
+- Navigate to Dashboard.
+- Click "Active Sessions" (formerly "Hotspot Users").
+- Verify the "Active Sessions" screen opens with two tabs.
+- **Online Users Tab**:
+  - Verify list of online users is displayed.
+  - Test "Disconnect" button (mock or real if possible).
+- **Assigned Users Tab**:
+  - Verify list of assigned users is displayed.
+  - Verify online status indicator works.

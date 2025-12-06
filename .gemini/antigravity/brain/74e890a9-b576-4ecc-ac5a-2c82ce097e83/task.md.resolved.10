@@ -1,0 +1,5 @@
+# Task: Build Release Application
+
+- [ ] Build Windows Release <!-- id: 0 -->
+    - [ ] Run `flutter build windows --release` <!-- id: 1 -->
+    - [ ] Verify build output in `build/windows/x64/runner/Release` <!-- id: 2 -->

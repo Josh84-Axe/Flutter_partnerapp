@@ -1,0 +1,342 @@
+# Registration & Password Reset Fixes - Implementation Plan
+
+## Issue 1: Registration Phone Number Format
+
+### Problem
+Registration is failing because the phone number needs to include the country code prefix (e.g., `+233` for Ghana).
+
+### Current Behavior
+- `RegistrationScreen` uses `InternationalPhoneNumberInput` widget
+- Phone number is sent as-is from `_phoneController.text`
+- Example: User enters `55 343 9010`, backend receives `55 343 9010`
+- **Backend expects**: `+23355343 9010` (with country code)
+
+### Root Cause
+The `InternationalPhoneNumberInput` widget provides the phone number in the controller, but we're not extracting the full international format with country code.
+
+### Solution
+
+**File**: `lib/screens/registration_screen.dart`
+
+**Current Code** (lines 140-174):
+```dart
+InternationalPhoneNumberInput(
+  key: ValueKey(_selectedCountry),
+  onInputChanged: (PhoneNumber number) {
+    // Controller is updated automatically
+  },
+  // ...
+  textFieldController: _phoneController,
+  // ...
+)
+```
+
+**Fix**: Store the `PhoneNumber` object and extract the full international format
+
+```dart
+// Add field to state
+PhoneNumber? _phoneNumber;
+
+// Update onInputChanged
+InternationalPhoneNumberInput(
+  key: ValueKey(_selectedCountry),
+  onInputChanged: (PhoneNumber number) {
+    setState(() {
+      _phoneNumber = number;
+    });
+  },
+  // ...
+)
+
+// In _submit method, use:
+phone: _phoneNumber?.phoneNumber ?? _phoneController.text.trim(),
+```
+
+**Alternative Fix** (Simpler): Manually prepend country code
+
+```dart
+// Get country dial code
+String getDialCode(String? countryCode) {
+  final codes = {
+    'GH': '+233',
+    'TG': '+228',
+    'NG': '+234',
+    // ... add more as needed
+  };
+  return codes[countryCode] ?? '+1';
+}
+
+// In _submit:
+final dialCode = getDialCode(_selectedCountry);
+final phoneWithCode = _phoneController.text.trim().startsWith('+') 
+    ? _phoneController.text.trim()
+    : '$dialCode${_phoneController.text.trim()}';
+
+phone: phoneWithCode,
+```
+
+---
+
+## Issue 2: Password Reset OTP ID Flow
+
+### Problem
+Backend now returns an `otp_id` when requesting password reset, and requires this ID when verifying the OTP.
+
+### Current Behavior
+1. User enters email → `requestPasswordResetOtp(email)` called
+2. Backend sends OTP to email **and returns `otp_id` in response**
+3. User enters OTP → `verifyPasswordResetOtp(email, otp)` called
+4. **Missing**: `otp_id` is not captured or sent back
+
+### Expected Backend Flow
+
+**Request OTP Response**:
+```json
+{
+  "statusCode": 200,
+  "message": "OTP sent successfully",
+  "data": {
+    "otp_id": "abc123xyz",
+    "expires_at": "2025-12-02T21:00:00Z"
+  }
+}
+```
+
+**Verify OTP Request**:
+```json
+{
+  "email": "user@example.com",
+  "otp": "123456",
+  "otp_id": "abc123xyz"
+}
+```
+
+### Solution
+
+#### Step 1: Update `PasswordRepository` to Return OTP ID
+
+**File**: `lib/repositories/password_repository.dart`
+
+**Current** (line 25-35):
+```dart
+Future<bool> requestPasswordResetOtp(String email) async {
+  try {
+    await _dio.post(
+      '/partner/password-reset/request-otp/',
+      data: {'email': email},
+    );
+    return true;
+  } catch (e) {
+    if (kDebugMode) print('Request password reset OTP error: $e');
+    return false;
+  }
+}
+```
+
+**Fix**:
+```dart
+Future<Map<String, dynamic>?> requestPasswordResetOtp(String email) async {
+  try {
+    if (kDebugMode) print('🔐 [PasswordRepository] Requesting password reset OTP for: $email');
+    final response = await _dio.post(
+      '/partner/password-reset/request-otp/',
+      data: {'email': email},
+    );
+    
+    if (kDebugMode) print('✅ [PasswordRepository] OTP request response: ${response.data}');
+    
+    final responseData = response.data as Map<String, dynamic>?;
+    
+    // Extract data field if wrapped
+    if (responseData != null && responseData['data'] != null) {
+      return responseData['data'] as Map<String, dynamic>;
+    }
+    
+    return responseData;
+  } catch (e) {
+    if (kDebugMode) print('❌ [PasswordRepository] Request password reset OTP error: $e');
+    return null;
+  }
+}
+```
+
+#### Step 2: Update `PasswordRepository.verifyPasswordResetOtp` to Accept OTP ID
+
+**Current** (line 39-49):
+```dart
+Future<bool> verifyPasswordResetOtp(String email, String otp) async {
+  try {
+    await _dio.post(
+      '/partner/password-reset/verify-otp/',
+      data: {'email': email, 'otp': otp},
+    );
+    return true;
+  } catch (e) {
+    if (kDebugMode) print('Verify password reset OTP error: $e');
+    return false;
+  }
+}
+```
+
+**Fix**:
+```dart
+Future<bool> verifyPasswordResetOtp({
+  required String email,
+  required String otp,
+  required String otpId,
+}) async {
+  try {
+    if (kDebugMode) print('🔐 [PasswordRepository] Verifying OTP for: $email');
+    await _dio.post(
+      '/partner/password-reset/verify-otp/',
+      data: {
+        'email': email,
+        'otp': otp,
+        'otp_id': otpId,
+      },
+    );
+    if (kDebugMode) print('✅ [PasswordRepository] OTP verified successfully');
+    return true;
+  } catch (e) {
+    if (kDebugMode) print('❌ [PasswordRepository] Verify password reset OTP error: $e');
+    return false;
+  }
+}
+```
+
+#### Step 3: Update `AppState` to Store and Pass OTP ID
+
+**File**: `lib/providers/app_state.dart`
+
+**Add field**:
+```dart
+String? _passwordResetOtpId;
+```
+
+**Update `requestPasswordReset`** (line 506-514):
+```dart
+Future<bool> requestPasswordReset(String email) async {
+  try {
+    _initializeRepositories();
+    final result = await _passwordRepository!.requestPasswordResetOtp(email);
+    
+    if (result != null && result['otp_id'] != null) {
+      _passwordResetOtpId = result['otp_id'].toString();
+      if (kDebugMode) print('✅ [AppState] OTP ID stored: $_passwordResetOtpId');
+      return true;
+    }
+    
+    return false;
+  } catch (e) {
+    if (kDebugMode) print('❌ [AppState] Request password reset error: $e');
+    return false;
+  }
+}
+```
+
+**Update `verifyPasswordResetOtp`** (line 517-525):
+```dart
+Future<bool> verifyPasswordResetOtp(String email, String otp) async {
+  try {
+    _initializeRepositories();
+    
+    if (_passwordResetOtpId == null) {
+      if (kDebugMode) print('❌ [AppState] No OTP ID available');
+      return false;
+    }
+    
+    return await _passwordRepository!.verifyPasswordResetOtp(
+      email: email,
+      otp: otp,
+      otpId: _passwordResetOtpId!,
+    );
+  } catch (e) {
+    if (kDebugMode) print('❌ [AppState] Verify password reset OTP error: $e');
+    return false;
+  }
+}
+```
+
+**Update `confirmPasswordReset`** (line 528-544):
+```dart
+Future<bool> confirmPasswordReset({
+  required String email,
+  required String otp,
+  required String newPassword,
+}) async {
+  try {
+    _initializeRepositories();
+    
+    if (_passwordResetOtpId == null) {
+      if (kDebugMode) print('❌ [AppState] No OTP ID available');
+      return false;
+    }
+    
+    final success = await _passwordRepository!.resetPassword({
+      'email': email,
+      'otp': otp,
+      'otp_id': _passwordResetOtpId!,
+      'new_password': newPassword,
+    });
+    
+    if (success) {
+      _passwordResetOtpId = null; // Clear after use
+    }
+    
+    return success;
+  } catch (e) {
+    if (kDebugMode) print('❌ [AppState] Confirm password reset error: $e');
+    return false;
+  }
+}
+```
+
+---
+
+## Implementation Order
+
+### Priority 1: Registration Phone Fix
+1. ✅ Add `PhoneNumber` field to `RegistrationScreen` state
+2. ✅ Update `onInputChanged` to capture full phone number
+3. ✅ Use `phoneNumber` property in `_submit` method
+4. ✅ Test registration with international phone format
+
+### Priority 2: Password Reset OTP ID
+1. ✅ Update `PasswordRepository.requestPasswordResetOtp` to return data
+2. ✅ Update `PasswordRepository.verifyPasswordResetOtp` to accept `otpId`
+3. ✅ Add `_passwordResetOtpId` field to `AppState`
+4. ✅ Update `AppState.requestPasswordReset` to store OTP ID
+5. ✅ Update `AppState.verifyPasswordResetOtp` to pass OTP ID
+6. ✅ Update `AppState.confirmPasswordReset` to include OTP ID
+7. ✅ Test password reset flow end-to-end
+
+---
+
+## Testing Plan
+
+### Test 1: Registration with Phone Number
+1. Fill registration form
+2. Select country (e.g., Ghana)
+3. Enter phone: `55 343 9010`
+4. Submit
+5. **Expected**: Backend receives `+23355343 9010`
+
+### Test 2: Password Reset Flow
+1. Navigate to Forgot Password
+2. Enter email
+3. **Expected**: OTP sent, OTP ID stored
+4. Enter OTP code
+5. **Expected**: OTP verified with OTP ID
+6. Enter new password
+7. **Expected**: Password reset with OTP ID
+
+---
+
+## Risk Assessment
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Phone format varies by country | Medium | Use `PhoneNumber.phoneNumber` property |
+| OTP ID not returned by backend | High | Add null checks and error logging |
+| OTP ID expires | Medium | Clear OTP ID after use |
+| Multiple OTP requests | Low | Each request gets new OTP ID |

@@ -1,0 +1,19 @@
+- [x] Verify changes <!-- id: 10 -->
+
+## Subscription and Hotspot- [x] **Fix Rate Limit Configuration** <!-- id: 18 -->
+    - [x] Update [RateLimitConfigScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/rate_limit_config_screen.dart#6-12) to use [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#35-1204) and enforce validation. <!-- id: 19 -->
+    - [x] Verify API interaction (Endpoint `/partner/rate-limit/create/` works but is flaky). <!-- id: 20 -->
+- [x] **Fix Idle Timeout Configuration** <!-- id: 21 -->
+    - [x] Update [IdleTimeConfigScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/idle_time_config_screen.dart#6-12) to use [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#35-1204) and enforce validation. <!-- id: 22 -->
+    - [x] Verify API interaction (Endpoint `/partner/idle-timeout/create/` works but is flaky). <!-- id: 23 -->
+- [x] **Fix Shared Users Configuration** <!-- id: 24 -->
+    - [x] Update [SharedUserConfigScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/shared_user_config_screen.dart#6-12) to use [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#35-1204) and enforce validation. <!-- id: 25 -->
+    - [x] Verify API interaction (Endpoint `/partner/shared-users/create/` fails with 500/400 - Backend Bug). <!-- id: 26 -->
+- [x] **Fix Plan Validity Configuration** <!-- id: 27 -->
+    - [x] Update [PlanValidityConfigScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/plan_validity_config_screen.dart#6-12) to use [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#35-1204) and enforce validation. <!-- id: 28 -->
+    - [x] Verify API interaction (Endpoint `/partner/validity/create/` works but is flaky). <!-- id: 29 -->
+
+## Integration Testing
+- [x] Add `integration_test` dependency <!-- id: 15 -->
+- [x] Create integration test for financial screens and subscription <!-- id: 16 -->
+- [x] Run integration tests on Windows <!-- id: 17 -->

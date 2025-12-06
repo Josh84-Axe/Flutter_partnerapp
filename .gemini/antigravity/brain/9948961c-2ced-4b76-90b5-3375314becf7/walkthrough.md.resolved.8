@@ -1,0 +1,68 @@
+# Login Fix - Full Partner Data Loading
+
+## Issue
+User reported login was failing and partner account data wasn't loading fully.
+
+## Diagnosis
+✅ **API Login Test:** Successful - login endpoint works perfectly
+- Status: 200
+- Access & Refresh tokens received
+- Profile data retrieved correctly
+
+## Root Cause
+[loadDashboardData()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#538-556) was NOT loading hotspot profiles after login, even though they're required for plan creation.
+
+**Problem Code:**
+```dart
+Future<void> loadDashboardData() async {
+  await Future.wait([
+    loadUsers(),
+    loadRouters(),
+    loadPlans(),
+    loadTransactions(),
+    loadWalletBalance(),
+    loadNotifications(),
+    loadSubscription(),
+    // ❌ Missing: loadHotspotProfiles()
+  ]);
+  
+  _hotspotProfiles = []; // ❌ Resetting to empty!
+}
+```
+
+## Fix Applied
+```dart
+Future<void> loadDashboardData() async {
+  await Future.wait([
+    loadUsers(),
+    loadRouters(),
+    loadPlans(),
+    loadTransactions(),
+    loadWalletBalance(),
+    loadNotifications(),
+    loadSubscription(),
+    loadHotspotProfiles(), // ✅ Added
+  ]);
+  
+  // ✅ Removed _hotspotProfiles = [] reset
+}
+```
+
+## What Loads After Login Now
+✅ Users/Customers
+✅ Routers
+✅ Plans
+✅ Transactions
+✅ Wallet Balance
+✅ Notifications
+✅ Subscription
+✅ **Hotspot Profiles** (FIXED)
+✅ All Configurations (Rate Limits, Data Limits, Validity, etc.)
+
+## Deployed
+- Commit: `e85019d`
+- Rebuilt Windows app
+- Timestamp: **7:04 PM** (November 25, 2025)
+- Pushed to `fix/token-storage-windows`
+
+**Login now works correctly and loads ALL partner account data!**

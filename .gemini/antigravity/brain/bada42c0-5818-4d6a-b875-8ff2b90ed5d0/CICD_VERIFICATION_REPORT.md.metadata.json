@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "CI/CD fix verification report showing that flutter analyze passes with only warnings, confirming the Dart workflow will succeed. Web build also verified locally.",
+  "updatedAt": "2025-11-24T20:39:31.901870900Z"
+}

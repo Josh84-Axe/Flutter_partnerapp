@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Diagnostic report for remote build failure investigation, including local analysis results, commit status, and potential causes",
+  "updatedAt": "2025-11-24T19:31:03.468168600Z"
+}

@@ -1,0 +1,16 @@
+# Permission Fix Plan
+
+## Goal
+Fix the issue where users with "Partner" role (who are administrators) cannot see the "Add Plan" button because the system only recognizes "Administrator" as the owner role.
+
+## Changes
+
+### [lib/utils/permissions.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart)
+
+- Add `isOwner(String role)` helper method.
+- Update `roleOwner` constant to be used less directly, or keep it for reference.
+- Update all permission check methods to use `isOwner(role)` instead of `role == roleOwner`.
+- `isOwner` will return true if role is 'Administrator' OR 'Partner'.
+
+## Verification
+- Verify that [canCreatePlans](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#12-16) returns true for 'Partner' role.

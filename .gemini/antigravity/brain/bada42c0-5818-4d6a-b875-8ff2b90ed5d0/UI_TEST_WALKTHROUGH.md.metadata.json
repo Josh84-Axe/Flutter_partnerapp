@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_WALKTHROUGH",
+  "summary": "Visual walkthrough of the Flutter Partner App automated UI test execution. Documents the complete test flow from application launch through login, dashboard access, and navigation testing. Includes 8 embedded screenshots showing the login screen, credential entry, successful authentication, dashboard display, and various navigation states. Demonstrates successful build deployment, automated keyboard interaction, and visual verification of the Windows desktop application. Provides evidence of working authentication flow, UI responsiveness, and navigation functionality.",
+  "updatedAt": "2025-11-24T10:16:24.645328800Z"
+}

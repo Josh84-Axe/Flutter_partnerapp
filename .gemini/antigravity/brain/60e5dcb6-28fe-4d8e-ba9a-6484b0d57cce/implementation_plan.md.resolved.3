@@ -1,0 +1,39 @@
+# Currency Standardization and Real Data Integration Plan
+
+#### [MODIFY] [additional_device_config_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/additional_device_config_screen.dart)
+- Replace hardcoded `$` with `CurrencyUtils.getCurrencySymbol`.
+- Ensure input fields and display logic respect the dynamic currency.
+
+#### [MODIFY] [metric_card.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/metric_card.dart)
+- Update to use [CurrencyUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#4-122) exclusively.
+
+#### [MODIFY] [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+- Update import to [CurrencyUtils](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#4-122).
+
+## Subscription and Hotspot Profile Implementation
+
+### Repositories
+#### [NEW] [subscription_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/subscription_repository.dart)
+- Create a new repository to handle subscription-related API calls.
+- Implement [checkSubscriptionStatus](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/subscription_repository.dart#9-31) using `/partner/subscription-plan/check/`.
+- Implement [purchaseSubscription](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/subscription_repository.dart#32-67) using `/partner/subscription-plan/purchase/`.
+
+#### [MODIFY] [hotspot_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/hotspot_repository.dart)
+- Verify `createHotspotProfile` implementation matches the requirement `/partner/hotspot/profiles/create/`.
+- Ensure proper error handling and response parsing.
+
+### State Management
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Integrate [SubscriptionRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/subscription_repository.dart#4-68).
+- Add methods to check subscription status and purchase plans.
+- Update [loadDashboardData](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#427-451) to include subscription check.
+
+## Verification Plan
+
+### Integration Testing (Windows)
+- **Setup:** Add `integration_test` dependency.
+- **Test Script:** Create [integration_test/app_flow_test.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/integration_test/app_flow_test.dart) to simulate user interaction.
+    - **Login:** Use provided test credentials (`sientey@hotmail.com` / `Testing`).
+    - **Navigation:** Navigate to Transactions, Revenue, and Device Config screens.
+    - **Verification:** Check for presence of specific widgets and text (e.g., "Earned Income", dynamic currency symbols).
+- **Execution:** Run `flutter test integration_test/app_flow_test.dart -d windows`.

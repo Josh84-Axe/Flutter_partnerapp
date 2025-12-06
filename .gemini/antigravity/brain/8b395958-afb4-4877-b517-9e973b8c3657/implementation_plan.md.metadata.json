@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Fixes for Role Display and Assignment.\n1. Convert RolePermissionScreen to StatefulWidget to load roles.\n2. Update AssignRoleScreen to use Workers instead of Users.\n3. Update AssignRoleScreen to use dynamic roles from AppState instead of hardcoded values.",
+  "updatedAt": "2025-11-29T13:10:59.550320500Z",
+  "version": "6"
+}

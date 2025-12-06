@@ -1,0 +1,41 @@
+# User/Worker Management UI Fixes
+
+## Issues to Fix
+- [ ] Ellipsis menu not working on user/worker tabs
+- [ ] Add User/Worker FAB buttons not visible
+- [ ] User creation form missing required fields
+- [ ] Worker creation form missing required fields
+
+## Implementation Tasks
+
+### Phase 1: Debug Permission System
+- [/] Add debug logging to permission checks
+- [ ] Test with actual user login
+- [ ] Verify permission ID-to-codename mapping
+- [ ] Fix role matching (Administrator vs owner)
+
+### Phase 2: Fix User Creation Form
+- [ ] Update [_showUserDialog](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/users_screen.dart#43-205) to include:
+  - `first_name` field
+  - `phone` field
+- [ ] Update API payload structure
+- [ ] Test user creation
+
+### Phase 3: Fix Worker Creation Dialog
+- [ ] Update [CreateWorkerDialog](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/create_worker_dialog.dart#6-12) to include:
+  - `first_name` field (already has)
+  - `last_name` field (already has)
+  - `email` field (already has)
+  - `phone` field (NEW)
+  - `addresse` field (NEW)
+  - `city` field (NEW)
+  - `country` field (NEW)
+- [ ] Update API payload in `AppState.createWorker`
+- [ ] Test worker creation
+
+### Phase 4: Verification
+- [ ] Test FAB visibility with Administrator role
+- [ ] Test ellipsis menu functionality
+- [ ] Test user creation with all fields
+- [ ] Test worker creation with all fields
+- [ ] Verify API responses

@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Implementation plan for enforcing RBAC across UI screens, including permission checks for plan management, user management, router management, and payout requests.",
+  "updatedAt": "2025-11-24T21:27:33.175643100Z"
+}

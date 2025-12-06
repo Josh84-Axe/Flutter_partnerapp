@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_WALKTHROUGH",
+  "summary": "Walkthrough documenting the implementation of validity periods and data limits configuration fetchers, including AppState changes and UI integration in CreateEditInternetPlanScreen.",
+  "updatedAt": "2025-11-24T21:14:49.471488400Z"
+}

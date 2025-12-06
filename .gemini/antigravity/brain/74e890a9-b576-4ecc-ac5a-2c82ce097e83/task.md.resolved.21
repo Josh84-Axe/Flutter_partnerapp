@@ -1,0 +1,18 @@
+# Currency Format Normalization
+
+## Tasks
+
+- [x] Update Core Utilities <!-- id: 0 -->
+    - [x] Add [getLocaleForCountry()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#164-201) method <!-- id: 1 -->
+    - [x] Update `CurrencyUtils.formatPrice()` with explicit locale <!-- id: 2 -->
+    - [x] Add `CurrencyUtils.formatNumber()` with thousand separators <!-- id: 3 -->
+    - [x] Update `MetricCard.formatCurrency()` with explicit locale <!-- id: 4 -->
+    - [x] Update `MetricCard.formatNumber()` with thousand separators <!-- id: 5 -->
+- [x] Fix Direct Price Formatting <!-- id: 6 -->
+    - [x] Replace `.toStringAsFixed()` in plan_assignment_screen.dart <!-- id: 7 -->
+    - [x] Replace direct concatenation in additional_device_config_screen.dart <!-- id: 8 -->
+- [x] Verification <!-- id: 9 -->
+    - [x] Build application <!-- id: 10 -->
+    - [ ] Test CFA countries show 1.000,00 format <!-- id: 11 -->
+    - [ ] Test European countries show 1.000,00 format <!-- id: 12 -->
+    - [ ] Test US/other countries show 1,000.00 format <!-- id: 13 -->

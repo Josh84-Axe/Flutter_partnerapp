@@ -1,0 +1,40 @@
+# Phone Number Formatting and Validation Implementation Plan
+
+## Goal Description
+Implement dynamic phone number formatting and validation across the entire application based on the partner's country. Users should see error messages if the number doesn't match the expected format.
+
+## User Review Required
+- None at this stage.
+
+## Proposed Changes
+### Dependencies
+- Add `intl_phone_number_input: ^0.7.4` to [pubspec.yaml](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/pubspec.yaml).
+
+### Logic
+- Use `InternationalPhoneNumberInput` widget for all phone inputs.
+- Configure it to use the partner's country as the initial selection where applicable.
+- Enable validation to ensure the number is valid for the selected country.
+
+### UI Components
+#### [MODIFY] [pubspec.yaml](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/pubspec.yaml)
+- Add `intl_phone_number_input` dependency.
+
+#### [MODIFY] [registration_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/registration_screen.dart)
+- Replace `TextFormField` for `_phoneController` with `InternationalPhoneNumberInput`.
+- Set initial country based on `_selectedCountry` or default to a common one (e.g., 'TG').
+- Ensure validation logic checks for valid phone number.
+
+#### [MODIFY] [partner_profile_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/partner_profile_screen.dart)
+- Replace [_buildTextField](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/partner_profile_screen.dart#206-229) call for phone with `InternationalPhoneNumberInput`.
+- Initialize with `AppState.partnerCountry`.
+
+#### [MODIFY] [add_payout_method_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/add_payout_method_screen.dart)
+- Replace [_buildTextField](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/partner_profile_screen.dart#206-229) for mobile number with `InternationalPhoneNumberInput`.
+- Initialize with `AppState.partnerCountry`.
+
+## Verification Plan
+### Manual Verification
+- **Registration**: Try registering with valid and invalid phone numbers for different countries.
+- **Profile**: Try updating phone number with valid/invalid formats.
+- **Payout**: Try adding a mobile money number with valid/invalid formats.
+- **Error Handling**: Verify that "Invalid phone number" error appears when appropriate.

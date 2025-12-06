@@ -1,0 +1,175 @@
+# Endpoint Alignment Walkthrough
+
+## 🎯 Objective
+Align all Flutter app endpoints with the backend implementation and lock them to prevent future changes.
+
+---
+
+## ✅ Changes Made
+
+### 1. Updated PlanConfigRepository
+**File:** [lib/repositories/plan_config_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart)
+
+Changed all endpoints from plural to singular form to match backend:
+
+| Old Endpoint (Plural) | New Endpoint (Singular) | Status |
+|-----------------------|-------------------------|--------|
+| `/partner/rate-limits/` | `/partner/rate-limit/` | ✅ Updated |
+| `/partner/data-limits/` | `/partner/data-limit/` | ✅ Updated |
+| `/partner/idle-timeouts/` | `/partner/idle-timeout/` | ✅ Updated |
+| `/partner/validities/` | `/partner/validity/` | ✅ Updated |
+| `/partner/shared-users/` | `/partner/shared-users/` | ✅ No change (already correct) |
+
+**Methods Updated:**
+- [fetchRateLimits()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#12-32) - GET endpoint
+- [getRateLimitDetails(id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#49-59) - GET by ID endpoint
+- [deleteRateLimit(id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#60-70) - DELETE endpoint
+- [fetchDataLimits()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#73-93) - GET endpoint
+- [getDataLimitDetails(id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#105-115) - GET by ID endpoint
+- [updateDataLimit(id, data)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#116-126) - PUT endpoint
+- [deleteDataLimit(id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#127-137) - DELETE endpoint
+- [fetchValidityPeriods()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#201-221) - GET endpoint
+- [getValidityPeriodDetails(id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#238-248) - GET by ID endpoint
+- [deleteValidityPeriod(id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#249-259) - DELETE endpoint
+- [fetchIdleTimeouts()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1174-1185) - GET endpoint
+- [getIdleTimeoutDetails(id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#299-309) - GET by ID endpoint
+- [deleteIdleTimeout(id)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#1203-1216) - DELETE endpoint
+
+**CREATE endpoints** were already correct (updated in previous session):
+- ✅ `/partner/rate-limit/create/`
+- ✅ `/partner/data-limit/create/`
+- ✅ `/partner/idle-timeout/create/`
+- ✅ `/partner/validity/create/`
+- ✅ `/partner/shared-users/create/`
+
+### 2. Created API Documentation
+**File:** [docs/API_ENDPOINTS.md](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/docs/API_ENDPOINTS.md)
+
+Created comprehensive documentation including:
+- ✅ All configuration endpoints (rate-limit, data-limit, idle-timeout, validity, shared-users, additional-devices)
+- ✅ Core endpoints (auth, profile, dashboard)
+- ✅ Resource endpoints (routers, hotspot profiles, plans, customers, transactions)
+- ✅ Naming convention rules
+- ✅ Verified endpoints table
+- ✅ Known non-existent endpoints
+- ✅ Repository mapping
+- ✅ Change control process
+
+**Purpose:** This document serves as the **source of truth** for all API endpoints and prevents future misalignment.
+
+---
+
+## 🔍 Current Backend Status
+
+### ✅ Working Endpoints (Verified)
+
+**CREATE Operations:**
+- `POST /partner/rate-limit/create/` → 201 Created ✅
+- `POST /partner/idle-timeout/create/` → 201 Created ✅
+- `POST /partner/validity/create/` → 201 Created ✅
+- `POST /partner/shared-users/create/` → 201 Created ✅
+
+**LIST Operations (Working):**
+- `GET /partner/routers/list/` → 200 OK ✅
+- `GET /partner/hotspot/profiles/list/` → 200 OK ✅
+
+### ❌ Not Implemented (404)
+
+**LIST Operations (Missing):**
+- `GET /partner/rate-limit/` → 404 Not Found ❌
+- `GET /partner/data-limit/` → 404 Not Found ❌
+- `GET /partner/idle-timeout/` → 404 Not Found ❌
+- `GET /partner/validity/` → 404 Not Found ❌
+- `GET /partner/shared-users/` → 404 Not Found ❌
+- `GET /partner/plans/list/` → 404 Not Found ❌
+
+---
+
+## 📊 Impact on App
+
+### What Works Now
+1. ✅ **Creating configurations** - Data is saved to backend
+2. ✅ **Fetching routers** - Can display router list
+3. ✅ **Fetching hotspot profiles** - Can display profile list
+4. ✅ **Authentication** - Login/logout works perfectly
+
+### What Doesn't Work Yet
+1. ❌ **Displaying configurations** - Can't fetch created rate limits, idle timeouts, etc.
+2. ❌ **Displaying plans** - Can't fetch created internet plans
+3. ❌ **Configuration screens** - Will show empty lists even if data exists
+
+### Why This Happens
+The app tries to fetch data using GET endpoints that don't exist on the backend yet. The repositories handle 404 errors gracefully by returning empty lists, so the app doesn't crash - it just shows no data.
+
+---
+
+## 🎓 Key Learnings
+
+1. **Frontend follows backend** - We aligned all endpoints to match backend implementation
+2. **CREATE works, LIST doesn't** - Backend has POST endpoints but not GET endpoints for configurations
+3. **Graceful degradation** - App handles missing endpoints without crashing
+4. **Documentation is critical** - [API_ENDPOINTS.md](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/docs/API_ENDPOINTS.md) prevents future misalignment
+
+---
+
+## 📝 Files Modified
+
+1. ✅ [lib/repositories/plan_config_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart) - Updated all fetch/get/delete endpoints
+2. ✅ [docs/API_ENDPOINTS.md](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/docs/API_ENDPOINTS.md) - Created comprehensive API reference (NEW)
+
+---
+
+## 🔐 Endpoint Lock
+
+All endpoints are now documented in [docs/API_ENDPOINTS.md](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/docs/API_ENDPOINTS.md) with a change control process:
+
+**Before modifying any endpoint:**
+1. Verify with backend team
+2. Test with curl/Postman
+3. Update documentation
+4. Update repository
+5. Test in app
+6. Commit with reference to docs
+
+---
+
+## 🚀 Next Steps
+
+### For Backend Team
+Implement missing GET/LIST endpoints:
+- `GET /partner/rate-limit/`
+- `GET /partner/data-limit/`
+- `GET /partner/idle-timeout/`
+- `GET /partner/validity/`
+- `GET /partner/shared-users/`
+- `GET /partner/plans/list/`
+
+### For Frontend Team
+- ✅ Endpoints are aligned
+- ✅ Documentation is in place
+- ✅ No further changes needed until backend implements LIST endpoints
+
+---
+
+## ✅ Verification
+
+**Test Script:** [test/verify_created_data.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/test/verify_created_data.dart)
+
+Run this script to verify backend status:
+```bash
+dart test/verify_created_data.dart
+```
+
+**Current Results:**
+- Routers: ✅ 5 found
+- Hotspot Profiles: ✅ 5 found
+- Rate Limits: ❌ 404 (endpoint not implemented)
+- Idle Timeouts: ❌ 404 (endpoint not implemented)
+- Validities: ❌ 404 (endpoint not implemented)
+- Shared Users: ❌ 404 (endpoint not implemented)
+- Plans: ❌ 404 (endpoint not implemented)
+
+---
+
+**Completed:** November 22, 2025  
+**Status:** Endpoints aligned ✅ | Documentation locked ✅ | Backend limitations documented ✅

@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Analysis of currency symbol issues across all 14 screens, identifying which screens are missing the country parameter and showing incorrect currency symbols.",
+  "updatedAt": "2025-11-23T18:03:12.499904900Z"
+}

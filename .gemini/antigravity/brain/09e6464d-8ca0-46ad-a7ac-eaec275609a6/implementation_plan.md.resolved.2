@@ -1,0 +1,38 @@
+# Refactor Static Configuration Lists
+
+## Goal
+Eliminate hardcoded static lists in [HotspotConfigurationService](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/hotspot_configuration_service.dart#1-44) and replace them with dynamic data fetched from the API via [PlanConfigRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#5-281) and stored in [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-894).
+
+## Proposed Changes
+
+### [lib/providers/app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Add state variables:
+    - `List<Map<String, dynamic>> _rateLimits`
+    - `List<Map<String, dynamic>> _validityPeriods`
+    - `List<Map<String, dynamic>> _idleTimeouts`
+    - `List<Map<String, dynamic>> _sharedUsers`
+- Add methods to fetch and load these lists:
+    - [fetchRateLimits()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#12-28)
+    - [fetchValidityPeriods()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#179-195)
+    - [fetchIdleTimeouts()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#231-247)
+    - [fetchSharedUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#127-143)
+- Update [loadDashboardData](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#375-391) (or similar) to call these fetch methods.
+
+### [lib/screens/create_edit_internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart)
+- Replace `HotspotConfigurationService.get...` calls with `appState.validityPeriods`, `appState.dataLimits`, etc.
+- Update dropdowns to display values from the API data (likely `name` or `value` fields).
+- Update [_savePlan](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#178-209) to use the selected values directly.
+
+### [lib/screens/create_edit_user_profile_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_user_profile_screen.dart)
+- Replace [HotspotConfigurationService](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/hotspot_configuration_service.dart#1-44) calls with [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-894) data for Rate Limits and Idle Timeouts.
+
+### [lib/screens/plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+- Replace [HotspotConfigurationService](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/hotspot_configuration_service.dart#1-44) calls with [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-894) data for filtering/display if applicable.
+
+### [lib/services/hotspot_configuration_service.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/hotspot_configuration_service.dart)
+- Remove static list methods.
+- Keep helper methods like [extractNumericValue](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/hotspot_configuration_service.dart#34-39) only if still strictly necessary (likely can be removed if API returns structured data).
+
+## Verification
+- Verify that dropdowns in "Create Plan" and "Create Profile" screens are populated.
+- Verify that creating a plan/profile sends the correct data to the API.

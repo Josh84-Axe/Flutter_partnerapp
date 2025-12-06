@@ -1,0 +1,31 @@
+# Fix Errors and Currency
+
+## Goal Description
+Fix the 400 error during plan assignment, 404 error when loading configurations, and the persistent currency symbol issue.
+
+## Proposed Changes
+
+### Currency Fix
+#### [MODIFY] [currency_utils.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart)
+-   Update [getCurrencySymbol](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#81-89) to perform case-insensitive matching.
+-   Ensure keys in `countryCurrencyMap` are handled robustly.
+
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+-   Add debug logging to [login](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#17-79) and [loadProfiles](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#536-555) to print the fetched country.
+
+### Config 404 Fix
+#### [MODIFY] [plan_config_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart)
+-   Update endpoints to use plural forms, consistent with [fetchPlans](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_repository.dart#10-34) (`/partner/plans/`).
+    -   `/partner/rate-limit/` -> `/partner/rate-limits/`
+    -   `/partner/data-limit/` -> `/partner/data-limits/`
+    -   `/partner/validity/` -> `/partner/validities/` (or `validity-periods`, will try `validities` first or check consistency)
+    -   `/partner/idle-timeout/` -> `/partner/idle-timeouts/`
+
+### Assignment 400 Fix
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+-   Change payload key from `customer_id` to `user_id` in [assignPlan](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#782-796).
+
+## Verification Plan
+1.  **Currency**: Restart app, check logs for country. Verify symbol on UI.
+2.  **Config**: Open "Rate Limit Configuration" and other config screens. Verify no 404 error.
+3.  **Assignment**: Try to assign a plan. Verify no 400 error.

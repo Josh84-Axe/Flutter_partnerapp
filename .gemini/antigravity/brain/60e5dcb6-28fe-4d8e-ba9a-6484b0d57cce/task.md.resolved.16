@@ -1,0 +1,15 @@
+- [x] Add `integration_test` dependency <!-- id: 15 -->
+- [x] Create integration test for financial screens and subscription <!-- id: 16 -->
+- [x] Fix Plan Configuration Forms (Rate Limit, Idle Timeout, Shared Users, Validity)
+    - [x] Ensure all forms have required fields validation
+    - [x] Normalize parameters sent to backend (Single value for Rate Limit, Idle Timeout, Validity, Shared Users)
+    - [x] Normalize parameters for Additional Devices (Send value + price)
+    - [ ] Enforce Data Formats and Placeholders
+        - [ ] Rate Limit: `2M/2M`
+        - [ ] Idle Timeout: `5m, 10m`
+        - [ ] Validity: `30m, 1h, 1d, 7d`
+        - [ ] Shared Users: `1, 2, 3...`
+        - [ ] Additional Devices: Placeholders
+    - [ ] Verify backend fixes for Shared Users (500 Error) and intermittent 500s
+    - [ ] Implement Update functionality for all configurations
+- [x] Run integration tests on Windows <!-- id: 17 -->

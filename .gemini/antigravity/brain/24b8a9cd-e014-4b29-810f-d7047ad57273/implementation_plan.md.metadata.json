@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Implementation plan for adding role-based access control (RBAC) enforcement to critical screens in the Flutter Partner App. Focuses on conditionally showing/hiding UI elements based on user permissions without modifying the corrupted translation file.",
+  "updatedAt": "2025-11-23T20:41:35.573431600Z",
+  "version": "1"
+}

@@ -1,0 +1,193 @@
+# Assigned Plan Revenue Analysis
+
+## Current Logic Investigation
+
+### Question
+**Does the amount of an assigned plan add to the revenue widget on the dashboard and the wallet?**
+
+### Answer: **NO** ❌
+
+The current implementation does **NOT** automatically add plan assignment amounts to revenue or wallet balance.
+
+---
+
+## How Revenue is Currently Calculated
+
+### Dashboard Revenue Widget
+**Location**: [`dashboard_screen.dart:30-32`](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart#L30-L32)
+
+```dart
+final totalRevenue = appState.transactions
+    .where((t) => t.type == 'revenue')
+    .fold(0.0, (sum, t) => sum + t.amount);
+```
+
+**Revenue Source**: Only transactions with `type == 'revenue'` from the transactions API.
+
+### Wallet Balance
+**Location**: [`app_state.dart:loadWalletBalance()`](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#L724-L739)
+
+```dart
+Future<void> loadWalletBalance() async {
+  final balanceData = await _walletRepository!.fetchBalance();
+  if (balanceData != null) {
+    final balanceStr = balanceData['wallet_balance']?.toString() ?? '0.0';
+    _walletBalance = double.tryParse(balanceStr) ?? 0.0;
+  }
+}
+```
+
+**Wallet Source**: Directly from `/partner/wallet/balance/` API endpoint.
+
+---
+
+## What Happens When a Plan is Assigned
+
+### Current Flow
+**Location**: [`app_state.dart:assignPlan()`](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#L848-L861)
+
+```dart
+Future<void> assignPlan(String userId, String planId) async {
+  _setLoading(true);
+  try {
+    if (_planRepository == null) _initializeRepositories();
+    
+    await _planRepository!.assignPlan({'user_id': userId, 'plan_id': planId});
+    _setLoading(false);  // ← Only sets loading to false
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+```
+
+### What's Missing
+1. ❌ **No transaction creation** - Plan assignment doesn't create a revenue transaction
+2. ❌ **No wallet update** - Wallet balance is not updated
+3. ❌ **No revenue tracking** - Revenue widget won't reflect the plan amount
+4. ❌ **No data refresh** - Transactions and wallet balance are not reloaded
+
+---
+
+## Backend Behavior (Assumption)
+
+The backend `/partner/assign-plan/` endpoint likely:
+1. Creates an assignment record
+2. **May or may not** create a transaction automatically
+3. **May or may not** update the wallet balance
+
+**The app currently assumes the backend handles everything**, but doesn't refresh the data to reflect changes.
+
+---
+
+## Impact
+
+### What Users See
+- ✅ Plan is assigned to user (visible in Active Sessions)
+- ❌ Revenue widget **does NOT increase**
+- ❌ Wallet balance **does NOT increase**
+- ❌ No transaction appears in transaction history
+
+### What Should Happen
+After assigning a plan, the user should see:
+1. Revenue widget increases by plan amount
+2. Wallet balance increases by plan amount
+3. New transaction in transaction history
+
+---
+
+## Recommended Fix
+
+### Option 1: Reload Data After Assignment (Quick Fix)
+Update `assignPlan()` to reload transactions and wallet balance:
+
+```dart
+Future<void> assignPlan(String userId, String planId) async {
+  _setLoading(true);
+  try {
+    if (_planRepository == null) _initializeRepositories();
+    
+    await _planRepository!.assignPlan({'user_id': userId, 'plan_id': planId});
+    
+    // Reload data to reflect changes
+    await loadTransactions();
+    await loadWalletBalance();
+    
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+```
+
+**Pros**: Simple, relies on backend to create transaction
+**Cons**: Assumes backend creates transaction automatically
+
+### Option 2: Manual Transaction Creation (If Backend Doesn't)
+If the backend doesn't automatically create a transaction, manually create one:
+
+```dart
+Future<void> assignPlan(String userId, String planId) async {
+  _setLoading(true);
+  try {
+    if (_planRepository == null) _initializeRepositories();
+    
+    // Get plan details to know the amount
+    final plan = _plans.firstWhere((p) => p.id == planId);
+    
+    // Assign the plan
+    await _planRepository!.assignPlan({'user_id': userId, 'plan_id': planId});
+    
+    // Create revenue transaction
+    await _walletRepository!.createTransaction({
+      'type': 'revenue',
+      'amount': plan.price,
+      'description': 'Plan assigned: ${plan.name}',
+      'payment_method': 'manual',
+    });
+    
+    // Reload data
+    await loadTransactions();
+    await loadWalletBalance();
+    
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+```
+
+**Pros**: Ensures transaction is created
+**Cons**: May duplicate if backend also creates transaction
+
+---
+
+## Verification Steps
+
+1. **Check backend behavior**:
+   - Assign a plan via the app
+   - Check if `/partner/wallet/transactions/` shows a new transaction
+   - Check if `/partner/wallet/balance/` increases
+
+2. **If backend creates transaction**: Use Option 1 (reload data)
+3. **If backend doesn't create transaction**: Use Option 2 (manual creation)
+
+---
+
+## Summary
+
+| Component | Current Behavior | Expected Behavior |
+|-----------|------------------|-------------------|
+| **Plan Assignment** | ✅ Creates assignment record | ✅ Creates assignment record |
+| **Revenue Widget** | ❌ No change | ✅ Increases by plan amount |
+| **Wallet Balance** | ❌ No change | ✅ Increases by plan amount |
+| **Transaction History** | ❌ No new entry | ✅ Shows new revenue transaction |
+
+**Root Cause**: `assignPlan()` doesn't reload transactions/wallet data after assignment.
+
+**Recommended Action**: Implement Option 1 first (reload data), then verify if backend creates transactions automatically.

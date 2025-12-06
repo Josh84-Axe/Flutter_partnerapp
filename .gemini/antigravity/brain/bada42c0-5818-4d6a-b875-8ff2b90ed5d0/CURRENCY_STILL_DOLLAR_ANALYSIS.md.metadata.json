@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Root cause analysis for why currency still shows $ instead of GH₵. Documents that the code is correct (uses appState.currentUser?.country), but the app is using an old build from before the profile parsing fix. The fix was applied at 12:20 PM and rebuilt at 12:23 PM, but user is testing with old build from 10:17 AM. Solution: User must run the NEW build to see GH₵ currency.",
+  "updatedAt": "2025-11-24T12:28:10.171275600Z"
+}

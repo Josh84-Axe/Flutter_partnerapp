@@ -1,0 +1,44 @@
+# Implementation Plan - Refactor Subscription & Router Management
+
+Refactor [SubscriptionManagementScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/subscription_management_screen.dart#6-12) and update [RouterRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#5-152) and [SessionRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/session_repository.dart#5-42) with correct API endpoints provided by the user.
+
+## User Review Required
+> [!IMPORTANT]
+> **Subscription Data Source**: We still assume the *current* subscription is part of the partner profile. The new endpoint `/partner/purchase-subscription-plan/` is for *purchasing* a new plan.
+> **Router Slugs**: The new endpoints use `{slug}` for many operations. We need to ensure `RouterModel` has a `slug` field or we use `id` if they are interchangeable (often the case, but need to verify). For now, we will assume `id` can be used or we need to fetch the slug.
+
+## Proposed Changes
+
+### Repositories
+#### [MODIFY] [router_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart)
+- Update [fetchRouters](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#10-35) to use `/partner/routers/list/`.
+- Update [addRouter](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#82-98) to use `/partner/routers-add/`.
+- Update [deleteRouter](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#113-125) to use `/partner/routers/{id}/delete/`.
+- Add methods for:
+    - [rebootRouter](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#126-138) (`/partner/routers/{slug}/reboot/`)
+    - [restartHotspot](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#139-151) (`/partner/routers/{slug}/hotspots/restart/`)
+    - `getRouterResources` (`/partner/routers/{slug}/resources/`)
+    - `getActiveUsers` (`/partner/routers/{slug}/active-users/`)
+
+#### [MODIFY] [session_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/session_repository.dart)
+- Update `fetchSessions` to use `/partner/sessions/active/`.
+
+#### [MODIFY] [partner_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart)
+- Add `purchaseSubscription(String planId)` using `/partner/purchase-subscription-plan/`.
+
+### State Management
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Update [loadRouters](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#487-512) to map new response structure if needed.
+- Add methods to expose new router capabilities (reboot, etc.).
+
+### UI Components
+#### [MODIFY] [subscription_management_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/subscription_management_screen.dart)
+- Fix duplicate class definition.
+- Connect "Upgrade" buttons to `purchaseSubscription`.
+
+## Verification Plan
+
+### Manual Verification
+- **Router List**: Verify routers load correctly with the new endpoint.
+- **Router Actions**: Test "Reboot" or "Restart" if UI exists (or add a button to test).
+- **Subscription**: Verify "Upgrade" button calls the API (check logs).

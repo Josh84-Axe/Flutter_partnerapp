@@ -1,0 +1,19 @@
+# Task: Design and Implement New Internet Plan UI
+
+- [x] Generate UI mockup for validation <!-- id: 0 -->
+- [x] Validate mockup with user <!-- id: 1 -->
+- [x] Restore Internet Plan menu in Settings <!-- id: 2 -->
+- [x] Implement new Internet Plan screen UI <!-- id: 3 -->
+- [x] Verify functionality (Create, Edit, Delete) <!-- id: 4 -->
+
+# Task: Fix Forgot Password Flow
+
+- [x] Audit Forgot Password Flow <!-- id: 5 -->
+    - [x] Analyze [ForgotPasswordScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/feature/auth/forgot_password_screen.dart#8-14) and [PasswordRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#5-66) <!-- id: 6 -->
+    - [x] Verify API endpoints and payload <!-- id: 7 -->
+    - [x] Check OTP verification logic <!-- id: 8 -->
+    - [x] Check Password Reset logic <!-- id: 9 -->
+- [x] Fix Reset Code Email Failure <!-- id: 10 -->
+    - [x] Identify root cause of email failure <!-- id: 11 -->
+    - [x] Implement fix (Switch to PasswordRepository) <!-- id: 12 -->
+- [/] Verify Fix <!-- id: 13 -->

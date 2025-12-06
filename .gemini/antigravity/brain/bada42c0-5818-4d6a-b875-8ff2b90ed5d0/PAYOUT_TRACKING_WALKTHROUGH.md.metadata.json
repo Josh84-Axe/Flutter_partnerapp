@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_WALKTHROUGH",
+  "summary": "Documents the implementation of payout request tracking feature, including API integration for capturing withdrawal IDs and UI updates to display server-generated tracking references.",
+  "updatedAt": "2025-11-24T15:04:05.815017700Z"
+}

@@ -1,0 +1,132 @@
+# Transaction Details Screen Implementation Plan
+
+## Overview
+Create a transaction details screen that displays comprehensive information about individual transactions by fetching from detail endpoints.
+
+## API Endpoints
+
+### Assigned Transaction Details
+```
+GET /partner/transactions/assigned/{id}/details/
+```
+
+### Wallet Transaction Details
+```
+GET /partner/transactions/wallet/{id}/details/
+```
+
+## Proposed Implementation
+
+### 1. Add Repository Methods
+
+**File:** [lib/repositories/transaction_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/transaction_repository.dart)
+
+Add methods to fetch transaction details:
+```dart
+Future<Map<String, dynamic>> getAssignedTransactionDetails(String id) async {
+  final response = await _dio.get('/partner/transactions/assigned/$id/details/');
+  return response.data;
+}
+
+Future<Map<String, dynamic>> getWalletTransactionDetails(String id) async {
+  final response = await _dio.get('/partner/transactions/wallet/$id/details/');
+  return response.data;
+}
+```
+
+### 2. Create Transaction Details Screen
+
+**File:** `lib/screens/transaction_details_screen.dart` (NEW)
+
+**Features:**
+- Display comprehensive transaction information
+- Show transaction type (Assigned/Wallet)
+- Display status with visual indicators
+- Show amount with proper formatting
+- Display date and time
+- Show description and additional details
+- Include any metadata (user info, plan info, etc.)
+
+**UI Layout:**
+```
+AppBar (Transaction Details)
+  ↓
+Status Badge (Success/Pending/Failed)
+  ↓
+Amount (Large, prominent)
+  ↓
+Transaction Type Badge (Assigned/Wallet)
+  ↓
+Details Card:
+  - Transaction ID
+  - Date & Time
+  - Description
+  - Status
+  - Additional metadata
+```
+
+### 3. Update Transaction History Screen
+
+**File:** [lib/screens/transaction_history_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/transaction_history_screen.dart)
+
+Make transaction cards tappable:
+```dart
+onTap: () {
+  Navigator.pushNamed(
+    context,
+    '/transaction-details',
+    arguments: {
+      'id': transaction['id'],
+      'type': transaction['_type'], // 'assigned' or 'wallet'
+    },
+  );
+}
+```
+
+### 4. Add Route
+
+**File:** [lib/main.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/main.dart)
+
+```dart
+'/transaction-details': (context) => const TransactionDetailsScreen(),
+```
+
+### 5. Add AppState Method (Optional)
+
+**File:** [lib/providers/app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+```dart
+Future<Map<String, dynamic>> getTransactionDetails(String id, String type) async {
+  if (type == 'assigned') {
+    return await _transactionRepository!.getAssignedTransactionDetails(id);
+  } else {
+    return await _transactionRepository!.getWalletTransactionDetails(id);
+  }
+}
+```
+
+## Implementation Steps
+
+1. [ ] Add detail fetch methods to TransactionRepository
+2. [ ] Create TransactionDetailsScreen with UI
+3. [ ] Make transaction cards in TransactionHistoryScreen tappable
+4. [ ] Add navigation to details screen
+5. [ ] Add route to main.dart
+6. [ ] Test with both assigned and wallet transactions
+
+## UI Design Considerations
+
+- **Status Visualization**: Use color-coded badges and icons
+- **Amount Display**: Large, prominent, color-coded (green/red)
+- **Information Hierarchy**: Most important info at top
+- **Loading State**: Show skeleton or spinner while fetching
+- **Error Handling**: Display error message if fetch fails
+- **Back Navigation**: Clear back button to return to list
+
+## Questions
+
+1. Should the details screen be read-only or allow any actions (e.g., dispute, download receipt)?
+2. Are there specific fields from the API response you want highlighted?
+3. Should we cache the details or always fetch fresh data?
+
+Please confirm this approach and I'll proceed with implementation!

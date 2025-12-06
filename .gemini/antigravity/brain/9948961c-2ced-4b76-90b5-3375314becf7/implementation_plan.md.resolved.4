@@ -1,0 +1,41 @@
+# Implementation Plan - Dynamic Configuration Refactor
+
+## Goal Description
+Replace hardcoded static lists in [HotspotConfigurationService](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/hotspot_configuration_service.dart#1-44) with dynamic data fetched from the API using [PlanConfigRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#5-270). This ensures that dropdowns for Rate Limits, Data Limits, Validity Periods, etc., reflect the actual server configuration.
+
+## User Review Required
+> [!NOTE]
+> This change will make the UI dependent on the API for these dropdowns. If the API returns empty lists, the dropdowns will be empty (or show a "No options" message). I will ensure proper loading states and error handling.
+
+## Proposed Changes
+
+### Providers
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Add lists to store configurations: `_rateLimits`, `_dataLimits`, `_validityPeriods`, `_idleTimeouts`, `_sharedUsers`.
+- Add getters for these lists.
+- Implement `loadAllConfigurations()` method that calls `_planConfigRepository` methods:
+    - [fetchRateLimits()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#12-28)
+    - [fetchDataLimits()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#64-80)
+    - [fetchValidityPeriods()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#168-184)
+    - [fetchIdleTimeouts()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#220-236)
+    - [fetchSharedUsers()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#911-923)
+- Call `loadAllConfigurations()` during initialization or when entering relevant screens.
+
+### Screens
+#### [MODIFY] [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+- Update [_showCreatePlanDialog](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#36-191) to use `context.read<AppState>().rateLimits` (etc.) instead of `HotspotConfigurationService.getRateLimits()`.
+- Ensure the UI handles loading states or empty lists gracefully.
+
+### Services
+#### [DELETE/MODIFY] [hotspot_configuration_service.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/hotspot_configuration_service.dart)
+- Mark static methods as deprecated or remove them if fully replaced.
+- Keep helper methods like [extractNumericValue](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/hotspot_configuration_service.dart#34-39) if they are still useful for parsing the API data (depending on API response format).
+
+## Verification Plan
+
+### Manual Verification
+1.  **Login** and navigate to **Internet Plans**.
+2.  Click **Create Plan**.
+3.  **Verify Dropdowns:** Check that Data Limit, Validity, Speed, etc., are populated.
+    - *Note:* Since I cannot easily change server data, I will verify that the app *attempts* to fetch them and displays whatever the API returns.
+4.  **Create Plan:** Verify that creating a plan with these selected values works.

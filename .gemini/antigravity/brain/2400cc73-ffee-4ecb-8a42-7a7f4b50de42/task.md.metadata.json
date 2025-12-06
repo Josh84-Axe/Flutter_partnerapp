@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_TASK",
+  "summary": "Task list for building APK and running Android emulator tests.",
+  "updatedAt": "2025-11-25T12:38:28.608228400Z",
+  "version": "20"
+}

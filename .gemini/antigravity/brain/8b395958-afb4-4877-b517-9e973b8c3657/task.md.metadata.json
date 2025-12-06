@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_TASK",
+  "summary": "Task checklist for fixing user/worker management UI issues including ellipsis menus, FAB buttons, and form fields to match API requirements.",
+  "updatedAt": "2025-11-29T09:34:48.201597400Z",
+  "version": "21"
+}

@@ -1,0 +1,311 @@
+# Systematic Rebuild Implementation Plan
+
+## Goal
+Rebuild all lost features systematically with improved code quality and proper git workflow.
+
+## Pre-Implementation
+
+### Step 0: Commit Current State ✅
+- [x] Verify payout tracking changes work
+- [ ] Commit payout tracking feature
+- [ ] Create new feature branch for rebuild
+
+---
+
+## Phase 1: Core AppState Infrastructure
+
+### 1.1 Active Sessions Support
+**File:** [lib/providers/app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+**Add Fields:**
+```dart
+List<Map<String, dynamic>> _activeSessions = [];
+```
+
+**Add Getters:**
+```dart
+List<Map<String, dynamic>> get activeSessions => _activeSessions;
+```
+
+**Add Methods:**
+```dart
+Future<void> loadActiveSessions()
+Future<void> disconnectSession(String sessionId)
+```
+
+**API Endpoints:**
+- GET `/partner/sessions/active/`
+- POST `/partner/sessions/{id}/disconnect/`
+
+### 1.2 Hotspot Users Support
+**File:** [lib/providers/app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+**Verify/Add Fields:**
+```dart
+List<Map<String, dynamic>> _hotspotUsers = [];
+```
+
+**Verify/Add Getters:**
+```dart
+List<Map<String, dynamic>> get hotspotUsers => _hotspotUsers;
+```
+
+**Add Methods:**
+```dart
+Future<void> loadHotspotUsers()
+Future<void> createHotspotUser(Map<String, dynamic> userData)
+Future<void> deleteHotspotUser(String username)
+```
+
+### 1.3 Plan & Profile Enhancements
+**File:** [lib/providers/app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+**Add Fields:**
+```dart
+List<Map<String, dynamic>> _sharedUsers = [];
+List<Map<String, dynamic>> _rateLimits = [];
+List<Map<String, dynamic>> _idleTimeouts = [];
+```
+
+**Add Getters:**
+```dart
+List<Map<String, dynamic>> get sharedUsers => _sharedUsers;
+List<Map<String, dynamic>> get rateLimits => _rateLimits;
+List<Map<String, dynamic>> get idleTimeouts => _idleTimeouts;
+```
+
+**Add Methods:**
+```dart
+Future<void> updatePlan(String planId, Map<String, dynamic> data)
+Future<void> createHotspotProfile(Map<String, dynamic> data)
+Future<void> updateHotspotProfile(String slug, Map<String, dynamic> data)
+Future<void> fetchSharedUsers()
+Future<void> fetchRateLimits()
+Future<void> fetchIdleTimeouts()
+```
+
+### 1.4 Email Verification Support
+**File:** [lib/providers/app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+**Add Methods:**
+```dart
+Future<void> confirmRegistration(String otp)
+Future<void> resendVerifyEmailOtp()
+```
+
+---
+
+## Phase 2: Core Screens
+
+### 2.1 Active Sessions Screen
+**File:** [lib/screens/active_sessions_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/active_sessions_screen.dart) (NEW)
+
+**Features:**
+- Two-tab layout: "Online Users" and "Assigned Users"
+- Display active sessions from API
+- Match sessions with assigned plans
+- Fuzzy username matching logic
+- Disconnect session button
+- Pull-to-refresh
+
+**Dependencies:**
+- AppState.loadActiveSessions()
+- AppState.activeSessions
+- AppState.disconnectSession()
+
+### 2.2 Enhanced Hotspot Users Management
+**File:** [lib/screens/hotspot_users_management_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/hotspot_users_management_screen.dart) (ENHANCE)
+
+**Features:**
+- List all hotspot users
+- Create user dialog with validation
+- Delete user with confirmation
+- User details display
+- Integration with AppState methods
+
+**Dependencies:**
+- AppState.loadHotspotUsers()
+- AppState.createHotspotUser()
+- AppState.deleteHotspotUser()
+
+### 2.3 Email Verification Screen
+**File:** [lib/screens/email_verification_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/email_verification_screen.dart) (NEW)
+
+**Features:**
+- OTP input (6 digits)
+- Resend OTP button with timer
+- Success/error handling
+- Navigation after verification
+
+**Dependencies:**
+- AppState.confirmRegistration()
+- AppState.resendVerifyEmailOtp()
+
+### 2.4 OTP Verification Screen
+**File:** `lib/screens/otp_verification_screen.dart` (NEW)
+
+**Features:**
+- Generic OTP input widget
+- Reusable for multiple flows
+- Customizable title and description
+
+---
+
+## Phase 3: Enhanced Screens
+
+### 3.1 Enhanced Plan Creation
+**File:** [lib/screens/create_edit_internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart) (ENHANCE)
+
+**Enhancements:**
+- Shared users dropdown
+- Integration with AppState.sharedUsers
+- Use AppState.updatePlan() for editing
+
+### 3.2 Enhanced Profile Creation
+**File:** [lib/screens/create_edit_user_profile_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_user_profile_screen.dart) (ENHANCE)
+
+**Enhancements:**
+- Rate limits dropdown
+- Idle timeouts dropdown
+- Integration with AppState getters
+
+---
+
+## Phase 4: Supporting Features
+
+### 4.1 Permission Utilities
+**File:** [lib/utils/permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart) (NEW)
+
+**Purpose:** RBAC permission constants and mappings
+
+### 4.2 Permission Dialog
+**File:** `lib/widgets/permission_denied_dialog.dart` (NEW)
+
+**Purpose:** Reusable permission denied dialog
+
+### 4.3 Subscription Repository
+**File:** [lib/repositories/subscription_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/subscription_repository.dart) (NEW - OPTIONAL)
+
+**Purpose:** Future subscription management
+
+---
+
+## Phase 5: Testing & Documentation
+
+### 5.1 Key Test Scripts
+Recreate essential test scripts:
+- Login verification
+- API endpoint testing
+- Hotspot profile testing
+- Session management testing
+
+### 5.2 Documentation
+- Update API documentation
+- Create feature documentation
+- Update README if needed
+
+---
+
+## Implementation Order
+
+### Week 1: Foundation
+1. ✅ Commit payout tracking
+2. Create feature branch
+3. Phase 1.1: Active Sessions AppState
+4. Phase 1.2: Hotspot Users AppState
+5. Test AppState methods
+
+### Week 2: Core Screens
+6. Phase 2.1: Active Sessions Screen
+7. Phase 2.2: Enhanced Hotspot Management
+8. Test core screens
+9. Build and verify
+
+### Week 3: Enhancements
+10. Phase 1.3: Plan & Profile AppState
+11. Phase 3.1: Enhanced Plan Creation
+12. Phase 3.2: Enhanced Profile Creation
+13. Test enhancements
+
+### Week 4: Polish
+14. Phase 1.4: Email Verification AppState
+15. Phase 2.3 & 2.4: Verification Screens
+16. Phase 4: Supporting Features
+17. Final testing and documentation
+
+---
+
+## Git Workflow
+
+### Branch Strategy
+```
+main/current branch
+  └── feature/rebuild-lost-features
+       ├── feature/active-sessions
+       ├── feature/hotspot-management
+       ├── feature/email-verification
+       └── feature/plan-enhancements
+```
+
+### Commit Strategy
+- One feature per commit
+- Descriptive commit messages
+- Test before committing
+- Regular pushes to remote
+
+---
+
+## Success Criteria
+
+### Phase 1 Complete When:
+- [ ] All AppState methods compile without errors
+- [ ] All methods have proper error handling
+- [ ] All methods integrate with existing repositories
+- [ ] Build succeeds
+
+### Phase 2 Complete When:
+- [ ] All screens display correctly
+- [ ] All screens integrate with AppState
+- [ ] User can perform all CRUD operations
+- [ ] No runtime errors
+
+### Phase 3 Complete When:
+- [ ] Enhanced dropdowns populate correctly
+- [ ] All form validations work
+- [ ] Data saves correctly to API
+
+### Phase 4 Complete When:
+- [ ] RBAC utilities functional
+- [ ] Permission dialogs display correctly
+- [ ] All supporting features integrated
+
+### Final Complete When:
+- [ ] All features from lost inventory restored
+- [ ] Build succeeds on Windows
+- [ ] Manual testing passes
+- [ ] Code quality improved from original
+- [ ] All changes committed and pushed
+
+---
+
+## Risk Mitigation
+
+### Risks
+1. **API Changes:** Endpoints may have changed
+2. **Breaking Changes:** New code may break existing features
+3. **Time Investment:** Systematic rebuild takes longer
+
+### Mitigations
+1. Verify API endpoints before implementation
+2. Test after each phase
+3. Commit frequently to avoid losing work again
+4. Use feature branches for isolation
+
+---
+
+## Next Steps
+
+1. Review and approve this plan
+2. Commit current payout tracking changes
+3. Create feature branch
+4. Begin Phase 1.1: Active Sessions AppState

@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Comprehensive UI test report for the Flutter Partner App Windows build. Documents successful build completion, automated test execution with screenshots, detailed manual testing checklist covering all implemented features (authentication, dashboard, hotspot/email user management, plan configuration, active sessions, revenue tracking, worker management), API integration verification, error handling tests, UI/UX quality checks, performance benchmarks, and test scripts. Includes test credentials, known issues, and recommendations for future testing enhancements.",
+  "updatedAt": "2025-11-24T10:15:29.624175800Z"
+}

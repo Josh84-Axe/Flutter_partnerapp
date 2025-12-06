@@ -1,0 +1,32 @@
+# Display Hotspot Profiles in UI
+
+## Goal Description
+Update the app to correctly load and display hotspot user profiles. This includes fixing the data model, ensuring profiles are loaded after login, and updating the UI to show human‑readable profile information.
+
+## Proposed Changes
+---
+### AppState (lib/providers/app_state.dart)
+- Modify [login](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#17-79) to call `await loadDashboardData();` after setting `_currentUser` (which loads hotspot profiles via [loadHotspotProfiles](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#870-882)).
+- Ensure [loadDashboardData](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#414-438) includes [loadHotspotProfiles](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#870-882) (already present).
+
+---
+### HotspotProfileModel (lib/models/hotspot_profile_model.dart)
+- Already updated to include `rateLimitId`, `idleTimeoutId`, `routerId` and a `description` getter.
+
+---
+### HotspotUserScreen (lib/screens/hotspot_user_screen.dart)
+- Replace usage of `profile.speedDescription` with `profile.description`.
+- Optionally display rate limit and idle timeout names by looking up `appState.rateLimits` and `appState.idleTimeouts` using the IDs.
+
+---
+### UI Refresh
+- No additional UI changes needed beyond the above.
+
+## Verification Plan
+### Automated Tests
+- Run the existing integration tests to ensure the app builds and launches.
+- Add a quick Dart script to login and verify that `appState.hotspotProfiles` is populated.
+
+### Manual Verification
+- Launch the app, log in, navigate to the Hotspot User Profiles screen and confirm that the list shows the correct profile names and description strings.
+- Verify that creating a new hotspot profile updates the list instantly.

@@ -1,0 +1,340 @@
+# Create Account Form - Field Analysis
+
+## Overview
+
+The Create Account form is embedded in the **Login Screen** and appears when the user toggles from "Login" mode to "Register" mode.
+
+**File**: [login_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/login_screen.dart)
+
+---
+
+## All Form Fields
+
+### Registration-Only Fields (Lines 119-226)
+
+These fields **only appear** when `_isLogin = false` (Create Account mode):
+
+| # | Field Name | Controller | Type | Icon | Required | Validation |
+|---|------------|------------|------|------|----------|------------|
+| 1 | **Name** | `_nameController` | TextFormField | `Icons.person` | ✅ Yes | Must not be empty |
+| 2 | **Phone** | `_phoneController` | InternationalPhoneNumberInput | Country flag | ✅ Yes | Must not be empty |
+| 3 | **Address** | `_addressController` | TextFormField | `Icons.location_on` | ❌ No | None |
+| 4 | **City** | `_cityController` | TextFormField | `Icons.location_city` | ❌ No | None |
+| 5 | **Country** | `_selectedCountry` | DropdownButtonFormField | `Icons.flag` | ✅ Yes | Must select a country |
+| 6 | **Number of Routers** | `_numberOfRoutersController` | TextFormField | `Icons.router` | ❌ No | Must be ≥ 0 (if provided) |
+
+### Common Fields (Lines 227-261)
+
+These fields appear in **both** Login and Register modes:
+
+| # | Field Name | Controller | Type | Icon | Required | Validation |
+|---|------------|------------|------|------|----------|------------|
+| 7 | **Email** | `_emailController` | TextFormField | `Icons.email` | ✅ Yes | Must contain '@' |
+| 8 | **Password** | `_passwordController` | TextFormField | `Icons.lock` | ✅ Yes | Min 6 characters |
+
+---
+
+## Detailed Field Specifications
+
+### 1. Name (Line 120-132)
+```dart
+TextFormField(
+  controller: _nameController,
+  decoration: InputDecoration(
+    labelText: 'name'.tr(),
+    prefixIcon: Icon(Icons.person),
+  ),
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'enter_name'.tr();
+    }
+    return null;
+  },
+)
+```
+- **Type**: Text input
+- **Required**: Yes
+- **Validation**: Cannot be empty
+- **Error Message**: "enter_name"
+
+---
+
+### 2. Phone (Line 134-165)
+```dart
+InternationalPhoneNumberInput(
+  initialValue: PhoneNumber(isoCode: 'TG'),
+  textFieldController: _phoneController,
+  formatInput: true,
+  keyboardType: TextInputType.numberWithOptions(signed: true, decimal: true),
+  inputDecoration: InputDecoration(
+    labelText: 'phone'.tr(),
+  ),
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'register.error.phoneRequired'.tr();
+    }
+    return null;
+  },
+)
+```
+- **Type**: International phone number input
+- **Default Country**: Togo (TG)
+- **Required**: Yes
+- **Features**: 
+  - Country selector (bottom sheet)
+  - Auto-formatting
+  - Country flag prefix
+- **Validation**: Cannot be empty
+- **Error Message**: "register.error.phoneRequired"
+
+---
+
+### 3. Address (Line 167-173)
+```dart
+TextFormField(
+  controller: _addressController,
+  decoration: InputDecoration(
+    labelText: 'address'.tr(),
+    prefixIcon: Icon(Icons.location_on),
+  ),
+)
+```
+- **Type**: Text input
+- **Required**: No
+- **Validation**: None
+- **Optional**: Yes
+
+---
+
+### 4. City (Line 175-181)
+```dart
+TextFormField(
+  controller: _cityController,
+  decoration: InputDecoration(
+    labelText: 'city'.tr(),
+    prefixIcon: Icon(Icons.location_city),
+  ),
+)
+```
+- **Type**: Text input
+- **Required**: No
+- **Validation**: None
+- **Optional**: Yes
+
+---
+
+### 5. Country (Line 183-206)
+```dart
+DropdownButtonFormField<String>(
+  decoration: InputDecoration(
+    labelText: 'country'.tr(),
+    prefixIcon: Icon(Icons.flag),
+  ),
+  items: _countries.map((country) {
+    return DropdownMenuItem(
+      value: country,
+      child: Text(country),
+    );
+  }).toList(),
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'select_country'.tr();
+    }
+    return null;
+  },
+)
+```
+- **Type**: Dropdown select
+- **Required**: Yes
+- **Validation**: Must select a country
+- **Error Message**: "select_country"
+
+**Available Countries** (Line 27-42):
+1. United States
+2. France
+3. Belgium
+4. Canada
+5. Ivory Coast
+6. Senegal
+7. United Kingdom
+8. Germany
+9. Spain
+10. Italy
+11. Nigeria
+12. Ghana
+13. Kenya
+14. South Africa
+
+---
+
+### 6. Number of Routers (Line 208-224)
+```dart
+TextFormField(
+  controller: _numberOfRoutersController,
+  decoration: InputDecoration(
+    labelText: 'number_of_routers'.tr(),
+    prefixIcon: Icon(Icons.router),
+  ),
+  keyboardType: TextInputType.number,
+  validator: (value) {
+    if (value != null && value.isNotEmpty) {
+      final number = int.tryParse(value);
+      if (number == null || number < 0) {
+        return 'must_be_zero_or_greater'.tr();
+      }
+    }
+    return null;
+  },
+)
+```
+- **Type**: Number input
+- **Required**: No
+- **Validation**: Must be ≥ 0 (if provided)
+- **Error Message**: "must_be_zero_or_greater"
+- **Optional**: Yes
+
+---
+
+### 7. Email (Line 227-243)
+```dart
+TextFormField(
+  controller: _emailController,
+  decoration: InputDecoration(
+    labelText: 'email'.tr(),
+    prefixIcon: Icon(Icons.email),
+  ),
+  keyboardType: TextInputType.emailAddress,
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'enter_email'.tr();
+    }
+    if (!value.contains('@')) {
+      return 'enter_valid_email'.tr();
+    }
+    return null;
+  },
+)
+```
+- **Type**: Email input
+- **Required**: Yes
+- **Validation**: 
+  - Cannot be empty
+  - Must contain '@'
+- **Error Messages**: 
+  - "enter_email"
+  - "enter_valid_email"
+
+---
+
+### 8. Password (Line 245-261)
+```dart
+TextFormField(
+  controller: _passwordController,
+  decoration: InputDecoration(
+    labelText: 'password'.tr(),
+    prefixIcon: Icon(Icons.lock),
+  ),
+  obscureText: true,
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'enter_password'.tr();
+    }
+    if (value.length < 6) {
+      return 'password_min_length'.tr();
+    }
+    return null;
+  },
+)
+```
+- **Type**: Password input (obscured)
+- **Required**: Yes
+- **Validation**: 
+  - Cannot be empty
+  - Minimum 6 characters
+- **Error Messages**: 
+  - "enter_password"
+  - "password_min_length"
+
+---
+
+## Form Submission
+
+**Method**: [_submit()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/login_screen.dart#56-79) (Line 56-78)
+
+When the form is submitted in **Register mode** (`_isLogin = false`):
+
+```dart
+success = await appState.register(
+  _nameController.text.trim(),
+  _emailController.text.trim(),
+  _passwordController.text,
+);
+```
+
+### ⚠️ Important Note
+
+**Only 3 fields are sent to the backend**:
+1. Name
+2. Email
+3. Password
+
+**Fields NOT sent to backend**:
+- ❌ Phone
+- ❌ Address
+- ❌ City
+- ❌ Country
+- ❌ Number of Routers
+
+These fields are **collected but not used** in the current registration flow!
+
+---
+
+## Summary
+
+### Required Fields (5)
+1. ✅ Name
+2. ✅ Phone
+3. ✅ Country
+4. ✅ Email
+5. ✅ Password
+
+### Optional Fields (3)
+1. ❌ Address
+2. ❌ City
+3. ❌ Number of Routers
+
+### Total Fields
+- **Registration-only**: 6 fields
+- **Common (Login + Register)**: 2 fields
+- **Total**: 8 fields
+
+---
+
+## Issues Identified
+
+### 🚨 Critical Issue: Data Not Sent to Backend
+
+The following fields are **validated and required** but **NOT sent** to the backend:
+- Phone (required)
+- Country (required)
+- Address (optional)
+- City (optional)
+- Number of Routers (optional)
+
+**Current Registration Call** (Line 68-72):
+```dart
+success = await appState.register(
+  _nameController.text.trim(),      // ✅ Sent
+  _emailController.text.trim(),     // ✅ Sent
+  _passwordController.text,         // ✅ Sent
+  // ❌ Phone NOT sent
+  // ❌ Country NOT sent
+  // ❌ Address NOT sent
+  // ❌ City NOT sent
+  // ❌ Number of Routers NOT sent
+);
+```
+
+### Recommendation
+
+Update the [register()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#104-188) method in [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#41-2094) to accept and send all collected fields to the backend.

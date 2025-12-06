@@ -1,0 +1,179 @@
+# Fix Plan Creation 400 Error
+
+## Problem Analysis
+
+When creating a plan through the app, the API returns a **400 Bad Request** error with the message: "Client error - the request contains bad syntax or cannot be fulfilled."
+
+### Root Causes Identified
+
+After thorough investigation of the [_savePlan](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#508-604) method in [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#L508-L580), I identified the following issues:
+
+1. **`profile` field type mismatch**
+   - **Current**: Sending `profile` as a **string** (e.g., "Basic" or profile.id which is a string)
+   - **Expected**: API expects `profile` as an **integer ID**
+   - **Evidence**: [PlanModel.fromJson](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/plan_model.dart#L56) shows `profileId: json['profile']` (int)
+   - **Location**: Line 569 in [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+
+2. **`profile_name` should not be sent**
+   - **Current**: Sending `profile_name` in the create request
+   - **Expected**: This is a **read-only computed field** returned by the API, not accepted in create/update requests
+   - **Evidence**: API response includes `profile_name` but it's derived from the `profile` ID
+   - **Location**: Line 570 in [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+
+3. **`shared_users` might be using wrong ID**
+   - **Current**: Extracting numeric value from configuration object
+   - **Expected**: Should send the configuration **ID**, not the extracted value
+   - **Location**: Line 560 in [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+
+4. **`validity` might be using wrong ID**
+   - **Current**: Converting to minutes (days * 1440)
+   - **Expected**: Should send the validity configuration **ID**, not the computed minutes
+   - **Location**: Lines 558-559 in [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+
+5. **`data_limit` might be using wrong ID**
+   - **Current**: Extracting numeric GB value
+   - **Expected**: Should send the data limit configuration **ID**, not the GB value
+   - **Location**: Lines 553-556 in [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+
+## Proposed Changes
+
+### [plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+
+#### Update [_savePlan](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#508-604) method (lines 508-603)
+
+**Changes needed:**
+
+1. **Extract ID instead of value** for `data_limit`, `validity`, and `shared_users`
+2. **Parse `profile` as integer** instead of string
+3. **Remove `profile_name`** from the request payload
+4. **Add helper function** to extract ID from configuration objects
+
+```dart
+// Helper to extract ID from dynamic item (NEW)
+int? extractId(dynamic item, String context) {
+  if (kDebugMode) print('🔍 [CreatePlan] Extracting ID from $context: $item');
+  
+  if (item is Map) {
+    final id = item['id'];
+    if (kDebugMode) print('   Extracted ID: $id');
+    return id is int ? id : (id is String ? int.tryParse(id) : null);
+  } else if (item is int) {
+    return item;
+  } else if (item is String) {
+    return int.tryParse(item);
+  }
+  return null;
+}
+
+// Updated data payload
+final data = {
+  'name': _nameController.text,
+  'price': double.parse(_priceController.text),
+  'data_limit': _selectedDataLimit is String && 
+      HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
+      ? null
+      : extractId(_selectedDataLimit, 'data_limit'),  // CHANGED: Use ID
+  'validity': extractId(_selectedValidity, 'validity'),  // CHANGED: Use ID
+  'is_active': true,
+  'shared_users': extractId(_selectedDeviceAllowed, 'shared_users'),  // CHANGED: Use ID
+  'profile': _selectedProfile != null ? int.tryParse(_selectedProfile!) : null,  // CHANGED: Parse as int
+  // REMOVED: 'profile_name'
+};
+```
+
+#### Update dropdown type for `_selectedProfile` (line 270)
+
+**Change from:**
+```dart
+String? _selectedProfile;
+```
+
+**Change to:**
+```dart
+int? _selectedProfile;
+```
+
+#### Update Hotspot Profile Dropdown (lines 427-443)
+
+**Change from:**
+```dart
+DropdownButtonFormField<String>(
+  value: _selectedProfile,
+  // ...
+  items: appState.hotspotProfiles.isEmpty
+      ? [const DropdownMenuItem(value: 'Basic', child: Text('Basic'))]
+      : appState.hotspotProfiles
+          .map((profile) => DropdownMenuItem(
+                value: profile.id,  // This is a String
+                child: Text(profile.name),
+              ))
+          .toList(),
+```
+
+**Change to:**
+```dart
+DropdownButtonFormField<int>(
+  value: _selectedProfile,
+  // ...
+  items: appState.hotspotProfiles.isEmpty
+      ? []  // Don't provide default, make it required
+      : appState.hotspotProfiles
+          .map((profile) => DropdownMenuItem(
+                value: int.tryParse(profile.id),  // Parse to int
+                child: Text(profile.name),
+              ))
+          .toList(),
+  validator: (value) {
+    if (value == null) {
+      return 'Please select a hotspot profile';
+    }
+    return null;
+  },
+```
+
+## Verification Plan
+
+### Manual Testing
+
+1. **Test Plan Creation**
+   - Navigate to Plans screen
+   - Click "Create Plan"
+   - Fill in all fields:
+     - Plan Name: "Test Family Plan"
+     - Price: 90
+     - Data Limit: Select "null GB" (unlimited)
+     - Validity: Select "1d Days"
+     - Device Allowed: Select "3 Users"
+     - Hotspot User Profile: Select "Daily"
+   - Click "Create Plan"
+   - **Expected**: Plan created successfully without 400 error
+   - **Verify**: New plan appears in the list with correct details
+
+2. **Test Plan Update**
+   - Edit an existing plan
+   - Modify any field
+   - Click "Update Plan"
+   - **Expected**: Plan updated successfully
+   - **Verify**: Changes reflected in the plan list
+
+3. **Check API Request Payload**
+   - Enable debug mode
+   - Check console logs for the request payload
+   - **Verify**: 
+     - `profile` is an integer
+     - `profile_name` is NOT in the payload
+     - `data_limit`, `validity`, `shared_users` are IDs (integers), not values
+
+### Edge Cases
+
+1. **Unlimited Data Limit**: Verify `data_limit: null` is sent correctly
+2. **No Hotspot Profile Selected**: Verify validation prevents submission
+3. **Edit Existing Plan**: Verify update works with new structure
+
+## Notes
+
+> [!IMPORTANT]
+> The `HotspotProfileModel.id` is currently a **String** (line 4 in [hotspot_profile_model.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/hotspot_profile_model.dart)). We need to parse it to `int` when using it as the profile ID in plan creation.
+
+> [!WARNING]
+> This change assumes that all configuration endpoints return objects with an [id](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/plan_config_repository.dart#246-256) field. If any configuration uses a different field name (e.g., `slug`), the `extractId` helper will need to be updated.

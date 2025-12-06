@@ -1,0 +1,96 @@
+# Plan Assignment & Speed/Rate Limit Clarification
+
+## 1. Plan Assignment API Requirements
+
+### Endpoint: `/partner/assign-plan/`
+
+**Request Body:**
+```json
+{
+  "user_id": "string",  // Customer ID
+  "plan_id": "string"   // Plan ID
+}
+```
+
+**Source:** `AppState.assignPlan()` → `PlanRepository.assignPlan()`
+
+The server accepts **ONLY** `user_id` and `plan_id`. The plan details (speed, data limit, etc.) are already stored in the plan itself.
+
+---
+
+## 2. Speed/Rate Limit Clarification
+
+### I apologize for the confusion. Here's the truth:
+
+There are **TWO DIFFERENT** plan creation screens in the app:
+
+#### Screen 1: [PlansScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#11-17) (with inline dialog)
+**Location:** [lib/screens/plans_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart)
+
+**Speed Dropdown:** ✅ **YES - Fully Dynamic**
+- **Source:** `appState.rateLimits` (from API)
+- **API Endpoint:** `/partner/rate-limit/list/`
+- **Current Data:** 2m/2m, 4m/4m, 5m/5m
+- **Line 176:** `'speedMbps': extractValue(selectedSpeed)`
+
+#### Screen 2: [CreateEditInternetPlanScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#7-15) (separate screen)
+**Location:** [lib/screens/create_edit_internet_plan_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart)
+
+**Speed Dropdown:** ❌ **MISSING**
+- **Line 219:** `'speedMbps': 50` (hardcoded)
+- **No dropdown for speed selection**
+- **This is the screen you're probably looking at**
+
+---
+
+## 3. The Issue
+
+[CreateEditInternetPlanScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#7-15) is **incomplete**. It's missing the speed/rate limit dropdown that exists in [PlansScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#11-17).
+
+### Comparison:
+
+| Feature | PlansScreen | CreateEditInternetPlanScreen |
+|---------|-------------|------------------------------|
+| Plan Name | ✅ | ✅ |
+| Price | ✅ | ✅ |
+| Data Limit | ✅ Dynamic | ✅ Dynamic |
+| Validity | ✅ Dynamic | ✅ Dynamic |
+| **Speed/Rate Limit** | ✅ **Dynamic** | ❌ **Hardcoded to 50** |
+| Devices Allowed | ✅ Dynamic | ✅ Dynamic |
+| Hotspot Profile | ✅ Dynamic | ✅ Dynamic |
+
+---
+
+## 4. Why Two Screens?
+
+Looking at the code:
+- **PlansScreen** has a "Create Plan" button that opens an inline dialog
+- **CreateEditInternetPlanScreen** is a separate full-screen form
+
+It appears [CreateEditInternetPlanScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#7-15) was created later but wasn't fully updated to match [PlansScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#11-17)'s functionality.
+
+---
+
+## 5. Recommendation
+
+**Option 1:** Add speed dropdown to [CreateEditInternetPlanScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#7-15) (match [PlansScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#11-17))
+
+**Option 2:** Remove [CreateEditInternetPlanScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#7-15) and only use [PlansScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#11-17)'s dialog
+
+**Option 3:** Keep both but ensure they have identical functionality
+
+---
+
+## 6. Confirmation: No More Static Files
+
+✅ **CONFIRMED:** All dropdowns now use dynamic API data:
+- Rate Limits: `/partner/rate-limit/list/`
+- Data Limits: `/partner/data-limit/list/`
+- Validity Periods: `/partner/validity/list/`
+- Idle Timeouts: `/partner/idle-timeout/list/`
+- Shared Users: `/partner/shared-users/list/`
+- Hotspot Profiles: `/partner/hotspot/profiles/list/`
+
+The only remaining issue is that [CreateEditInternetPlanScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#7-15) doesn't have a **UI field** for speed selection, so it defaults to hardcoded 50 Mbps.
+
+The data source (Rate Limits API) is ready and working - it just needs to be wired to the UI in that specific screen.

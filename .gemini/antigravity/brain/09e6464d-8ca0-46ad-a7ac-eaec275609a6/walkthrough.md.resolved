@@ -1,0 +1,46 @@
+# Walkthrough - Refactor Subscription & Router Management
+
+## Goal
+Refactor the application to use real API endpoints for subscription management, router operations, and static configuration lists, eliminating hardcoded mock data.
+
+## Changes
+
+### Subscription & Router Management
+- **[SubscriptionManagementScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/subscription_management_screen.dart#6-12)**: Fixed duplicate class definition and integrated [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081) for subscription data.
+- **[PartnerRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#5-68)**: Added [purchaseSubscription](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#52-67) method.
+- **[RouterRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#5-152)**: Updated endpoints for fetching, adding, deleting, and updating routers. Added [rebootRouter](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#800-812), [restartHotspot](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#139-151), [getRouterResources](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#833-842), and [fetchActiveUsers](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#49-68).
+- **[SessionRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/session_repository.dart#5-42)**: Updated [fetchActiveSessions](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/session_repository.dart#10-27) endpoint.
+- **[AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081)**: Added methods to manage subscriptions, routers, and session data.
+
+### Static Configuration Lists
+- **[AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081)**: Added `_rateLimits`, `_validityPeriods`, `_idleTimeouts`, `_sharedUsers` and methods to fetch them.
+- **[CreateEditInternetPlanScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_internet_plan_screen.dart#7-15)**: Refactored to use [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081) for configuration dropdowns.
+- **[CreateEditUserProfileScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_user_profile_screen.dart#9-17)**: Refactored to use [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081) for configuration dropdowns.
+- **[PlansScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plans_screen.dart#11-17)**: Refactored to use [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081) for configuration data.
+- **[HotspotConfigurationService](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/services/hotspot_configuration_service.dart#1-15)**: Removed static lists.
+
+### Hotspot Users & Email Verification
+- **[AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081)**: Added `_hotspotUsers` list and methods ([loadHotspotUsers](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#858-871), [createHotspotUser](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#872-886), [updateHotspotUser](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#880-894), [deleteHotspotUser](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#902-916)). Added [confirmRegistration](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#175-190) and [resendVerifyEmailOtp](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#354-366).
+- **[HotspotUsersManagementScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/hotspot_users_management_screen.dart#7-13)**: Refactored to use [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081) for user management.
+- **[EmailVerificationScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/email_verification_screen.dart#7-15)**: Refactored to use [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081) for email verification.
+
+## Verification Results
+
+### Build Verification
+- **Command**: `flutter build windows`
+- **Result**: **SUCCESS**
+- **Notes**:
+    - Resolved duplicate class definition in [SubscriptionManagementScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/subscription_management_screen.dart#6-12).
+    - Resolved syntax errors in [DataLimitConfigScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/data_limit_config_screen.dart#7-13) (duplicate class, leftover code).
+    - Resolved missing getters/setters in [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#34-1081) (`currentUser`, `isLoading`, `walletBalance`, `transactions`, `error`, `_selectedLanguage`, `_subscription`, `_partnerProfileData`, `_profiles`).
+    - Resolved duplicate arguments in [CreateEditUserProfileScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/create_edit_user_profile_screen.dart#9-17).
+
+### Manual Verification Required
+- **Subscription**: Verify that subscription details load correctly and "Purchase Plan" works.
+- **Routers**: Verify router list loads, and add/delete/update/reboot actions work.
+- **Configuration**: Verify dropdowns in "Create Plan" and "Create Profile" are populated from the API.
+- **Hotspot Users**: Verify creating, listing, and deleting hotspot users.
+- **Email Verification**: Verify the email verification flow.
+
+## Next Steps
+- Run the application and perform manual verification of the features.

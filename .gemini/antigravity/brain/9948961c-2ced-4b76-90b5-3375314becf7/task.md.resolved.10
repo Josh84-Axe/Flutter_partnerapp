@@ -1,0 +1,38 @@
+# Task List
+
+- [x] Confirm APK Build <!-- id: 0 -->
+    - [x] Run `flutter build apk` to verify build stability <!-- id: 1 -->
+    - [x] Fix any build errors if they arise (APK build failed) <!-- id: 2 -->
+- [x] Build Windows Version <!-- id: 12 -->
+    - [x] Run `flutter build windows` <!-- id: 13 -->
+    - [x] Verify build timestamp <!-- id: 14 -->
+
+- [x] Investigate Invalid Credential Error <!-- id: 15 -->
+    - [x] Check AuthRepository login implementation <!-- id: 16 -->
+    - [x] Verify API endpoint and request format <!-- id: 17 -->
+    - [x] Test with known credentials <!-- id: 18 -->
+    - [x] Fix identified issues (documented in walkthrough) <!-- id: 19 -->
+
+- [/] Test Login on Windows App <!-- id: 20 -->
+    - [x] Launch Windows app <!-- id: 21 -->
+    - [/] Attempt login with test credentials <!-- id: 22 -->
+    - [ ] Capture error logs <!-- id: 23 -->
+
+
+
+
+
+
+
+
+
+- [ ] Setup and Run Tests on Emulator <!-- id: 3 -->
+    - [ ] Verify Android Emulator is running <!-- id: 4 -->
+    - [ ] Create Integration Test for Auth & Dashboard <!-- id: 5 -->
+    - [ ] Run Integration Tests on Emulator <!-- id: 6 -->
+- [ ] Functional UI Test Scenarios (Automated) <!-- id: 7 -->
+    - [ ] Test 1.1: Login <!-- id: 8 -->
+    - [ ] Test 2.1: Dashboard Data Loading <!-- id: 9 -->
+    - [ ] Test 3.1: Wallet Overview <!-- id: 10 -->
+    - [ ] Test 4.1: View Customers <!-- id: 11 -->
+

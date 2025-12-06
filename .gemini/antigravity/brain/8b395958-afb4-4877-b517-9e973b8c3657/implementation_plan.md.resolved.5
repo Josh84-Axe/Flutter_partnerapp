@@ -1,0 +1,390 @@
+# Worker Management Enhancement - Implementation Plan
+
+## User Requirements
+
+1. **Add to Worker Menu:**
+   - Edit Worker
+   - View Worker Details
+   - Assign Router
+
+2. **Router Assignment:**
+   - Administrator can assign specific router(s) to a worker
+   - Worker only sees/manages their assigned router(s)
+   - Router assignment persists and is visible on worker profile
+
+## Codebase Audit Findings
+
+### Current Infrastructure
+
+#### 1. Worker Model ([worker_model.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/worker_model.dart))
+**Current Fields:**
+- [id](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/country_utils.dart#128-132), `username`, `fullName`, `email`
+- `roleSlug`, `roleName`, `permissions`
+- `isActive`, `createdAt`
+
+**Missing:** `assignedRouters` field
+
+#### 2. User Model ([user_model.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/user_model.dart#L10))
+**Has:** `List<String>? assignedRouters` field
+**Note:** This exists for users but not workers - need to add to WorkerModel
+
+#### 3. Router Model ([router_model.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/router_model.dart))
+**Fields:**
+- [id](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/country_utils.dart#128-132), `name`, `macAddress`, `status`
+- `connectedUsers`, `dataUsageGB`, `uptimeHours`, `lastSeen`
+
+**Missing:** No field indicating assigned worker/owner
+
+#### 4. Repositories
+
+**RouterRepository** ([router_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart))
+- ✅ [fetchRouters()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#10-35) - Get all routers
+- ✅ [fetchRouterDetails(slug)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#36-48) - Get router details
+- ✅ [addRouter()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#82-98), [updateRouter()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#99-112), [deleteRouter()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/router_repository.dart#113-125)
+- ❌ No `assignRouterToWorker()` method
+
+**CollaboratorRepository** ([collaborator_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart))
+- ✅ [fetchCollaborators()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart#12-28) - Get all workers
+- ✅ [createCollaborator()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart#29-39) - Create worker
+- ✅ [assignRole()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart#40-53), [updateRole()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/role_repository.dart#72-84) - Role management
+- ✅ [deleteCollaborator()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart#68-78) - Delete worker
+- ❌ No `assignRouter()` method
+- ❌ No `updateCollaborator()` method for editing
+
+#### 5. Permissions ([permission_mapping.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permission_mapping.dart#L16))
+- ✅ `assignRouters` permission constant exists
+- ✅ Permission check method exists in [Permissions](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/permissions.dart#3-85) class
+
+### API Endpoint Analysis
+
+**Known Endpoints:**
+- `/partner/collaborators/list/` - List workers
+- `/partner/collaborators/create/` - Create worker
+- `/partner/collaborators/{username}/assign-role/` - Assign role
+- `/partner/collaborators/{username}/update-role/` - Update role
+- `/partner/collaborators/{username}/delete/` - Delete worker
+- `/partner/routers/list/` - List routers
+
+**Missing/Unknown Endpoints:**
+- `/partner/collaborators/{username}/update/` - Update worker details (NEED TO VERIFY)
+- `/partner/collaborators/{username}/details/` - Get worker details (NEED TO VERIFY)
+- `/partner/collaborators/{username}/assign-router/` - Assign router (NEED TO VERIFY)
+- `/partner/routers/{slug}/assign-to-worker/` - Alternative router assignment (NEED TO VERIFY)
+
+## Proposed Implementation
+
+### Phase 1: Update Worker Model
+
+**File:** [lib/models/worker_model.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/worker_model.dart)
+
+**Add Field:**
+```dart
+final List<String>? assignedRouters;
+```
+
+**Update Constructor & fromJson:**
+```dart
+WorkerModel({
+  // ... existing fields
+  this.assignedRouters,
+});
+
+factory WorkerModel.fromJson(Map<String, dynamic> json) {
+  return WorkerModel(
+    // ... existing fields
+    assignedRouters: (json['assigned_routers'] as List?)
+        ?.map((e) => e.toString())
+        .toList(),
+  );
+}
+```
+
+### Phase 2: Add Repository Methods
+
+#### CollaboratorRepository Updates
+
+**Add Methods:**
+```dart
+/// Get collaborator details
+Future<Map<String, dynamic>?> fetchCollaboratorDetails(String username) async {
+  final response = await _dio.get('/partner/collaborators/$username/details/');
+  return response.data as Map<String, dynamic>?;
+}
+
+/// Update collaborator
+Future<bool> updateCollaborator(String username, Map<String, dynamic> data) async {
+  await _dio.put('/partner/collaborators/$username/update/', data: data);
+  return true;
+}
+
+/// Assign router to collaborator
+Future<bool> assignRouter(String username, Map<String, dynamic> routerData) async {
+  await _dio.post(
+    '/partner/collaborators/$username/assign-router/',
+    data: routerData,
+  );
+  return true;
+}
+
+/// Remove router from collaborator
+Future<bool> removeRouter(String username, String routerId) async {
+  await _dio.delete('/partner/collaborators/$username/routers/$routerId/');
+  return true;
+}
+```
+
+### Phase 3: Add AppState Methods
+
+**File:** [lib/providers/app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+
+**Add Methods:**
+```dart
+/// Fetch worker details
+Future<WorkerModel?> fetchWorkerDetails(String username) async {
+  if (_collaboratorRepository == null) _initializeRepositories();
+  final data = await _collaboratorRepository!.fetchCollaboratorDetails(username);
+  if (data != null) {
+    return WorkerModel.fromJson(data);
+  }
+  return null;
+}
+
+/// Update worker
+Future<void> updateWorker(String username, Map<String, dynamic> data) async {
+  _setLoading(true);
+  try {
+    if (_collaboratorRepository == null) _initializeRepositories();
+    await _collaboratorRepository!.updateCollaborator(username, data);
+    await loadWorkers();
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+
+/// Assign router to worker
+Future<void> assignRouterToWorker(String username, String routerId) async {
+  _setLoading(true);
+  try {
+    if (_collaboratorRepository == null) _initializeRepositories();
+    await _collaboratorRepository!.assignRouter(username, {'router_id': routerId});
+    await loadWorkers();
+    _setLoading(false);
+  } catch (e) {
+    _setError(e.toString());
+    _setLoading(false);
+    rethrow;
+  }
+}
+```
+
+### Phase 4: Update Worker Menu UI
+
+**File:** [lib/screens/users_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/users_screen.dart)
+
+**Update [_showWorkerMenu](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/users_screen.dart#525-603) method:**
+```dart
+void _showWorkerMenu(BuildContext context, worker) {
+  final currentUser = context.read<AppState>().currentUser;
+  if (currentUser == null) return;
+  
+  showModalBottomSheet(
+    context: context,
+    builder: (context) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // View Details
+          if (Permissions.canViewUsers(currentUser.role, currentUser.permissions))
+            ListTile(
+              leading: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
+              title: Text('View Details'),
+              onTap: () {
+                Navigator.pop(context);
+                _showWorkerDetailsDialog(context, worker);
+              },
+            ),
+          // Edit Worker
+          if (Permissions.canEditUsers(currentUser.role, currentUser.permissions))
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: Text('Edit Worker'),
+              onTap: () {
+                Navigator.pop(context);
+                _showEditWorkerDialog(context, worker);
+              },
+            ),
+          // Assign Role (existing)
+          ListTile(
+            leading: Icon(Icons.badge, color: Theme.of(context).colorScheme.primary),
+            title: Text(worker.roleName != null ? 'Change Role' : 'Assign Role'),
+            onTap: () {
+              Navigator.pop(context);
+              _showAssignRoleDialog(context, worker);
+            },
+          ),
+          // Assign Router (NEW)
+          if (Permissions.canAssignRouters(currentUser.role))
+            ListTile(
+              leading: Icon(Icons.router, color: Theme.of(context).colorScheme.secondary),
+              title: Text('Assign Router'),
+              onTap: () {
+                Navigator.pop(context);
+                _showAssignRouterDialog(context, worker);
+              },
+            ),
+          // Delete Worker (existing)
+          if (Permissions.canDeleteUsers(currentUser.role, currentUser.permissions))
+            ListTile(
+              leading: const Icon(Icons.delete, color: AppTheme.errorRed),
+              title: Text('Remove Worker'),
+              onTap: () {
+                Navigator.pop(context);
+                _showDeleteWorkerDialog(context, worker);
+              },
+            ),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+### Phase 5: Create Dialog Widgets
+
+#### 1. View Worker Details Dialog
+```dart
+void _showWorkerDetailsDialog(BuildContext context, WorkerModel worker) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Worker Details'),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDetailRow('Name', worker.fullName),
+            _buildDetailRow('Email', worker.email),
+            _buildDetailRow('Username', worker.username),
+            _buildDetailRow('Role', worker.roleName ?? 'No role'),
+            _buildDetailRow('Status', worker.isActive ? 'Active' : 'Inactive'),
+            if (worker.assignedRouters != null && worker.assignedRouters!.isNotEmpty)
+              _buildDetailRow('Assigned Routers', worker.assignedRouters!.join(', ')),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Close'),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+#### 2. Edit Worker Dialog
+- Reuse [CreateWorkerDialog](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/create_worker_dialog.dart#6-12) with pre-filled data
+- OR create separate `EditWorkerDialog`
+
+#### 3. Assign Router Dialog
+```dart
+void _showAssignRouterDialog(BuildContext context, WorkerModel worker) {
+  final appState = context.read<AppState>();
+  final routers = appState.routers;
+  String? selectedRouter;
+
+  showDialog(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: Text('Assign Router to ${worker.fullName}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<String>(
+              value: selectedRouter,
+              decoration: InputDecoration(
+                labelText: 'Select Router',
+                border: const OutlineInputBorder(),
+              ),
+              items: routers.map((router) {
+                return DropdownMenuItem(
+                  value: router.id,
+                  child: Text(router.name),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedRouter = value;
+                });
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (selectedRouter != null) {
+                await appState.assignRouterToWorker(worker.username, selectedRouter!);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Router assigned successfully')),
+                );
+              }
+            },
+            child: Text('Assign'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+## API Verification Needed
+
+Before implementation, verify these endpoints exist:
+
+1. **Worker Details:** `GET /partner/collaborators/{username}/details/`
+2. **Update Worker:** `PUT /partner/collaborators/{username}/update/`
+3. **Assign Router:** `POST /partner/collaborators/{username}/assign-router/`
+   - Expected payload: `{"router_id": "string"}` or `{"router_slug": "string"}`
+4. **List Worker Routers:** `GET /partner/collaborators/{username}/routers/`
+5. **Remove Router:** `DELETE /partner/collaborators/{username}/routers/{router_id}/`
+
+## Implementation Checklist
+
+- [ ] Verify API endpoints with backend documentation
+- [ ] Update [WorkerModel](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/models/worker_model.dart#1-60) with `assignedRouters` field
+- [ ] Add repository methods to [CollaboratorRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/collaborator_repository.dart#5-142)
+- [ ] Add state management methods to [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#39-1765)
+- [ ] Update worker menu in [UsersScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/users_screen.dart#13-19)
+- [ ] Create View Worker Details dialog
+- [ ] Create/Update Edit Worker dialog
+- [ ] Create Assign Router dialog
+- [ ] Test worker details view
+- [ ] Test worker editing
+- [ ] Test router assignment
+- [ ] Verify worker can only see assigned routers
+
+## Router Filtering for Workers
+
+When a worker logs in, filter routers to show only assigned ones:
+
+```dart
+// In AppState or RouterScreen
+List<RouterModel> getWorkersRouters() {
+  if (_currentUser?.assignedRouters == null) return [];
+  return _routers.where((router) => 
+    _currentUser!.assignedRouters!.contains(router.id)
+  ).toList();
+}
+```

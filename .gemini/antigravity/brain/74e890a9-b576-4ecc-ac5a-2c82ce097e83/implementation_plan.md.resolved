@@ -1,0 +1,70 @@
+# Currency Format Normalization
+
+Standardize all currency and number formatting across the application to use proper international formatting with commas as thousand separators and periods as decimal separators.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Standard Format**: All numbers will be formatted as `1,234.56` (comma for thousands, period for decimals)
+> - Currency: `$1,234.56` or `€1,234.56`
+> - Large numbers: `1,234,567.89`
+> - This follows US/International standard (not European format with reversed separators)
+
+## Current Issues
+
+1. `NumberFormat.currency()` uses locale-based formatting which may vary
+2. No explicit locale specification leads to inconsistent formatting
+3. Some places use `.toStringAsFixed(2)` without thousand separators
+4. Need to ensure consistent formatting across all currency displays
+
+## Proposed Changes
+
+### Currency Utils
+
+#### [MODIFY] [currency_utils.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart)
+
+Update [formatPrice()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/utils/currency_utils.dart#164-170) method to:
+- Explicitly use `en_US` locale for consistent formatting
+- Always use comma as thousand separator
+- Always use period as decimal separator
+- Format: `symbol1,234.56`
+
+### Metric Card Widget
+
+#### [MODIFY] [metric_card.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/metric_card.dart)
+
+Update [formatCurrency()](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/widgets/metric_card.dart#77-85) and `formatNumber()` methods to:
+- Use explicit `en_US` locale
+- Ensure thousand separators with commas
+- Ensure decimal separator with period
+- Handle both currency and plain number formatting
+
+### Plan Assignment Screen
+
+#### [MODIFY] [plan_assignment_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/plan_assignment_screen.dart)
+
+Replace `.toStringAsFixed(2)` with proper formatted currency:
+- Line 160: `'${plan.name} - $currencySymbol${plan.price.toStringAsFixed(2)}'`
+- Line 209: `'$currencySymbol${plan.price.toStringAsFixed(2)}'`
+
+Should use: `CurrencyUtils.formatPrice()` or `MetricCard.formatCurrency()`
+
+### Additional Device Config Screen
+
+#### [MODIFY] [additional_device_config_screen.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/config/additional_device_config_screen.dart)
+
+Replace direct price concatenation with formatted currency:
+- Line 211: `'${config['value']} devices - $currencySymbol${config['price']}'`
+
+Should use proper number formatting with thousand separators.
+
+## Verification Plan
+
+### Manual Verification
+1. Check dashboard with large revenue numbers (e.g., 1,234,567.89)
+2. Verify transaction list displays amounts correctly
+3. Check plan prices display with proper formatting
+4. Verify payout amounts show correct formatting
+5. Test with different currencies (USD, EUR, CFA, etc.)
+6. Ensure all numbers > 999 show comma separators
+7. Ensure all currency amounts show exactly 2 decimal places

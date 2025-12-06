@@ -1,0 +1,28 @@
+# Implementation Plan - Payment Method Integration
+
+## Goal Description
+Complete the integration of payment methods for withdrawals.
+
+## Proposed Changes
+### Exploration
+- [x] Analyze [WalletRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/wallet_repository.dart#5-211), [AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#38-1695), and relevant screens.
+- [x] Identified bug in [PayoutRequestScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/payout_request_screen.dart#9-15) fee calculation.
+- [x] Identified missing route for `/active-sessions` in [main.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/main.dart).
+- [x] Identified [DashboardScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/dashboard_screen.dart#10-16) hides subscription widget if null.
+- [x] User provided endpoint `/partner/subscription-plans/check/` for subscription status.
+
+### Implementation
+#### [MODIFY] [auth_repository.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart)
+- Update [login](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#52-70) method to throw exceptions with specific error messages (e.g., from the API response) instead of just returning `false`.
+
+#### [MODIFY] [app_state.dart](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart)
+- Update [login](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/partner_repository.dart#52-70) method to catch exceptions from [AuthRepository](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/auth_repository.dart#7-298) and set `_error` with the specific message.
+
+#### [MODIFY] [deploy-cloudflare-pages.yml](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/.github/workflows/deploy-cloudflare-pages.yml)
+- Add `fix/token-storage-windows` (and potentially `fix/**`) to the `on: push: branches` list.
+- Ensure the preview URL comment uses a consistent link format.
+
+## Verification Plan
+### Manual Verification
+- **Login**: Since I cannot run the deployed app, I will rely on code review and the fact that propagating the error message will at least reveal the root cause in the next deployment.
+- **Deployment**: Verify the workflow runs on push and generates a preview link.

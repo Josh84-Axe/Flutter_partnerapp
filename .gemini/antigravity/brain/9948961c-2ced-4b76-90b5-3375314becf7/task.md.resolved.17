@@ -1,0 +1,27 @@
+# Task List - Currency & Profile Fixes
+
+- [/] Investigate Partner Profile API <!-- id: 0 -->
+    - [/] Check API response structure <!-- id: 1 -->
+    - [ ] Identify country field <!-- id: 2 -->
+    - [ ] Identify role field <!-- id: 3 -->
+    - [ ] Identify currency fields <!-- id: 4 -->
+
+- [ ] Implement International Currency Formatting <!-- id: 5 -->
+    - [ ] Update CurrencyUtils with no decimals <!-- id: 6 -->
+    - [ ] Add round up/down policy <!-- id: 7 -->
+    - [ ] Support international formats (GHS 2,500 / 1.000 CFA) <!-- id: 8 -->
+
+- [ ] Implement Dynamic Currency Symbol <!-- id: 9 -->
+    - [ ] Fetch currency from API on login <!-- id: 10 -->
+    - [ ] Store currency symbol in AppState <!-- id: 11 -->
+    - [ ] Update formatMoney to use dynamic symbol <!-- id: 12 -->
+    - [ ] Remove hardcoded $ symbols <!-- id: 13 -->
+
+- [ ] Fix Partner Profile Loading <!-- id: 14 -->
+    - [ ] Update profile parsing for country <!-- id: 15 -->
+    - [ ] Update profile parsing for role <!-- id: 16 -->
+    - [ ] Test profile loading <!-- id: 17 -->
+
+- [ ] Global Currency Application <!-- id: 18 -->
+    - [ ] Update all screens using currency <!-- id: 19 -->
+    - [ ] Verify currency display globally <!-- id: 20 -->

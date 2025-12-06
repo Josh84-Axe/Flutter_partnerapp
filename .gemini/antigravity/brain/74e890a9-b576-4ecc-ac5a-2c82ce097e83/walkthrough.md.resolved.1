@@ -1,0 +1,43 @@
+# Walkthrough - Forgotten Password Flow
+
+## Changes
+
+### 1. State Management ([AppState](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/providers/app_state.dart#35-1344))
+-   Added [requestPasswordResetOtp(String email)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#24-37): Calls API to send OTP.
+-   Added [resetPassword(String email, String otp, String newPassword)](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#52-65): Calls API to reset password.
+
+### 2. UI Implementation
+-   **ForgotPasswordScreen**:
+    -   Now calls [requestPasswordResetOtp](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#24-37) on submit.
+    -   Navigates to [ResetEmailSentScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/reset_email_sent_screen.dart#5-80) on success, passing the email.
+    -   Shows loading indicator and error messages.
+-   **ResetEmailSentScreen**:
+    -   Retrieves the email argument.
+    -   Passes the email to [SetNewPasswordScreen](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/screens/set_new_password_screen.dart#7-13) when "Continue" is clicked.
+-   **SetNewPasswordScreen**:
+    -   Added an OTP input field.
+    -   Retrieves the email argument.
+    -   Calls [resetPassword](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/lib/repositories/password_repository.dart#52-65) with email, OTP, and new password.
+    -   Navigates to `PasswordSuccessScreen` on success.
+
+## Verification Plan
+
+### Manual Verification Steps
+1.  **Initiate Reset**:
+    -   On the Login screen, tap "Forgot Password?".
+    -   Enter your registered email address.
+    -   Tap "Send Reset Link".
+    -   **Verify**: You should see a loading indicator, then navigate to the "Email Sent" screen.
+2.  **Check Email (Simulation)**:
+    -   Since we can't check real email, assume you received an OTP (e.g., from server logs if running locally, or use a known test OTP if applicable).
+3.  **Enter OTP and New Password**:
+    -   Tap "Continue to Reset Password".
+    -   **Verify**: The "Set New Password" screen should appear with an OTP field.
+    -   Enter the OTP (6 digits).
+    -   Enter a new password (min 8 chars, 1 uppercase, 1 number, 1 special char).
+    -   Confirm the password.
+    -   Tap "Reset Password".
+    -   **Verify**: You should see a loading indicator, then navigate to the "Password Reset Successful" screen.
+4.  **Login with New Password**:
+    -   Navigate back to Login.
+    -   Try logging in with the new password.

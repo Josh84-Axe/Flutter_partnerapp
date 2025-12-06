@@ -1,0 +1,42 @@
+# GitHub Action Deployment - Issue Resolution
+
+## Problem 1: Flutter Version Mismatch
+
+![Failed Workflow](file:///C:/Users/ELITEX21012G2/.gemini/antigravity/brain/343a0301-7891-450e-b5a2-493f99980825/failed_workflow_summary_1764114786844.png)
+
+**Error**: Build completed in 0 seconds
+**Cause**: Workflow used Flutter 3.24.5, project requires 3.38.2
+**Fix**: Updated to Flutter 3.38.2
+
+## Problem 2: Deprecated Flag
+
+![Build Error Log](file:///C:/Users/ELITEX21012G2/.gemini/antigravity/brain/343a0301-7891-450e-b5a2-493f99980825/uploaded_image_1764115407422.jpg)
+
+**Error**: `Could not find an option named "--web-renderer"`
+**Cause**: The `--web-renderer canvaskit` flag was deprecated in Flutter 3.38.2
+**Fix**: Removed the deprecated flag
+
+## Solution Applied
+
+Updated [.github/workflows/deploy-fix-token-storage.yml](file:///c:/Users/ELITEX21012G2/antigravity_partnerapp/Flutter_partnerapp/.github/workflows/deploy-fix-token-storage.yml):
+
+```diff
+- flutter build web --release --web-renderer canvaskit
++ flutter build web --release
+```
+
+## Commits
+1. `a49c60a` - Fixed Flutter version to 3.38.2
+2. `3b25075` - Removed deprecated --web-renderer flag
+
+## Status
+✅ **Fix pushed to GitHub**
+⏳ **Deployment in progress**
+
+Check [Actions tab](https://github.com/Josh84-Axe/Flutter_partnerapp/actions) for build status (~3-4 minutes).
+
+## Deployment URL
+Once successful:
+```
+https://fix-token-storage-windows.wifi-4u-partner.pages.dev
+```
