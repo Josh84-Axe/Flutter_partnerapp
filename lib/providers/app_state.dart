@@ -33,6 +33,7 @@ import '../repositories/role_repository.dart';
 import '../repositories/payment_method_repository.dart';
 import '../repositories/additional_device_repository.dart';
 import '../repositories/subscription_repository.dart';
+import '../repositories/report_repository.dart';
 import '../utils/currency_utils.dart';
 import '../utils/permission_mapping.dart';
 import '../services/cache_service.dart';
@@ -55,6 +56,7 @@ class AppState with ChangeNotifier {
   PaymentMethodRepository? _paymentMethodRepository;
   AdditionalDeviceRepository? _additionalDeviceRepository;
   SubscriptionRepository? _subscriptionRepository;
+  ReportRepository? _reportRepository;
   
   // Cache service for local data persistence
   final CacheService _cacheService = CacheService();
@@ -107,6 +109,7 @@ class AppState with ChangeNotifier {
       _paymentMethodRepository = PaymentMethodRepository(dio: dio);
       _additionalDeviceRepository = AdditionalDeviceRepository(dio: dio);
       _subscriptionRepository = SubscriptionRepository(dio: dio);
+      _reportRepository = ReportRepository(transactionRepository: _transactionRepository!);
     }
   }
   
@@ -251,6 +254,11 @@ class AppState with ChangeNotifier {
   PlanRepository get planRepository {
     _initializeRepositories();
     return _planRepository!;
+  }
+
+  ReportRepository get reportRepository {
+    _initializeRepositories();
+    return _reportRepository!;
   }
   
   Future<bool> login(String email, String password) async {
@@ -2261,6 +2269,33 @@ class AppState with ChangeNotifier {
       }
       _setLoading(false);
     } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  // ==================== Report Generation ====================
+  
+  /// Generate report file (PDF or CSV)
+  Future<dynamic> generateReport({
+    required DateTimeRange dateRange,
+    required String format,
+  }) async {
+    _setLoading(true);
+    try {
+      if (_reportRepository == null) _initializeRepositories();
+      
+      final file = await _reportRepository!.generateTransactionReport(
+        range: dateRange,
+        format: format,
+        partnerName: _currentUser?.name ?? 'Partner',
+      );
+      
+      _setLoading(false);
+      return file;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Generate report error: $e');
       _setError(e.toString());
       _setLoading(false);
       rethrow;

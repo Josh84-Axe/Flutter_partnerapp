@@ -52,7 +52,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
     }
   }
 
-  void _generateReport() {
+  Future<void> _generateReport() async {
     if (_dateRange == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -63,11 +63,41 @@ class _ReportingScreenState extends State<ReportingScreen> {
       return;
     }
 
-    Navigator.of(context).pushNamed('/report-preview', arguments: {
-      'reportType': _selectedReportType,
-      'dateRange': _dateRange,
-      'format': _selectedFormat,
-    });
+    // Only transaction history is supported for now
+    if (_selectedReportType != 'Transaction History') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Only Transaction History reports are currently supported')),
+      );
+      return;
+    }
+
+    try {
+      final appState = context.read<AppState>();
+      final file = await appState.generateReport(
+        dateRange: _dateRange!,
+        format: _selectedFormat,
+      );
+      
+      if (!mounted) return;
+      
+      if (file != null) {
+        // Open the generated file
+        await OpenFile.open(file.path);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Report generated: ${file.path}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to generate report: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
   }
 
   @override
