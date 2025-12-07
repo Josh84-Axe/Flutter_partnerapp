@@ -31,9 +31,115 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
-    // ... (rest of build method) ...
-    
-    // ... inside Column ...
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'wallet_payout'.tr(),
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              appState.loadAllWalletBalances();
+              appState.loadAllTransactions();
+              appState.loadWithdrawals();
+              appState.loadTransactions();
+            },
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [colorScheme.primary, colorScheme.primaryContainer],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'current_balance'.tr(),
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  appState.formatMoney(appState.totalBalance),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Online: ${appState.formatMoney(appState.walletBalance)} • Assigned: ${appState.formatMoney(appState.assignedWalletBalance)}',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: _buildActionButton(
+                  context,
+                  icon: Icons.payments_outlined,
+                  label: 'request_payout'.tr(),
+                  onTap: () => Navigator.of(context).pushNamed('/payout-request'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildActionButton(
+                  context,
+                  icon: Icons.history,
+                  label: 'full_history'.tr(),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/transaction-history');
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildActionButton(
+                  context,
+                  icon: Icons.trending_up,
+                  label: 'Revenue',
+                  onTap: () {
+                    Navigator.of(context).pushNamed('/revenue-breakdown');
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
