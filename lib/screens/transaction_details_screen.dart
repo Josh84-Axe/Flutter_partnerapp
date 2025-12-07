@@ -132,6 +132,15 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                           Center(
                             child: _buildStatusBadge(_transactionDetails!['status'] ?? 'pending'),
                           ),
+                          
+                          // Payout Status Stepper
+                          if ((_transactionDetails!['type'] ?? '').toString().toLowerCase().contains('payout') ||
+                              (_transactionDetails!['type'] ?? '').toString().toLowerCase().contains('withdrawal'))
+                            Padding(
+                              padding: const EdgeInsets.only(top: 24),
+                              child: _buildPayoutStatusStepper(_transactionDetails!['status'] ?? 'pending'),
+                            ),
+                          
                           const SizedBox(height: 24),
 
                           // Amount Card
@@ -242,6 +251,92 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                         ],
                       ),
                     ),
+    );
+  }
+
+  Widget _buildPayoutStatusStepper(String status) {
+    final steps = [
+      {'title': 'Requested', 'isActive': true, 'isCompleted': true},
+      {
+        'title': 'Processing',
+        'isActive': true,
+        'isCompleted': status.toLowerCase() != 'pending'
+      },
+      {
+        'title': status.toLowerCase() == 'failed' ? 'Failed' : 'Completed',
+        'isActive': status.toLowerCase() == 'completed' ||
+            status.toLowerCase() == 'success' ||
+            status.toLowerCase() == 'failed',
+        'isCompleted': status.toLowerCase() == 'completed' ||
+            status.toLowerCase() == 'success' ||
+            status.toLowerCase() == 'failed'
+      },
+    ];
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            for (int i = 0; i < steps.length; i++) ...[
+              // Step Circle
+              Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: (steps[i]['isActive'] as bool)
+                            ? ((steps[i]['title'] == 'Failed')
+                                ? Colors.red
+                                : Colors.green)
+                            : Colors.grey[300],
+                      ),
+                      child: (steps[i]['isCompleted'] as bool)
+                          ? const Icon(Icons.check, color: Colors.white, size: 16)
+                          : Center(
+                              child: Text(
+                                '${i + 1}',
+                                style: TextStyle(
+                                  color: (steps[i]['isActive'] as bool)
+                                      ? Colors.white
+                                      : Colors.grey[600],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      steps[i]['title'] as String,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: (steps[i]['isActive'] as bool)
+                            ? Colors.black87
+                            : Colors.grey,
+                        fontWeight: (steps[i]['isActive'] as bool)
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Connector Line
+              if (i < steps.length - 1)
+                Expanded(
+                  child: Container(
+                    height: 2,
+                    color: (steps[i + 1]['isActive'] as bool)
+                        ? Colors.green
+                        : Colors.grey[300],
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ],
     );
   }
 

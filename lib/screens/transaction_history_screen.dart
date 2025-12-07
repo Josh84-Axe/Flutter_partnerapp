@@ -297,8 +297,13 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
     final createdAt = transaction['created_at'] ?? transaction['createdAt'];
     final status = transaction['status'] ?? 'completed';
     final type = transaction['_type'] ?? transaction['transaction_type'] ?? '';
+    final rawType = (transaction['type'] ?? '').toString().toLowerCase();
+    
+    // Identify if it's a payout/withdrawal
+    final isPayout = rawType == 'payout' || rawType == 'withdrawal' || rawType == 'debit';
 
-    final isPositive = amount >= 0;
+    // If it's a payout, treat as negative regardless of amount sign
+    final isPositive = !isPayout && amount >= 0;
     final color = isPositive ? Colors.green : Colors.red;
 
     return Card(
@@ -358,7 +363,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${isPositive ? '+' : ''}${CurrencyUtils.formatPrice(amount.abs(), appState.partnerCountry)}',
+                '${isPositive ? '+' : '-'}${CurrencyUtils.formatPrice(amount.abs(), appState.partnerCountry)}',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: color,

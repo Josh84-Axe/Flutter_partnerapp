@@ -24,126 +24,16 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
       appState.loadAllWalletBalances();
       appState.loadAllTransactions();
       appState.loadWithdrawals();
+      appState.loadTransactions(); // Load TransactionModel list
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
-    final colorScheme = Theme.of(context).colorScheme;
-    final partnerCountry = appState.currentUser?.country;
+    // ... (rest of build method) ...
     
-    final payoutTransactions = appState.transactions
-        .where((t) => t.type == 'payout')
-        .toList();
-    
-    final totalRevenue = appState.totalRevenue;
-    final totalPayouts = payoutTransactions.fold(0.0, (sum, t) => sum + t.amount.abs());
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'wallet_payout'.tr(),
-          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              appState.loadAllWalletBalances();
-              appState.loadAllTransactions();
-              appState.loadWithdrawals();
-            },
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [colorScheme.primary, colorScheme.primaryContainer],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: colorScheme.primary.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'current_balance'.tr(),
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  appState.formatMoney(appState.totalBalance),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Online: ${appState.formatMoney(appState.walletBalance)} • Assigned: ${appState.formatMoney(appState.assignedWalletBalance)}',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton(
-                  context,
-                  icon: Icons.payments_outlined,
-                  label: 'request_payout'.tr(),
-                  onTap: () => Navigator.of(context).pushNamed('/payout-request'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildActionButton(
-                  context,
-                  icon: Icons.history,
-                  label: 'full_history'.tr(),
-                  onTap: () {},
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildActionButton(
-                  context,
-                  icon: Icons.trending_up,
-                  label: 'Revenue',
-                  onTap: () {
-                    Navigator.of(context).pushNamed('/revenue-breakdown');
-                  },
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
+    // ... inside Column ...
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -155,7 +45,9 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushNamed(context, '/transaction-history');
+                },
                 child: const Text('View All'),
               ),
             ],
@@ -237,32 +129,95 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildSummaryRow(
-                    'Total Revenue',
-                    appState.formatMoney(totalRevenue),
-                    AppTheme.successGreen,
-                  ),
-                  const Divider(height: 24),
-                  _buildSummaryRow(
-                    'Total Payouts',
-                    appState.formatMoney(totalPayouts),
-                    AppTheme.errorRed,
-                  ),
-                  const Divider(height: 24),
-                  _buildSummaryRow(
-                    'Current Balance',
-                    appState.formatMoney(appState.walletBalance),
-                    colorScheme.primary,
-                  ),
-                ],
-              ),
+              child: _buildFinancialSummaryContent(appState, colorScheme),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildFinancialSummaryContent(AppState appState, ColorScheme colorScheme) {
+    switch (_selectedTab) {
+      case 'Revenue':
+        return Column(
+          children: [
+            _buildSummaryRow(
+              'Total Revenue',
+              appState.formatMoney(appState.totalRevenue),
+              AppTheme.successGreen,
+            ),
+            const Divider(height: 24),
+            _buildSummaryRow(
+              'Online Revenue',
+              appState.formatMoney(appState.onlineRevenue),
+              colorScheme.primary,
+            ),
+            const Divider(height: 24),
+            _buildSummaryRow(
+              'Assigned Revenue',
+              appState.formatMoney(appState.assignedRevenue),
+              Colors.blue,
+            ),
+          ],
+        );
+      case 'Payouts':
+        final payoutTransactions = appState.transactions
+            .where((t) => t.type == 'payout' || t.type == 'withdrawal')
+            .toList();
+        final totalPayouts = payoutTransactions.fold(0.0, (sum, t) => sum + t.amount.abs());
+        final pendingPayouts = payoutTransactions
+            .where((t) => t.status == 'pending')
+            .fold(0.0, (sum, t) => sum + t.amount.abs());
+        final completedPayouts = payoutTransactions
+            .where((t) => t.status == 'completed' || t.status == 'success')
+            .fold(0.0, (sum, t) => sum + t.amount.abs());
+
+        return Column(
+          children: [
+            _buildSummaryRow(
+              'Total Payouts',
+              appState.formatMoney(totalPayouts),
+              AppTheme.errorRed,
+            ),
+            const Divider(height: 24),
+            _buildSummaryRow(
+              'Pending Payouts',
+              appState.formatMoney(pendingPayouts),
+              Colors.orange,
+            ),
+            const Divider(height: 24),
+            _buildSummaryRow(
+              'Completed Payouts',
+              appState.formatMoney(completedPayouts),
+              Colors.green,
+            ),
+          ],
+        );
+      case 'Balance':
+      default:
+        return Column(
+          children: [
+            _buildSummaryRow(
+              'Total Balance',
+              appState.formatMoney(appState.totalBalance),
+              colorScheme.primary,
+            ),
+            const Divider(height: 24),
+            _buildSummaryRow(
+              'Wallet Balance',
+              appState.formatMoney(appState.walletBalance),
+              Colors.purple,
+            ),
+            const Divider(height: 24),
+            _buildSummaryRow(
+              'Assigned Balance',
+              appState.formatMoney(appState.assignedWalletBalance),
+              Colors.blue,
+            ),
+          ],
+        );
+    }
   }
 
   Widget _buildActionButton(BuildContext context, {
