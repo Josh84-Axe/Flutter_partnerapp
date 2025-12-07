@@ -1,7 +1,6 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:csv/csv.dart';
@@ -14,8 +13,8 @@ class ReportRepository {
   ReportRepository({required TransactionRepository transactionRepository}) 
       : _transactionRepository = transactionRepository;
 
-  /// Generate a transaction report (PDF or CSV)
-  Future<File> generateTransactionReport({
+  /// Generate a transaction report (PDF or CSV) as bytes
+  Future<Uint8List> generateTransactionReport({
     required DateTimeRange range,
     required String format,
     required String partnerName,
@@ -24,9 +23,6 @@ class ReportRepository {
       if (kDebugMode) print('📊 [ReportRepository] Generating $format report for ${range.start} - ${range.end}');
       
       // 1. Fetch transactions (assigned and wallet)
-      // Note: We'll fetch all and filter by date locally since the API might pagination
-      // For this MVP, we'll fetch what available lists provide
-      
       final assignedTransactions = await _transactionRepository.fetchAssignedPlanTransactions();
       final walletTransactions = await _transactionRepository.getWalletTransactions();
       
@@ -52,9 +48,9 @@ class ReportRepository {
       
       if (kDebugMode) print('✅ [ReportRepository] Found ${filteredTransactions.length} transactions for report');
 
-      // 3. Generate File
+      // 3. Generate Bytes
       if (format.toUpperCase() == 'CSV') {
-        return await _generateCSV(filteredTransactions, range);
+        return await _generateCSV(filteredTransactions);
       } else {
         return await _generatePDF(filteredTransactions, range, partnerName);
       }
@@ -64,7 +60,7 @@ class ReportRepository {
     }
   }
 
-  Future<File> _generateCSV(List<dynamic> transactions, DateTimeRange range) async {
+  Future<Uint8List> _generateCSV(List<dynamic> transactions) async {
     final List<List<dynamic>> rows = [];
     
     // Headers
@@ -92,15 +88,10 @@ class ReportRepository {
     }
 
     final csvData = const ListToCsvConverter().convert(rows);
-    final directory = await getApplicationDocumentsDirectory();
-    final path = '${directory.path}/transactions_report_${DateTime.now().millisecondsSinceEpoch}.csv';
-    final file = File(path);
-    await file.writeAsString(csvData);
-    
-    return file;
+    return Uint8List.fromList(csvData.codeUnits);
   }
 
-  Future<File> _generatePDF(List<dynamic> transactions, DateTimeRange range, String partnerName) async {
+  Future<Uint8List> _generatePDF(List<dynamic> transactions, DateTimeRange range, String partnerName) async {
     final pdf = pw.Document();
     
     // Calculate totals
@@ -131,12 +122,7 @@ class ReportRepository {
       ),
     );
 
-    final directory = await getApplicationDocumentsDirectory();
-    final path = '${directory.path}/transactions_report_${DateTime.now().millisecondsSinceEpoch}.pdf';
-    final file = File(path);
-    await file.writeAsBytes(await pdf.save());
-    
-    return file;
+    return await pdf.save();
   }
   
   pw.Widget _buildPdfHeader(DateTimeRange range, String partnerName) {

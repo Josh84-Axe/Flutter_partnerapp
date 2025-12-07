@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
+import '../utils/file_handler/file_handler.dart';
 
 class ReportingScreen extends StatefulWidget {
   const ReportingScreen({super.key});
@@ -10,9 +13,10 @@ class ReportingScreen extends StatefulWidget {
 }
 
 class _ReportingScreenState extends State<ReportingScreen> {
-  String _selectedReportType = 'User Data Usage';
+  String _selectedReportType = 'Transaction History';
   String _selectedFormat = 'CSV';
   DateTimeRange? _dateRange;
+  bool _isGenerating = false;
 
   final List<String> _reportTypes = [
     'User Data Usage',
@@ -34,6 +38,17 @@ class _ReportingScreenState extends State<ReportingScreen> {
     },
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    // Default to current month
+    final now = DateTime.now();
+    _dateRange = DateTimeRange(
+      start: DateTime(now.year, now.month, 1),
+      end: now,
+    );
+  }
+
   void _selectDateRange() async {
     final picked = await showDateRangePicker(
       context: context,
@@ -41,7 +56,16 @@ class _ReportingScreenState extends State<ReportingScreen> {
       lastDate: DateTime.now(),
       initialDateRange: _dateRange,
       builder: (context, child) {
-        return child!;
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.green.shade700,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
       },
     );
 
@@ -71,21 +95,25 @@ class _ReportingScreenState extends State<ReportingScreen> {
       return;
     }
 
+    setState(() {
+      _isGenerating = true;
+    });
+
     try {
       final appState = context.read<AppState>();
-      final file = await appState.generateReport(
+      final bytes = await appState.generateReport(
         dateRange: _dateRange!,
         format: _selectedFormat,
       );
       
       if (!mounted) return;
       
-      if (file != null) {
-        // Open the generated file
-        await OpenFile.open(file.path);
+      if (bytes != null) {
+        final fileName = 'transactions_report_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.${_selectedFormat.toLowerCase()}';
+        await FileHandler.saveAndLaunchFile(bytes, fileName);
         
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Report generated: ${file.path}')),
+          SnackBar(content: Text('Report generated successfully')),
         );
       }
     } catch (e) {
@@ -96,6 +124,12 @@ class _ReportingScreenState extends State<ReportingScreen> {
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGenerating = false;
+        });
       }
     }
   }
@@ -131,22 +165,29 @@ class _ReportingScreenState extends State<ReportingScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          RadioGroup<String>(
-            groupValue: _selectedReportType,
-            onChanged: (value) {
-              if (value != null) {
-                setState(() => _selectedReportType = value);
-              }
-            },
-            child: Column(
-              children: _reportTypes.map((type) {
-                return RadioListTile<String>(
-                  value: type,
-                  title: Text(type),
-                  activeColor: colorScheme.primary,
-                  contentPadding: EdgeInsets.zero,
-                );
-              }).toList(),
+          // Simple dropdown or radio list for report types
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedReportType,
+                isExpanded: true,
+                items: _reportTypes.map((String type) {
+                  return DropdownMenuItem<String>(
+                    value: type,
+                    child: Text(type),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedReportType = newValue!;
+                  });
+                },
+              ),
             ),
           ),
           const SizedBox(height: 20),
@@ -209,16 +250,25 @@ class _ReportingScreenState extends State<ReportingScreen> {
           SizedBox(
             width: double.infinity,
             child: FilledButton(
-              onPressed: _generateReport,
+              onPressed: _isGenerating ? null : _generateReport,
               style: FilledButton.styleFrom(
                 backgroundColor: colorScheme.primary,
                 foregroundColor: colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: const Text(
-                'Generate Report',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
+              child: _isGenerating
+                  ? SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.onPrimary,
+                      ),
+                    )
+                  : const Text(
+                      'Generate Report',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
             ),
           ),
           const SizedBox(height: 32),

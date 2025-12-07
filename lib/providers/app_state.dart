@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 import '../models/user_model.dart';
 import '../models/router_model.dart';
 import '../models/plan_model.dart';
@@ -2278,7 +2279,7 @@ class AppState with ChangeNotifier {
   // ==================== Report Generation ====================
   
   /// Generate report file (PDF or CSV)
-  Future<dynamic> generateReport({
+  Future<Uint8List?> generateReport({
     required DateTimeRange dateRange,
     required String format,
   }) async {
@@ -2286,14 +2287,14 @@ class AppState with ChangeNotifier {
     try {
       if (_reportRepository == null) _initializeRepositories();
       
-      final file = await _reportRepository!.generateTransactionReport(
+      final bytes = await _reportRepository!.generateTransactionReport(
         range: dateRange,
         format: format,
         partnerName: _currentUser?.name ?? 'Partner',
       );
       
       _setLoading(false);
-      return file;
+      return bytes;
     } catch (e) {
       if (kDebugMode) print('❌ [AppState] Generate report error: $e');
       _setError(e.toString());
