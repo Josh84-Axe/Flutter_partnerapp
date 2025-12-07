@@ -199,6 +199,48 @@ class AppState with ChangeNotifier {
   List<dynamic> get assignedPlans => _assignedPlans;
   List<dynamic> get hotspotUsers => _hotspotUsers;
   
+  // Wallet History Getters
+  List<Map<String, dynamic>> get walletHistory {
+    final combined = <Map<String, dynamic>>[];
+    
+    // Add wallet transactions as "IN"
+    combined.addAll(_walletTransactions.map((txn) => {
+      ...txn as Map<String, dynamic>,
+      '_direction': 'in',
+      '_source': 'wallet',
+    }));
+    
+    // Add withdrawals as "OUT"
+    combined.addAll(_withdrawals.map((withdrawal) => {
+      ...withdrawal as Map<String, dynamic>,
+      '_direction': 'out',
+      '_source': 'withdrawal',
+    }));
+    
+    // Sort by date (newest first)
+    combined.sort((a, b) {
+      try {
+        final aDate = DateTime.tryParse(a['created_at']?.toString() ?? '') ?? DateTime.now();
+        final bDate = DateTime.tryParse(b['created_at']?.toString() ?? '') ?? DateTime.now();
+        return bDate.compareTo(aDate);
+      } catch (e) {
+        return 0;
+      }
+    });
+    
+    return combined;
+  }
+  
+  // Get pending withdrawals count
+  int get pendingPayoutsCount => _withdrawals
+      .where((w) => (w['status'] ?? '').toString().toLowerCase() == 'pending')
+      .length;
+  
+  // Get pending withdrawals total
+  double get pendingPayoutsTotal => _withdrawals
+      .where((w) => (w['status'] ?? '').toString().toLowerCase() == 'pending')
+      .fold(0.0, (sum, w) => sum + (double.tryParse(w['amount']?.toString() ?? '0') ?? 0));
+  
   List<dynamic> get sharedUsers => _sharedUsers;
   List<dynamic> get rateLimits => _rateLimits;
   List<dynamic> get idleTimeouts => _idleTimeouts;

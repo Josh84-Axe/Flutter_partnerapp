@@ -122,7 +122,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                   icon: Icons.history,
                   label: 'full_history'.tr(),
                   onTap: () {
-                    Navigator.pushNamed(context, '/transaction-history');
+                    Navigator.pushNamed(context, '/payout-history');
                   },
                 ),
               ),
@@ -139,6 +139,78 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
               ),
             ],
           ),
+          
+          // Pending Payouts Card
+          if (appState.pendingPayoutsCount > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: InkWell(
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/payout-history',
+                    arguments: {'initialTab': 2}, // Payouts Out tab
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.orange.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.pending_actions,
+                          color: Colors.orange,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Pending Payouts',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${appState.pendingPayoutsCount} request${appState.pendingPayoutsCount > 1 ? 's' : ''} • ${appState.formatMoney(appState.pendingPayoutsTotal)}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: Colors.orange,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          
           const SizedBox(height: 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
