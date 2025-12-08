@@ -15,7 +15,7 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadRouterConfigurations();
+      context.read<AppState>().loadRouters();
     });
   }
 
