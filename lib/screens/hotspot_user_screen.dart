@@ -15,6 +15,14 @@ class HotspotUserScreen extends StatefulWidget {
 class _HotspotUserScreenState extends State<HotspotUserScreen> {
   String _searchQuery = '';
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppState>().loadHotspotProfiles();
+    });
+  }
+
   void _navigateToCreateEdit({HotspotProfileModel? profile}) {
     Navigator.of(context).pushNamed('/create-edit-user-profile', arguments: profile);
   }
