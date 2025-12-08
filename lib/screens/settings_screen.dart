@@ -145,19 +145,7 @@ class SettingsScreen extends StatelessWidget {
                   Navigator.of(context).pushNamed('/support');
                 },
               ),
-              _buildSettingItem(
-                context,
-                icon: Icons.replay_outlined,
-                title: 'replay_onboarding'.tr(),
-                subtitle: 'view_tour_desc'.tr(),
-                onTap: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.setBool('hasSeenOnboarding', false);
-                  if (context.mounted) {
-                    Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
-                  }
-                },
-              ),
+
               _buildSettingItem(
                 context,
                 icon: Icons.info_outlined,

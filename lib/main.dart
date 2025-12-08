@@ -28,6 +28,8 @@ import 'screens/profiles_screen.dart';
 import 'screens/router_details_screen.dart';
 import 'screens/support_screen.dart';
 import 'screens/bulk_actions_screen.dart';
+import 'models/hotspot_profile_model.dart';
+import 'screens/create_edit_user_profile_screen.dart';
 import 'screens/hotspot_user_screen.dart';
 import 'screens/configurations_screen.dart';
 import 'screens/router_registration_screen.dart';
@@ -216,8 +218,9 @@ class HotspotPartnerApp extends StatelessWidget {
           );
         }
         if (settings.name == '/profile-editor') {
+          final profile = settings.arguments as HotspotProfileModel?;
           return MaterialPageRoute(
-            builder: (context) => const ProfilesScreen(),
+            builder: (context) => CreateEditUserProfileScreen(profile: profile),
           );
         }
         if (settings.name == '/create-edit-plan') {

@@ -215,11 +215,27 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                             child: Text('cancel'.tr()),
                           ),
                           FilledButton(
-                            onPressed: () {
-                              // TODO: Implement delete profile in AppState
-                              appState.hotspotProfiles.removeWhere((p) => p.id == widget.profile!.id);
-                              Navigator.pop(context);
-                              Navigator.pop(context);
+                            onPressed: () async {
+                              try {
+                                await appState.deleteHotspotProfile(widget.profile!.id);
+                                if (context.mounted) {
+                                  Navigator.pop(context); // Close dialog
+                                  Navigator.pop(context); // Close screen
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('profile_deleted'.tr())),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  Navigator.pop(context); // Close dialog
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('error_deleting_profile'.tr(namedArgs: {'error': e.toString()})),
+                                      backgroundColor: AppTheme.errorRed,
+                                    ),
+                                  );
+                                }
+                              }
                             },
                             style: FilledButton.styleFrom(
                               backgroundColor: AppTheme.errorRed,
