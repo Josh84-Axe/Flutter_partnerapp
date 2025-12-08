@@ -110,7 +110,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'team_members_count'.tr(namedArgs: {'count': _getTeamMemberCount(role.name).toString()}),
+                                    'team_members_count'.tr(namedArgs: {'count': _getTeamMemberCount(role).toString()}),
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: AppTheme.textLight,
@@ -141,7 +141,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            _getRoleDescription(role.name),
+                            _getRoleDescription(role),
                             style: TextStyle(
                               fontSize: 14,
                               color: AppTheme.textLight,
@@ -219,8 +219,10 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
     }
   }
 
-  int _getTeamMemberCount(String roleName) {
-    switch (roleName.toLowerCase()) {
+  int _getTeamMemberCount(RoleModel role) {
+    if (role.memberCount != null) return role.memberCount!;
+    
+    switch (role.name.toLowerCase()) {
       case 'admin':
       case 'administrator':
         return 2;
@@ -233,8 +235,10 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
     }
   }
 
-  String _getRoleDescription(String roleName) {
-    switch (roleName.toLowerCase()) {
+  String _getRoleDescription(RoleModel role) {
+    if (role.description != null && role.description!.isNotEmpty) return role.description!;
+    
+    switch (role.name.toLowerCase()) {
       case 'admin':
       case 'administrator':
         return 'role_admin_description'.tr();
@@ -243,7 +247,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
       case 'worker':
         return 'role_worker_description'.tr();
       default:
-        return '';
+        return 'role_default_description'.tr();
     }
   }
 

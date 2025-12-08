@@ -354,4 +354,49 @@ class AuthRepository {
       return false;
     }
   }
+
+  /// Get 2FA status
+  Future<bool> getTwoFactorStatus() async {
+    try {
+      if (kDebugMode) print('🔐 [AuthRepository] Get 2FA status');
+      final response = await _dio.get('/partner/security/2fa/status/');
+      if (kDebugMode) print('✅ [AuthRepository] Get 2FA status response: ${response.data}');
+      
+      final data = response.data;
+      if (data is Map && data['data'] != null) {
+        return data['data']['is_enabled'] ?? false;
+      }
+      return false;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AuthRepository] Get 2FA status error: $e');
+      return false;
+    }
+  }
+
+  /// Enable 2FA
+  Future<Map<String, dynamic>> enableTwoFactor() async {
+    try {
+      if (kDebugMode) print('🔐 [AuthRepository] Enable 2FA');
+      final response = await _dio.post('/partner/security/2fa/enable/');
+      if (kDebugMode) print('✅ [AuthRepository] Enable 2FA response: ${response.data}');
+      
+      return response.data;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AuthRepository] Enable 2FA error: $e');
+      rethrow;
+    }
+  }
+
+  /// Disable 2FA
+  Future<bool> disableTwoFactor() async {
+    try {
+      if (kDebugMode) print('🔐 [AuthRepository] Disable 2FA');
+      final response = await _dio.post('/partner/security/2fa/disable/');
+      if (kDebugMode) print('✅ [AuthRepository] Disable 2FA response: ${response.data}');
+      return true;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AuthRepository] Disable 2FA error: $e');
+      return false;
+    }
+  }
 }

@@ -2349,5 +2349,70 @@ class AppState with ChangeNotifier {
       _setLoading(false);
       rethrow;
     }
+
+  // ==================== Security Operations ====================
+
+  /// Change password
+  Future<bool> changePassword(String oldPassword, String newPassword) async {
+    _setLoading(true);
+    try {
+      if (_authRepository == null) _initializeRepositories();
+      final success = await _authRepository!.changePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+      _setLoading(false);
+      return success;
+    } catch (e) {
+      if (kDebugMode) print('Change password error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
   }
+
+  /// Get 2FA status
+  Future<bool> getTwoFactorStatus() async {
+    try {
+      if (_authRepository == null) _initializeRepositories();
+      final isEnabled = await _authRepository!.getTwoFactorStatus();
+      return isEnabled;
+    } catch (e) {
+      if (kDebugMode) print('Get 2FA status error: $e');
+      return false;
+    }
+  }
+
+  /// Enable 2FA
+  Future<Map<String, dynamic>> enableTwoFactor() async {
+    _setLoading(true);
+    try {
+      if (_authRepository == null) _initializeRepositories();
+      final result = await _authRepository!.enableTwoFactor();
+      _setLoading(false);
+      return result;
+    } catch (e) {
+      if (kDebugMode) print('Enable 2FA error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  /// Disable 2FA
+  Future<bool> disableTwoFactor() async {
+    _setLoading(true);
+    try {
+      if (_authRepository == null) _initializeRepositories();
+      final success = await _authRepository!.disableTwoFactor();
+      _setLoading(false);
+      return success;
+    } catch (e) {
+      if (kDebugMode) print('Disable 2FA error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
+}
 }

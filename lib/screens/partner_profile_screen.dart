@@ -4,6 +4,7 @@ import '../utils/app_theme.dart';
 import '../providers/app_state.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import '../utils/country_utils.dart';
+import 'package:intl/intl.dart';
 
 class PartnerProfileScreen extends StatefulWidget {
   const PartnerProfileScreen({super.key});
@@ -97,6 +98,41 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
               children: [
+                const Text(
+                  'Registration Details',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: colorScheme.outlineVariant),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildDetailRow('Partner ID', appState.currentUser?.id ?? 'N/A'),
+                      const Divider(height: 24),
+                      _buildDetailRow('Registration Date', 
+                        appState.currentUser?.createdAt != null 
+                          ? DateFormat('MMM d, yyyy').format(appState.currentUser!.createdAt) 
+                          : 'N/A'
+                      ),
+                      const Divider(height: 24),
+                      _buildDetailRow('Account Status', 
+                        appState.currentUser?.isActive == true ? 'Active' : 'Inactive',
+                        valueColor: appState.currentUser?.isActive == true ? AppTheme.successGreen : AppTheme.errorRed,
+                      ),
+                      const Divider(height: 24),
+                      _buildDetailRow('Role', appState.currentUser?.role.toUpperCase() ?? 'N/A'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
                 const Text(
                   'Basic Information',
                   style: TextStyle(
@@ -264,6 +300,29 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, {Color? valueColor}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: AppTheme.textLight,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: valueColor,
+          ),
+        ),
+      ],
     );
   }
 

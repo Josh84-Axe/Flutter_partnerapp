@@ -18,14 +18,26 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
-  final bool _is2FAEnabled = false;
-  
+  bool _is2FAEnabled = false;
+  bool _isLoading = false;
   String _passwordStrength = 'weak';
 
   @override
   void initState() {
     super.initState();
     _newPasswordController.addListener(_checkPasswordStrength);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadTwoFactorStatus();
+    });
+  }
+
+  Future<void> _loadTwoFactorStatus() async {
+    final status = await context.read<AppState>().getTwoFactorStatus();
+    if (mounted) {
+      setState(() {
+        _is2FAEnabled = status;
+      });
+    }
   }
 
   @override
@@ -47,6 +59,112 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
     }
   }
 
+  Future<void> _changePassword() async {
+    if (_currentPasswordController.text.isEmpty || 
+        _newPasswordController.text.isEmpty || 
+        _confirmPasswordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('please_fill_all_fields'.tr()), backgroundColor: AppTheme.errorRed),
+      );
+      return;
+    }
+
+    if (_newPasswordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('passwords_do_not_match'.tr()), backgroundColor: AppTheme.errorRed),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    
+    final success = await context.read<AppState>().changePassword(
+      _currentPasswordController.text,
+      _newPasswordController.text,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('password_updated_success'.tr()), backgroundColor: AppTheme.successGreen),
+        );
+        _currentPasswordController.clear();
+        _newPasswordController.clear();
+        _confirmPasswordController.clear();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('password_update_failed'.tr()), backgroundColor: AppTheme.errorRed),
+        );
+      }
+    }
+  }
+
+  Future<void> _toggleTwoFactor() async {
+    if (_is2FAEnabled) {
+      // Disable 2FA
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('disable_2fa'.tr()),
+          content: Text('disable_2fa_confirm'.tr()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text('cancel'.tr()),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
+              child: Text('disable'.tr()),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        setState(() => _isLoading = true);
+        final success = await context.read<AppState>().disableTwoFactor();
+        setState(() => _isLoading = false);
+        
+        if (mounted && success) {
+          setState(() => _is2FAEnabled = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('2fa_disabled_success'.tr()), backgroundColor: AppTheme.successGreen),
+          );
+        }
+      }
+    } else {
+      // Enable 2FA
+      final navigator = Navigator.of(context);
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (context) => const VerifyIdentityDialog(),
+      );
+      
+      if (result == true && mounted) {
+        try {
+          setState(() => _isLoading = true);
+          final response = await context.read<AppState>().enableTwoFactor();
+          setState(() => _isLoading = false);
+          
+          if (mounted) {
+            // Navigate to authenticator setup with the secret/QR code data
+            navigator.pushNamed('/security/authenticators', arguments: response);
+          }
+        } catch (e) {
+          setState(() => _isLoading = false);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('2fa_enable_failed'.tr()), backgroundColor: AppTheme.errorRed),
+            );
+          }
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -59,7 +177,9 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: ListView(
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(
@@ -146,11 +266,7 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
           ),
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Password updated successfully')),
-              );
-            },
+            onPressed: _changePassword,
             style: FilledButton.styleFrom(
               backgroundColor: colorScheme.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -209,21 +325,12 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
           ),
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: _is2FAEnabled ? null : () async {
-              final navigator = Navigator.of(context);
-              final result = await showDialog<bool>(
-                context: context,
-                builder: (context) => const VerifyIdentityDialog(),
-              );
-              if (result == true && mounted) {
-                navigator.pushNamed('/security/authenticators');
-              }
-            },
+            onPressed: _toggleTwoFactor,
             style: FilledButton.styleFrom(
-              backgroundColor: colorScheme.primary,
+              backgroundColor: _is2FAEnabled ? AppTheme.errorRed : colorScheme.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: Text('enable_2fa'.tr()),
+            child: Text(_is2FAEnabled ? 'disable_2fa'.tr() : 'enable_2fa'.tr()),
           ),
         ],
       ),
