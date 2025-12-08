@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 
 class HotspotProfileModel {
   final String id;
+  final String slug; // URL-friendly identifier for API endpoints
   final String name;
   final int downloadSpeedMbps;
   final int uploadSpeedMbps;
@@ -12,6 +13,7 @@ class HotspotProfileModel {
 
   HotspotProfileModel({
     required this.id,
+    required this.slug,
     required this.name,
     required this.downloadSpeedMbps,
     required this.uploadSpeedMbps,
@@ -40,7 +42,8 @@ class HotspotProfileModel {
     }
 
     return HotspotProfileModel(
-      id: json['id']?.toString() ?? json['slug']?.toString() ?? '',
+      id: json['id']?.toString() ?? '',
+      slug: json['slug']?.toString() ?? json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Unknown',
       downloadSpeedMbps: downloadSpeed,
       uploadSpeedMbps: uploadSpeed,

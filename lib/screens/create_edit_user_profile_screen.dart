@@ -364,7 +364,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
 
     try {
       if (widget.profile != null) {
-        await appState.updateHotspotProfile(widget.profile!.id, data);
+        await appState.updateHotspotProfile(widget.profile!.slug, data);
       } else {
         await appState.createHotspotProfile(data);
       }
