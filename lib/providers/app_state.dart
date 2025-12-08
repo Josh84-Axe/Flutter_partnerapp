@@ -2349,6 +2349,7 @@ class AppState with ChangeNotifier {
       _setLoading(false);
       rethrow;
     }
+  }
 
   // ==================== Security Operations ====================
 
