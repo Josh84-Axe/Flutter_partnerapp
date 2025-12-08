@@ -68,6 +68,7 @@ import 'screens/report_preview_screen.dart';
 import 'screens/export_success_screen.dart';
 import 'screens/create_edit_user_profile_screen.dart';
 import 'screens/notification_settings_screen.dart';
+import 'screens/notification_center_screen.dart';
 import 'screens/notification_router_screen.dart';
 import 'screens/user_details_screen.dart';
 import 'screens/role_permission_screen.dart';
@@ -190,6 +191,7 @@ class HotspotPartnerApp extends StatelessWidget {
           return CreateEditUserProfileScreen(profile: profile);
         },
         '/notification-settings': (context) => const NotificationSettingsScreen(),
+        '/notification-center': (context) => const NotificationCenterScreen(),
         '/notification-router': (context) => const NotificationRouterScreen(),
         '/user-details': (context) {
           final user = ModalRoute.of(context)?.settings.arguments as UserModel;
