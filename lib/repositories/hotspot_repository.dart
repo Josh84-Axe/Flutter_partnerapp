@@ -113,12 +113,12 @@ class HotspotRepository {
   }
 
   /// Delete hotspot profile
-  Future<bool> deleteProfile(String profileSlug) async {
+  Future<Map<String, dynamic>> deleteProfile(String profileSlug) async {
     try {
       if (kDebugMode) print('🗑️ [HotspotRepository] Deleting hotspot profile: $profileSlug');
-      await _dio.delete('/partner/hotspot/profiles/$profileSlug/delete/');
+      final response = await _dio.delete('/partner/hotspot/profiles/$profileSlug/delete/');
       if (kDebugMode) print('✅ [HotspotRepository] Profile deleted successfully');
-      return true;
+      return response.data as Map<String, dynamic>? ?? {'message': 'Profile deleted successfully'};
     } catch (e) {
       if (kDebugMode) print('❌ [HotspotRepository] Delete profile error: $e');
       rethrow;

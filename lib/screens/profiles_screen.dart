@@ -131,11 +131,12 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                                       );
                                       if (confirmed == true && context.mounted) {
                                         try {
-                                          await appState.deleteHotspotProfile(profile.slug);
+                                          final message = await appState.deleteHotspotProfile(profile.slug);
                                           if (context.mounted) {
                                             ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(
-                                                content: Text('Profile deleted successfully'),
+                                              SnackBar(
+                                                content: Text(message),
+                                                backgroundColor: Colors.green,
                                               ),
                                             );
                                           }

@@ -2003,13 +2003,14 @@ class AppState with ChangeNotifier {
   }
   
   /// Delete a hotspot profile
-  Future<void> deleteHotspotProfile(String profileSlug) async {
+  Future<String> deleteHotspotProfile(String profileSlug) async {
     _setLoading(true);
     try {
       if (_hotspotRepository == null) _initializeRepositories();
-      await _hotspotRepository!.deleteProfile(profileSlug);
+      final response = await _hotspotRepository!.deleteProfile(profileSlug);
       await loadHotspotProfiles(); // Reload profiles
       _setLoading(false);
+      return response['message']?.toString() ?? 'Profile deleted successfully';
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);

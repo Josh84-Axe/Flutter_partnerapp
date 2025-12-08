@@ -315,11 +315,14 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
               if (kDebugMode) print('🗑️ [CreateEditProfile] Delete confirmed, slug: ${widget.profile!.slug}');
               Navigator.pop(context); // Close dialog
               try {
-                await appState.deleteHotspotProfile(widget.profile!.slug);
+                final message = await appState.deleteHotspotProfile(widget.profile!.slug);
                 if (mounted) {
                   Navigator.pop(context); // Close screen
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('profile_deleted'.tr())),
+                    SnackBar(
+                      content: Text(message),
+                      backgroundColor: Colors.green,
+                    ),
                   );
                 }
               } catch (e) {
