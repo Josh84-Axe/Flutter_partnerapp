@@ -14,43 +14,38 @@ class PartnerProfileScreen extends StatefulWidget {
 
 class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _companyNameController;
-  late TextEditingController _addressController;
-  late TextEditingController _phoneController;
-  late TextEditingController _emailController;
-  late TextEditingController _cityController;
-  late TextEditingController _countryController;
-  late TextEditingController _routersController;
+  final _companyNameController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _countryController = TextEditingController();
+  final _routersController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
+  }
+
+  Future<void> _loadData() async {
     final appState = context.read<AppState>();
     final user = appState.currentUser;
     
-    _companyNameController = TextEditingController(text: user?.name ?? '');
-    _addressController = TextEditingController(text: user?.address ?? '');
-    _phoneController = TextEditingController(text: user?.phone ?? '');
-    _emailController = TextEditingController(text: user?.email ?? '');
-    _cityController = TextEditingController(text: user?.city ?? '');
-    _countryController = TextEditingController(text: user?.country ?? '');
-    _routersController = TextEditingController(text: user?.numberOfRouters?.toString() ?? '');
+    // Initialize controllers with user data
+    _companyNameController.text = user?.name ?? '';
+    _addressController.text = user?.address ?? '';
+    _phoneController.text = user?.phone ?? '';
+    _emailController.text = user?.email ?? '';
+    _cityController.text = user?.city ?? '';
+    _countryController.text = user?.country ?? '';
+    _routersController.text = user?.numberOfRouters?.toString() ?? '';
+    
+    // Load payment methods
+    await appState.loadPaymentMethods();
   }
-
-  final List<Map<String, String>> _paymentMethods = [
-    {
-      'type': 'Bank Transfer',
-      'name': 'Ghana Commercial Bank',
-      'account': '**** **** 4567',
-      'icon': 'account_balance',
-    },
-    {
-      'type': 'Mobile Money',
-      'name': 'MTN Mobile Money',
-      'account': '**** *** 890',
-      'icon': 'phone_android',
-    },
-  ];
 
   @override
   void dispose() {
@@ -201,7 +196,39 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                ..._paymentMethods.map((method) => _buildPaymentMethodCard(method)),
+                ...appState.paymentMethods.map((method) => _buildPaymentMethodCard(method)),
+                if (appState.paymentMethods.isEmpty)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.account_balance_wallet_outlined,
+                            size: 48,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No payment methods added',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Add a payment method to receive payouts',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
               ),
             ),
@@ -271,19 +298,18 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     );
   }
 
-  Widget _buildPaymentMethodCard(Map<String, String> method) {
+  Widget _buildPaymentMethodCard(Map<String, dynamic> method) {
     final colorScheme = Theme.of(context).colorScheme;
-    IconData iconData;
-    switch (method['icon']) {
-      case 'account_balance':
-        iconData = Icons.account_balance;
-        break;
-      case 'phone_android':
-        iconData = Icons.phone_android;
-        break;
-      default:
-        iconData = Icons.payment;
-    }
+    
+    // Determine method type and icon
+    final methodType = method['method_type']?.toString() ?? '';
+    final provider = method['provider']?.toString() ?? '';
+    final accountNumber = method['account_number']?.toString() ?? '';
+    final methodId = method['id']?.toString() ?? '';
+    
+    IconData iconData = methodType == 'mobile_money' 
+        ? Icons.phone_android 
+        : Icons.account_balance;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -301,7 +327,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    method['type']!,
+                    methodType == 'mobile_money' ? 'Mobile Money' : 'Bank Transfer',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -309,7 +335,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    method['name']!,
+                    provider,
                     style: TextStyle(
                       fontSize: 13,
                       color: AppTheme.textLight,
@@ -317,7 +343,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    method['account']!,
+                    accountNumber,
                     style: TextStyle(
                       fontSize: 12,
                       color: AppTheme.textLight,
@@ -328,13 +354,8 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
               ),
             ),
             IconButton(
-              icon: Icon(Icons.edit_outlined, size: 20),
-              onPressed: () {},
-              color: colorScheme.primary,
-            ),
-            IconButton(
               icon: Icon(Icons.delete_outline, size: 20),
-              onPressed: () {},
+              onPressed: () => _deletePaymentMethod(methodId),
               color: AppTheme.errorRed,
             ),
           ],
@@ -343,23 +364,57 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     );
   }
 
-  void _addPaymentMethod() {
-    showDialog(
+  Future<void> _deletePaymentMethod(String methodId) async {
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Payment Method'),
-        content: const Text('Payment method form would go here'),
+        title: const Text('Delete Payment Method'),
+        content: const Text('Are you sure you want to delete this payment method?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Add'),
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.errorRed,
+            ),
+            child: const Text('Delete'),
           ),
         ],
       ),
     );
+
+    if (confirmed == true && mounted) {
+      try {
+        await context.read<AppState>().deletePaymentMethod(methodId);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Payment method deleted successfully'),
+              backgroundColor: AppTheme.successGreen,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to delete payment method: $e'),
+              backgroundColor: AppTheme.errorRed,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  void _addPaymentMethod() async {
+    final result = await Navigator.of(context).pushNamed('/add-payout-method');
+    if (result == true && mounted) {
+      // Reload payment methods after adding
+      context.read<AppState>().loadPaymentMethods();
+    }
   }
 }
