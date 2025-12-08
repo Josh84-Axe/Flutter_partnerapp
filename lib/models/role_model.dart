@@ -2,7 +2,7 @@ class RoleModel {
   final String id;
   final String name;
   final String slug;
-  final Map<String, bool> permissions;
+  final List<int> permissions;
   final String? description;
   final int? memberCount;
 
@@ -20,7 +20,7 @@ class RoleModel {
       id: json['id']?.toString() ?? '',
       name: json['name'] ?? '',
       slug: json['slug'] ?? json['id']?.toString() ?? '', // Fallback to ID if slug missing
-      permissions: Map<String, bool>.from(json['permissions'] ?? {}),
+      permissions: (json['permissions'] as List?)?.map((e) => e as int).toList() ?? [],
       description: json['description'],
       memberCount: json['member_count'] ?? json['users_count'],
     );
