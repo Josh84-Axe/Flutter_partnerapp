@@ -2416,4 +2416,3 @@ class AppState with ChangeNotifier {
     }
   }
 }
-}
