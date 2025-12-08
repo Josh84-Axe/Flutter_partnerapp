@@ -297,18 +297,20 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
 
   void _confirmDelete(BuildContext context, AppState appState) {
     if (kDebugMode) print('🗑️ [CreateEditProfile] Delete button clicked');
+    if (kDebugMode) print('🗑️ [CreateEditProfile] Profile slug: ${widget.profile?.slug}');
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('delete_confirm_title'.tr()),
-        content: Text('delete_confirm_message'.tr()),
+        title: const Text('Delete Profile'),
+        content: Text('Are you sure you want to delete "${widget.profile?.name ?? 'this profile'}"?'),
         actions: [
           TextButton(
             onPressed: () {
               if (kDebugMode) print('🗑️ [CreateEditProfile] Delete cancelled');
               Navigator.pop(context);
             },
-            child: Text('cancel'.tr()),
+            child: const Text('Cancel'),
           ),
           FilledButton(
             onPressed: () async {
@@ -316,6 +318,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
               Navigator.pop(context); // Close dialog
               try {
                 final message = await appState.deleteHotspotProfile(widget.profile!.slug);
+                if (kDebugMode) print('✅ [CreateEditProfile] Delete successful: $message');
                 if (mounted) {
                   Navigator.pop(context); // Close screen
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -330,7 +333,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('error_deleting_profile'.tr(namedArgs: {'error': e.toString()})),
+                      content: Text('Error deleting profile: ${e.toString()}'),
                       backgroundColor: Theme.of(context).colorScheme.error,
                     ),
                   );
@@ -338,7 +341,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
               }
             },
             style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
-            child: Text('delete'.tr()),
+            child: const Text('Delete'),
           ),
         ],
       ),
