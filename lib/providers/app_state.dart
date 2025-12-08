@@ -1610,11 +1610,13 @@ class AppState with ChangeNotifier {
   Future<void> loadHotspotProfiles() async {
     try {
       if (_hotspotRepository == null) _initializeRepositories();
+      if (kDebugMode) print('📋 [AppState] Loading hotspot profiles... Current count: ${_hotspotProfiles.length}');
       final profiles = await _hotspotRepository!.fetchProfiles();
       _hotspotProfiles = profiles.map((p) => HotspotProfileModel.fromJson(p)).toList();
+      if (kDebugMode) print('✅ [AppState] Hotspot profiles loaded. New count: ${_hotspotProfiles.length}');
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) print('Load hotspot profiles error: $e');
+      if (kDebugMode) print('❌ [AppState] Load hotspot profiles error: $e');
       _setError(e.toString());
     }
   }
