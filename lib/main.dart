@@ -85,6 +85,7 @@ import 'screens/payment_methods_screen.dart';
 import 'screens/collaborators_management_screen.dart';
 import 'screens/assigned_plans_list_screen.dart';
 import 'screens/active_sessions_screen.dart';
+import 'screens/help_support_screen.dart';
 import 'models/hotspot_profile_model.dart';
 import 'models/user_model.dart';
 
@@ -205,6 +206,7 @@ class HotspotPartnerApp extends StatelessWidget {
         '/collaborators-management': (context) => const CollaboratorsManagementScreen(),
         '/assigned-plans-list': (context) => const AssignedPlansListScreen(),
         '/active-sessions': (context) => const ActiveSessionsScreen(),
+        '/support': (context) => const HelpSupportScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/router-details') {
