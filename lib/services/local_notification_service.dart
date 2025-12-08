@@ -9,11 +9,20 @@ class LocalNotificationService {
   static const String _lastTransactionIdKey = 'last_transaction_id';
   static const String _lastPayoutIdKey = 'last_payout_id';
   static const String _lastUserCountKey = 'last_user_count';
+  static const String _settingsKey = 'notification_settings';
   static const int _maxNotifications = 100; // Keep last 100 notifications
   
   final List<LocalNotification> _notifications = [];
   final _notificationController = StreamController<LocalNotification>.broadcast();
   Timer? _pollingTimer;
+  
+  // Notification settings (which types are enabled)
+  Map<String, bool> _settings = {
+    'transactions': true,
+    'payouts': true,
+    'balance': true,
+    'users': true,
+  };
   
   // Callbacks for data fetching (injected from AppState)
   Future<List<dynamic>> Function()? fetchTransactions;
@@ -40,6 +49,7 @@ class LocalNotificationService {
     fetchUserCount = onFetchUserCount;
     
     await _loadNotifications();
+    await _loadSettings();
     startPolling();
   }
 
@@ -85,14 +95,17 @@ class LocalNotificationService {
       final latestId = transactions.first['id']?.toString();
       
       if (lastId != null && latestId != null && lastId != latestId) {
-        // New transaction detected
-        final amount = transactions.first['amount'] ?? 0;
-        await _addNotification(
-          title: 'New Payment Received',
-          message: 'You received a payment of \$$amount',
-          type: 'transaction',
-          data: transactions.first,
-        );
+        // Check if transaction notifications are enabled
+        if (_settings['transactions'] == true) {
+          // New transaction detected
+          final amount = transactions.first['amount'] ?? 0;
+          await _addNotification(
+            title: 'New Payment Received',
+            message: 'You received a payment of \$$amount',
+            type: 'transaction',
+            data: transactions.first,
+          );
+        }
       }
       
       if (latestId != null) {
@@ -118,16 +131,19 @@ class LocalNotificationService {
       final status = latestPayout['status']?.toString().toLowerCase();
       
       if (lastId != null && latestId != null && lastId != latestId) {
-        // Payout status changed
-        final amount = latestPayout['amount'] ?? 0;
-        String message = 'Your payout of \$$amount is $status';
-        
-        await _addNotification(
-          title: 'Payout Update',
-          message: message,
-          type: 'payout',
-          data: latestPayout,
-        );
+        // Check if payout notifications are enabled
+        if (_settings['payouts'] == true) {
+          // Payout status changed
+          final amount = latestPayout['amount'] ?? 0;
+          String message = 'Your payout of \$$amount is $status';
+          
+          await _addNotification(
+            title: 'Payout Update',
+            message: message,
+            type: 'payout',
+            data: latestPayout,
+          );
+        }
       }
       
       if (latestId != null) {
@@ -147,19 +163,22 @@ class LocalNotificationService {
       const threshold = 10.0; // Alert if balance < $10
       
       if (balance < threshold) {
-        // Check if we already sent this alert recently (within 24 hours)
-        final recentAlert = _notifications.any((n) =>
-          n.type == 'balance' &&
-          DateTime.now().difference(n.timestamp).inHours < 24
-        );
-        
-        if (!recentAlert) {
-          await _addNotification(
-            title: 'Low Balance Alert',
-            message: 'Your wallet balance is low: \$${balance.toStringAsFixed(2)}',
-            type: 'balance',
-            data: {'balance': balance},
+        // Check if balance notifications are enabled
+        if (_settings['balance'] == true) {
+          // Check if we already sent this alert recently (within 24 hours)
+          final recentAlert = _notifications.any((n) =>
+            n.type == 'balance' &&
+            DateTime.now().difference(n.timestamp).inHours < 24
           );
+          
+          if (!recentAlert) {
+            await _addNotification(
+              title: 'Low Balance Alert',
+              message: 'Your wallet balance is low: \$${balance.toStringAsFixed(2)}',
+              type: 'balance',
+              data: {'balance': balance},
+            );
+          }
         }
       }
     } catch (e) {
@@ -177,13 +196,16 @@ class LocalNotificationService {
       final lastCount = prefs.getInt(_lastUserCountKey) ?? currentCount;
       
       if (currentCount > lastCount) {
-        final newUsers = currentCount - lastCount;
-        await _addNotification(
-          title: 'New Users Connected',
-          message: '$newUsers new user${newUsers > 1 ? 's' : ''} connected',
-          type: 'user',
-          data: {'count': newUsers},
-        );
+        // Check if user notifications are enabled
+        if (_settings['users'] == true) {
+          final newUsers = currentCount - lastCount;
+          await _addNotification(
+            title: 'New Users Connected',
+            message: '$newUsers new user${newUsers > 1 ? 's' : ''} connected',
+            type: 'user',
+            data: {'count': newUsers},
+          );
+        }
       }
       
       await prefs.setInt(_lastUserCountKey, currentCount);
@@ -272,6 +294,44 @@ class LocalNotificationService {
     } catch (e) {
       if (kDebugMode) print('❌ [LocalNotificationService] Save error: $e');
     }
+  }
+
+  /// Load settings from local storage
+  Future<void> _loadSettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(_settingsKey);
+      
+      if (jsonString != null) {
+        final Map<String, dynamic> loaded = json.decode(jsonString);
+        _settings = Map<String, bool>.from(loaded);
+        if (kDebugMode) print('🔔 [LocalNotificationService] Loaded settings: $_settings');
+      }
+    } catch (e) {
+      if (kDebugMode) print('❌ [LocalNotificationService] Load settings error: $e');
+    }
+  }
+
+  /// Save settings to local storage
+  Future<void> _saveSettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_settingsKey, json.encode(_settings));
+      if (kDebugMode) print('💾 [LocalNotificationService] Settings saved: $_settings');
+    } catch (e) {
+      if (kDebugMode) print('❌ [LocalNotificationService] Save settings error: $e');
+    }
+  }
+
+  /// Get current settings
+  Map<String, bool> getSettings() {
+    return Map<String, bool>.from(_settings);
+  }
+
+  /// Update settings
+  Future<void> updateSettings(Map<String, bool> settings) async {
+    _settings = Map<String, bool>.from(settings);
+    await _saveSettings();
   }
 
   /// Dispose resources

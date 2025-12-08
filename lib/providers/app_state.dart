@@ -2474,4 +2474,15 @@ class AppState with ChangeNotifier {
     await _localNotificationService.clearAll();
     notifyListeners();
   }
+
+  /// Get notification settings
+  Map<String, bool> getNotificationSettings() {
+    return _localNotificationService.getSettings();
+  }
+
+  /// Update notification settings
+  Future<void> updateNotificationSettings(Map<String, bool> settings) async {
+    await _localNotificationService.updateSettings(settings);
+    notifyListeners();
+  }
 }

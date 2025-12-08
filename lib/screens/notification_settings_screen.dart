@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
@@ -10,15 +12,48 @@ class NotificationSettingsScreen extends StatefulWidget {
 }
 
 class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
-  bool _newUserRegistered = true;
-  bool _routerOffline = true;
-  bool _payoutConfirmation = false;
-  bool _lowBalanceAlert = true;
-  bool _systemMaintenance = false;
+  late Map<String, bool> _settings;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  void _loadSettings() {
+    final appState = context.read<AppState>();
+    _settings = appState.getNotificationSettings();
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _saveSettings() async {
+    final appState = context.read<AppState>();
+    await appState.updateNotificationSettings(_settings);
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('notification_settings_saved'.tr()),
+          backgroundColor: AppTheme.successGreen,
+        ),
+      );
+      Navigator.pop(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('notification_settings'.tr()),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -32,43 +67,35 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         padding: const EdgeInsets.all(16),
         children: [
           _buildNotificationToggle(
-            icon: Icons.person_add,
-            title: 'new_user_registered'.tr(),
-            description: 'notification_new_user_desc'.tr(),
-            value: _newUserRegistered,
-            onChanged: (value) => setState(() => _newUserRegistered = value),
-          ),
-          const SizedBox(height: 8),
-          _buildNotificationToggle(
-            icon: Icons.wifi_off,
-            title: 'router_offline'.tr(),
-            description: 'notification_router_offline_desc'.tr(),
-            value: _routerOffline,
-            onChanged: (value) => setState(() => _routerOffline = value),
-          ),
-          const SizedBox(height: 8),
-          _buildNotificationToggle(
-            icon: Icons.attach_money,
-            title: 'payout_confirmation'.tr(),
-            description: 'notification_payout_desc'.tr(),
-            value: _payoutConfirmation,
-            onChanged: (value) => setState(() => _payoutConfirmation = value),
+            icon: Icons.payment,
+            title: 'Transaction Notifications',
+            description: 'Get notified when you receive new payments',
+            value: _settings['transactions'] ?? true,
+            onChanged: (value) => setState(() => _settings['transactions'] = value),
           ),
           const SizedBox(height: 8),
           _buildNotificationToggle(
             icon: Icons.account_balance_wallet,
-            title: 'low_balance_alert'.tr(),
-            description: 'notification_low_balance_desc'.tr(),
-            value: _lowBalanceAlert,
-            onChanged: (value) => setState(() => _lowBalanceAlert = value),
+            title: 'Payout Notifications',
+            description: 'Get notified about payout status changes',
+            value: _settings['payouts'] ?? true,
+            onChanged: (value) => setState(() => _settings['payouts'] = value),
           ),
           const SizedBox(height: 8),
           _buildNotificationToggle(
-            icon: Icons.build,
-            title: 'system_maintenance'.tr(),
-            description: 'notification_maintenance_desc'.tr(),
-            value: _systemMaintenance,
-            onChanged: (value) => setState(() => _systemMaintenance = value),
+            icon: Icons.warning,
+            title: 'Low Balance Alerts',
+            description: 'Get notified when your balance is low',
+            value: _settings['balance'] ?? true,
+            onChanged: (value) => setState(() => _settings['balance'] = value),
+          ),
+          const SizedBox(height: 8),
+          _buildNotificationToggle(
+            icon: Icons.person_add,
+            title: 'New User Notifications',
+            description: 'Get notified when new users connect to your hotspot',
+            value: _settings['users'] ?? true,
+            onChanged: (value) => setState(() => _settings['users'] = value),
           ),
         ],
       ),
@@ -86,23 +113,12 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         ),
         child: SafeArea(
           child: FilledButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${'notification_settings'.tr()} ${'save_changes'.tr().toLowerCase()}'),
-                  backgroundColor: AppTheme.successGreen,
-                ),
-              );
-              Navigator.pop(context);
-            },
+            onPressed: _saveSettings,
             style: FilledButton.styleFrom(
               backgroundColor: colorScheme.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: Text(
-              'save_changes'.tr(),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            child: Text('save_changes'.tr()),
           ),
         ),
       ),
@@ -117,57 +133,55 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     required ValueChanged<bool> onChanged,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.primary.withValues(alpha: 0.1),
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: colorScheme.primary,
-              borderRadius: BorderRadius.circular(24),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: colorScheme.primary),
             ),
-            child: Icon(
-              icon,
-              color: AppTheme.pureWhite,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppTheme.textLight,
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeTrackColor: colorScheme.primary,
-          ),
-        ],
+            Switch(
+              value: value,
+              onChanged: onChanged,
+              activeColor: colorScheme.primary,
+            ),
+          ],
+        ),
       ),
     );
   }
