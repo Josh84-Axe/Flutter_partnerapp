@@ -2,6 +2,7 @@ class RoleModel {
   final String id;
   final String name;
   final String slug;
+  final Map<String, bool> permissions;
   final String? description;
   final int? memberCount;
 
