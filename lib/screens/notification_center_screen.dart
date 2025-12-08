@@ -15,12 +15,12 @@ class NotificationCenterScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text('notifications'.tr()),
         actions: [
           if (notifications.isNotEmpty)
             TextButton(
               onPressed: () => appState.markAllLocalNotificationsAsRead(),
-              child: const Text('Mark all read'),
+              child: Text('mark_all_read'.tr()),
             ),
         ],
       ),
@@ -36,7 +36,7 @@ class NotificationCenterScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No notifications yet',
+                    'no_notifications_yet'.tr(),
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[600],
