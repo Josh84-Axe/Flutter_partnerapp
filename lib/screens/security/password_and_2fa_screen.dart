@@ -103,69 +103,7 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
     }
   }
 
-  Future<void> _toggleTwoFactor() async {
-    if (_is2FAEnabled) {
-      // Disable 2FA
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('disable_2fa'.tr()),
-          content: Text('disable_2fa_confirm'.tr()),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text('cancel'.tr()),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
-              child: Text('disable'.tr()),
-            ),
-          ],
-        ),
-      );
 
-      if (confirmed == true) {
-        setState(() => _isLoading = true);
-        final success = await context.read<AppState>().disableTwoFactor();
-        setState(() => _isLoading = false);
-        
-        if (mounted && success) {
-          setState(() => _is2FAEnabled = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('2fa_disabled_success'.tr()), backgroundColor: AppTheme.successGreen),
-          );
-        }
-      }
-    } else {
-      // Enable 2FA
-      final navigator = Navigator.of(context);
-      final result = await showDialog<bool>(
-        context: context,
-        builder: (context) => const VerifyIdentityDialog(),
-      );
-      
-      if (result == true && mounted) {
-        try {
-          setState(() => _isLoading = true);
-          final response = await context.read<AppState>().enableTwoFactor();
-          setState(() => _isLoading = false);
-          
-          if (mounted) {
-            // Navigate to authenticator setup with the secret/QR code data
-            navigator.pushNamed('/security/authenticators', arguments: response);
-          }
-        } catch (e) {
-          setState(() => _isLoading = false);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('2fa_enable_failed'.tr()), backgroundColor: AppTheme.errorRed),
-            );
-          }
-        }
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -276,64 +214,6 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
             child: const Text('Update Password'),
           ),
           const SizedBox(height: 32),
-          const Divider(),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'two_factor_authentication'.tr(),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: _is2FAEnabled ? AppTheme.successGreen : AppTheme.errorRed,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _is2FAEnabled ? 'Enabled' : 'Disabled',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: _is2FAEnabled ? AppTheme.successGreen : AppTheme.errorRed,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Add an extra layer of security to your account by enabling two-factor authentication.',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppTheme.textLight,
-            ),
-          ),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: _toggleTwoFactor,
-            style: FilledButton.styleFrom(
-              backgroundColor: _is2FAEnabled ? AppTheme.errorRed : colorScheme.primary,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: Text(_is2FAEnabled ? 'disable_2fa'.tr() : 'enable_2fa'.tr()),
-          ),
         ],
       ),
     );

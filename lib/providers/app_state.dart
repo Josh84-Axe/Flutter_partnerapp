@@ -38,6 +38,8 @@ import '../repositories/report_repository.dart';
 import '../utils/currency_utils.dart';
 import '../utils/permission_mapping.dart';
 import '../services/cache_service.dart';
+import '../services/local_notification_service.dart';
+import '../models/local_notification_model.dart';
 import 'package:flutter/foundation.dart';
 
 class AppState with ChangeNotifier {
@@ -166,6 +168,9 @@ class AppState with ChangeNotifier {
   SubscriptionModel? _subscription;
   List<SubscriptionPlanModel> _availableSubscriptionPlans = [];
   
+  // Local notification service
+  final LocalNotificationService _localNotificationService = LocalNotificationService();
+  
   final Map<int, String> _permissionIdToCodename = {};
   
   // Getters
@@ -253,6 +258,11 @@ class AppState with ChangeNotifier {
   int get unreadNotificationCount => _notifications.where((n) => !n.isRead).length;
   SubscriptionModel? get subscription => _subscription;
   List<SubscriptionPlanModel> get availableSubscriptionPlans => _availableSubscriptionPlans;
+  
+  // Local notifications
+  List<LocalNotification> get localNotifications => _localNotificationService.notifications;
+  int get localUnreadCount => _localNotificationService.unreadCount;
+  Stream<LocalNotification> get localNotificationStream => _localNotificationService.notificationStream;
   
   // Currency formatting helpers
   String get currencySymbol => CurrencyUtils.getCurrencySymbol(_partnerCountry);
@@ -714,9 +724,16 @@ class AppState with ChangeNotifier {
             name: '${data['first_name'] ?? ''} ${data['last_name'] ?? ''}'.trim(),
             email: data['email']?.toString() ?? '',
             role: data['role'] is Map ? (data['role']['name']?.toString() ?? 'Partner') : 'Partner',
+            phone: data['phone']?.toString() ?? data['phone_number']?.toString(),
             permissions: mappedPermissions,
             isActive: true,
-            createdAt: DateTime.now(),
+            createdAt: data['created_at'] != null 
+                ? DateTime.tryParse(data['created_at']) ?? DateTime.now()
+                : DateTime.now(),
+            address: data['address']?.toString(),
+            city: data['city']?.toString(),
+            country: data['country']?.toString() ?? data['country_name']?.toString(),
+            numberOfRouters: data['routers_count'] ?? data['number_of_routers'],
           );
           
           // Parse subscription data if available
@@ -762,6 +779,7 @@ class AppState with ChangeNotifier {
         _loadValidityPeriods(),
         _loadIdleTimeouts(),
         _loadSharedUsers(),
+        loadRouters(),
       ]);
       
       if (kDebugMode) {
@@ -1081,6 +1099,9 @@ class AppState with ChangeNotifier {
         loadAllTransactions(),
         loadWithdrawals(),
       ]);
+      
+      // Initialize local notification service
+      _initializeNotificationService();
       
       if (kDebugMode) print('✅ [AppState] Dashboard data loaded successfully');
       _isLoading = false;
@@ -2357,11 +2378,11 @@ class AppState with ChangeNotifier {
   Future<bool> changePassword(String oldPassword, String newPassword) async {
     _setLoading(true);
     try {
-      if (_authRepository == null) _initializeRepositories();
-      final success = await _authRepository!.changePassword(
-        oldPassword: oldPassword,
-        newPassword: newPassword,
-      );
+      if (_passwordRepository == null) _initializeRepositories();
+      final success = await _passwordRepository!.changePassword({
+        'old_password': oldPassword,
+        'new_password': newPassword,
+      });
       _setLoading(false);
       return success;
     } catch (e) {
@@ -2414,5 +2435,40 @@ class AppState with ChangeNotifier {
       _setLoading(false);
       return false;
     }
+  }
+  
+  // ==================== Local Notification Management ====================
+  
+  /// Initialize local notification service
+  Future<void> _initializeNotificationService() async {
+    try {
+      await _localNotificationService.initialize(
+        onFetchTransactions: () async => _walletTransactions,
+        onFetchPayouts: () async => _withdrawals,
+        onFetchWalletBalance: () async => _walletBalance,
+        onFetchUserCount: () async => _hotspotUsers.length,
+      );
+      if (kDebugMode) print('✅ [AppState] Notification service initialized');
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Notification service init error: $e');
+    }
+  }
+  
+  /// Mark local notification as read
+  Future<void> markLocalNotificationAsRead(String id) async {
+    await _localNotificationService.markAsRead(id);
+    notifyListeners();
+  }
+  
+  /// Mark all local notifications as read
+  Future<void> markAllLocalNotificationsAsRead() async {
+    await _localNotificationService.markAllAsRead();
+    notifyListeners();
+  }
+  
+  /// Clear all local notifications
+  Future<void> clearAllLocalNotifications() async {
+    await _localNotificationService.clearAll();
+    notifyListeners();
   }
 }

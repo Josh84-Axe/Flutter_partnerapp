@@ -168,7 +168,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -185,7 +185,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                               ],

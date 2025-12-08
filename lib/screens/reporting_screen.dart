@@ -61,7 +61,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
             colorScheme: ColorScheme.light(
               primary: Colors.green.shade700,
               onPrimary: Colors.white,
-              onSurface: Colors.black,
+              onSurface: colorScheme.onSurface,
             ),
           ),
           child: child!,

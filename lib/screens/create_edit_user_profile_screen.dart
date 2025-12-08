@@ -358,6 +358,8 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
 
     if (kDebugMode) {
       print('📦 [CreateProfile] Saving profile data: $data');
+      print('   Rate Limit Raw: $_selectedRateLimit');
+      print('   Idle Time Raw: $_selectedIdleTime');
     }
 
     try {

@@ -167,7 +167,7 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
                                   ),
                                   const SizedBox(height: 4),

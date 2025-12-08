@@ -313,7 +313,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                       style: TextStyle(
                         fontSize: 12,
                         color: (steps[i]['isActive'] as bool)
-                            ? Colors.black87
+                            ? Theme.of(context).colorScheme.onSurface
                             : Colors.grey,
                         fontWeight: (steps[i]['isActive'] as bool)
                             ? FontWeight.bold

@@ -61,12 +61,11 @@ class HotspotProfileModel {
     return {
       'id': id,
       'name': name,
-      'downloadSpeedMbps': downloadSpeedMbps,
-      'uploadSpeedMbps': uploadSpeedMbps,
-      'idleTimeout': idleTimeout,
-      'routerIds': routerIds,
-      'isPromo': isPromo,
-      'isActive': isActive,
+      'rate_limit_value': '$downloadSpeedMbps/$uploadSpeedMbps', // Approximate reconstruction
+      'idle_timeout_value': idleTimeout,
+      'routers': routerIds,
+      'is_for_promo': isPromo,
+      'is_active': isActive,
     };
   }
 }
