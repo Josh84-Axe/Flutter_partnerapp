@@ -67,6 +67,8 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
     final appState = context.watch<AppState>();
     final isEdit = widget.profile != null;
     final colorScheme = Theme.of(context).colorScheme;
+    
+    if (kDebugMode) print('🔧 [CreateEditProfile] Building screen. isEdit: $isEdit, profile: ${widget.profile?.name}, slug: ${widget.profile?.slug}');
 
     // Helper to get display text for Rate Limit / Idle Time items
     String getDisplayText(dynamic item) {
@@ -259,13 +261,16 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                   if (isEdit) ...[
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => _confirmDelete(context, appState),
+                        onPressed: () {
+                          if (kDebugMode) print('🔴 DELETE BUTTON PRESSED!');
+                          _confirmDelete(context, appState);
+                        },
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           foregroundColor: colorScheme.error,
                           side: BorderSide(color: colorScheme.error),
                         ),
-                        child: Text('delete'.tr()),
+                        child: const Text('DELETE'),
                       ),
                     ),
                     const SizedBox(width: 16),
