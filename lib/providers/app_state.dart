@@ -1020,7 +1020,13 @@ class AppState with ChangeNotifier {
       if (kDebugMode) print('💸 [AppState] Loading withdrawals...');
       _withdrawals = await _transactionRepository!.getWithdrawals();
       
-      if (kDebugMode) print('✅ [AppState] Withdrawals loaded: ${_withdrawals.length}');
+      if (kDebugMode) {
+        print('✅ [AppState] Withdrawals loaded: ${_withdrawals.length}');
+        if (_withdrawals.isNotEmpty) {
+          print('   Sample withdrawal fields: ${_withdrawals.first.keys}');
+          print('   Sample withdrawal: ${_withdrawals.first}');
+        }
+      }
       notifyListeners();
     } catch (e) {
       if (kDebugMode) print('❌ [AppState] Load withdrawals error: $e');

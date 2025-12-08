@@ -340,16 +340,30 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
           ],
         );
       case 'Payouts':
-        final payoutTransactions = appState.transactions
-            .where((t) => t.type == 'payout' || t.type == 'withdrawal')
-            .toList();
-        final totalPayouts = payoutTransactions.fold(0.0, (sum, t) => sum + t.amount.abs());
-        final pendingPayouts = payoutTransactions
-            .where((t) => t.status == 'pending')
-            .fold(0.0, (sum, t) => sum + t.amount.abs());
-        final completedPayouts = payoutTransactions
-            .where((t) => t.status == 'completed' || t.status == 'success')
-            .fold(0.0, (sum, t) => sum + t.amount.abs());
+        // Use withdrawals data instead of transactions
+        final withdrawals = appState.withdrawals;
+        
+        final totalPayouts = withdrawals.fold(0.0, (sum, w) {
+          final amount = double.tryParse(w['amount']?.toString() ?? '0') ?? 0.0;
+          return sum + amount.abs();
+        });
+        
+        final pendingPayouts = withdrawals
+            .where((w) => (w['status'] ?? '').toString().toLowerCase() == 'pending')
+            .fold(0.0, (sum, w) {
+              final amount = double.tryParse(w['amount']?.toString() ?? '0') ?? 0.0;
+              return sum + amount.abs();
+            });
+        
+        final completedPayouts = withdrawals
+            .where((w) {
+              final status = (w['status'] ?? '').toString().toLowerCase();
+              return status == 'completed' || status == 'success' || status == 'approved';
+            })
+            .fold(0.0, (sum, w) {
+              final amount = double.tryParse(w['amount']?.toString() ?? '0') ?? 0.0;
+              return sum + amount.abs();
+            });
 
         return Column(
           children: [
