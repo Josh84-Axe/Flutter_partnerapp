@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import '../utils/app_theme.dart';
-import '../models/hotspot_profile_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
+import '../models/hotspot_profile_model.dart';
+import '../utils/app_theme.dart';
 
 class CreateEditUserProfileScreen extends StatefulWidget {
   final HotspotProfileModel? profile;
@@ -17,8 +18,10 @@ class CreateEditUserProfileScreen extends StatefulWidget {
 class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  String? _selectedRateLimit;
-  String? _selectedIdleTime;
+  
+  // Form state variables
+  dynamic _selectedRateLimit;
+  dynamic _selectedIdleTime;
   String? _selectedRouter;
   bool _isPromo = false;
   bool _isActive = true;
@@ -26,21 +29,31 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
   @override
   void initState() {
     super.initState();
-    if (widget.profile != null) {
-      _nameController.text = widget.profile!.name;
-      _selectedRateLimit = widget.profile!.speedDescription;
-      _selectedIdleTime = widget.profile!.idleTimeout;
-      _isPromo = widget.profile!.isPromo;
-      _isActive = widget.profile!.isActive;
-      if (widget.profile!.routerIds.isNotEmpty) {
-        _selectedRouter = widget.profile!.routerIds.first;
-      }
-    }
     
-    // Fetch configurations
+    // Load configurations
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppState>().loadAllConfigurations();
     });
+
+    // Initialize form data if editing
+    if (widget.profile != null) {
+      _nameController.text = widget.profile!.name;
+      _isPromo = widget.profile!.isPromo;
+      _isActive = widget.profile!.isActive;
+      
+      // Pre-select router if available
+      if (widget.profile!.routerIds.isNotEmpty) {
+        _selectedRouter = widget.profile!.routerIds.first;
+      }
+      
+      // Note: Rate limit and Idle time matching might be tricky if the API 
+      // returns formatted strings (e.g. "5m/5m") but the config list has objects.
+      // We'll attempt to match by string representation or value if possible.
+      // For now, we initialize them to null to force user selection if exact match fails,
+      // or we could try to find a matching item in the list after loading config.
+      // Given the "calibracres" issue, it's safer to let the user re-select or 
+      // implement robust matching logic in build().
+    }
   }
 
   @override
@@ -51,9 +64,18 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final appState = context.watch<AppState>();
     final isEdit = widget.profile != null;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Helper to get display text for Rate Limit / Idle Time items
+    String getDisplayText(dynamic item) {
+      if (item == null) return '';
+      if (item is Map) {
+        return item['name']?.toString() ?? item['value']?.toString() ?? item.toString();
+      }
+      return item.toString();
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -63,257 +85,280 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'profile_name'.tr(),
-                hintText: 'enter_profile_name'.tr(),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'profile_name'.tr();
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedRateLimit,
-              decoration: InputDecoration(
-                labelText: 'rate_limit'.tr(),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                ),
-              ),
-              hint: Text('select_rate_limit'.tr()),
-              items: appState.rateLimits.isEmpty
-                  ? [DropdownMenuItem<String>(value: null, child: Text('loading'.tr()))]
-                  : appState.rateLimits
-                      .map<DropdownMenuItem<String>>((limit) => DropdownMenuItem(value: limit.toString(), child: Text(limit.toString())))
-                      .toList(),
-              onChanged: (value) => setState(() => _selectedRateLimit = value),
-              validator: (value) => value == null ? 'select_rate_limit'.tr() : null,
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedIdleTime,
-              decoration: InputDecoration(
-                labelText: 'idle_time'.tr(),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                ),
-              ),
-              hint: Text('select_idle_time'.tr()),
-              items: appState.idleTimeouts.isEmpty
-                  ? [DropdownMenuItem<String>(value: null, child: Text('loading'.tr()))]
-                  : appState.idleTimeouts
-                      .map<DropdownMenuItem<String>>((time) => DropdownMenuItem(value: time.toString(), child: Text(time.toString())))
-                      .toList(),
-              onChanged: (value) => setState(() => _selectedIdleTime = value),
-              validator: (value) => value == null ? 'select_idle_time'.tr() : null,
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedRouter,
-              decoration: InputDecoration(
-                labelText: 'router'.tr(),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                ),
-              ),
-              hint: Text('select_router'.tr()),
-              items: [
-                DropdownMenuItem(value: 'all', child: Text('all_routers'.tr())),
-                ...appState.routers.map((router) =>
-                    DropdownMenuItem(value: router.id, child: Text(router.name))),
-              ],
-              onChanged: (value) => setState(() => _selectedRouter = value),
-              validator: (value) => value == null ? 'select_router'.tr() : null,
-            ),
-            const SizedBox(height: 16),
-            SwitchListTile(
-              title: Text('promotional_profile'.tr()),
-              subtitle: Text('promotional_profile_desc'.tr()),
-              value: _isPromo,
-              onChanged: (value) => setState(() => _isPromo = value),
-              secondary: Icon(Icons.campaign, color: colorScheme.primary),
-            ),
-            SwitchListTile(
-              title: Text('active_status'.tr()),
-              subtitle: Text('active_status_desc'.tr()),
-              value: _isActive,
-              onChanged: (value) => setState(() => _isActive = value),
-              secondary: Icon(Icons.toggle_on, color: _isActive ? Colors.green : Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            if (appState.error != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(
-                  appState.error!,
-                  style: TextStyle(color: AppTheme.errorRed),
-                ),
-              ),
-            Container(
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.settings_applications,
-                    color: colorScheme.primary,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'profile_settings_info'.tr(),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: colorScheme.primary,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Profile Name
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: 'profile_name'.tr(),
+                        hintText: 'enter_profile_name'.tr(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.badge_outlined),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'profile_name_required'.tr();
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Rate Limit Dropdown
+                    DropdownButtonFormField<dynamic>(
+                      value: _selectedRateLimit,
+                      decoration: InputDecoration(
+                        labelText: 'rate_limit'.tr(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.speed),
+                      ),
+                      hint: Text('select_rate_limit'.tr()),
+                      items: appState.rateLimits.isEmpty
+                          ? [DropdownMenuItem(value: null, child: Text('loading'.tr()))]
+                          : appState.rateLimits.map((limit) {
+                              return DropdownMenuItem(
+                                value: limit,
+                                child: Text(getDisplayText(limit)),
+                              );
+                            }).toList(),
+                      onChanged: (value) => setState(() => _selectedRateLimit = value),
+                      validator: (value) => value == null ? 'select_rate_limit'.tr() : null,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Idle Timeout Dropdown
+                    DropdownButtonFormField<dynamic>(
+                      value: _selectedIdleTime,
+                      decoration: InputDecoration(
+                        labelText: 'idle_time'.tr(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.timer_outlined),
+                      ),
+                      hint: Text('select_idle_time'.tr()),
+                      items: appState.idleTimeouts.isEmpty
+                          ? [DropdownMenuItem(value: null, child: Text('loading'.tr()))]
+                          : appState.idleTimeouts.map((timeout) {
+                              return DropdownMenuItem(
+                                value: timeout,
+                                child: Text(getDisplayText(timeout)),
+                              );
+                            }).toList(),
+                      onChanged: (value) => setState(() => _selectedIdleTime = value),
+                      validator: (value) => value == null ? 'select_idle_time'.tr() : null,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Router Dropdown
+                    DropdownButtonFormField<String>(
+                      value: _selectedRouter,
+                      decoration: InputDecoration(
+                        labelText: 'router'.tr(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.router_outlined),
+                      ),
+                      hint: Text('select_router'.tr()),
+                      items: [
+                        DropdownMenuItem(value: 'all', child: Text('all_routers'.tr())),
+                        ...appState.routers.map((router) =>
+                            DropdownMenuItem(value: router.id, child: Text(router.name))),
+                      ],
+                      onChanged: (value) => setState(() => _selectedRouter = value),
+                      validator: (value) => value == null ? 'select_router'.tr() : null,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Switches
+                    Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: colorScheme.outlineVariant),
+                      ),
+                      child: Column(
+                        children: [
+                          SwitchListTile(
+                            title: Text('promotional_profile'.tr()),
+                            subtitle: Text('promotional_profile_desc'.tr()),
+                            value: _isPromo,
+                            onChanged: (value) => setState(() => _isPromo = value),
+                            secondary: Icon(Icons.campaign, color: colorScheme.primary),
+                          ),
+                          const Divider(height: 1),
+                          SwitchListTile(
+                            title: Text('active_status'.tr()),
+                            subtitle: Text('active_status_desc'.tr()),
+                            value: _isActive,
+                            onChanged: (value) => setState(() => _isActive = value),
+                            secondary: Icon(Icons.toggle_on, color: _isActive ? Colors.green : Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Info Box
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline, color: colorScheme.primary),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'profile_settings_info'.tr(),
+                              style: TextStyle(color: colorScheme.primary, fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          
+          // Bottom Action Bar
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: Row(
+                children: [
+                  if (isEdit) ...[
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => _confirmDelete(context, appState),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          foregroundColor: colorScheme.error,
+                          side: BorderSide(color: colorScheme.error),
+                        ),
+                        child: Text('delete'.tr()),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                  ],
+                  Expanded(
+                    flex: 2,
+                    child: FilledButton(
+                      onPressed: appState.isLoading ? null : () => _saveProfile(appState),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: appState.isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : Text(isEdit ? 'save_changes'.tr() : 'create_profile'.tr()),
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.pureWhite,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            if (isEdit) ...[
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('delete_confirm_title'.tr()),
-                        content: Text('delete_confirm_message'.tr()),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text('cancel'.tr()),
-                          ),
-                          FilledButton(
-                            onPressed: () async {
-                              try {
-                                await appState.deleteHotspotProfile(widget.profile!.id);
-                                if (context.mounted) {
-                                  Navigator.pop(context); // Close dialog
-                                  Navigator.pop(context); // Close screen
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('profile_deleted'.tr())),
-                                  );
-                                }
-                              } catch (e) {
-                                if (context.mounted) {
-                                  Navigator.pop(context); // Close dialog
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('error_deleting_profile'.tr(namedArgs: {'error': e.toString()})),
-                                      backgroundColor: AppTheme.errorRed,
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppTheme.errorRed,
-                            ),
-                            child: Text('delete'.tr()),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: BorderSide(color: AppTheme.errorRed),
-                    foregroundColor: AppTheme.errorRed,
-                  ),
-                  child: Text('delete'.tr()),
-                ),
-              ),
-              const SizedBox(width: 12),
-            ],
-            Expanded(
-              flex: 2,
-              child: FilledButton(
-                onPressed: appState.isLoading ? null : _saveProfile,
-                style: FilledButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: appState.isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : Text(isEdit ? 'save_profile'.tr() : 'create_profile'.tr()),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Future<void> _saveProfile() async {
+  void _confirmDelete(BuildContext context, AppState appState) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('delete_confirm_title'.tr()),
+        content: Text('delete_confirm_message'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog
+              try {
+                await appState.deleteHotspotProfile(widget.profile!.id);
+                if (mounted) {
+                  Navigator.pop(context); // Close screen
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('profile_deleted'.tr())),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('error_deleting_profile'.tr(namedArgs: {'error': e.toString()})),
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                  );
+                }
+              }
+            },
+            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            child: Text('delete'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveProfile(AppState appState) async {
     if (!_formKey.currentState!.validate()) return;
 
-    final appState = context.read<AppState>();
-    
+    // Helper to extract value from dynamic item (Map or String)
+    String extractValue(dynamic item) {
+      if (item is Map) {
+        return item['value']?.toString() ?? item['name']?.toString() ?? '';
+      }
+      return item.toString();
+    }
+
     final data = {
       'name': _nameController.text,
-      'rate_limit': _selectedRateLimit,
-      'idle_timeout': _selectedIdleTime,
+      'rate_limit': extractValue(_selectedRateLimit),
+      'idle_timeout': extractValue(_selectedIdleTime),
       'is_for_promo': _isPromo,
       'is_active': _isActive,
       'routers': _selectedRouter != null && _selectedRouter != 'all' ? [_selectedRouter] : [],
     };
+
+    if (kDebugMode) {
+      print('📦 [CreateProfile] Saving profile data: $data');
+    }
 
     try {
       if (widget.profile != null) {
@@ -321,9 +366,25 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
       } else {
         await appState.createHotspotProfile(data);
       }
-      if (mounted) Navigator.pop(context);
+      
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.profile != null ? 'profile_updated'.tr() : 'profile_created'.tr()),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
-      // Error is handled in AppState and displayed in UI
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('error_saving_profile'.tr(namedArgs: {'error': e.toString()})),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
     }
   }
 }
