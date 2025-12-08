@@ -420,7 +420,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? colorScheme.primary : AppTheme.textLight.withValues(alpha: 0.3),
+            color: isSelected ? colorScheme.primary : colorScheme.outline,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -428,14 +428,14 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? colorScheme.primary : AppTheme.textLight,
+              color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
               size: 32,
             ),
             const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? colorScheme.primary : AppTheme.textDark,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 fontSize: 14,
               ),
@@ -453,14 +453,13 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          label,
-          style: const TextStyle(color: AppTheme.textLight),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         Text(
           '${isNegative ? '-' : ''}${appState.formatMoney(amount)}',
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            color: isNegative ? AppTheme.errorRed : AppTheme.textDark,
+            color: isNegative ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ],
@@ -478,7 +477,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isSelected ? colorScheme.primary : AppTheme.textLight.withValues(alpha: 0.3),
+          color: isSelected ? colorScheme.primary : colorScheme.outline,
           width: isSelected ? 2 : 1,
         ),
       ),
@@ -504,7 +503,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                 ),
                 child: Icon(
                   icon,
-                  color: isSelected ? colorScheme.primary : AppTheme.textLight,
+                  color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
                   size: 24,
                 ),
               ),
@@ -518,14 +517,14 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
-                        color: isSelected ? colorScheme.primary : AppTheme.textDark,
+                        color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       accountNumber,
                       style: TextStyle(
-                        color: AppTheme.textLight,
+                        color: colorScheme.onSurfaceVariant,
                         fontSize: 14,
                       ),
                     ),

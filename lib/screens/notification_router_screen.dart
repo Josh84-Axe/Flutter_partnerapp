@@ -182,14 +182,14 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
                     Icon(
                       Icons.notifications_off_outlined,
                       size: 64,
-                      color: AppTheme.textLight,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'no_notifications'.tr(),
                       style: TextStyle(
                         fontSize: 16,
-                        color: AppTheme.textLight,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -254,7 +254,7 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
-                    color: isCritical ? AppTheme.errorRed : AppTheme.textDark,
+                    color: isCritical ? colorScheme.error : colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -262,7 +262,7 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
                   notification.message,
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppTheme.textLight,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -270,7 +270,7 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
                   _formatTimestamp(notification.timestamp),
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppTheme.textLight,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -279,7 +279,7 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
           IconButton(
             icon: const Icon(Icons.close, size: 20),
             onPressed: () => _dismissNotification(notification.id),
-            color: AppTheme.textLight,
+            color: colorScheme.onSurfaceVariant,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),

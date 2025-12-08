@@ -1,11 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 
 class HotspotProfileModel {
-  final String id;
-  final String name;
-  final int downloadSpeedMbps;
-  final int uploadSpeedMbps;
-  final String idleTimeout;
+  final List<String> routerIds;
+  final bool isPromo;
+  final bool isActive;
 
   HotspotProfileModel({
     required this.id,
@@ -13,6 +11,9 @@ class HotspotProfileModel {
     required this.downloadSpeedMbps,
     required this.uploadSpeedMbps,
     required this.idleTimeout,
+    this.routerIds = const [],
+    this.isPromo = false,
+    this.isActive = true,
   });
 
   String get speedDescription => '$downloadSpeedMbps Mbps / $uploadSpeedMbps Mbps • ${'idle_timeout'.tr()} $idleTimeout';
@@ -24,12 +25,24 @@ class HotspotProfileModel {
     final downloadSpeed = speeds.isNotEmpty ? _parseSpeed(speeds[0]) : 0;
     final uploadSpeed = speeds.length > 1 ? _parseSpeed(speeds[1]) : 0;
     
+    // Parse routers
+    List<String> routers = [];
+    if (json['routers_detail'] != null && json['routers_detail'] is List) {
+      routers = (json['routers_detail'] as List)
+          .map((r) => r['id']?.toString() ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList();
+    }
+
     return HotspotProfileModel(
       id: json['id']?.toString() ?? json['slug']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Unknown',
       downloadSpeedMbps: downloadSpeed,
       uploadSpeedMbps: uploadSpeed,
       idleTimeout: json['idle_timeout_value']?.toString() ?? json['idle_timeout']?.toString() ?? '0m',
+      routerIds: routers,
+      isPromo: json['is_for_promo'] ?? false,
+      isActive: json['is_active'] ?? true,
     );
   }
 
@@ -46,6 +59,9 @@ class HotspotProfileModel {
       'downloadSpeedMbps': downloadSpeedMbps,
       'uploadSpeedMbps': uploadSpeedMbps,
       'idleTimeout': idleTimeout,
+      'routerIds': routerIds,
+      'isPromo': isPromo,
+      'isActive': isActive,
     };
   }
 }

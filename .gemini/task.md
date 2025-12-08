@@ -1,0 +1,203 @@
+# Task: Design and Implement New Internet Plan UI
+
+- [x] Generate UI mockup for validation <!-- id: 0 -->
+- [x] Validate mockup with user <!-- id: 1 -->
+- [x] Restore Internet Plan menu in Settings <!-- id: 2 -->
+- [x] Implement new Internet Plan screen UI <!-- id: 3 -->
+- [x] Verify functionality (Create, Edit, Delete) <!-- id: 4 -->
+
+# Task: Fix Forgot Password Flow
+
+- [x] Audit Forgot Password Flow <!-- id: 5 -->
+    - [x] Analyze `ForgotPasswordScreen` and `PasswordRepository` <!-- id: 6 -->
+    - [x] Verify API endpoints and payload <!-- id: 7 -->
+    - [x] Check OTP verification logic <!-- id: 8 -->
+    - [x] Check Password Reset logic <!-- id: 9 -->
+- [x] Fix Reset Code Email Failure <!-- id: 10 -->
+    - [x] Identify root cause of email failure <!-- id: 11 -->
+    - [x] Implement fix (Reverted to AuthRepository - PasswordRepository endpoints don't exist) <!-- id: 12 -->
+- [x] Verify Fix <!-- id: 13 -->
+
+# Task: Implement Transaction and Wallet Flow
+
+- [x] Analyze transaction and wallet flow <!-- id: 14 -->
+- [x] Update TransactionRepository with new endpoints <!-- id: 15 -->
+- [x] Update AppState with wallet management methods <!-- id: 16 -->
+- [x] Update WalletOverviewScreen with real data <!-- id: 17 -->
+- [x] Update PayoutRequestScreen with real data <!-- id: 18 -->
+- [x] Update RevenueBreakdownScreen with real data <!-- id: 19 -->
+- [x] Verify and Document <!-- id: 20 -->
+
+# Task: Fix Registration Form Fields
+
+- [x] Analyze registration form fields <!-- id: 21 -->
+- [x] Create implementation plan <!-- id: 22 -->
+- [x] Update AuthRepository.register() <!-- id: 23 -->
+- [x] Audit Permissions Root Cause <!-- id: 30 -->
+    - [x] Verify login API response format for permissions <!-- id: 31 -->
+    - [x] Identify discrepancy between API labels and internal constants <!-- id: 32 -->
+    - [x] Implement mapping in `PermissionMapping` <!-- id: 33 -->
+    - [x] Update `AppState` to parse and map permissions from login/profile data <!-- id: 34 -->
+    - [x] Streamline permission loading logic <!-- id: 35 -->
+- [x] Update AppState.register() <!-- id: 24 -->
+- [x] Update LoginScreen form fields <!-- id: 25 -->
+    - [x] Add Enterprise Name and Confirm Password <!-- id: 26 -->
+    - [x] Update Country Dropdown (ISO codes) <!-- id: 27 -->
+    - [x] Update Phone Default Logic <!-- id: 28 -->
+    - [x] Ensure all fields are sent <!-- id: 29 -->
+
+# Task: Rewire Revenue and Wallet Endpoints
+
+- [x] Update PartnerRepository with `fetchCountersBalance` and `fetchWalletBalance` <!-- id: 36 -->
+- [x] Update AppState with revenue fields and new loading logic <!-- id: 37 -->
+- [x] Update DashboardScreen to use `totalRevenue` from AppState <!-- id: 38 -->
+- [x] Update RevenueBreakdownScreen to use `assignedRevenue` and `onlineRevenue` <!-- id: 39 -->
+- [x] Update WalletOverviewScreen to use `totalRevenue` and `walletBalance` <!-- id: 40 -->
+
+# Task: Investigate Registration Error
+
+- [x] Add try-catch and logging to RegistrationScreen._submit <!-- id: 41 -->
+- [x] Fix syntax error (missing build method) in RegistrationScreen <!-- id: 42 -->
+- [ ] Analyze detailed error logs from user <!-- id: 43 -->
+- [ ] Implement fix for NoSuchMethodError <!-- id: 44 -->
+
+# Task: Verify API Response Keys
+
+- [x] Curl `/partner/counters/balance/` to verify keys <!-- id: 45 -->
+- [x] Update AppState to use `online_revenue_counter` and `assinged_revenue_counter` <!-- id: 46 -->
+- [x] Curl `/partner/wallet/balance/` to verify keys <!-- id: 47 -->
+- [x] Update AppState to use `wallet_balance` instead of `balance` <!-- id: 48 -->
+- [x] Add `CurrencyUtils.parseAmount` method for safe numeric parsing <!-- id: 49 -->
+
+# Task: Fix Critical API Response Extraction
+
+- [x] Conduct comprehensive audit of registration and data display <!-- id: 50 -->
+- [x] Create implementation plan with root cause analysis <!-- id: 51 -->
+- [x] Fix PartnerRepository to extract 'data' field from API responses <!-- id: 52 -->
+- [x] Add comprehensive logging to AppState data loading methods <!-- id: 53 -->
+- [x] Improve registration error handling with user-facing messages <!-- id: 54 -->
+- [ ] Test registration flow end-to-end <!-- id: 55 -->
+- [ ] Verify dashboard displays correct revenue values <!-- id: 56 -->
+- [ ] Verify wallet displays correct balance <!-- id: 57 -->
+
+# Task: Fix Registration and Password Reset Flows
+
+- [x] Analyze registration phone number format issue <!-- id: 58 -->
+- [x] Analyze password reset OTP ID requirement <!-- id: 59 -->
+- [x] Create implementation plan for both fixes <!-- id: 60 -->
+- [x] Fix registration phone format to include country code <!-- id: 61 -->
+- [x] Update PasswordRepository to return and accept OTP ID <!-- id: 62 -->
+- [x] Update AppState to store and pass OTP ID <!-- id: 63 -->
+- [ ] Test registration with phone number format <!-- id: 64 -->
+- [ ] Test password reset flow end-to-end <!-- id: 65 -->
+
+# Task: Fix Password Reset Token Flow
+
+- [x] Investigate "token field is required" error <!-- id: 66 -->
+- [x] Update verifyPasswordResetOtp to return reset_token <!-- id: 67 -->
+- [x] Add _passwordResetToken field to AppState <!-- id: 68 -->
+- [x] Update confirmPasswordReset to use token field <!-- id: 69 -->
+- [x] Test complete password reset flow <!-- id: 70 -->
+
+# Task: Implement Registration OTP Verification
+
+- [x] Investigate registration response and verification endpoints <!-- id: 71 -->
+- [x] Update AppState.confirmRegistration to save tokens <!-- id: 72 -->
+- [x] Add /email-verification route to main.dart <!-- id: 73 -->
+- [x] Update RegistrationScreen to navigate to /email-verification <!-- id: 74 -->
+- [x] Update EmailVerificationScreen to navigate to /home <!-- id: 75 -->
+- [x] Fix verification endpoint (use verifyEmailOtp instead of register-confirm) <!-- id: 76 -->
+
+# Task: Add OTP ID Support to Registration Flow
+
+- [x] Update AuthRepository.register to extract otp_id from response <!-- id: 77 -->
+- [x] Update verifyEmailOtp to accept and send otp_id parameter <!-- id: 78 -->
+- [x] Add _registrationOtpId field to AppState <!-- id: 79 -->
+- [x] Update AppState.register to store otp_id <!-- id: 80 -->
+- [x] Update AppState.confirmRegistration to pass otp_id <!-- id: 81 -->
+
+# Task: Fix Payment Method Endpoints
+
+- [x] Fix create endpoint from /create/ to base collection endpoint <!-- id: 82 -->
+- [x] Fix list endpoint from /list/ to base collection endpoint <!-- id: 83 -->
+- [x] Fix update endpoint from /{slug}/update/ to /{slug}/ <!-- id: 84 -->
+- [x] Fix delete endpoint from /{slug}/delete/ to /{slug}/ <!-- id: 85 -->
+
+# Task: Implement Payment Method OTP Flow and Revert Registration OTP ID
+
+- [x] Revert registration OTP ID (only password reset uses OTP ID) <!-- id: 86 -->
+- [x] Update PaymentMethodRepository with OTP request/verify endpoints <!-- id: 87 -->
+- [x] Add requestPaymentMethodOtp and verifyPaymentMethodOtp to AppState <!-- id: 88 -->
+- [x] Update AddPayoutMethodScreen to show OTP verification dialog <!-- id: 89 -->
+- [x] Add _pendingPaymentMethodData field to store data during OTP flow <!-- id: 90 -->
+
+# Task: Implement Transaction History with Tabs
+
+- [x] Update TransactionRepository endpoints to use correct paths <!-- id: 91 -->
+- [x] Add _assignedTransactions and _walletTransactions fields to AppState <!-- id: 92 -->
+- [x] Add loadAssignedTransactions and loadWalletTransactions methods <!-- id: 93 -->
+- [x] Create TransactionHistoryScreen with tabbed interface <!-- id: 94 -->
+- [x] Add search functionality to transaction screen <!-- id: 95 -->
+- [x] Add date filtering (All, Today, This Week, This Month) <!-- id: 96 -->
+- [x] Add pull-to-refresh support <!-- id: 97 -->
+- [x] Add status badges and transaction type indicators <!-- id: 98 -->
+- [x] Add localization keys for transaction history <!-- id: 99 -->
+- [x] Add route to main.dart <!-- id: 100 -->
+
+# Task: Fix Payment Method Field Mapping
+
+- [x] Update field names to match API requirements (name, numbers, account_holder_name, description) <!-- id: 101 -->
+- [x] Remove unused fields (method_type, swift_code as separate field) <!-- id: 102 -->
+- [x] Add description field with formatted text <!-- id: 103 -->
+
+# Task: Implement OTP ID Globally for All Flows
+
+- [x] Re-add otp_id extraction to AuthRepository.register <!-- id: 104 -->
+- [x] Re-add otp_id parameter to verifyEmailOtp <!-- id: 105 -->
+- [x] Re-add _registrationOtpId field to AppState <!-- id: 106 -->
+- [x] Update AppState.register to store otp_id <!-- id: 107 -->
+- [x] Update AppState.confirmRegistration to pass otp_id <!-- id: 108 -->
+- [x] Add _paymentMethodOtpId field to AppState <!-- id: 109 -->
+- [x] Update requestPaymentMethodOtp to extract and store otp_id <!-- id: 110 -->
+- [x] Update verifyPaymentMethodOtp to pass otp_id <!-- id: 111 -->
+- [x] Update PaymentMethodRepository.verifyCreateOtp to accept otp_id <!-- id: 112 -->
+
+# Task: Integrate Transaction History with Dashboard
+
+- [x] Replace revenue details modal with navigation to transaction history <!-- id: 113 -->
+- [x] Verify transactions load on dashboard (already in loadDashboardData) <!-- id: 114 -->
+- [x] Keep dashboard layout unchanged <!-- id: 115 -->
+
+# Task: Integrate Revenue Breakdown with Transaction History
+
+- [x] Update RevenueBreakdownScreen to navigate to transaction history <!-- id: 116 -->
+- [x] Add initialTab support to TransactionHistoryScreen <!-- id: 117 -->
+- [x] Assigned Revenue navigates to Assigned tab (index 1) <!-- id: 118 -->
+- [x] Online Revenue navigates to Wallet tab (index 2) <!-- id: 119 -->
+
+# Task: Create Transaction Details Screen
+
+- [x] Add getAssignedTransactionDetails to TransactionRepository <!-- id: 120 -->
+- [x] Add getWalletTransactionDetails to TransactionRepository <!-- id: 121 -->
+- [x] Add getTransactionDetails method to AppState <!-- id: 122 -->
+- [x] Create TransactionDetailsScreen with comprehensive UI <!-- id: 123 -->
+- [x] Make transaction cards tappable in TransactionHistoryScreen <!-- id: 124 -->
+- [x] Add navigation to details screen with ID and type <!-- id: 125 -->
+- [x] Add /transaction-details route to main.dart <!-- id: 126 -->
+- [x] Display transaction info, customer details, and related plan <!-- id: 127 -->
+
+# Task: Fix Transaction List Parsing
+
+- [x] Update fetchAssignedPlanTransactions to handle paginate_data structure <!-- id: 128 -->
+- [x] Update getWalletTransactions to handle paginate_data structure <!-- id: 129 -->
+- [x] Add fallback for direct data array structure <!-- id: 130 -->
+- [x] Add debug logging to transaction details navigation <!-- id: 131 -->
+
+# Task: Implement Reporting Feature
+
+- [x] Add dependencies (pdf, printing, csv, path_provider, open_file) <!-- id: 132 -->
+- [x] Create ReportRepository for report generation <!-- id: 133 -->
+- [x] Add generateReport method to AppState <!-- id: 134 -->
+- [x] Update ReportingScreen to generate and view reports <!-- id: 135 -->
+- [x] Implement PDF generation logic for transactions <!-- id: 136 -->
+- [x] Implement CSV generation logic for transactions <!-- id: 137 -->

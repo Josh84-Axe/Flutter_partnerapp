@@ -174,10 +174,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.successGreen.withValues(alpha: 0.1),
+                      color: Colors.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppTheme.successGreen.withValues(alpha: 0.3),
+                        color: Colors.green.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Column(
@@ -186,14 +186,14 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         Text(
                           'earned_income'.tr(),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.textLight,
+                                color: colorScheme.onSurfaceVariant,
                               ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           appState.formatMoney(totalRevenue),
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: AppTheme.successGreen,
+                                color: Colors.green,
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
@@ -268,11 +268,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: isRevenue
-                                    ? AppTheme.successGreen.withValues(alpha: 0.1)
-                                    : AppTheme.errorRed.withValues(alpha: 0.1),
+                                    ? Colors.green.withValues(alpha: 0.1)
+                                    : Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
                                 child: Icon(
                                   isRevenue ? Icons.arrow_downward : Icons.arrow_upward,
-                                  color: isRevenue ? AppTheme.successGreen : AppTheme.errorRed,
+                                  color: isRevenue ? Colors.green : Theme.of(context).colorScheme.error,
                                   size: 20,
                                 ),
                               ),
@@ -283,7 +283,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                   const SizedBox(height: 4),
                                   Text(
                                     '${transaction.createdAt.day}/${transaction.createdAt.month}/${transaction.createdAt.year} ${transaction.createdAt.hour}:${transaction.createdAt.minute.toString().padLeft(2, '0')}',
-                                    style: TextStyle(fontSize: 12, color: AppTheme.textLight),
+                                    style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                                   ),
                                   const SizedBox(height: 4),
                                   StatusBadgeWidget(
@@ -297,7 +297,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                               trailing: Text(
                                 '${isRevenue ? '+' : '-'}${appState.formatMoney(transaction.amount.abs())}',
                                 style: TextStyle(
-                                  color: isRevenue ? AppTheme.successGreen : AppTheme.errorRed,
+                                  color: isRevenue ? Colors.green : Theme.of(context).colorScheme.error,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
                                 ),

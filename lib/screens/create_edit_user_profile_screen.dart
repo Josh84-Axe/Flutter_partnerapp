@@ -20,6 +20,8 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
   String? _selectedRateLimit;
   String? _selectedIdleTime;
   String? _selectedRouter;
+  bool _isPromo = false;
+  bool _isActive = true;
 
   @override
   void initState() {
@@ -28,6 +30,11 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
       _nameController.text = widget.profile!.name;
       _selectedRateLimit = widget.profile!.speedDescription;
       _selectedIdleTime = widget.profile!.idleTimeout;
+      _isPromo = widget.profile!.isPromo;
+      _isActive = widget.profile!.isActive;
+      if (widget.profile!.routerIds.isNotEmpty) {
+        _selectedRouter = widget.profile!.routerIds.first;
+      }
     }
     
     // Fetch configurations
@@ -146,6 +153,21 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
               ],
               onChanged: (value) => setState(() => _selectedRouter = value),
               validator: (value) => value == null ? 'select_router'.tr() : null,
+            ),
+            const SizedBox(height: 16),
+            SwitchListTile(
+              title: Text('promotional_profile'.tr()),
+              subtitle: Text('promotional_profile_desc'.tr()),
+              value: _isPromo,
+              onChanged: (value) => setState(() => _isPromo = value),
+              secondary: Icon(Icons.campaign, color: colorScheme.primary),
+            ),
+            SwitchListTile(
+              title: Text('active_status'.tr()),
+              subtitle: Text('active_status_desc'.tr()),
+              value: _isActive,
+              onChanged: (value) => setState(() => _isActive = value),
+              secondary: Icon(Icons.toggle_on, color: _isActive ? Colors.green : Colors.grey),
             ),
             const SizedBox(height: 24),
             if (appState.error != null)
@@ -288,7 +310,9 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
       'name': _nameController.text,
       'rate_limit': _selectedRateLimit,
       'idle_timeout': _selectedIdleTime,
-      // Add other fields as needed by the API
+      'is_for_promo': _isPromo,
+      'is_active': _isActive,
+      'routers': _selectedRouter != null && _selectedRouter != 'all' ? [_selectedRouter] : [],
     };
 
     try {

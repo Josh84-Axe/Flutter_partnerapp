@@ -204,7 +204,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border.all(color: AppTheme.textLight.withValues(alpha: 0.3)),
+                border: Border.all(color: colorScheme.outline),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -217,7 +217,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
                           ? 'Select date range'
                           : '${DateFormat('MMM dd, yyyy').format(_dateRange!.start)} - ${DateFormat('MMM dd, yyyy').format(_dateRange!.end)}',
                       style: TextStyle(
-                        color: _dateRange == null ? AppTheme.textLight : AppTheme.textDark,
+                        color: _dateRange == null ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
                         fontSize: 15,
                       ),
                     ),
@@ -296,7 +296,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
         decoration: BoxDecoration(
           color: isSelected ? colorScheme.primaryContainer : Colors.transparent,
           border: Border.all(
-            color: isSelected ? colorScheme.primary : AppTheme.textLight.withValues(alpha: 0.3),
+            color: isSelected ? colorScheme.primary : colorScheme.outline,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -306,14 +306,14 @@ class _ReportingScreenState extends State<ReportingScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? colorScheme.primary : AppTheme.textLight,
+              color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               format,
               style: TextStyle(
-                color: isSelected ? colorScheme.primary : AppTheme.textDark,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 fontSize: 15,
               ),

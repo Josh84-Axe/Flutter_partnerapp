@@ -114,7 +114,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
                                     'team_members_count'.tr(namedArgs: {'count': _getTeamMemberCount(role).toString()}),
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: AppTheme.textLight,
+                                      color: colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ],
@@ -129,12 +129,12 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
                                         arguments: role.toJson(),
                                       );
                                     },
-                                    color: AppTheme.textLight,
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete, size: 20),
                                     onPressed: () => _showDeleteDialog(context, role),
-                                    color: AppTheme.errorRed,
+                                    color: colorScheme.error,
                                   ),
                                 ],
                               ),
@@ -145,7 +145,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
                             _getRoleDescription(role),
                             style: TextStyle(
                               fontSize: 14,
-                              color: AppTheme.textLight,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                           if (role.name.toLowerCase() == 'worker') ...[
@@ -183,9 +183,9 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
             icon: const Icon(Icons.person_add),
             label: Text('assign_role_to_user'.tr()),
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppTheme.textDark,
-              side: BorderSide(color: AppTheme.textLight.withValues(alpha: 0.3)),
+              backgroundColor: colorScheme.surface,
+              foregroundColor: colorScheme.onSurface,
+              side: BorderSide(color: colorScheme.outline),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
           ),
@@ -196,7 +196,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
               'assign_role_description'.tr(),
               style: TextStyle(
                 fontSize: 12,
-                color: AppTheme.textLight,
+                color: colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),

@@ -163,7 +163,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppTheme.pureWhite,
+          indicatorColor: Theme.of(context).colorScheme.onPrimary,
           tabs: [
             Tab(text: 'users'.tr()),
             Tab(text: 'workers'.tr()),
@@ -281,14 +281,14 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: user.isActive 
-                            ? AppTheme.successGreen.withValues(alpha: 0.2)
+                            ? Colors.green.withValues(alpha: 0.2)
                             : Colors.grey.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         user.isActive ? 'Active' : 'Inactive',
                         style: TextStyle(
-                          color: user.isActive ? AppTheme.successGreen : Colors.grey[700],
+                          color: user.isActive ? Colors.green : colorScheme.onSurfaceVariant,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
@@ -300,7 +300,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                         width: 8,
                         height: 8,
                         decoration: const BoxDecoration(
-                          color: AppTheme.successGreen,
+                          color: Colors.green,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -309,7 +309,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                         'Connected — $connectionType',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppTheme.textLight,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ] else if (user.isActive) ...[
@@ -326,7 +326,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                         'Disconnected',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppTheme.textLight,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -388,7 +388,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               ListTile(
                 leading: Icon(
                   user.isActive ? Icons.block : Icons.check_circle,
-                  color: user.isActive ? AppTheme.errorRed : AppTheme.successGreen,
+                  color: user.isActive ? Theme.of(context).colorScheme.error : Colors.green,
                 ),
                 title: Text(user.isActive ? 'block_device'.tr() : 'unblock_device'.tr()),
                 onTap: () {
@@ -404,7 +404,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               ),
             if (Permissions.canDeleteUsers(currentUser.role, currentUser.permissions))
               ListTile(
-                leading: const Icon(Icons.delete, color: AppTheme.errorRed),
+                leading: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
                 title: Text('remove_user'.tr()),
                 onTap: () {
                   Navigator.pop(context);
@@ -599,7 +599,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             // Delete Worker
             if (Permissions.canDeleteUsers(currentUser.role, currentUser.permissions))
               ListTile(
-                leading: const Icon(Icons.delete, color: AppTheme.errorRed),
+                leading: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
                 title: Text('remove_worker'.tr()),
                 onTap: () {
                   Navigator.pop(context);

@@ -238,11 +238,11 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundColor: isRevenue
-                      ? AppTheme.successGreen.withValues(alpha: 0.1)
-                      : AppTheme.errorRed.withValues(alpha: 0.1),
+                      ? Colors.green.withValues(alpha: 0.1)
+                      : Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
                   child: Icon(
                     isRevenue ? Icons.arrow_downward : Icons.arrow_upward,
-                    color: isRevenue ? AppTheme.successGreen : AppTheme.errorRed,
+                    color: isRevenue ? Colors.green : Theme.of(context).colorScheme.error,
                     size: 20,
                   ),
                 ),
@@ -254,7 +254,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                 trailing: Text(
                   '${isRevenue ? '+' : '-'}${appState.formatMoney(transaction.amount.abs())}',
                   style: TextStyle(
-                    color: isRevenue ? AppTheme.successGreen : AppTheme.errorRed,
+                    color: isRevenue ? Colors.green : Theme.of(context).colorScheme.error,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -323,7 +323,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
             _buildSummaryRow(
               'Total Revenue',
               appState.formatMoney(appState.totalRevenue),
-              AppTheme.successGreen,
+              Colors.green,
             ),
             const Divider(height: 24),
             _buildSummaryRow(
@@ -370,7 +370,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
             _buildSummaryRow(
               'Total Payouts',
               appState.formatMoney(totalPayouts),
-              AppTheme.errorRed,
+              Theme.of(context).colorScheme.error,
             ),
             const Divider(height: 24),
             _buildSummaryRow(
@@ -490,7 +490,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? colorScheme.primary : AppTheme.textLight,
+            color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             fontSize: 12,
           ),
@@ -507,7 +507,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
           label,
           style: const TextStyle(
             fontSize: 14,
-            color: AppTheme.textLight,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         Text(

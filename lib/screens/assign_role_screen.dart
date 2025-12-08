@@ -88,7 +88,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                           trailing: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: _getRoleBadgeColor(worker.roleSlug ?? '').withValues(alpha: 0.1),
+                              color: _getRoleBadgeColor(worker.roleSlug ?? '', context).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -96,7 +96,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: _getRoleBadgeColor(worker.roleSlug ?? ''),
+                                color: _getRoleBadgeColor(worker.roleSlug ?? '', context),
                               ),
                             ),
                           ),
@@ -113,7 +113,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
     );
   }
 
-  Color _getRoleBadgeColor(String role) {
+  Color _getRoleBadgeColor(String role, BuildContext context) {
     switch (role.toLowerCase()) {
       case 'admin':
       case 'administrator':
@@ -123,7 +123,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
       case 'worker':
         return Colors.orange;
       default:
-        return AppTheme.textLight;
+        return Theme.of(context).colorScheme.onSurfaceVariant;
     }
   }
 
@@ -152,7 +152,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: AppTheme.textLight.withValues(alpha: 0.3),
+                    color: colorScheme.outline,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -169,7 +169,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                   displayName,
                   style: TextStyle(
                     fontSize: 16,
-                    color: AppTheme.textLight,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -268,7 +268,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
           color: isSelected ? colorScheme.primaryContainer : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? colorScheme.primary : AppTheme.textLight.withValues(alpha: 0.3),
+            color: isSelected ? colorScheme.primary : colorScheme.outline,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -280,7 +280,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? colorScheme.primary : AppTheme.textDark,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
               ),
             ),
             if (isSelected)
