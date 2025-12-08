@@ -296,6 +296,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
   }
 
   void _confirmDelete(BuildContext context, AppState appState) {
+    if (kDebugMode) print('🗑️ [CreateEditProfile] Delete button clicked');
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -303,11 +304,15 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
         content: Text('delete_confirm_message'.tr()),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              if (kDebugMode) print('🗑️ [CreateEditProfile] Delete cancelled');
+              Navigator.pop(context);
+            },
             child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () async {
+              if (kDebugMode) print('🗑️ [CreateEditProfile] Delete confirmed, slug: ${widget.profile!.slug}');
               Navigator.pop(context); // Close dialog
               try {
                 await appState.deleteHotspotProfile(widget.profile!.slug);
@@ -318,6 +323,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                   );
                 }
               } catch (e) {
+                if (kDebugMode) print('❌ [CreateEditProfile] Delete error: $e');
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
