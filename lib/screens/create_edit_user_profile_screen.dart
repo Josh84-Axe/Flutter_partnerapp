@@ -310,7 +310,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
             onPressed: () async {
               Navigator.pop(context); // Close dialog
               try {
-                await appState.deleteHotspotProfile(widget.profile!.id);
+                await appState.deleteHotspotProfile(widget.profile!.slug);
                 if (mounted) {
                   Navigator.pop(context); // Close screen
                   ScaffoldMessenger.of(context).showSnackBar(

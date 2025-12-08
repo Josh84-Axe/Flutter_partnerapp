@@ -131,7 +131,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                                       );
                                       if (confirmed == true && context.mounted) {
                                         try {
-                                          await appState.deleteHotspotProfile(profile.id);
+                                          await appState.deleteHotspotProfile(profile.slug);
                                           if (context.mounted) {
                                             ScaffoldMessenger.of(context).showSnackBar(
                                               const SnackBar(
