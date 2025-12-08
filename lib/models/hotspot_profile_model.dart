@@ -1,6 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 
 class HotspotProfileModel {
+  final String id;
+  final String name;
+  final int downloadSpeedMbps;
+  final int uploadSpeedMbps;
+  final String idleTimeout;
   final List<String> routerIds;
   final bool isPromo;
   final bool isActive;

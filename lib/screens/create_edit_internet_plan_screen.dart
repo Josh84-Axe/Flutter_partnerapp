@@ -185,7 +185,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                       border: const OutlineInputBorder(),
                     ),
                     items: appState.hotspotProfiles.isEmpty
-                        ? [DropdownMenuItem(value: null, child: Text('no_profiles_configured'.tr()))]
+                        ? [DropdownMenuItem<String>(value: null, child: Text('no_profiles_configured'.tr()))]
                         : appState.hotspotProfiles
                             .map((p) => DropdownMenuItem(value: p.id, child: Text(p.name)))
                             .toList(),

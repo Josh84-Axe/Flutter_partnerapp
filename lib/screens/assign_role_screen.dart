@@ -144,7 +144,10 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
           ),
           padding: const EdgeInsets.all(16),
           child: SafeArea(
-            child: Column(
+            child: Builder(
+              builder: (context) {
+                final colorScheme = Theme.of(context).colorScheme;
+                return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
@@ -239,7 +242,8 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                   ),
                 ),
               ],
-            ),
+            );
+          }),
           ),
         ),
       ),

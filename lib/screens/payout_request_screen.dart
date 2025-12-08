@@ -453,6 +453,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
+          'payout_history'.tr(),
           style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         Text(

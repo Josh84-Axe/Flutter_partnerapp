@@ -505,7 +505,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
