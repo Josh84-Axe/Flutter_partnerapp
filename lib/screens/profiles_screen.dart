@@ -139,6 +139,8 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                                                 backgroundColor: Colors.green,
                                               ),
                                             );
+                                            // Reload profiles after deletion
+                                            context.read<AppState>().loadHotspotProfiles();
                                           }
                                         } catch (e) {
                                           if (context.mounted) {
