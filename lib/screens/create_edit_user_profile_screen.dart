@@ -339,18 +339,18 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
   Future<void> _saveProfile(AppState appState) async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Helper to extract value from dynamic item (Map or String)
-    String extractValue(dynamic item) {
+    // Helper to extract ID from dynamic item (Map or String)
+    dynamic extractId(dynamic item) {
       if (item is Map) {
-        return item['value']?.toString() ?? item['name']?.toString() ?? '';
+        return item['id'] ?? item['value'];
       }
-      return item.toString();
+      return item;
     }
 
     final data = {
       'name': _nameController.text,
-      'rate_limit': extractValue(_selectedRateLimit),
-      'idle_timeout': extractValue(_selectedIdleTime),
+      'rate_limit': extractId(_selectedRateLimit),
+      'idle_timeout': extractId(_selectedIdleTime),
       'is_for_promo': _isPromo,
       'is_active': _isActive,
       'routers': _selectedRouter != null && _selectedRouter != 'all' ? [_selectedRouter] : [],
