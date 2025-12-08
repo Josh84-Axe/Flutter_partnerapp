@@ -63,15 +63,6 @@ class SettingsScreen extends StatelessWidget {
               ),
               _buildSettingItem(
                 context,
-                icon: Icons.settings_input_antenna,
-                title: 'router_settings'.tr(),
-                subtitle: 'configure_router_desc'.tr(),
-                onTap: () {
-                  Navigator.of(context).pushNamed('/router-settings');
-                },
-              ),
-              _buildSettingItem(
-                context,
                 icon: Icons.health_and_safety_outlined,
                 title: 'router_health'.tr(),
                 subtitle: 'monitor_router_health_desc'.tr(),

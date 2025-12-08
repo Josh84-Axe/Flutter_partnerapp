@@ -126,6 +126,110 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
     );
   }
 
+  void _showEditUserDialog(Map<String, dynamic> user) {
+    final usernameController = TextEditingController(text: user['username']?.toString() ?? '');
+    final passwordController = TextEditingController();
+    String? selectedProfile = user['profile']?.toString();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('edit_hotspot_user'.tr()),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'username'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    enabled: false, // Username cannot be changed
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'new_password'.tr(),
+                      hintText: 'leave_blank_to_keep_current'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: selectedProfile,
+                    decoration: InputDecoration(
+                      labelText: 'hotspot_profile'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    hint: Text('select_profile'.tr()),
+                    items: context.watch<AppState>().hotspotProfiles.map((profile) {
+                      return DropdownMenuItem(
+                        value: profile.id,
+                        child: Text(profile.name),
+                      );
+                    }).toList(),
+                    onChanged: (value) => setState(() => selectedProfile = value),
+                    validator: (value) => value == null ? 'required_field'.tr() : null,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('cancel'.tr()),
+            ),
+            FilledButton(
+              onPressed: () async {
+                if (formKey.currentState?.validate() ?? false) {
+                  try {
+                    final updateData = <String, dynamic>{
+                      'profile': selectedProfile,
+                    };
+                    
+                    // Only include password if it was changed
+                    if (passwordController.text.isNotEmpty) {
+                      updateData['password'] = passwordController.text;
+                    }
+                    
+                    await context.read<AppState>().updateHotspotUser(
+                      user['username'],
+                      updateData,
+                    );
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('hotspot_user_updated'.tr()),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('error_generic'.tr(namedArgs: {'error': e.toString()}))),
+                      );
+                    }
+                  }
+                }
+              },
+              child: Text('update'.tr()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _confirmDeleteUser(Map<String, dynamic> user) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -256,6 +360,11 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    color: colorScheme.primary,
+                                    onPressed: () => _showEditUserDialog(user),
+                                  ),
                                   IconButton(
                                     icon: const Icon(Icons.delete),
                                     color: AppTheme.errorRed,

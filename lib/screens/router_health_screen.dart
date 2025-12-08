@@ -2,8 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
 
-class RouterHealthScreen extends StatelessWidget {
+
+class RouterHealthScreen extends StatefulWidget {
   const RouterHealthScreen({super.key});
+
+  @override
+  State<RouterHealthScreen> createState() => _RouterHealthScreenState();
+}
+
+class _RouterHealthScreenState extends State<RouterHealthScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppState>().loadRouterConfigurations();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
