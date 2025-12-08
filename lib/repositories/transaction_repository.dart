@@ -228,20 +228,54 @@ class TransactionRepository {
   /// Get all withdrawals
   Future<List<dynamic>> getWithdrawals() async {
     try {
-      if (kDebugMode) print('💸 [TransactionRepository] Fetching withdrawals');
+      if (kDebugMode) print('💸 [TransactionRepository] Fetching withdrawals from /partner/wallet/withdrawls/');
       final response = await _dio.get('/partner/wallet/withdrawls/');
-      if (kDebugMode) print('✅ [TransactionRepository] Response: ${response.data}');
+      if (kDebugMode) {
+        print('✅ [TransactionRepository] Withdrawals response received');
+        print('   Response type: ${response.data.runtimeType}');
+        print('   Response data: ${response.data}');
+      }
       
       final responseData = response.data;
+      
+      // Handle nested data structure
       if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+        final withdrawals = responseData['data'] as List;
+        if (kDebugMode) print('   Found ${withdrawals.length} withdrawals in data.data');
+        return withdrawals;
       }
+      
+      // Handle paginated structure
+      if (responseData is Map && responseData['data'] is Map) {
+        final data = responseData['data'] as Map;
+        if (data['paginate_data'] is List) {
+          final withdrawals = data['paginate_data'] as List;
+          if (kDebugMode) print('   Found ${withdrawals.length} withdrawals in data.data.paginate_data');
+          return withdrawals;
+        }
+        if (data['results'] is List) {
+          final withdrawals = data['results'] as List;
+          if (kDebugMode) print('   Found ${withdrawals.length} withdrawals in data.data.results');
+          return withdrawals;
+        }
+      }
+      
+      // Handle direct list
       if (responseData is List) {
+        if (kDebugMode) print('   Found ${responseData.length} withdrawals in direct list');
         return responseData;
       }
+      
+      if (kDebugMode) print('⚠️ [TransactionRepository] No withdrawals found - unexpected response structure');
       return [];
     } catch (e) {
-      if (kDebugMode) print('❌ [TransactionRepository] Get withdrawals error: $e');
+      if (kDebugMode) {
+        print('❌ [TransactionRepository] Get withdrawals error: $e');
+        if (e is DioException) {
+          print('   Status code: ${e.response?.statusCode}');
+          print('   Response data: ${e.response?.data}');
+        }
+      }
       rethrow;
     }
   }
