@@ -44,10 +44,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               IconButton(
                 icon: const Icon(Icons.notifications_outlined),
                 onPressed: () {
-                  Navigator.of(context).pushNamed('/notification-router');
+                  Navigator.of(context).pushNamed('/notification-center');
                 },
               ),
-              if (appState.unreadNotificationCount > 0)
+              if (appState.localUnreadCount > 0)
                 Positioned(
                   right: 8,
                   top: 8,
@@ -62,7 +62,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       minHeight: 16,
                     ),
                     child: Text(
-                      '${appState.unreadNotificationCount}',
+                      '${appState.localUnreadCount}',
                       style: const TextStyle(
                         color: AppTheme.pureWhite,
                         fontSize: 10,
