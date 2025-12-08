@@ -13,14 +13,25 @@ class RoleRepository {
       final response = await _dio.get('/partner/roles/list/');
       final responseData = response.data;
       
-      if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+      if (kDebugMode) print('📦 [RoleRepository] Fetch roles response: $responseData');
+
+      if (responseData is Map) {
+        if (responseData['data'] is List) {
+          return responseData['data'] as List;
+        }
+        if (responseData['results'] is List) {
+          return responseData['results'] as List;
+        }
+        if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          return responseData['data']['results'] as List;
+        }
       }
       
       if (responseData is List) {
         return responseData;
       }
       
+      if (kDebugMode) print('⚠️ [RoleRepository] Unexpected response format');
       return [];
     } catch (e) {
       if (kDebugMode) print('❌ [RoleRepository] Fetch roles error: $e');

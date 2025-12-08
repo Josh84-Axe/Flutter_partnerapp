@@ -7,8 +7,8 @@ class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
 
   // TODO: Replace with actual support contact details
-  static const String _supportEmail = 'support@example.com';
-  static const String _supportWhatsApp = '1234567890'; // International format without +
+  static const String _supportEmail = 'assist@tiknetafrica.com';
+  static const String _supportWhatsApp = '233553439010'; // International format without +
 
   Future<void> _launchEmail() async {
     final Uri emailLaunchUri = Uri(
