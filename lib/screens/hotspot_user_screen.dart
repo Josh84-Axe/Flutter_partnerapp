@@ -31,24 +31,43 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('delete_confirm_title'.tr()),
-        content: Text('delete_confirm_message'.tr()),
+        title: const Text('Delete Profile'),
+        content: Text('Are you sure you want to delete "${profile.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('cancel'.tr()),
+            child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('delete_profile'.tr())),
-              );
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog
+              try {
+                final message = await context.read<AppState>().deleteHotspotProfile(profile.slug);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(message),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  // Reload profiles
+                  context.read<AppState>().loadHotspotProfiles();
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error deleting profile: ${e.toString()}'),
+                      backgroundColor: AppTheme.errorRed,
+                    ),
+                  );
+                }
+              }
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.errorRed,
             ),
-            child: Text('delete'.tr()),
+            child: const Text('Delete'),
           ),
         ],
       ),
