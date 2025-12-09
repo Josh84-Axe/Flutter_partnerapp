@@ -70,13 +70,28 @@ class SessionRepository {
   /// Disconnect a session
   Future<bool> disconnectSession(Map<String, dynamic> sessionData) async {
     try {
+      // Backend expects only: username, mac_address, ip_address, dns_name
+      final payload = {
+        'username': sessionData['username'],
+        'mac_address': sessionData['mac_address'],
+        'ip_address': sessionData['ip_address'],
+        'dns_name': sessionData['dns_name'] ?? sessionData['router_name'], // Fallback to router_name if dns_name not present
+      };
+      
+      if (kDebugMode) {
+        print('🔌 [SessionRepo] Disconnecting session for ${payload['username']}');
+        print('   Payload: $payload');
+      }
+      
       await _dio.post(
         '/partner/sessions/disconnect/',
-        data: sessionData,
+        data: payload,
       );
+      
+      if (kDebugMode) print('✅ [SessionRepo] Session disconnected successfully');
       return true;
     } catch (e) {
-      if (kDebugMode) print('Disconnect session error: $e');
+      if (kDebugMode) print('❌ [SessionRepo] Disconnect session error: $e');
       return false;
     }
   }
