@@ -716,7 +716,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               onPressed: () async {
                 if (selectedRole != null) {
                   try {
-                    if (worker.roleId == null) { // Check against roleId
+                    if (worker.roleSlug == null) { // Check against roleSlug
                       await appState.assignRoleToWorker(worker.username, selectedRole!);
                     } else {
                       await appState.updateWorkerRole(worker.username, selectedRole!);
