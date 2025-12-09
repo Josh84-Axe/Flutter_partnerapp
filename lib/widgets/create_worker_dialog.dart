@@ -261,7 +261,7 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
                   'country': _countryController.text,
                   'username': _usernameController.text,
                   'password': _passwordController.text,
-                  'role': _selectedRole,
+                  'role_id': _selectedRole,
                 });
                 
                 if (context.mounted) {

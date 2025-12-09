@@ -674,12 +674,13 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                   items: roles.map((role) {
                     return DropdownMenuItem(
                       value: role.slug,
+                      value: role.id, // Returns role ID
                       child: Text(role.name),
                     );
                   }).toList(),
                 onChanged: (value) {
                   setState(() {
-                    selectedRole = value;
+                    selectedRoleId = value; // Updates role ID
                   });
                 },
               ),
@@ -692,19 +693,19 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             ),
             FilledButton(
               onPressed: () async {
-                if (selectedRole != null) {
+                if (selectedRoleId != null) {
                   try {
-                    if (worker.roleSlug == null) {
-                      await appState.assignRoleToWorker(worker.username, selectedRole!);
+                    if (worker.roleId == null) { // Check against roleId
+                      await appState.assignRoleToWorker(worker.username, selectedRoleId!);
                     } else {
-                      await appState.updateWorkerRole(worker.username, selectedRole!);
+                      await appState.updateWorkerRole(worker.username, selectedRoleId!);
                     }
                     
                     if (context.mounted) {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Role ${worker.roleSlug == null ? "assigned" : "updated"} successfully'),
+                          content: Text('Role ${roles.firstWhere((r) => r.id == selectedRoleId).name} assigned successfully'),
                           backgroundColor: Theme.of(context).colorScheme.primary,
                         ),
                       );

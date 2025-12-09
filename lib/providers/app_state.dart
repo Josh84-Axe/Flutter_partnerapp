@@ -2238,11 +2238,11 @@ class AppState with ChangeNotifier {
   }
 
   /// Assign role to worker
-  Future<void> assignRoleToWorker(String username, String roleSlug) async {
+  Future<void> assignRoleToWorker(String username, String roleId) async {
     _setLoading(true);
     try {
       if (_collaboratorRepository == null) _initializeRepositories();
-      await _collaboratorRepository!.assignRole(username, {'role': roleSlug});
+      await _collaboratorRepository!.assignRole(username, {'role_id': roleId});
       await loadWorkers();
       _setLoading(false);
     } catch (e) {

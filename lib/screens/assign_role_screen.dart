@@ -12,7 +12,7 @@ class AssignRoleScreen extends StatefulWidget {
 }
 
 class _AssignRoleScreenState extends State<AssignRoleScreen> {
-  String? _selectedRole;
+  String? _selectedRoleId;
 
   @override
   void initState() {
@@ -189,12 +189,25 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                     
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: _buildRoleOption(
-                        context,
-                        setModalState,
-                        role.name,
-                        role.slug,
-                        isCurrent,
+                      child: RadioListTile<String>(
+                        title: Text(role.name),
+                        value: role.id,
+                        groupValue: _selectedRoleId,
+                        onChanged: (value) {
+                          setModalState(() {
+                            _selectedRoleId = value;
+                          });
+                        },
+                        activeColor: Theme.of(context).colorScheme.primary,
+                        contentPadding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: _selectedRoleId == role.id ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline,
+                            width: _selectedRoleId == role.id ? 2 : 1,
+                          ),
+                        ),
+                        tileColor: _selectedRoleId == role.id ? Theme.of(context).colorScheme.primaryContainer : Colors.transparent,
                       ),
                     );
                   }),
@@ -203,14 +216,14 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                   width: double.infinity,
                   child: FilledButton(
                     onPressed: () async {
-                      if (_selectedRole != null) {
+                      if (_selectedRoleId != null) {
                         Navigator.pop(context);
                         try {
-                          await appState.assignRoleToWorker(worker.username, _selectedRole!);
+                          await appState.assignRoleToWorker(worker.username, _selectedRoleId!);
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('role_updated_to'.tr(namedArgs: {'role': _selectedRole!})),
+                                content: Text('role_updated_to'.tr(namedArgs: {'role': roles.firstWhere((r) => r.id == _selectedRoleId).name})),
                               ),
                             );
                           }
