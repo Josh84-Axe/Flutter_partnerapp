@@ -30,6 +30,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   bool _agreedToTerms = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _hasSubmitted = false; // Track if user has attempted registration
   
   // Comprehensive ISO country codes (matching LoginScreen)
   final Map<String, String> _countries = {
@@ -99,9 +100,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _addressController.dispose();
     _cityController.dispose();
     _numberOfRoutersController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    
+    // Clear any errors when leaving registration screen
+    final appState = context.read<AppState>();
+    appState.clearError();
+    
+    super.dispose();
   }
 
   Future<void> _submit() async {
+    setState(() => _hasSubmitted = true); // Mark that user has attempted submission
     print('📝 [RegistrationScreen] _submit called');
     try {
       if (!_formKey.currentState!.validate()) {
@@ -500,7 +510,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (appState.error != null)
+                  if (appState.error != null && _hasSubmitted)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(
