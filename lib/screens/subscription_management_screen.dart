@@ -363,43 +363,33 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
 
     if (confirmed != true || !mounted) return;
 
-    setState(() => _isLoading = true);
+    setState(() => _isLoading = false);
     
     try {
-      // Step 1: Initialize payment with Paystack
-      final paymentData = await appState.initializeSubscriptionPayment(
+      // Get payment details for Paystack popup
+      final paymentDetails = appState.getPaymentDetails(
         planId: planId,
         planName: planName,
         amount: amount,
       );
       
-      if (paymentData == null || !mounted) {
-        throw Exception('Failed to initialize payment');
-      }
-      
-      // Extract authorization URL from Paystack response
-      final authorizationUrl = paymentData['data']?['authorization_url'];
-      if (authorizationUrl == null) {
-        throw Exception('No authorization URL received from payment gateway');
-      }
-      
-      setState(() => _isLoading = false);
-      
-      // Step 2: Open payment gateway
+      // Open Paystack inline popup
       final paymentResult = await Navigator.push<Map<String, dynamic>>(
         context,
         MaterialPageRoute(
           builder: (context) => PaymentGatewayScreen(
-            authorizationUrl: authorizationUrl,
-            planName: planName,
-            amount: amount,
+            email: paymentDetails['email'],
+            amount: paymentDetails['amount'],
+            planId: paymentDetails['planId'],
+            planName: paymentDetails['planName'],
+            currency: paymentDetails['currency'],
           ),
         ),
       );
       
       if (!mounted) return;
       
-      // Step 3: Process payment result
+      // Process payment result
       if (paymentResult != null && paymentResult['success'] == true) {
         final paymentReference = paymentResult['reference'];
         
@@ -409,7 +399,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
         
         setState(() => _isLoading = true);
         
-        // Step 4: Purchase subscription with payment reference
+        // Purchase subscription with payment reference
         final success = await appState.purchaseSubscriptionPlan(
           planId,
           paymentReference,

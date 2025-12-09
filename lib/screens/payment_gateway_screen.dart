@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-/// Screen for handling Paystack payment gateway
+/// Screen for handling Paystack inline payment popup
 class PaymentGatewayScreen extends StatefulWidget {
-  final String authorizationUrl;
-  final String planName;
+  final String email;
   final double amount;
+  final String planId;
+  final String planName;
+  final String currency;
 
   const PaymentGatewayScreen({
     super.key,
-    required this.authorizationUrl,
-    required this.planName,
+    required this.email,
     required this.amount,
+    required this.planId,
+    required this.planName,
+    required this.currency,
   });
 
   @override
@@ -36,7 +40,6 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
         NavigationDelegate(
           onPageStarted: (String url) {
             setState(() => _isLoading = true);
-            _checkPaymentStatus(url);
           },
           onPageFinished: (String url) {
             setState(() => _isLoading = false);
@@ -46,32 +49,213 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
           },
         ),
       )
-      ..loadRequest(Uri.parse(widget.authorizationUrl));
+      ..addJavaScriptChannel(
+        'PaystackFlutter',
+        onMessageReceived: (JavaScriptMessage message) {
+          // Handle payment response from Paystack
+          _handlePaymentResponse(message.message);
+        },
+      )
+      ..loadHtmlString(_buildPaystackHTML());
   }
 
-  void _checkPaymentStatus(String url) {
-    // Paystack redirects to callback URL with reference
-    // Format: https://your-callback-url?reference=PAYMENT_REF&trxref=PAYMENT_REF
+  String _buildPaystackHTML() {
+    // Convert amount to kobo/pesewas (Paystack expects smallest currency unit)
+    final amountInKobo = (widget.amount * 100).toInt();
     
-    if (url.contains('reference=') || url.contains('trxref=')) {
-      final uri = Uri.parse(url);
-      final reference = uri.queryParameters['reference'] ?? 
-                       uri.queryParameters['trxref'];
+    return '''
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment</title>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .payment-container {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .plan-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a202c;
+            margin-bottom: 8px;
+        }
+        .amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 16px 0;
+        }
+        .currency {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 24px;
+        }
+        .pay-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        .pay-button:active {
+            transform: translateY(0);
+        }
+        .info {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #718096;
+        }
+        .loading {
+            display: none;
+            margin-top: 16px;
+        }
+        .loading.active {
+            display: block;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="plan-name">${widget.planName}</div>
+        <div class="amount">${widget.amount.toStringAsFixed(2)}</div>
+        <div class="currency">${widget.currency}</div>
+        <button class="pay-button" onclick="payWithPaystack()">
+            Pay Now
+        </button>
+        <div class="info">
+            Secure payment powered by Paystack
+        </div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <script>
+        function payWithPaystack() {
+            var handler = PaystackPop.setup({
+                key: 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
+                email: '${widget.email}',
+                amount: $amountInKobo,
+                currency: '${widget.currency}',
+                ref: 'PSK_' + Math.floor((Math.random() * 1000000000) + 1),
+                metadata: {
+                    plan_id: '${widget.planId}',
+                    plan_name: '${widget.planName}',
+                    custom_fields: [
+                        {
+                            display_name: "Subscription Plan",
+                            variable_name: "subscription_plan",
+                            value: "${widget.planName}"
+                        }
+                    ]
+                },
+                callback: function(response) {
+                    // Payment successful
+                    document.getElementById('loading').classList.add('active');
+                    
+                    // Send success message to Flutter
+                    if (window.PaystackFlutter) {
+                        window.PaystackFlutter.postMessage(JSON.stringify({
+                            success: true,
+                            reference: response.reference,
+                            message: 'Payment successful'
+                        }));
+                    }
+                },
+                onClose: function() {
+                    // User closed the popup
+                    if (window.PaystackFlutter) {
+                        window.PaystackFlutter.postMessage(JSON.stringify({
+                            success: false,
+                            message: 'Payment cancelled'
+                        }));
+                    }
+                }
+            });
+            handler.openIframe();
+        }
+        
+        // Auto-trigger payment on page load
+        window.onload = function() {
+            setTimeout(function() {
+                payWithPaystack();
+            }, 500);
+        };
+    </script>
+</body>
+</html>
+    ''';
+  }
+
+  void _handlePaymentResponse(String message) {
+    try {
+      // Parse the JSON message from JavaScript
+      final response = message;
+      debugPrint('Payment response: $response');
       
-      if (reference != null && reference.isNotEmpty) {
-        // Payment successful - return reference
+      // Close the screen and return the result
+      if (response.contains('"success":true')) {
+        // Extract reference from JSON
+        final referenceMatch = RegExp(r'"reference":"([^"]+)"').firstMatch(response);
+        final reference = referenceMatch?.group(1);
+        
+        if (reference != null) {
+          Navigator.pop(context, {
+            'success': true,
+            'reference': reference,
+          });
+        }
+      } else {
         Navigator.pop(context, {
-          'success': true,
-          'reference': reference,
+          'success': false,
+          'message': 'Payment cancelled',
         });
       }
-    }
-    
-    // Check for cancellation
-    if (url.contains('cancelled') || url.contains('cancel')) {
+    } catch (e) {
+      debugPrint('Error parsing payment response: $e');
       Navigator.pop(context, {
         'success': false,
-        'message': 'Payment cancelled',
+        'message': 'Error processing payment',
       });
     }
   }
@@ -91,7 +275,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
               context: context,
               builder: (context) => AlertDialog(
                 title: Text('cancel_payment'.tr()),
-                content: Text('cancel_payment_confirmation'.tr()),
+                content: const Text('Are you sure you want to cancel this payment?'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -113,44 +297,18 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
           },
         ),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          // Payment info banner
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            color: colorScheme.primaryContainer,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.planName,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onPrimaryContainer,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Amount: ${widget.amount.toStringAsFixed(2)}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          WebViewWidget(controller: _controller),
           
           // Loading indicator
           if (_isLoading)
-            const LinearProgressIndicator(),
-          
-          // WebView
-          Expanded(
-            child: WebViewWidget(controller: _controller),
-          ),
+            Container(
+              color: Colors.white,
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
         ],
       ),
     );

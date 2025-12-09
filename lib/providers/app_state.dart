@@ -1170,38 +1170,32 @@ class AppState with ChangeNotifier {
     }
   }
 
-  /// Initialize payment for subscription plan
-  Future<Map<String, dynamic>?> initializeSubscriptionPayment({
+  /// Get payment details for Paystack inline popup
+  Map<String, dynamic> getPaymentDetails({
     required String planId,
     required String planName,
     required double amount,
-  }) async {
-    try {
-      if (_subscriptionRepository == null) _initializeRepositories();
-      if (kDebugMode) print('💰 [AppState] Initializing subscription payment');
-      
-      final email = _currentUser?.email;
-      if (email == null) {
-        throw Exception('User email not found');
-      }
-      
-      // Get currency code based on partner country
-      final currency = _getCurrencyCodeForPayment();
-      
-      final result = await _subscriptionRepository!.initializePayment(
-        email: email,
-        amount: amount,
-        planId: planId,
-        planName: planName,
-        currency: currency,
-      );
-      
-      if (kDebugMode) print('✅ [AppState] Payment initialized with currency: $currency');
-      return result;
-    } catch (e) {
-      if (kDebugMode) print('❌ [AppState] Initialize payment error: $e');
-      rethrow;
+  }) {
+    final email = _currentUser?.email;
+    if (email == null) {
+      throw Exception('User email not found');
     }
+    
+    // Get currency code based on partner country
+    final currency = _getCurrencyCodeForPayment();
+    
+    if (kDebugMode) {
+      print('💰 [AppState] Payment details prepared');
+      print('   Email: $email, Amount: $amount, Currency: $currency');
+    }
+    
+    return {
+      'email': email,
+      'amount': amount,
+      'planId': planId,
+      'planName': planName,
+      'currency': currency,
+    };
   }
 
   /// Get currency code for payment based on partner country
