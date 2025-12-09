@@ -228,16 +228,23 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
                 ],
               ),
               const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: () => _confirmDisconnect(activeSession),
-                  icon: const Icon(Icons.logout, size: 16, color: Colors.red),
-                  label: Text(
-                    'disconnect'.tr(),
-                    style: const TextStyle(color: Colors.red),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Block User',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
-                ),
+                  Switch(
+                    value: false, // TODO: Track blocked state from backend
+                    onChanged: (value) => _toggleUserBlock(activeSession, value),
+                    activeColor: Colors.red,
+                  ),
+                ],
               ),
             ],
           ],
@@ -295,9 +302,10 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.logout, color: Colors.red),
-                  onPressed: () => _confirmDisconnect(session),
+                Switch(
+                  value: false, // TODO: Track blocked state from backend
+                  onChanged: (value) => _toggleUserBlock(session, value),
+                  activeColor: Colors.red,
                 ),
               ],
             ),
@@ -357,39 +365,62 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
     return '${(b / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
-  Future<void> _confirmDisconnect(Map<String, dynamic> session) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('disconnect_session'.tr()),
-        content: Text('disconnect_confirmation'.tr(args: [session['username'] ?? 'User'])),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('cancel'.tr()),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text('disconnect'.tr(), style: const TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
+  Future<void> _toggleUserBlock(Map<String, dynamic> session, bool shouldBlock) async {
+    final username = session['username'] ?? 'User';
+    
+    if (shouldBlock) {
+      // Show confirmation before blocking
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Block User'),
+          content: Text('Block $username? They will be disconnected and prevented from reconnecting until unblocked.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text('cancel'.tr()),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Block', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      );
 
-    if (confirmed == true && mounted) {
-      try {
-        await context.read<AppState>().disconnectSession(session);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('session_disconnected'.tr())),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
-          );
-        }
+      if (confirmed != true || !mounted) return;
+    }
+
+    try {
+      // Use disconnect endpoint to block/unblock user
+      final success = await context.read<AppState>().disconnectSession(session);
+      
+      if (mounted && success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(shouldBlock 
+              ? '$username has been blocked and disconnected' 
+              : '$username has been unblocked'),
+          ),
+        );
+        // Reload sessions to reflect changes
+        await _loadData();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to ${shouldBlock ? 'block' : 'unblock'} user'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
       }
     }
   }
