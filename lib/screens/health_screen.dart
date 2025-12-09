@@ -93,7 +93,7 @@ class _HealthScreenState extends State<HealthScreen> {
       ),
       body: appState.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : appState.routers.isEmpty
+          : appState.visibleRouters.isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -109,9 +109,9 @@ class _HealthScreenState extends State<HealthScreen> {
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(16.0),
-                  itemCount: appState.routers.length,
+                  itemCount: appState.visibleRouters.length,
                   itemBuilder: (context, index) {
-                    final router = appState.routers[index];
+                    final router = appState.visibleRouters[index];
                     final isOnline = router.status == 'online';
                     final signalStrength = _getSignalStrength(router);
                     final hasIssues = _hasIssues(router);

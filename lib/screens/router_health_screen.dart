@@ -24,7 +24,7 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     final appState = context.watch<AppState>();
-    final routers = appState.routers;
+    final routers = appState.visibleRouters;
 
     return Scaffold(
       appBar: AppBar(

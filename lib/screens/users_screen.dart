@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../models/worker_model.dart';
+import '../models/user_model.dart'; // Added by instruction
 import '../utils/app_theme.dart';
+import 'assign_routers_screen.dart'; // Added by instruction
 import '../widgets/search_bar_widget.dart';
 import '../widgets/create_worker_dialog.dart';
 import '../utils/permissions.dart';
@@ -571,10 +573,30 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             if (Permissions.canEditUsers(currentUser.role, currentUser.permissions))
               ListTile(
                 leading: const Icon(Icons.edit),
-                title: const Text('Edit Worker'),
+                title: Text('edit'.tr()),
                 onTap: () {
                   Navigator.pop(context);
                   _showEditWorkerDialog(context, worker);
+                },
+              ),
+            // Assign Routers
+            if (Permissions.canAssignRouters(currentUser.role))
+              ListTile(
+                leading: const Icon(Icons.router),
+                title: Text('assign_routers'.tr()),
+                onTap: () async {
+                  Navigator.pop(context);
+                  // Navigate to assign routers screen
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AssignRoutersScreen(worker: worker),
+                    ),
+                  );
+                  // Refresh if changes were made
+                  if (result == true && context.mounted) {
+                    context.read<AppState>().loadWorkers();
+                  }
                 },
               ),
             // Assign/Change Role
@@ -673,14 +695,13 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 ),
                   items: roles.map((role) {
                     return DropdownMenuItem(
-                      value: role.slug,
                       value: role.id, // Returns role ID
                       child: Text(role.name),
                     );
                   }).toList(),
                 onChanged: (value) {
                   setState(() {
-                    selectedRoleId = value; // Updates role ID
+                    selectedRole = value; // Updates role ID
                   });
                 },
               ),
@@ -693,19 +714,19 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             ),
             FilledButton(
               onPressed: () async {
-                if (selectedRoleId != null) {
+                if (selectedRole != null) {
                   try {
                     if (worker.roleId == null) { // Check against roleId
-                      await appState.assignRoleToWorker(worker.username, selectedRoleId!);
+                      await appState.assignRoleToWorker(worker.username, selectedRole!);
                     } else {
-                      await appState.updateWorkerRole(worker.username, selectedRoleId!);
+                      await appState.updateWorkerRole(worker.username, selectedRole!);
                     }
                     
                     if (context.mounted) {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Role ${roles.firstWhere((r) => r.id == selectedRoleId).name} assigned successfully'),
+                          content: Text('Role ${roles.firstWhere((r) => r.id == selectedRole).name} assigned successfully'),
                           backgroundColor: Theme.of(context).colorScheme.primary,
                         ),
                       );
@@ -852,7 +873,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
 
   void _showAssignRouterDialog(BuildContext context, WorkerModel worker) {
     final appState = context.read<AppState>();
-    final routers = appState.routers;
+    final routers = appState.visibleRouters;
     String? selectedRouter;
 
     showDialog(

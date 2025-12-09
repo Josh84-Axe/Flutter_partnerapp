@@ -178,7 +178,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                       hint: Text('select_router'.tr()),
                       items: [
                         DropdownMenuItem(value: 'all', child: Text('all_routers'.tr())),
-                        ...appState.routers.map((router) =>
+                        ...appState.visibleRouters.map((router) =>
                             DropdownMenuItem(value: router.id, child: Text(router.name))),
                       ],
                       onChanged: (value) => setState(() => _selectedRouter = value),

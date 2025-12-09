@@ -271,12 +271,12 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
     bool isCurrentRole,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isSelected = _selectedRole == value || (isCurrentRole && _selectedRole == null);
+    final isSelected = _selectedRoleId == value || (isCurrentRole && _selectedRoleId == null);
     
     return GestureDetector(
       onTap: () {
         setModalState(() {
-          _selectedRole = value;
+          _selectedRoleId = value;
         });
       },
       child: Container(

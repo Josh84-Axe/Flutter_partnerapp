@@ -625,6 +625,14 @@
   "code_sent_to": "Nous avons envoye un code de verification a {0}",
   "enter_otp": "Veuillez entrer le code de verification",
   "otp_length_error": "Le code doit contenir 6 chiffres",
-  "resend_in": "Renvoyer dans {0}s",
-  "verify": "Verifier"
+  "resend_in": "Renvoyer dans {seconds}s",
+  "verify": "Vérifier",
+  "assign_routers": "Assigner des routeurs",
+  "router_assignment_saved": "Attribution de routeur enregistrée avec succès",
+  "search_routers": "Rechercher des routeurs...",
+  "router": "routeur",
+  "routers": "routeurs",
+  "no_routers_available": "Aucun routeur disponible",
+  "no_routers_found": "Aucun routeur trouvé",
+  "save_assignments": "Enregistrer les attributions"
 }

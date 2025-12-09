@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../models/router_model.dart';
 import '../models/plan_model.dart';
@@ -170,6 +172,9 @@ class AppState with ChangeNotifier {
   
   // Local notification service
   final LocalNotificationService _localNotificationService = LocalNotificationService();
+  
+  // Router assignment storage (username -> list of router IDs)
+  Map<String, List<String>> _routerAssignments = {};
   
   final Map<int, String> _permissionIdToCodename = {};
   
@@ -780,6 +785,7 @@ class AppState with ChangeNotifier {
         _loadIdleTimeouts(),
         _loadSharedUsers(),
         loadRouters(),
+        loadRouterAssignments(), // Load router assignments on startup
       ]);
       
       if (kDebugMode) {
@@ -2297,6 +2303,147 @@ class AppState with ChangeNotifier {
       if (kDebugMode) print('❌ [AppState] Fetch worker details error: $e');
       rethrow;
     }
+  }
+
+
+  // ============================================================================
+  // ROUTER ASSIGNMENT MANAGEMENT
+  // ============================================================================
+  
+  /// Load router assignments from SharedPreferences
+  Future<void> loadRouterAssignments() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final json = prefs.getString('router_assignments');
+      if (json != null) {
+        final Map<String, dynamic> decoded = jsonDecode(json);
+        _routerAssignments = decoded.map(
+          (key, value) => MapEntry(key, List<String>.from(value as List))
+        );
+        if (kDebugMode) print('✅ [RouterAssignment] Loaded ${_routerAssignments.length} assignments');
+      } else {
+        if (kDebugMode) print('ℹ️ [RouterAssignment] No saved assignments found');
+      }
+    } catch (e) {
+      if (kDebugMode) print('❌ [RouterAssignment] Error loading assignments: $e');
+    }
+  }
+  
+  /// Save router assignments to SharedPreferences
+  Future<void> saveRouterAssignments() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final json = jsonEncode(_routerAssignments);
+      await prefs.setString('router_assignments', json);
+      notifyListeners();
+      if (kDebugMode) print('✅ [RouterAssignment] Saved ${_routerAssignments.length} assignments');
+    } catch (e) {
+      if (kDebugMode) print('❌ [RouterAssignment] Error saving assignments: $e');
+    }
+  }
+  
+  /// Assign routers to a worker/manager
+  Future<void> assignRoutersToWorker(String username, List<String> routerIds) async {
+    _routerAssignments[username] = routerIds;
+    await saveRouterAssignments();
+    if (kDebugMode) print('✅ [RouterAssignment] Assigned ${routerIds.length} routers to $username');
+  }
+  
+  /// Get assigned routers for a specific worker/manager
+  List<String> getAssignedRouters(String username) {
+    return _routerAssignments[username] ?? [];
+  }
+  
+  /// Remove router assignment for a worker
+  Future<void> removeRouterAssignment(String username) async {
+    _routerAssignments.remove(username);
+    await saveRouterAssignments();
+    if (kDebugMode) print('✅ [RouterAssignment] Removed assignment for $username');
+  }
+  
+  /// Get all router assignments (for admin view)
+  Map<String, List<String>> get allRouterAssignments => Map.unmodifiable(_routerAssignments);
+  
+  // ============================================================================
+  // FILTERED DATA GETTERS (Role-Based Access Control)
+  // ============================================================================
+  
+  /// Get routers visible to current user based on role and assignments
+  List<RouterModel> get visibleRouters {
+    if (_currentUser == null) return [];
+    
+    // Partners/Owners see ALL routers
+    final role = _currentUser!.role.toLowerCase();
+    if (role == 'partner' || role == 'owner' || role == 'admin') {
+      return _routers;
+    }
+    
+    // Workers/Managers see only assigned routers
+    final assignedIds = getAssignedRouters(_currentUser!.email); // Use email as username
+    if (assignedIds.isEmpty) {
+      if (kDebugMode) print('⚠️ [RouterAssignment] No routers assigned to ${_currentUser!.email}');
+      return [];
+    }
+    
+    final filtered = _routers.where((r) => assignedIds.contains(r.id)).toList();
+    if (kDebugMode) print('✅ [RouterAssignment] ${_currentUser!.email} can see ${filtered.length}/${_routers.length} routers');
+    return filtered;
+  }
+  
+  /// Get users visible to current user (filtered by assigned routers)
+  /// Note: Requires UserModel to have routerId field
+  List<UserModel> get visibleUsers {
+    if (_currentUser == null) return [];
+    
+    // Partners/Owners see ALL users
+    final role = _currentUser!.role.toLowerCase();
+    if (role == 'partner' || role == 'owner' || role == 'admin') {
+      return _users;
+    }
+    
+    // Workers/Managers see users on their assigned routers
+    // For now, return all users until UserModel has routerId field
+    // TODO: Filter by router when UserModel is updated
+    return _users;
+  }
+  
+  /// Get hotspot profiles visible to current user (filtered by assigned routers)
+  List<HotspotProfileModel> get visibleProfiles {
+    if (_currentUser == null) return [];
+    
+    // Partners/Owners see ALL profiles
+    final role = _currentUser!.role.toLowerCase();
+    if (role == 'partner' || role == 'owner' || role == 'admin') {
+      return _hotspotProfiles;
+    }
+    
+    // Workers/Managers see profiles on their assigned routers
+    final assignedIds = getAssignedRouters(_currentUser!.email);
+    if (assignedIds.isEmpty) return [];
+    
+    // Filter profiles by routerIds - profile is visible if ANY of its routers are assigned
+    final filtered = _hotspotProfiles.where((p) {
+      // Check if profile has any routers assigned to the worker
+      return p.routerIds.any((routerId) => assignedIds.contains(routerId));
+    }).toList();
+    
+    return filtered;
+  }
+  
+  /// Get plans visible to current user (filtered by assigned routers)
+  List<PlanModel> get visiblePlans {
+    if (_currentUser == null) return [];
+    
+    // Partners/Owners see ALL plans
+    final role = _currentUser!.role.toLowerCase();
+    if (role == 'partner' || role == 'owner' || role == 'admin') {
+      return _plans;
+    }
+    
+    // Workers/Managers see plans on their assigned routers
+    // For now, return all plans until PlanModel has routerId field
+    // TODO: Filter by router when PlanModel is updated
+    return _plans;
   }
 
   /// Update worker
