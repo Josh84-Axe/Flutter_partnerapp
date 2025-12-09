@@ -39,24 +39,36 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
+            debugPrint('🌐 [PaymentGateway] Page started: $url');
             setState(() => _isLoading = true);
           },
           onPageFinished: (String url) {
+            debugPrint('✅ [PaymentGateway] Page finished: $url');
             setState(() => _isLoading = false);
           },
           onWebResourceError: (WebResourceError error) {
-            debugPrint('WebView error: ${error.description}');
+            debugPrint('❌ [PaymentGateway] WebView error: ${error.description}');
+            debugPrint('   Error type: ${error.errorType}');
+            debugPrint('   Error code: ${error.errorCode}');
           },
         ),
       )
+      ..setOnConsoleMessage((JavaScriptConsoleMessage message) {
+        debugPrint('📱 [PaymentGateway] Console: ${message.message}');
+      })
       ..addJavaScriptChannel(
         'PaystackFlutter',
         onMessageReceived: (JavaScriptMessage message) {
-          // Handle payment response from Paystack
+          debugPrint('💬 [PaymentGateway] Message from JS: ${message.message}');
           _handlePaymentResponse(message.message);
         },
       )
       ..loadHtmlString(_buildPaystackHTML());
+    
+    debugPrint('🚀 [PaymentGateway] WebView initialized');
+    debugPrint('   Email: ${widget.email}');
+    debugPrint('   Amount: ${widget.amount}');
+    debugPrint('   Currency: ${widget.currency}');
   }
 
   String _buildPaystackHTML() {
@@ -171,55 +183,81 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
     </div>
 
     <script>
+        console.log('🚀 Payment page loaded');
+        console.log('Email: ${widget.email}');
+        console.log('Amount: ${widget.amount}');
+        console.log('Currency: ${widget.currency}');
+        
+        // Check if Paystack loaded
+        if (typeof PaystackPop === 'undefined') {
+            console.error('❌ PaystackPop not loaded!');
+            alert('Error: Paystack library failed to load. Please check your internet connection.');
+        } else {
+            console.log('✅ PaystackPop loaded successfully');
+        }
+        
         function payWithPaystack() {
-            var handler = PaystackPop.setup({
-                key: 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
-                email: '${widget.email}',
-                amount: $amountInKobo,
-                currency: '${widget.currency}',
-                ref: 'PSK_' + Math.floor((Math.random() * 1000000000) + 1),
-                metadata: {
-                    plan_id: '${widget.planId}',
-                    plan_name: '${widget.planName}',
-                    custom_fields: [
-                        {
-                            display_name: "Subscription Plan",
-                            variable_name: "subscription_plan",
-                            value: "${widget.planName}"
+            console.log('💳 Initiating payment...');
+            
+            try {
+                var handler = PaystackPop.setup({
+                    key: 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
+                    email: '${widget.email}',
+                    amount: $amountInKobo,
+                    currency: '${widget.currency}',
+                    ref: 'PSK_' + Math.floor((Math.random() * 1000000000) + 1),
+                    metadata: {
+                        plan_id: '${widget.planId}',
+                        plan_name: '${widget.planName}',
+                        custom_fields: [
+                            {
+                                display_name: "Subscription Plan",
+                                variable_name: "subscription_plan",
+                                value: "${widget.planName}"
+                            }
+                        ]
+                    },
+                    callback: function(response) {
+                        console.log('✅ Payment successful:', response);
+                        document.getElementById('loading').classList.add('active');
+                        
+                        // Send success message to Flutter
+                        if (window.PaystackFlutter) {
+                            window.PaystackFlutter.postMessage(JSON.stringify({
+                                success: true,
+                                reference: response.reference,
+                                message: 'Payment successful'
+                            }));
+                        } else {
+                            console.error('❌ PaystackFlutter channel not available');
                         }
-                    ]
-                },
-                callback: function(response) {
-                    // Payment successful
-                    document.getElementById('loading').classList.add('active');
-                    
-                    // Send success message to Flutter
-                    if (window.PaystackFlutter) {
-                        window.PaystackFlutter.postMessage(JSON.stringify({
-                            success: true,
-                            reference: response.reference,
-                            message: 'Payment successful'
-                        }));
+                    },
+                    onClose: function() {
+                        console.log('⚠️ Payment popup closed');
+                        // User closed the popup
+                        if (window.PaystackFlutter) {
+                            window.PaystackFlutter.postMessage(JSON.stringify({
+                                success: false,
+                                message: 'Payment cancelled'
+                            }));
+                        }
                     }
-                },
-                onClose: function() {
-                    // User closed the popup
-                    if (window.PaystackFlutter) {
-                        window.PaystackFlutter.postMessage(JSON.stringify({
-                            success: false,
-                            message: 'Payment cancelled'
-                        }));
-                    }
-                }
-            });
-            handler.openIframe();
+                });
+                
+                console.log('🎯 Opening Paystack iframe...');
+                handler.openIframe();
+            } catch (error) {
+                console.error('❌ Error in payWithPaystack:', error);
+                alert('Error: ' + error.message);
+            }
         }
         
         // Auto-trigger payment on page load
         window.onload = function() {
+            console.log('📄 Window loaded, triggering payment in 1 second...');
             setTimeout(function() {
                 payWithPaystack();
-            }, 500);
+            }, 1000); // Increased delay to ensure everything is loaded
         };
     </script>
 </body>
