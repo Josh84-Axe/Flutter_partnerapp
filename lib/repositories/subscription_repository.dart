@@ -48,18 +48,78 @@ class SubscriptionRepository {
     }
   }
 
-  /// Purchase a subscription plan
-  Future<Map<String, dynamic>?> purchaseSubscription(String planId) async {
+  /// Purchase a subscription plan with payment reference
+  Future<Map<String, dynamic>?> purchaseSubscription(
+    String planId,
+    String paymentReference,
+  ) async {
     try {
-      if (kDebugMode) print('💳 [SubscriptionRepository] Purchasing plan: $planId');
+      if (kDebugMode) {
+        print('💳 [SubscriptionRepository] Purchasing plan: $planId');
+        print('   Payment reference: $paymentReference');
+      }
+      
       final response = await _dio.post(
         '/partner/subscription-plans/purchase/',
-        data: {'plan_id': planId},
+        data: {
+          'subscription_plan_id': planId,
+          'payment_reference': paymentReference,
+        },
       );
+      
       if (kDebugMode) print('✅ [SubscriptionRepository] Purchase response: ${response.data}');
       return response.data as Map<String, dynamic>?;
     } catch (e) {
       if (kDebugMode) print('❌ [SubscriptionRepository] Purchase error: $e');
+      rethrow;
+    }
+  }
+
+  /// Initialize Paystack payment for subscription
+  Future<Map<String, dynamic>> initializePayment({
+    required String email,
+    required double amount,
+    required String planId,
+    required String planName,
+    required String currency, // Dynamic currency based on partner country
+  }) async {
+    try {
+      if (kDebugMode) {
+        print('💰 [SubscriptionRepository] Initializing payment');
+        print('   Email: $email, Amount: $amount, Plan: $planName, Currency: $currency');
+      }
+      
+      final response = await _dio.post(
+        'https://api.paystack.co/transaction/initialize',
+        data: {
+          'email': email,
+          'amount': (amount * 100).toInt(), // Paystack expects amount in kobo/pesewas/cents
+          'currency': currency, // GHS for Ghana, NGN for Nigeria, etc.
+          'metadata': {
+            'plan_id': planId,
+            'plan_name': planName,
+            'custom_fields': [
+              {
+                'display_name': 'Subscription Plan',
+                'variable_name': 'subscription_plan',
+                'value': planName,
+              }
+            ],
+          },
+          'callback_url': 'https://your-app.com/payment/callback', // TODO: Update with actual callback URL
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+      
+      if (kDebugMode) print('✅ [SubscriptionRepository] Payment initialized: ${response.data}');
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      if (kDebugMode) print('❌ [SubscriptionRepository] Payment initialization error: $e');
       rethrow;
     }
   }

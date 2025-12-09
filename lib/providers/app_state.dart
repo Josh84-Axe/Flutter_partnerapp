@@ -1141,13 +1141,16 @@ class AppState with ChangeNotifier {
   }
 
   /// Purchase a subscription plan
-  Future<bool> purchaseSubscriptionPlan(String planId) async {
+  Future<bool> purchaseSubscriptionPlan(String planId, String paymentReference) async {
     _setLoading(true);
     try {
       if (_subscriptionRepository == null) _initializeRepositories();
       
-      if (kDebugMode) print('💳 [AppState] Purchasing subscription plan: $planId');
-      final result = await _subscriptionRepository!.purchaseSubscription(planId);
+      if (kDebugMode) {
+        print('💳 [AppState] Purchasing subscription plan: $planId');
+        print('   Payment reference: $paymentReference');
+      }
+      final result = await _subscriptionRepository!.purchaseSubscription(planId, paymentReference);
       
       if (result != null) {
         if (kDebugMode) print('✅ [AppState] Subscription purchase successful');
@@ -1164,6 +1167,63 @@ class AppState with ChangeNotifier {
       _setError(e.toString());
       _setLoading(false);
       rethrow;
+    }
+  }
+
+  /// Initialize payment for subscription plan
+  Future<Map<String, dynamic>?> initializeSubscriptionPayment({
+    required String planId,
+    required String planName,
+    required double amount,
+  }) async {
+    try {
+      if (_subscriptionRepository == null) _initializeRepositories();
+      if (kDebugMode) print('💰 [AppState] Initializing subscription payment');
+      
+      final email = _currentUser?.email;
+      if (email == null) {
+        throw Exception('User email not found');
+      }
+      
+      // Get currency code based on partner country
+      final currency = _getCurrencyCodeForPayment();
+      
+      final result = await _subscriptionRepository!.initializePayment(
+        email: email,
+        amount: amount,
+        planId: planId,
+        planName: planName,
+        currency: currency,
+      );
+      
+      if (kDebugMode) print('✅ [AppState] Payment initialized with currency: $currency');
+      return result;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Initialize payment error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get currency code for payment based on partner country
+  String _getCurrencyCodeForPayment() {
+    // Import CurrencyUtils at top of file
+    final country = _partner?.country;
+    
+    if (country == null) return 'GHS'; // Default to Ghana Cedis
+    
+    switch (country.toLowerCase()) {
+      case 'ghana':
+        return 'GHS';
+      case 'nigeria':
+        return 'NGN';
+      case 'kenya':
+        return 'KES';
+      case 'south africa':
+        return 'ZAR';
+      case 'uganda':
+        return 'UGX';
+      default:
+        return 'GHS'; // Default to Ghana Cedis
     }
   }
 
