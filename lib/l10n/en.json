@@ -634,5 +634,11 @@
   "low_balance_alerts": "Low Balance Alerts",
   "low_balance_alerts_desc": "Get notified when your balance is low",
   "new_user_notifications": "New User Notifications",
-  "new_user_notifications_desc": "Get notified when new users connect to your hotspot"
+  "new_user_notifications_desc": "Get notified when new users connect to your hotspot",
+  "enter_verification_code": "Enter Verification Code",
+  "code_sent_to": "We sent a verification code to {0}",
+  "enter_otp": "Please enter the verification code",
+  "otp_length_error": "Code must be 6 digits",
+  "resend_in": "Resend in {0}s",
+  "verify": "Verify"
 }

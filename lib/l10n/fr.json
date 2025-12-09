@@ -620,5 +620,11 @@
   "low_balance_alerts": "Alertes de Solde Faible",
   "low_balance_alerts_desc": "Recevoir une notification lorsque votre solde est faible",
   "new_user_notifications": "Notifications de Nouveaux Utilisateurs",
-  "new_user_notifications_desc": "Recevoir une notification lorsque de nouveaux utilisateurs se connectent à votre hotspot"
+  "new_user_notifications_desc": "Recevoir une notification lorsque de nouveaux utilisateurs se connectent à votre hotspot",
+  "enter_verification_code": "Entrez le code de verification",
+  "code_sent_to": "Nous avons envoye un code de verification a {0}",
+  "enter_otp": "Veuillez entrer le code de verification",
+  "otp_length_error": "Le code doit contenir 6 chiffres",
+  "resend_in": "Renvoyer dans {0}s",
+  "verify": "Verifier"
 }
