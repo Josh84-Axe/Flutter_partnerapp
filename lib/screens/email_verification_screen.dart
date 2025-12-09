@@ -18,6 +18,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   Timer? _resendTimer;
   int _resendCountdown = 60;
   bool _canResend = false;
+  bool _hasAttemptedVerification = false; // Track if user has attempted verification
 
   @override
   void initState() {
@@ -49,10 +50,16 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   void dispose() {
     _otpController.dispose();
     _resendTimer?.cancel();
+    
+    // Clear any errors when leaving OTP screen
+    final appState = context.read<AppState>();
+    appState.clearError();
+    
     super.dispose();
   }
 
   Future<void> _verifyOtp() async {
+    setState(() => _hasAttemptedVerification = true); // Mark that user has attempted verification
     if (!_formKey.currentState!.validate()) return;
 
     final appState = context.read<AppState>();
@@ -152,7 +159,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
-                if (appState.error != null)
+                if (appState.error != null && _hasAttemptedVerification)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Text(
