@@ -299,8 +299,8 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                       Container(
                         width: 8,
                         height: 8,
-                        decoration: const BoxDecoration(
-                          color: colorScheme.primary,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -388,7 +388,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               ListTile(
                 leading: Icon(
                   user.isActive ? Icons.block : Icons.check_circle,
-                  color: user.isActive ? colorScheme.error : colorScheme.primary,
+                  color: user.isActive ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.primary,
                 ),
                 title: Text(user.isActive ? 'block_device'.tr() : 'unblock_device'.tr()),
                 onTap: () {
@@ -705,7 +705,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Role ${worker.roleSlug == null ? "assigned" : "updated"} successfully'),
-                          backgroundColor: colorScheme.primary,
+                          backgroundColor: Theme.of(context).colorScheme.primary,
                         ),
                       );
                     }

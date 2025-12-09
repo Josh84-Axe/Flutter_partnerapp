@@ -114,10 +114,10 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                       const SizedBox(height: 4),
                       Text(
                         appState.formatMoney(appState.totalBalance),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 4),

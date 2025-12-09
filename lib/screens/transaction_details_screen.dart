@@ -290,7 +290,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                         color: (steps[i]['isActive'] as bool)
                             ? ((steps[i]['title'] == 'Failed')
                                 ? Colors.red
-                                : colorScheme.primary)
+                                : Theme.of(context).colorScheme.primary)
                             : Colors.grey[300],
                       ),
                       child: (steps[i]['isCompleted'] as bool)
@@ -329,7 +329,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                   child: Container(
                     height: 2,
                     color: (steps[i + 1]['isActive'] as bool)
-                        ? colorScheme.primary
+                        ? Theme.of(context).colorScheme.primary
                         : Colors.grey[300],
                   ),
                 ),
@@ -348,7 +348,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
     switch (status.toLowerCase()) {
       case 'success':
       case 'completed':
-        color = colorScheme.primary;
+        color = Theme.of(context).colorScheme.primary;
         icon = Icons.check_circle;
         label = 'Success';
         break;
