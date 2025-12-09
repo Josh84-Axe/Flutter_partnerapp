@@ -321,6 +321,11 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
   }
 
   Future<void> _purchasePlan(String planId, String planName, double amount) async {
+    debugPrint('🛒 [Subscription] _purchasePlan called');
+    debugPrint('   Plan ID: $planId');
+    debugPrint('   Plan Name: $planName');
+    debugPrint('   Amount: $amount');
+    
     final appState = context.read<AppState>();
     
     final confirmed = await showDialog<bool>(
@@ -361,11 +366,18 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
       ),
     );
 
-    if (confirmed != true || !mounted) return;
+    debugPrint('💬 [Subscription] User confirmed: $confirmed');
+
+    if (confirmed != true || !mounted) {
+      debugPrint('⚠️ [Subscription] Payment cancelled or widget unmounted');
+      return;
+    }
 
     setState(() => _isLoading = false);
     
     try {
+      debugPrint('📦 [Subscription] Getting payment details...');
+      
       // Get payment details for Paystack popup
       final paymentDetails = appState.getPaymentDetails(
         planId: planId,
@@ -373,19 +385,31 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
         amount: amount,
       );
       
+      debugPrint('✅ [Subscription] Payment details retrieved:');
+      debugPrint('   Email: ${paymentDetails['email']}');
+      debugPrint('   Currency: ${paymentDetails['currency']}');
+      
+      debugPrint('🚀 [Subscription] Opening PaymentGatewayScreen...');
+      
       // Open Paystack inline popup
       final paymentResult = await Navigator.push<Map<String, dynamic>>(
         context,
         MaterialPageRoute(
-          builder: (context) => PaymentGatewayScreen(
-            email: paymentDetails['email'],
-            amount: paymentDetails['amount'],
-            planId: paymentDetails['planId'],
-            planName: paymentDetails['planName'],
-            currency: paymentDetails['currency'],
-          ),
+          builder: (context) {
+            debugPrint('🏗️ [Subscription] Building PaymentGatewayScreen...');
+            return PaymentGatewayScreen(
+              email: paymentDetails['email'],
+              amount: paymentDetails['amount'],
+              planId: paymentDetails['planId'],
+              planName: paymentDetails['planName'],
+              currency: paymentDetails['currency'],
+            );
+          },
         ),
       );
+      
+      debugPrint('🔙 [Subscription] Returned from PaymentGatewayScreen');
+      debugPrint('   Result: $paymentResult');
       
       if (!mounted) return;
       
