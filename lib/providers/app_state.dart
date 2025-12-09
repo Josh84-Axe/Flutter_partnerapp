@@ -1206,8 +1206,7 @@ class AppState with ChangeNotifier {
 
   /// Get currency code for payment based on partner country
   String _getCurrencyCodeForPayment() {
-    // Import CurrencyUtils at top of file
-    final country = _partner?.country;
+    final country = _currentUser?.country;
     
     if (country == null) return 'GHS'; // Default to Ghana Cedis
     

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/currency_utils.dart';
+import 'payment_gateway_screen.dart';
 
 class SubscriptionManagementScreen extends StatefulWidget {
   const SubscriptionManagementScreen({super.key});
@@ -266,7 +267,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(
-                                      onPressed: () => _purchasePlan(plan.id, plan.name),
+                                      onPressed: () => _purchasePlan(plan.id, plan.name, plan.price),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: colorScheme.primary,
                                         foregroundColor: colorScheme.onPrimary,
@@ -319,12 +320,34 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
     );
   }
 
-  Future<void> _purchasePlan(String planId, String planName) async {
+  Future<void> _purchasePlan(String planId, String planName, double amount) async {
+    final appState = context.read<AppState>();
+    
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('confirm_purchase'.tr()),
-        content: Text('${'confirm_purchase_message'.tr()}\n\n$planName'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('confirm_purchase_message'.tr()),
+            const SizedBox(height: 16),
+            Text(
+              planName,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              CurrencyUtils.formatPrice(amount, appState.partnerCountry),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -332,41 +355,107 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('confirm'.tr()),
+            child: const Text('Proceed to Payment'),
           ),
         ],
       ),
     );
 
-    if (confirmed == true && mounted) {
-      setState(() => _isLoading = true);
-      try {
-        final appState = context.read<AppState>();
-        final success = await appState.purchaseSubscriptionPlan(planId);
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isLoading = true);
+    
+    try {
+      // Step 1: Initialize payment with Paystack
+      final paymentData = await appState.initializeSubscriptionPayment(
+        planId: planId,
+        planName: planName,
+        amount: amount,
+      );
+      
+      if (paymentData == null || !mounted) {
+        throw Exception('Failed to initialize payment');
+      }
+      
+      // Extract authorization URL from Paystack response
+      final authorizationUrl = paymentData['data']?['authorization_url'];
+      if (authorizationUrl == null) {
+        throw Exception('No authorization URL received from payment gateway');
+      }
+      
+      setState(() => _isLoading = false);
+      
+      // Step 2: Open payment gateway
+      final paymentResult = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaymentGatewayScreen(
+            authorizationUrl: authorizationUrl,
+            planName: planName,
+            amount: amount,
+          ),
+        ),
+      );
+      
+      if (!mounted) return;
+      
+      // Step 3: Process payment result
+      if (paymentResult != null && paymentResult['success'] == true) {
+        final paymentReference = paymentResult['reference'];
+        
+        if (paymentReference == null) {
+          throw Exception('No payment reference received');
+        }
+        
+        setState(() => _isLoading = true);
+        
+        // Step 4: Purchase subscription with payment reference
+        final success = await appState.purchaseSubscriptionPlan(
+          planId,
+          paymentReference,
+        );
         
         if (mounted) {
           setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                success 
-                    ? 'subscription_purchased_successfully'.tr() 
-                    : 'subscription_purchase_failed'.tr()
+          
+          if (success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('subscription_purchased_successfully'.tr()),
+                backgroundColor: Colors.green,
               ),
-              backgroundColor: success ? Colors.green : Colors.red,
-            ),
-          );
+            );
+            // Reload data to show new subscription
+            await _loadData();
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('subscription_purchase_failed'.tr()),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
-      } catch (e) {
+      } else {
+        // Payment cancelled or failed
         if (mounted) {
-          setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${'error_occurred'.tr()}: ${e.toString()}'),
-              backgroundColor: Colors.red,
+              content: Text(paymentResult?['message'] ?? 'Payment cancelled'),
+              backgroundColor: Colors.orange,
             ),
           );
         }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${'error_occurred'.tr()}: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
