@@ -25,18 +25,9 @@ class _ReportingScreenState extends State<ReportingScreen> {
     'Revenue Report',
   ];
 
-  final List<Map<String, dynamic>> _generatedReports = [
-    {
-      'type': 'Transaction History',
-      'date': DateTime.now().subtract(const Duration(days: 2)),
-      'format': 'PDF',
-    },
-    {
-      'type': 'User Data Usage',
-      'date': DateTime.now().subtract(const Duration(days: 5)),
-      'format': 'CSV',
-    },
-  ];
+  final List<Map<String, dynamic>> _generatedReports = [];
+  // TODO: Implement report history from backend
+  // Reports will be added here after generation
 
   @override
   void initState() {
@@ -280,7 +271,11 @@ class _ReportingScreenState extends State<ReportingScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          ..._generatedReports.map((report) => _buildReportCard(report)),
+          // Show empty state or reports
+          if (_generatedReports.isEmpty)
+            _buildEmptyState()
+          else
+            ..._generatedReports.map((report) => _buildReportCard(report)),
         ],
       ),
     );
@@ -387,6 +382,41 @@ class _ReportingScreenState extends State<ReportingScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Container(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        children: [
+          Icon(
+            Icons.description_outlined,
+            size: 64,
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No Reports Generated Yet',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Generate your first report using the form above',
+            style: TextStyle(
+              fontSize: 14,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
