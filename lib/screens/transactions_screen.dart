@@ -174,10 +174,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.1),
+                      color: colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.green.withValues(alpha: 0.3),
+                        color: colorScheme.primary.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Column(
@@ -193,7 +193,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         Text(
                           appState.formatMoney(totalRevenue),
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: Colors.green,
+                                color: colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
@@ -268,11 +268,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: isRevenue
-                                    ? Colors.green.withValues(alpha: 0.1)
+                                    ? colorScheme.primary.withValues(alpha: 0.1)
                                     : Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
                                 child: Icon(
                                   isRevenue ? Icons.arrow_downward : Icons.arrow_upward,
-                                  color: isRevenue ? Colors.green : Theme.of(context).colorScheme.error,
+                                  color: isRevenue ? colorScheme.primary : colorScheme.error,
                                   size: 20,
                                 ),
                               ),
@@ -297,7 +297,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                               trailing: Text(
                                 '${isRevenue ? '+' : '-'}${appState.formatMoney(transaction.amount.abs())}',
                                 style: TextStyle(
-                                  color: isRevenue ? Colors.green : Theme.of(context).colorScheme.error,
+                                  color: isRevenue ? colorScheme.primary : colorScheme.error,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
                                 ),

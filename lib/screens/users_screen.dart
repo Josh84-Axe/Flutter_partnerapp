@@ -281,14 +281,14 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: user.isActive 
-                            ? Colors.green.withValues(alpha: 0.2)
+                            ? colorScheme.primary.withValues(alpha: 0.2)
                             : Colors.grey.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         user.isActive ? 'Active' : 'Inactive',
                         style: TextStyle(
-                          color: user.isActive ? Colors.green : colorScheme.onSurfaceVariant,
+                          color: user.isActive ? colorScheme.primary : colorScheme.onSurfaceVariant,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
@@ -300,7 +300,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                         width: 8,
                         height: 8,
                         decoration: const BoxDecoration(
-                          color: Colors.green,
+                          color: colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -388,7 +388,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               ListTile(
                 leading: Icon(
                   user.isActive ? Icons.block : Icons.check_circle,
-                  color: user.isActive ? Theme.of(context).colorScheme.error : Colors.green,
+                  color: user.isActive ? colorScheme.error : colorScheme.primary,
                 ),
                 title: Text(user.isActive ? 'block_device'.tr() : 'unblock_device'.tr()),
                 onTap: () {
@@ -705,7 +705,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Role ${worker.roleSlug == null ? "assigned" : "updated"} successfully'),
-                          backgroundColor: Colors.green,
+                          backgroundColor: colorScheme.primary,
                         ),
                       );
                     }

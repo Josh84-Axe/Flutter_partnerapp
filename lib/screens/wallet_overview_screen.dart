@@ -238,11 +238,11 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundColor: isRevenue
-                      ? Colors.green.withValues(alpha: 0.1)
-                      : Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
+                      ? colorScheme.primary.withValues(alpha: 0.1)
+                      : colorScheme.error.withValues(alpha: 0.1),
                   child: Icon(
                     isRevenue ? Icons.arrow_downward : Icons.arrow_upward,
-                    color: isRevenue ? Colors.green : Theme.of(context).colorScheme.error,
+                    color: isRevenue ? colorScheme.primary : colorScheme.error,
                     size: 20,
                   ),
                 ),
@@ -254,7 +254,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                 trailing: Text(
                   '${isRevenue ? '+' : '-'}${appState.formatMoney(transaction.amount.abs())}',
                   style: TextStyle(
-                    color: isRevenue ? Colors.green : Theme.of(context).colorScheme.error,
+                    color: isRevenue ? colorScheme.primary : colorScheme.error,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -323,7 +323,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
             _buildSummaryRow(
               'Total Revenue',
               appState.formatMoney(appState.totalRevenue),
-              Colors.green,
+              colorScheme.primary,
             ),
             const Divider(height: 24),
             _buildSummaryRow(
@@ -382,7 +382,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
             _buildSummaryRow(
               'Completed Payouts',
               appState.formatMoney(completedPayouts),
-              Colors.green,
+              colorScheme.primary,
             ),
           ],
         );

@@ -95,10 +95,10 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.successGreen.withValues(alpha: 0.1),
+                    color: colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppTheme.successGreen.withValues(alpha: 0.3),
+                      color: colorScheme.primary.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
@@ -117,7 +117,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.successGreen,
+                          color: colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 4),
