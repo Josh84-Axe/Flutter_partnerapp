@@ -262,4 +262,42 @@ class _ReportingScreenState extends State<ReportingScreen> {
       ),
     );
   }
+
+  Widget _buildFormatOption(String format, IconData icon) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isSelected = _selectedFormat == format;
+    return InkWell(
+      onTap: () => setState(() => _selectedFormat = format),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? colorScheme.primaryContainer : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? colorScheme.primary : colorScheme.outline,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              format,
+              style: TextStyle(
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                fontSize: 15,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

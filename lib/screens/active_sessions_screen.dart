@@ -393,9 +393,9 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
 
     try {
       // Use disconnect endpoint to block/unblock user
-      final success = await context.read<AppState>().disconnectSession(session);
+      await context.read<AppState>().disconnectSession(session);
       
-      if (mounted && success) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(shouldBlock 
@@ -405,13 +405,6 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
         );
         // Reload sessions to reflect changes
         await _loadData();
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to ${shouldBlock ? 'block' : 'unblock'} user'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
       }
     } catch (e) {
       if (mounted) {
