@@ -213,58 +213,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                   icon: Icons.router,
                   keyboardType: TextInputType.number,
                 ),
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Payment Methods',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    TextButton.icon(
-                      onPressed: _addPaymentMethod,
-                      icon: Icon(Icons.add, size: 20),
-                      label: const Text('Add New'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                ...appState.paymentMethods.map((method) => _buildPaymentMethodCard(method)),
-                if (appState.paymentMethods.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.account_balance_wallet_outlined,
-                            size: 48,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'No payment methods added',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Add a payment method to receive payouts',
-                            style: TextStyle(
-                              color: Colors.grey[500],
-                              fontSize: 14,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+
               ],
               ),
             ),

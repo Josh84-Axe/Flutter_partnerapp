@@ -263,26 +263,60 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                   }),
                                 ],
                                 if (!isCurrentPlan) ...[
-                                  const SizedBox(height: 20),
+                                  const SizedBox(height: 24),
                                   SizedBox(
                                     width: double.infinity,
-                                    child: ElevatedButton(
+                                    child: ElevatedButton.icon(
                                       onPressed: () => _purchasePlan(plan.id, plan.name, plan.price),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: colorScheme.primary,
-                                        foregroundColor: colorScheme.onPrimary,
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'upgrade'.tr(),
+                                      icon: const Icon(Icons.check_circle_outline, size: 20),
+                                      label: Text(
+                                        subscription != null ? 'upgrade_to_plan'.tr() : 'subscribe'.tr(),
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: colorScheme.primary,
+                                        foregroundColor: colorScheme.onPrimary,
+                                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                                        elevation: 2,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ] else ...[
+                                  const SizedBox(height: 24),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.surfaceContainerHighest,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: colorScheme.outline.withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.check_circle,
+                                          color: colorScheme.primary,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'your_current_plan'.tr(),
+                                          style: TextStyle(
+                                            color: colorScheme.onSurface,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],

@@ -18,6 +18,7 @@ import '../services/auth_service.dart';
 import '../services/payment_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/api/api_config.dart';
+import '../utils/guest_mode_helper.dart';
 import '../services/api/token_storage.dart';
 import '../services/api/api_client_factory.dart';
 import '../repositories/auth_repository.dart';
@@ -178,6 +179,10 @@ class AppState with ChangeNotifier {
   
   final Map<int, String> _permissionIdToCodename = {};
   
+  // Guest mode state
+  bool _isGuestMode = false;
+  String? _guestCountryCode;
+  
   // Getters
   UserModel? get currentUser => _currentUser;
   String? get partnerCountry => _partnerCountry;
@@ -192,6 +197,9 @@ class AppState with ChangeNotifier {
   double get walletBalance => _walletBalance;
   double get assignedWalletBalance => _assignedRevenue; // Mapped to assigned revenue
   double get totalBalance => _walletBalance; // Mapped to current wallet balance
+  
+  // Guest mode getters
+  bool get isGuestMode => _isGuestMode;
   
   // New getters
   double get totalRevenue => _totalRevenue;
@@ -530,26 +538,15 @@ class AppState with ChangeNotifier {
       return false;
     }
     
-    if (_registrationOtpId == null) {
-      _setError('No OTP ID found. Please try registering again.');
-      return false;
-    }
-    
     _setLoading(true);
     try {
       if (_authRepository == null) _initializeRepositories();
       
-      // Use verifyEmailOtp with otp_id
-      final success = await _authRepository!.verifyEmailOtp(
-        email: _registrationEmail!,
-        otp: otp,
-        otpId: _registrationOtpId!,
-      );
+      // Use confirmRegistration endpoint (doesn't require OTP ID)
+      final result = await _authRepository!.confirmRegistration(_registrationEmail!, otp);
       
-      if (success) {
+      if (result != null) {
         if (kDebugMode) print('✅ [AppState] Email verification successful');
-        // Clear the OTP ID after successful verification
-        _registrationOtpId = null;
         // Verification endpoint doesn't return tokens, so we can't auto-login.
         // The UI will navigate to /home, which will redirect to /login via AuthWrapper.
         _setLoading(false);
@@ -600,7 +597,71 @@ class AppState with ChangeNotifier {
     _plans = [];
     _transactions = [];
     _walletBalance = 0.0;
+    _isGuestMode = false; // Clear guest mode on logout
     notifyListeners();
+  }
+  
+  /// Enter guest mode with mock data
+  Future<void> enterGuestMode({String? countryCode}) async {
+    if (kDebugMode) print('👤 [AppState] Entering guest mode...');
+    
+    _isGuestMode = true;
+    _guestCountryCode = countryCode;
+    
+    // Create guest user
+    _currentUser = GuestModeHelper.createGuestUser(countryCode: countryCode);
+    _partnerCountry = _currentUser!.country;
+    
+    // Load mock data
+    _routers = GuestModeHelper.generateDemoRouters();
+    _users = GuestModeHelper.generateDemoCustomers();
+    _transactions = GuestModeHelper.generateDemoTransactions(_currentUser!.country!)
+        .map((t) => TransactionModel.fromJson(t))
+        .toList();
+    
+    // Load mock wallet
+    final walletData = GuestModeHelper.generateDemoWallet(_currentUser!.country!);
+    _walletBalance = walletData['balance'];
+    
+    // Load mock stats
+    final stats = GuestModeHelper.generateDemoStats();
+    _totalRevenue = stats['total_revenue'];
+    
+    // Load real subscription plans (as requested)
+    try {
+      await loadSubscriptionPlans();
+    } catch (e) {
+      if (kDebugMode) print('⚠️ [AppState] Could not load subscription plans in guest mode: $e');
+    }
+    
+    if (kDebugMode) print('✅ [AppState] Guest mode activated with demo data');
+    notifyListeners();
+  }
+  
+  /// Exit guest mode
+  void exitGuestMode() {
+    if (kDebugMode) print('👤 [AppState] Exiting guest mode...');
+    
+    _isGuestMode = false;
+    _guestCountryCode = null;
+    _currentUser = null;
+    _users = [];
+    _routers = [];
+    _plans = [];
+    _transactions = [];
+    _walletBalance = 0.0;
+    _totalRevenue = 0.0;
+    
+    notifyListeners();
+  }
+  
+  /// Check if user can perform an action (returns false if guest mode)
+  bool canPerformAction(BuildContext context, {String? featureName}) {
+    if (_isGuestMode) {
+      // Will be handled by UI to show register prompt
+      return false;
+    }
+    return true;
   }
   
   /// Request password reset - sends OTP to email and stores OTP ID

@@ -684,28 +684,33 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           title: Text(worker.roleName != null ? 'Change Role' : 'Assign Role'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                value: selectedRole,
-                decoration: InputDecoration(
-                  labelText: 'role'.tr(),
-                  border: const OutlineInputBorder(),
-                ),
-                  items: roles.map((role) {
-                    return DropdownMenuItem(
-                      value: role.id, // Returns role ID
-                      child: Text(role.name),
-                    );
-                  }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedRole = value; // Updates role ID
-                  });
-                },
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedRole,
+                    decoration: InputDecoration(
+                      labelText: 'role'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                      items: roles.map((role) {
+                        return DropdownMenuItem(
+                          value: role.id, // Returns role ID
+                          child: Text(role.name),
+                        );
+                      }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedRole = value; // Updates role ID
+                      });
+                    },
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           actions: [
             TextButton(

@@ -429,6 +429,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(color: colorScheme.primary),
                     ),
                   ),
+                  if (_isLogin) ...[
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      onPressed: () async {
+                        // Enter guest mode with detected country
+                        await appState.enterGuestMode(countryCode: _selectedCountry);
+                        if (mounted) {
+                          Navigator.of(context).pushReplacementNamed('/home');
+                        }
+                      },
+                      icon: Icon(Icons.visibility, size: 18),
+                      label: Text('continue_as_guest'.tr()),
+                      style: TextButton.styleFrom(
+                        foregroundColor: colorScheme.secondary,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

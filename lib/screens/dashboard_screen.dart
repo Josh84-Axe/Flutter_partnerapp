@@ -6,6 +6,7 @@ import '../utils/app_theme.dart';
 import '../widgets/metric_card.dart';
 import '../widgets/subscription_plan_card.dart';
 import '../widgets/quick_action_button.dart';
+import '../widgets/guest_mode_banner.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -97,7 +98,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
               'welcome_back'.tr(namedArgs: {'name': appState.currentUser?.name ?? 'Joe'}),
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
+            
+            // Guest mode banner
+            if (appState.isGuestMode)
+              GuestModeBanner(
+                onRegister: () {
+                  Navigator.of(context).pushReplacementNamed('/register');
+                },
+              ),
+            
+            const SizedBox(height: 8),
             
             // Subscription Plan Card - load from API
             SubscriptionPlanCard(
