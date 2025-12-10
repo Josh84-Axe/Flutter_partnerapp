@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../utils/ip_geolocation.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import 'legal_document_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -454,35 +456,52 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.only(top: 12.0),
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _agreedToTerms = !_agreedToTerms;
-                                  });
-                                },
-                                child: Text.rich(
-                                  TextSpan(
-                                    text: 'register.terms.agree'.tr(),
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                    children: [
-                                      TextSpan(
-                                        text: ' ${'register.terms.serviceLink'.tr()}',
-                                        style: TextStyle(
-                                          color: colorScheme.primary,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                              child: RichText(
+                                text: TextSpan(
+                                  text: 'register.terms.agree'.tr(),
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                  children: [
+                                    TextSpan(
+                                      text: ' ${'register.terms.serviceLink'.tr()}',
+                                      style: TextStyle(
+                                        color: colorScheme.primary,
+                                        fontWeight: FontWeight.w500,
+                                        decoration: TextDecoration.underline,
                                       ),
-                                      const TextSpan(text: ' & '),
-                                      TextSpan(
-                                        text: 'register.terms.policyLink'.tr(),
-                                        style: TextStyle(
-                                          color: colorScheme.primary,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => const LegalDocumentScreen(
+                                                documentType: 'terms',
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                    ),
+                                    const TextSpan(text: ' \u0026 '),
+                                    TextSpan(
+                                      text: 'register.terms.policyLink'.tr(),
+                                      style: TextStyle(
+                                        color: colorScheme.primary,
+                                        fontWeight: FontWeight.w500,
+                                        decoration: TextDecoration.underline,
                                       ),
-                                      const TextSpan(text: '.'),
-                                    ],
-                                  ),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => const LegalDocumentScreen(
+                                                documentType: 'privacy',
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                    ),
+                                    const TextSpan(text: '.'),
+                                  ],
                                 ),
                               ),
                             ),

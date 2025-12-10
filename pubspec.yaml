@@ -58,6 +58,7 @@ dependencies:
   csv: ^6.0.0
   path_provider: ^2.1.2
   open_file: ^3.3.2
+  flutter_markdown: ^0.7.4+1
 
 dev_dependencies:
   flutter_test:
@@ -95,6 +96,7 @@ flutter:
     - assets/images/logo_tiknet.png
     - assets/branding/
     - assets/html/
+    - assets/legal/
     - lib/localization/en.json
     - lib/localization/fr.json
     - lib/l10n/

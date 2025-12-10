@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../utils/app_theme.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'legal_document_screen.dart';
 
 class AboutAppScreen extends StatelessWidget {
   const AboutAppScreen({super.key});
@@ -65,7 +65,14 @@ class AboutAppScreen extends StatelessWidget {
                   title: Text('privacy_policy'.tr()),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
-                    _launchURL('https://tiknet.africa/privacy');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LegalDocumentScreen(
+                          documentType: 'privacy',
+                        ),
+                      ),
+                    );
                   },
                 ),
                 const Divider(height: 1, indent: 72),
@@ -85,7 +92,14 @@ class AboutAppScreen extends StatelessWidget {
                   title: Text('terms_of_service'.tr()),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
-                    _launchURL('https://tiknet.africa/terms');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LegalDocumentScreen(
+                          documentType: 'terms',
+                        ),
+                      ),
+                    );
                   },
                 ),
               ],
@@ -141,12 +155,5 @@ class AboutAppScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _launchURL(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
   }
 }

@@ -667,5 +667,9 @@
   "upgrade_your_plan": "Upgrade Your Plan",
   "choose_a_plan": "Choose a Plan",
   "check_back_later": "Check back later for available plans",
-  "included": "included"
+  "included": "included",
+  "privacy_policy": "Privacy Policy",
+  "terms_of_service": "Terms of Service",
+  "failed_to_load_document": "Failed to load document",
+  "retry": "Retry"
 }
