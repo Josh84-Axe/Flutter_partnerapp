@@ -24,51 +24,84 @@ class PaymentGatewayScreen extends StatefulWidget {
 }
 
 class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
-  late final WebViewController _controller;
+  WebViewController? _controller;
   bool _isLoading = true;
+  bool _hasError = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeWebView();
+    // Delay initialization to ensure widget is fully mounted
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _initializeWebView();
+      }
+    });
   }
 
   void _initializeWebView() {
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) {
-            debugPrint('🌐 [PaymentGateway] Page started: $url');
-            setState(() => _isLoading = true);
+    try {
+      debugPrint('🚀 [PaymentGateway] Initializing WebView...');
+      
+      final controller = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageStarted: (String url) {
+              debugPrint('🌐 [PaymentGateway] Page started: $url');
+              if (mounted) setState(() => _isLoading = true);
+            },
+            onPageFinished: (String url) {
+              debugPrint('✅ [PaymentGateway] Page finished: $url');
+              if (mounted) setState(() => _isLoading = false);
+            },
+            onWebResourceError: (WebResourceError error) {
+              debugPrint('❌ [PaymentGateway] WebView error: ${error.description}');
+              debugPrint('   Error type: ${error.errorType}');
+              debugPrint('   Error code: ${error.errorCode}');
+              if (mounted) {
+                setState(() {
+                  _hasError = true;
+                  _isLoading = false;
+                });
+              }
+            },
+          ),
+        )
+        ..setOnConsoleMessage((JavaScriptConsoleMessage message) {
+          debugPrint('📱 [PaymentGateway] Console: ${message.message}');
+        })
+        ..addJavaScriptChannel(
+          'PaystackFlutter',
+          onMessageReceived: (JavaScriptMessage message) {
+            debugPrint('💬 [PaymentGateway] Message from JS: ${message.message}');
+            _handlePaymentResponse(message.message);
           },
-          onPageFinished: (String url) {
-            debugPrint('✅ [PaymentGateway] Page finished: $url');
-            setState(() => _isLoading = false);
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint('❌ [PaymentGateway] WebView error: ${error.description}');
-            debugPrint('   Error type: ${error.errorType}');
-            debugPrint('   Error code: ${error.errorCode}');
-          },
-        ),
-      )
-      ..setOnConsoleMessage((JavaScriptConsoleMessage message) {
-        debugPrint('📱 [PaymentGateway] Console: ${message.message}');
-      })
-      ..addJavaScriptChannel(
-        'PaystackFlutter',
-        onMessageReceived: (JavaScriptMessage message) {
-          debugPrint('💬 [PaymentGateway] Message from JS: ${message.message}');
-          _handlePaymentResponse(message.message);
-        },
-      )
-      ..loadHtmlString(_buildPaystackHTML());
-    
-    debugPrint('🚀 [PaymentGateway] WebView initialized');
-    debugPrint('   Email: ${widget.email}');
-    debugPrint('   Amount: ${widget.amount}');
-    debugPrint('   Currency: ${widget.currency}');
+        );
+      
+      // Load HTML
+      controller.loadHtmlString(_buildPaystackHTML());
+      
+      if (mounted) {
+        setState(() {
+          _controller = controller;
+        });
+      }
+      
+      debugPrint('✅ [PaymentGateway] WebView initialized successfully');
+      debugPrint('   Email: ${widget.email}');
+      debugPrint('   Amount: ${widget.amount}');
+      debugPrint('   Currency: ${widget.currency}');
+    } catch (e, stackTrace) {
+      debugPrint('❌ [PaymentGateway] Error initializing WebView: $e');
+      debugPrint('   Stack trace: $stackTrace');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   String _buildPaystackHTML() {
@@ -335,20 +368,51 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
           },
         ),
       ),
-      body: Stack(
-        children: [
-          WebViewWidget(controller: _controller),
-          
-          // Loading indicator
-          if (_isLoading)
-            Container(
-              color: Colors.white,
-              child: const Center(
-                child: CircularProgressIndicator(),
+      body: _hasError
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Failed to load payment gateway',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Please try again or contact support'),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _hasError = false;
+                        _isLoading = true;
+                      });
+                      _initializeWebView();
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
-            ),
-        ],
-      ),
+            )
+          : _controller == null
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : Stack(
+                  children: [
+                    WebViewWidget(controller: _controller!),
+                    
+                    // Loading indicator
+                    if (_isLoading)
+                      Container(
+                        color: Colors.white,
+                        child: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                  ],
+                ),
     );
   }
 }
