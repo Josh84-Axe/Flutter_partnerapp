@@ -629,7 +629,7 @@ class AppState with ChangeNotifier {
     
     // Load real subscription plans (as requested)
     try {
-      await loadSubscriptionPlans();
+      await loadAvailableSubscriptionPlans();
     } catch (e) {
       if (kDebugMode) print('⚠️ [AppState] Could not load subscription plans in guest mode: $e');
     }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/router_model.dart';
-import '../models/customer_model.dart';
 import '../models/user_model.dart';
 import 'currency_utils.dart';
 
@@ -33,7 +32,6 @@ class GuestModeHelper {
       RouterModel(
         id: 'demo-router-1',
         name: 'Main Office Router',
-        ipAddress: '192.168.1.1',
         macAddress: '00:11:22:33:44:55',
         status: 'online',
         connectedUsers: 12,
@@ -44,7 +42,6 @@ class GuestModeHelper {
       RouterModel(
         id: 'demo-router-2',
         name: 'Branch Router',
-        ipAddress: '192.168.2.1',
         macAddress: '00:11:22:33:44:66',
         status: 'issues',
         connectedUsers: 5,
@@ -55,7 +52,6 @@ class GuestModeHelper {
       RouterModel(
         id: 'demo-router-3',
         name: 'Backup Router',
-        ipAddress: '192.168.3.1',
         macAddress: '00:11:22:33:44:77',
         status: 'offline',
         connectedUsers: 0,
@@ -66,58 +62,53 @@ class GuestModeHelper {
     ];
   }
 
-  /// Generate demo customers
-  static List<CustomerModel> generateDemoCustomers() {
+  /// Generate demo customers (as UserModel objects)
+  static List<UserModel> generateDemoCustomers() {
     return [
-      CustomerModel(
+      UserModel(
         id: 'demo-cust-1',
         name: 'John Doe',
         email: 'john.doe@example.com',
         phone: '+1234567891',
-        status: 'active',
-        macAddress: 'AA:BB:CC:DD:EE:01',
-        planName: 'Premium Plan',
-        expiryDate: DateTime.now().add(const Duration(days: 25)),
+        role: 'Customer',
+        isActive: true,
+        createdAt: DateTime.now().subtract(const Duration(days: 25)),
       ),
-      CustomerModel(
+      UserModel(
         id: 'demo-cust-2',
         name: 'Jane Smith',
         email: 'jane.smith@example.com',
         phone: '+1234567892',
-        status: 'active',
-        macAddress: 'AA:BB:CC:DD:EE:02',
-        planName: 'Basic Plan',
-        expiryDate: DateTime.now().add(const Duration(days: 15)),
+        role: 'Customer',
+        isActive: true,
+        createdAt: DateTime.now().subtract(const Duration(days: 15)),
       ),
-      CustomerModel(
+      UserModel(
         id: 'demo-cust-3',
         name: 'Mike Johnson',
         email: 'mike.j@example.com',
         phone: '+1234567893',
-        status: 'active',
-        macAddress: 'AA:BB:CC:DD:EE:03',
-        planName: 'Standard Plan',
-        expiryDate: DateTime.now().add(const Duration(days: 10)),
+        role: 'Customer',
+        isActive: true,
+        createdAt: DateTime.now().subtract(const Duration(days: 10)),
       ),
-      CustomerModel(
+      UserModel(
         id: 'demo-cust-4',
         name: 'Sarah Williams',
         email: 'sarah.w@example.com',
         phone: '+1234567894',
-        status: 'expired',
-        macAddress: 'AA:BB:CC:DD:EE:04',
-        planName: 'Basic Plan',
-        expiryDate: DateTime.now().subtract(const Duration(days: 3)),
+        role: 'Customer',
+        isActive: false,
+        createdAt: DateTime.now().subtract(const Duration(days: 30)),
       ),
-      CustomerModel(
+      UserModel(
         id: 'demo-cust-5',
         name: 'David Brown',
         email: 'david.b@example.com',
         phone: '+1234567895',
-        status: 'blocked',
-        macAddress: 'AA:BB:CC:DD:EE:05',
-        planName: 'Premium Plan',
-        expiryDate: DateTime.now().add(const Duration(days: 5)),
+        role: 'Customer',
+        isActive: true,
+        createdAt: DateTime.now().subtract(const Duration(days: 5)),
       ),
     ];
   }
