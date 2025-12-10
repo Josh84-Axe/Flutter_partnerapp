@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:html' as html;
-import 'dart:ui' as ui;
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:ui_web' as ui_web;
 
 /// Screen for handling Paystack inline payment popup
 class PaymentGatewayScreen extends StatefulWidget {
@@ -48,8 +49,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
       ..style.height = '100%';
 
     // Register the iframe view
-    // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(
+    ui_web.platformViewRegistry.registerViewFactory(
       _iframeId,
       (int viewId) => iframe,
     );
