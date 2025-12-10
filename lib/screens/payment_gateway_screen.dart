@@ -185,8 +185,8 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
 <body>
     <div class="payment-container">
         <div class="plan-name">${widget.planName}</div>
-        <div class="amount">${widget.amount.toStringAsFixed(2)}</div>
-        <div class="currency">${widget.currency}</div>
+        <div class="amount">${widget.currency} ${widget.amount.toStringAsFixed(2)}</div>
+        <div class="currency">Subscription Plan</div>
         <button class="pay-button" onclick="payWithPaystack()">
             Pay Now
         </button>
