@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'dart:html' as html;
+import 'dart:ui' as ui;
 
 /// Screen for handling Paystack inline payment popup
 class PaymentGatewayScreen extends StatefulWidget {
@@ -24,88 +25,66 @@ class PaymentGatewayScreen extends StatefulWidget {
 }
 
 class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
-  WebViewController? _controller;
+  final String _iframeId = 'paystack-payment-iframe-${DateTime.now().millisecondsSinceEpoch}';
   bool _isLoading = true;
-  bool _hasError = false;
 
   @override
   void initState() {
     super.initState();
-    // Delay initialization to ensure widget is fully mounted
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _initializeWebView();
+    _initializePaymentView();
+  }
+
+  void _initializePaymentView() {
+    debugPrint('🚀 [PaymentGateway] Initializing payment view for web...');
+    debugPrint('   Email: ${widget.email}');
+    debugPrint('   Amount: ${widget.amount}');
+    debugPrint('   Currency: ${widget.currency}');
+
+    // Create iframe element
+    final iframe = html.IFrameElement()
+      ..id = _iframeId
+      ..style.border = 'none'
+      ..style.width = '100%'
+      ..style.height = '100%';
+
+    // Register the iframe view
+    // ignore: undefined_prefixed_name
+    ui.platformViewRegistry.registerViewFactory(
+      _iframeId,
+      (int viewId) => iframe,
+    );
+
+    // Set up message listener for payment response
+    html.window.onMessage.listen((event) {
+      debugPrint('📱 [PaymentGateway] Message received: ${event.data}');
+      
+      if (event.data is String) {
+        final message = event.data as String;
+        if (message.contains('success')) {
+          _handlePaymentResponse(message);
+        }
+      } else if (event.data is Map) {
+        final data = event.data as Map;
+        if (data['type'] == 'paystack_payment') {
+          _handlePaymentResponse(data.toString());
+        }
       }
+    });
+
+    // Load payment HTML into iframe
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final htmlContent = _buildPaystackHTML();
+      iframe.srcdoc = htmlContent;
+      
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+      
+      debugPrint('✅ [PaymentGateway] Payment view initialized');
     });
   }
 
-  void _initializeWebView() {
-    try {
-      debugPrint('🚀 [PaymentGateway] Initializing WebView...');
-      
-      final controller = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onPageStarted: (String url) {
-              debugPrint('🌐 [PaymentGateway] Page started: $url');
-              if (mounted) setState(() => _isLoading = true);
-            },
-            onPageFinished: (String url) {
-              debugPrint('✅ [PaymentGateway] Page finished: $url');
-              if (mounted) setState(() => _isLoading = false);
-            },
-            onWebResourceError: (WebResourceError error) {
-              debugPrint('❌ [PaymentGateway] WebView error: ${error.description}');
-              debugPrint('   Error type: ${error.errorType}');
-              debugPrint('   Error code: ${error.errorCode}');
-              if (mounted) {
-                setState(() {
-                  _hasError = true;
-                  _isLoading = false;
-                });
-              }
-            },
-          ),
-        )
-        ..setOnConsoleMessage((JavaScriptConsoleMessage message) {
-          debugPrint('📱 [PaymentGateway] Console: ${message.message}');
-        })
-        ..addJavaScriptChannel(
-          'PaystackFlutter',
-          onMessageReceived: (JavaScriptMessage message) {
-            debugPrint('💬 [PaymentGateway] Message from JS: ${message.message}');
-            _handlePaymentResponse(message.message);
-          },
-        );
-      
-      // Load HTML
-      controller.loadHtmlString(_buildPaystackHTML());
-      
-      if (mounted) {
-        setState(() {
-          _controller = controller;
-        });
-      }
-      
-      debugPrint('✅ [PaymentGateway] WebView initialized successfully');
-      debugPrint('   Email: ${widget.email}');
-      debugPrint('   Amount: ${widget.amount}');
-      debugPrint('   Currency: ${widget.currency}');
-    } catch (e, stackTrace) {
-      debugPrint('❌ [PaymentGateway] Error initializing WebView: $e');
-      debugPrint('   Stack trace: $stackTrace');
-      if (mounted) {
-        setState(() {
-          _hasError = true;
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
   String _buildPaystackHTML() {
-    // Convert amount to kobo/pesewas (Paystack expects smallest currency unit)
     final amountInKobo = (widget.amount * 100).toInt();
     
     return '''
@@ -117,20 +96,24 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
     <title>Payment</title>
     <script src="https://js.paystack.co/v1/inline.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            margin: 0;
-            padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
         .payment-container {
             background: white;
             border-radius: 16px;
-            padding: 32px;
+            padding: 40px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             max-width: 400px;
             width: 100%;
@@ -143,7 +126,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
             margin-bottom: 8px;
         }
         .amount {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: bold;
             color: #667eea;
             margin: 16px 0;
@@ -163,7 +146,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
         }
         .pay-button:hover {
             transform: translateY(-2px);
@@ -254,26 +237,21 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
                         console.log('✅ Payment successful:', response);
                         document.getElementById('loading').classList.add('active');
                         
-                        // Send success message to Flutter
-                        if (window.PaystackFlutter) {
-                            window.PaystackFlutter.postMessage(JSON.stringify({
-                                success: true,
-                                reference: response.reference,
-                                message: 'Payment successful'
-                            }));
-                        } else {
-                            console.error('❌ PaystackFlutter channel not available');
-                        }
+                        // Send success message to Flutter via postMessage
+                        window.parent.postMessage(JSON.stringify({
+                            success: true,
+                            reference: response.reference,
+                            message: 'Payment successful'
+                        }), '*');
                     },
                     onClose: function() {
                         console.log('⚠️ Payment popup closed');
-                        // User closed the popup
-                        if (window.PaystackFlutter) {
-                            window.PaystackFlutter.postMessage(JSON.stringify({
-                                success: false,
-                                message: 'Payment cancelled'
-                            }));
-                        }
+                        
+                        // Send cancellation message to Flutter
+                        window.parent.postMessage(JSON.stringify({
+                            success: false,
+                            message: 'Payment cancelled'
+                        }), '*');
                     }
                 });
                 
@@ -290,7 +268,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
             console.log('📄 Window loaded, triggering payment in 1 second...');
             setTimeout(function() {
                 payWithPaystack();
-            }, 1000); // Increased delay to ensure everything is loaded
+            }, 1000);
         };
     </script>
 </body>
@@ -300,30 +278,30 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
 
   void _handlePaymentResponse(String message) {
     try {
-      // Parse the JSON message from JavaScript
-      final response = message;
-      debugPrint('Payment response: $response');
+      debugPrint('💬 [PaymentGateway] Processing payment response: $message');
       
       // Close the screen and return the result
-      if (response.contains('"success":true')) {
+      if (message.contains('"success":true')) {
         // Extract reference from JSON
-        final referenceMatch = RegExp(r'"reference":"([^"]+)"').firstMatch(response);
+        final referenceMatch = RegExp(r'"reference":"([^"]+)"').firstMatch(message);
         final reference = referenceMatch?.group(1);
         
         if (reference != null) {
+          debugPrint('✅ [PaymentGateway] Payment successful with reference: $reference');
           Navigator.pop(context, {
             'success': true,
             'reference': reference,
           });
         }
       } else {
+        debugPrint('⚠️ [PaymentGateway] Payment cancelled or failed');
         Navigator.pop(context, {
           'success': false,
           'message': 'Payment cancelled',
         });
       }
     } catch (e) {
-      debugPrint('Error parsing payment response: $e');
+      debugPrint('❌ [PaymentGateway] Error parsing payment response: $e');
       Navigator.pop(context, {
         'success': false,
         'message': 'Error processing payment',
@@ -333,15 +311,12 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('payment'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
-            // Confirm cancellation
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
@@ -358,7 +333,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
                       Navigator.pop(context, {
                         'success': false,
                         'message': 'Payment cancelled by user',
-                      }); // Close payment screen
+                      });
                     },
                     child: Text('yes'.tr(), style: const TextStyle(color: Colors.red)),
                   ),
@@ -368,51 +343,19 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
           },
         ),
       ),
-      body: _hasError
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Failed to load payment gateway',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text('Please try again or contact support'),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _hasError = false;
-                        _isLoading = true;
-                      });
-                      _initializeWebView();
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
+      body: Stack(
+        children: [
+          HtmlElementView(viewType: _iframeId),
+          
+          if (_isLoading)
+            Container(
+              color: Colors.white,
+              child: const Center(
+                child: CircularProgressIndicator(),
               ),
-            )
-          : _controller == null
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : Stack(
-                  children: [
-                    WebViewWidget(controller: _controller!),
-                    
-                    // Loading indicator
-                    if (_isLoading)
-                      Container(
-                        color: Colors.white,
-                        child: const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
-                  ],
-                ),
+            ),
+        ],
+      ),
     );
   }
 }
