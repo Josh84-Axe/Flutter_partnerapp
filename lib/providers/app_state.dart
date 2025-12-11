@@ -2567,7 +2567,7 @@ class AppState with ChangeNotifier {
     final role = _currentUser!.role.toLowerCase();
     if (kDebugMode) print('🔍 [visibleRouters] User role (lowercase): "$role"');
     
-    if (role == 'partner' || role == 'owner' || role == 'admin') {
+    if (role == 'partner' || role == 'owner' || role == 'admin' || role == 'administrator') {
       if (kDebugMode) print('✅ [visibleRouters] User is admin/partner/owner - returning ALL ${_routers.length} routers');
       return _routers;
     }
@@ -2592,7 +2592,7 @@ class AppState with ChangeNotifier {
     
     // Partners/Owners see ALL users
     final role = _currentUser!.role.toLowerCase();
-    if (role == 'partner' || role == 'owner' || role == 'admin') {
+    if (role == 'partner' || role == 'owner' || role == 'admin' || role == 'administrator') {
       return _users;
     }
     
@@ -2631,7 +2631,7 @@ class AppState with ChangeNotifier {
     
     // Partners/Owners see ALL plans
     final role = _currentUser!.role.toLowerCase();
-    if (role == 'partner' || role == 'owner' || role == 'admin') {
+    if (role == 'partner' || role == 'owner' || role == 'admin' || role == 'administrator') {
       return _plans;
     }
     
