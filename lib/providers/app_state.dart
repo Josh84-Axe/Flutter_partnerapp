@@ -377,12 +377,17 @@ class AppState with ChangeNotifier {
           }
           
           if (kDebugMode) print('✅ [AppState] Mapped permissions: $mappedPermissions');
+          
+          // Extract role
+          final userRole = userData['role'] is Map ? (userData['role']['name']?.toString() ?? 'Partner') : 'Partner';
+          if (kDebugMode) print('👤 [AppState] User role from API: ${userData['role']}');
+          if (kDebugMode) print('👤 [AppState] Extracted role: "$userRole"');
 
           _currentUser = UserModel(
             id: userData['id']?.toString() ?? '1',
             name: '${userData['first_name'] ?? ''} ${userData['last_name'] ?? ''}'.trim(),
             email: userData['email']?.toString() ?? email,
-            role: userData['role'] is Map ? (userData['role']['name']?.toString() ?? 'Partner') : 'Partner',
+            role: userRole,
             permissions: mappedPermissions,
             isActive: true,
             createdAt: DateTime.now(),
