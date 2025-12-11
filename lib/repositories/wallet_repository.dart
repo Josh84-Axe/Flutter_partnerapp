@@ -98,7 +98,7 @@ class WalletRepository {
 
       if (kDebugMode) print('💳 [WalletRepository] Fetching transactions with filters: $queryParams');
       final response = await _dio.get(
-        '/partner/wallet/transactions/',
+        '/partner/transactions/wallet/',
         queryParameters: queryParams,
       );
       if (kDebugMode) print('✅ [WalletRepository] Fetch transactions response: ${response.data}');
@@ -191,7 +191,7 @@ class WalletRepository {
   Future<Map<String, dynamic>?> fetchTransactionDetails(String transactionId) async {
     try {
       if (kDebugMode) print('💳 [WalletRepository] Fetching transaction details for ID: $transactionId');
-      final response = await _dio.get('/partner/wallet/transactions/$transactionId/details/');
+      final response = await _dio.get('/partner/transactions/wallet/$transactionId/details/');
       if (kDebugMode) print('✅ [WalletRepository] Transaction details response: ${response.data}');
       
       final responseData = response.data;
