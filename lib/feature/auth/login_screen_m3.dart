@@ -225,18 +225,17 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
             ),
             const SizedBox(height: 12),
             // Guest button
-            TextButton(
+            TextButton.icon(
               onPressed: _isLoading
                   ? null
-                  : () {
-                      // TODO: Implement guest mode
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Guest mode coming soon'),
-                        ),
-                      );
+                  : () async {
+                      // Enter guest mode
+                      await context.read<AppState>().enterGuestMode();
+                      if (!mounted) return;
+                      Navigator.of(context).pushReplacementNamed('/home');
                     },
-              child: const Text('Continue as guest'),
+              icon: const Icon(Icons.visibility, size: 18),
+              label: const Text('Continue as guest'),
             ),
           ],
         ),
