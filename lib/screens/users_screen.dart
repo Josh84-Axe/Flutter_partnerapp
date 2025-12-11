@@ -230,7 +230,18 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
   }
 
   Widget _buildUserList(List users, {bool isCustomers = false}) {
-    if (users.isEmpty) {
+    // Filter users by search query (name OR phone)
+    final filteredUsers = users.where((user) {
+      if (_searchQuery.isEmpty) return true;
+      
+      final query = _searchQuery.toLowerCase();
+      final name = user.name.toLowerCase();
+      final phone = user.phone?.toLowerCase() ?? '';
+      
+      return name.contains(query) || phone.contains(query);
+    }).toList();
+    
+    if (filteredUsers.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -248,11 +259,14 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: users.length,
+      itemCount: filteredUsers.length,
       itemBuilder: (context, index) {
-        final user = users[index];
-        final isConnected = user.isActive && index % 2 == 0;
-        final connectionType = index % 3 == 0 ? 'Gateway' : 'Assigned';
+        final user = filteredUsers[index];
+        
+        // Real status from API (no more mocks!)
+        final isBlocked = user.isBlocked ?? false;
+        final isConnected = user.isConnected ?? false;
+        final hasActivePlan = user.isActive;
         
         final colorScheme = Theme.of(context).colorScheme;
         
@@ -297,38 +311,58 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                       ),
                     ),
                     const SizedBox(width: 8),
-                    if (isConnected) ...[
+                    // Blocked badge
+                    if (isBlocked) ...[
                       Container(
-                        width: 8,
-                        height: 8,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          shape: BoxShape.circle,
+                          color: Colors.red.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.block, size: 12, color: Colors.red),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Blocked',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Connected — $connectionType',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ] else if (user.isActive) ...[
+                    ] else if (hasActivePlan) ...[
+                      // Connected/Offline badge (only if active and not blocked)
                       Container(
-                        width: 8,
-                        height: 8,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.grey[400],
-                          shape: BoxShape.circle,
+                          color: isConnected 
+                              ? AppTheme.successGreen.withValues(alpha: 0.2)
+                              : Colors.orange.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(4),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Disconnected',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colorScheme.onSurfaceVariant,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isConnected ? Icons.wifi : Icons.wifi_off,
+                              size: 12,
+                              color: isConnected ? AppTheme.successGreen : Colors.orange,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              isConnected ? 'Connected' : 'Offline',
+                              style: TextStyle(
+                                color: isConnected ? AppTheme.successGreen : Colors.orange,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

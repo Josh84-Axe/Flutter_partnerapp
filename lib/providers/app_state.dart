@@ -1334,6 +1334,11 @@ class AppState with ChangeNotifier {
       if (_customerRepository == null) _initializeRepositories();
       
       if (kDebugMode) print('Loading users from API...');
+      
+      // Fetch active sessions first to determine online status
+      final activeSessions = await _customerRepository!.getActiveSessions();
+      if (kDebugMode) print('Active sessions: $activeSessions');
+      
       final response = await _customerRepository!.fetchCustomers(page: 1, pageSize: 20);
       if (kDebugMode) print('Users API response: $response');
       
@@ -1351,7 +1356,12 @@ class AppState with ChangeNotifier {
         
         if (usersList != null) {
           if (kDebugMode) print('Found ${usersList.length} users');
-          _users = usersList.map((u) => UserModel.fromJson(u)).toList();
+          _users = usersList.map((u) {
+            // Check if user is in active sessions
+            final username = u['username'] as String?;
+            final isConnected = username != null && activeSessions.contains(username);
+            return UserModel.fromJson(u, isConnected: isConnected);
+          }).toList();
         } else {
           if (kDebugMode) print('No users list found in response');
           _users = [];
@@ -1497,6 +1507,47 @@ class AppState with ChangeNotifier {
       _setError(e.toString());
       _setLoading(false);
       rethrow; // Re-throw to allow UI to handle error
+    }
+  }
+
+  /// Get customer data usage
+  Future<Map<String, dynamic>?> getCustomerDataUsage(String username) async {
+    try {
+      if (_customerRepository == null) _initializeRepositories();
+      return await _customerRepository!.getCustomerDataUsage(username);
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Get customer data usage error: $e');
+      return null;
+    }
+  }
+
+  /// Get customer transactions
+  Future<List<dynamic>> getCustomerTransactions(String username) async {
+    try {
+      if (_customerRepository == null) _initializeRepositories();
+      return await _customerRepository!.getCustomerTransactions(username);
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Get customer transactions error: $e');
+      return [];
+    }
+  }
+
+  /// Toggle user block status
+  Future<void> toggleUserBlock(String username, bool currentlyBlocked) async {
+    try {
+      if (_customerRepository == null) _initializeRepositories();
+      
+      if (currentlyBlocked) {
+        await _customerRepository!.unblockCustomer(username);
+      } else {
+        await _customerRepository!.blockCustomer(username);
+      }
+      
+      // Reload users to reflect changes
+      await loadUsers();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Toggle user block error: $e');
+      rethrow;
     }
   }
   
