@@ -102,27 +102,51 @@ class UserModel {
     }
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-      'role': role,
-      'phone': phone,
-      'isActive': isActive,
-      'createdAt': createdAt.toIso8601String(),
-      'permissions': permissions,
-      'assignedRouters': assignedRouters,
-      'country': country,
-      'address': address,
-      'city': city,
-      'numberOfRouters': numberOfRouters,
-      'isBlocked': isBlocked,
-      'isConnected': isConnected,
-      'username': username,
-      'lastConnection': lastConnection,
-      'totalSessions': totalSessions,
-      'acquisitionType': acquisitionType,
-    };
+  // Getters for name parts
+  String get firstName => name.split(' ').first;
+  String get lastName => name.split(' ').length > 1 ? name.split(' ').sublist(1).join(' ') : '';
+
+  UserModel copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? role,
+    String? phone,
+    bool? isActive,
+    DateTime? createdAt,
+    List<String>? permissions,
+    List<String>? assignedRouters,
+    String? country,
+    String? address,
+    String? city,
+    int? numberOfRouters,
+    bool? isBlocked,
+    bool? isConnected,
+    String? username,
+    String? lastConnection,
+    int? totalSessions,
+    String? acquisitionType,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      phone: phone ?? this.phone,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      permissions: permissions ?? this.permissions,
+      assignedRouters: assignedRouters ?? this.assignedRouters,
+      country: country ?? this.country,
+      address: address ?? this.address,
+      city: city ?? this.city,
+      numberOfRouters: numberOfRouters ?? this.numberOfRouters,
+      isBlocked: isBlocked ?? this.isBlocked,
+      isConnected: isConnected ?? this.isConnected,
+      username: username ?? this.username,
+      lastConnection: lastConnection ?? this.lastConnection,
+      totalSessions: totalSessions ?? this.totalSessions,
+      acquisitionType: acquisitionType ?? this.acquisitionType,
+    );
   }
 }
