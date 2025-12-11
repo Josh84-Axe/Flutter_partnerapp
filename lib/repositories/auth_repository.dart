@@ -341,7 +341,7 @@ class AuthRepository {
     try {
       if (kDebugMode) print('🔑 [AuthRepository] Change password request');
       final response = await _dio.post(
-        '/partner/change-password/',
+        '/partner/password/update/',
         data: {
           'old_password': oldPassword,
           'new_password': newPassword,

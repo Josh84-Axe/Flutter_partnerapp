@@ -12,6 +12,14 @@ class UserModel {
   final String? address;
   final String? city;
   final int? numberOfRouters;
+  
+  // New fields for status tracking
+  final bool? isBlocked;
+  final bool? isConnected;
+  final String? username;
+  final String? lastConnection;
+  final int? totalSessions;
+  final String? acquisitionType;
 
   UserModel({
     required this.id,
@@ -27,9 +35,15 @@ class UserModel {
     this.address,
     this.city,
     this.numberOfRouters,
+    this.isBlocked,
+    this.isConnected,
+    this.username,
+    this.lastConnection,
+    this.totalSessions,
+    this.acquisitionType,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
+  factory UserModel.fromJson(Map<String, dynamic> json, {bool? isConnected}) {
     // Handle both customer API response and legacy format
     if (json.containsKey('customer')) {
       // Customer API response format
@@ -49,6 +63,12 @@ class UserModel {
         address: null,
         city: null,
         numberOfRouters: null,
+        isBlocked: json['blocked'],
+        isConnected: isConnected,
+        username: json['username'],
+        lastConnection: null,
+        totalSessions: null,
+        acquisitionType: json['acquisition_type'],
       );
     } else {
       // Legacy format
@@ -72,6 +92,12 @@ class UserModel {
         address: json['address'],
         city: json['city'],
         numberOfRouters: json['numberOfRouters'],
+        isBlocked: json['isBlocked'],
+        isConnected: isConnected ?? json['isConnected'],
+        username: json['username'],
+        lastConnection: json['lastConnection'],
+        totalSessions: json['totalSessions'],
+        acquisitionType: json['acquisitionType'],
       );
     }
   }
@@ -91,6 +117,12 @@ class UserModel {
       'address': address,
       'city': city,
       'numberOfRouters': numberOfRouters,
+      'isBlocked': isBlocked,
+      'isConnected': isConnected,
+      'username': username,
+      'lastConnection': lastConnection,
+      'totalSessions': totalSessions,
+      'acquisitionType': acquisitionType,
     };
   }
 }

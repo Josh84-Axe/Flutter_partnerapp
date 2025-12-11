@@ -11,7 +11,7 @@ class PasswordRepository {
   Future<bool> changePassword(Map<String, dynamic> passwordData) async {
     try {
       await _dio.post(
-        '/partner/change-password/',
+        '/partner/password/update/',
         data: passwordData,
       );
       return true;

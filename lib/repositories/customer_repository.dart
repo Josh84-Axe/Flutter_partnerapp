@@ -141,4 +141,50 @@ class CustomerRepository {
       rethrow;
     }
   }
+
+  /// Get customer data usage
+  Future<Map<String, dynamic>?> getCustomerDataUsage(String username) async {
+    try {
+      if (kDebugMode) print('📊 [CustomerRepository] Fetching data usage for: $username');
+      final response = await _dio.get('/partner/customers/$username/data-usage/');
+      
+      final responseData = response.data;
+      if (responseData is Map && responseData['data'] != null) {
+        if (kDebugMode) print('✅ [CustomerRepository] Data usage retrieved successfully');
+        return responseData['data'] as Map<String, dynamic>;
+      }
+      
+      return responseData as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('❌ [CustomerRepository] Get data usage error: $e');
+      rethrow;
+    }
+  }
+
+  /// Fetch active sessions to determine online status
+  Future<List<String>> getActiveSessions() async {
+    try {
+      if (kDebugMode) print('🌐 [CustomerRepository] Fetching active sessions');
+      final response = await _dio.get('/partner/sessions/active/');
+      
+      final responseData = response.data;
+      final activeUsernames = <String>[];
+      
+      if (responseData is Map && responseData['data'] is List) {
+        final routers = responseData['data'] as List;
+        for (var router in routers) {
+          if (router is Map && router['active_users'] is List) {
+            final users = router['active_users'] as List;
+            activeUsernames.addAll(users.map((u) => u.toString()));
+          }
+        }
+      }
+      
+      if (kDebugMode) print('✅ [CustomerRepository] Found ${activeUsernames.length} active users');
+      return activeUsernames;
+    } catch (e) {
+      if (kDebugMode) print('❌ [CustomerRepository] Get active sessions error: $e');
+      return [];
+    }
+  }
 }
