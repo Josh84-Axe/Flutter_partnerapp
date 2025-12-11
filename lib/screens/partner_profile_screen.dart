@@ -65,14 +65,53 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
 
     Navigator.of(context).pushNamed('/otp-validation', arguments: {
       'purpose': 'Verify profile changes',
-      'onVerified': () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile updated successfully'),
-            backgroundColor: AppTheme.successGreen,
-          ),
+      'onVerified': () async {
+        Navigator.of(context).pop(); // Close OTP screen
+        
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(child: CircularProgressIndicator()),
         );
-        Navigator.of(context).pop();
+
+        final appState = context.read<AppState>();
+        
+        // Split name into first/last
+        final nameParts = _companyNameController.text.trim().split(' ');
+        final firstName = nameParts.first;
+        final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+        
+        final success = await appState.updatePartnerProfile(
+          firstName: firstName,
+          lastName: lastName,
+          businessName: _companyNameController.text,
+          phone: _phoneController.text,
+          address: _addressController.text,
+          city: _cityController.text,
+          country: _countryController.text,
+        );
+
+        if (context.mounted) {
+          Navigator.of(context).pop(); // Close loading dialog
+          
+          if (success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Profile updated successfully'),
+                backgroundColor: AppTheme.successGreen,
+              ),
+            );
+            Navigator.of(context).pop(); // Exit profile screen
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(appState.error ?? 'Failed to update profile'),
+                backgroundColor: AppTheme.errorRed,
+              ),
+            );
+          }
+        }
       },
     });
   }

@@ -93,6 +93,36 @@ class AuthRepository {
     }
   }
 
+  /// Update partner profile
+  Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> profileData) async {
+    try {
+      if (kDebugMode) print('✏️ [AuthRepository] Updating partner profile');
+      final response = await _dio.put(
+        '/partner/profile/update/',
+        data: profileData,
+      );
+
+      if (kDebugMode) print('✅ [AuthRepository] Update profile response: ${response.data}');
+      
+      final responseData = response.data;
+      if (responseData is Map) {
+        if (responseData['error'] == true) {
+           return {'success': false, 'message': responseData['message'] ?? 'Failed to update profile'};
+        }
+        return {'success': true, 'data': responseData['data'] ?? responseData};
+      }
+      
+      return {'success': true, 'data': responseData};
+    } catch (e) {
+      if (kDebugMode) print('❌ [AuthRepository] Update profile error: $e');
+      if (e is DioException) {
+         final message = e.response?.data['message'] ?? e.message ?? 'Unknown error';
+         return {'success': false, 'message': message};
+      }
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
   /// Logout - clear all tokens
   Future<void> logout() async {
     await _tokenStorage.clearTokens();

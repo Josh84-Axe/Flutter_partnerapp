@@ -433,6 +433,62 @@ class AppState with ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> updatePartnerProfile({
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? businessName, 
+    String? address,
+    String? city,
+    String? country, // Changed from countryId to country
+  }) async {
+    _setLoading(true);
+    try {
+      if (_authRepository == null) _initializeRepositories();
+      
+      final profileData = <String, dynamic>{};
+      if (firstName != null) profileData['first_name'] = firstName;
+      if (lastName != null) profileData['last_name'] = lastName;
+      if (phone != null) profileData['phone'] = phone;
+      if (businessName != null) profileData['company_name'] = businessName;
+      if (address != null) profileData['address'] = address;
+      if (city != null) profileData['city'] = city;
+      if (country != null) profileData['country'] = country;
+      
+      final result = await _authRepository!.updateProfile(profileData);
+      
+      if (result['success'] == true) {
+        if (_currentUser != null) {
+          // Update local user model
+          _currentUser = _currentUser!.copyWith(
+            name: firstName != null || lastName != null 
+                ? '${firstName ?? _currentUser!.firstName} ${lastName ?? _currentUser!.lastName}'.trim()
+                : null,
+            phone: phone,
+            address: address,
+            city: city,
+            country: country,
+          );
+          notifyListeners();
+        }
+        
+        if (kDebugMode) print('✅ [AppState] Profile updated successfully');
+        _setLoading(false);
+        return true;
+      } else {
+        _setError(result['message'] ?? 'Failed to update profile');
+        _setLoading(false);
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Update profile error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
+
   
   Future<bool> register({
     required String firstName,
