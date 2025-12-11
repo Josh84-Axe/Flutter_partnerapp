@@ -423,19 +423,36 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             if (Permissions.canEditUsers(currentUser.role, currentUser.permissions))
               ListTile(
                 leading: Icon(
-                  user.isActive ? Icons.block : Icons.check_circle,
-                  color: user.isActive ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.primary,
+                  (user.isBlocked ?? false) ? Icons.check_circle : Icons.block,
+                  color: (user.isBlocked ?? false) ? AppTheme.successGreen : Theme.of(context).colorScheme.error,
                 ),
-                title: Text(user.isActive ? 'block_device'.tr() : 'unblock_device'.tr()),
-                onTap: () {
+                title: Text((user.isBlocked ?? false) ? 'unblock_device'.tr() : 'block_device'.tr()),
+                onTap: () async {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        user.isActive ? 'device_blocked'.tr() : 'device_unblocked'.tr(),
-                      ),
-                    ),
-                  );
+                  try {
+                    await context.read<AppState>().toggleUserBlock(
+                      user.username ?? user.id,
+                      user.isBlocked ?? false,
+                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            (user.isBlocked ?? false) ? 'device_unblocked'.tr() : 'device_blocked'.tr(),
+                          ),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
                 },
               ),
             if (Permissions.canDeleteUsers(currentUser.role, currentUser.permissions))
