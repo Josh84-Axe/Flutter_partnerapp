@@ -290,8 +290,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
     // Parse amount from API - use amount_paid field
     final amountPaid = transaction['amount_paid'];
     final amount = amountPaid != null 
-        ? (amountPaid is String ? double.tryParse(amountPaid) ?? 0.0 : (amountPaid as num).toDouble())
-        : (transaction['amount'] ?? 0).toDouble();
+        ? (double.tryParse(amountPaid.toString()) ?? 0.0)
+        : (double.tryParse(transaction['amount']?.toString() ?? '0') ?? 0.0);
     
     final description = transaction['description'] ?? transaction['type'] ?? 'Transaction';
     final createdAt = transaction['created_at'] ?? transaction['createdAt'];
