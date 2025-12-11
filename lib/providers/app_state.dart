@@ -1381,12 +1381,17 @@ class AppState with ChangeNotifier {
   
   Future<void> loadRouters() async {
     try {
+      if (kDebugMode) print('📡 [loadRouters] Starting router fetch...');
       // FORCE REMOTE API: Always use real API (no mock fallback)
       if (_routerRepository == null) _initializeRepositories();
       
+      if (kDebugMode) print('📡 [loadRouters] Calling API: /partner/routers/list/');
       final routersData = await _routerRepository!.fetchRouters();
+      if (kDebugMode) print('📡 [loadRouters] API returned ${routersData.length} routers');
+      if (kDebugMode) print('📡 [loadRouters] Raw data: $routersData');
+      
       _routers = routersData.map((data) {
-        return RouterModel(
+        final router = RouterModel(
           id: data['id']?.toString() ?? '',
           name: data['name']?.toString() ?? 'Router',
           macAddress: data['mac_address']?.toString() ?? '00:00:00:00:00:00',
@@ -1398,9 +1403,14 @@ class AppState with ChangeNotifier {
               ? DateTime.tryParse(data['last_seen'].toString()) ?? DateTime.now()
               : DateTime.now(),
         );
+        if (kDebugMode) print('📡 [loadRouters] Parsed router: ${router.id} - ${router.name}');
+        return router;
       }).toList();
+      
+      if (kDebugMode) print('✅ [loadRouters] Successfully loaded ${_routers.length} routers');
       notifyListeners();
     } catch (e) {
+      if (kDebugMode) print('❌ [loadRouters] Error loading routers: $e');
       _setError(e.toString());
     }
   }
@@ -2539,15 +2549,26 @@ class AppState with ChangeNotifier {
   
   /// Get routers visible to current user based on role and assignments
   List<RouterModel> get visibleRouters {
-    if (_currentUser == null) return [];
+    if (kDebugMode) print('🔍 [visibleRouters] Checking visible routers...');
+    if (kDebugMode) print('🔍 [visibleRouters] Current user: ${_currentUser?.email}');
+    if (kDebugMode) print('🔍 [visibleRouters] Total routers in state: ${_routers.length}');
+    
+    if (_currentUser == null) {
+      if (kDebugMode) print('❌ [visibleRouters] Current user is NULL - returning empty list');
+      return [];
+    }
     
     // Partners/Owners see ALL routers
     final role = _currentUser!.role.toLowerCase();
+    if (kDebugMode) print('🔍 [visibleRouters] User role (lowercase): "$role"');
+    
     if (role == 'partner' || role == 'owner' || role == 'admin') {
+      if (kDebugMode) print('✅ [visibleRouters] User is admin/partner/owner - returning ALL ${_routers.length} routers');
       return _routers;
     }
     
     // Workers/Managers see only assigned routers
+    if (kDebugMode) print('🔍 [visibleRouters] User is worker/manager - checking assigned routers');
     final assignedIds = getAssignedRouters(_currentUser!.email); // Use email as username
     if (assignedIds.isEmpty) {
       if (kDebugMode) print('⚠️ [RouterAssignment] No routers assigned to ${_currentUser!.email}');
