@@ -229,10 +229,23 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
               onPressed: _isLoading
                   ? null
                   : () async {
-                      // Enter guest mode
-                      await context.read<AppState>().enterGuestMode();
-                      if (!mounted) return;
-                      Navigator.of(context).pushReplacementNamed('/home');
+                      setState(() => _isLoading = true);
+                      try {
+                        // Enter guest mode
+                        await context.read<AppState>().enterGuestMode();
+                        if (!mounted) return;
+                        Navigator.of(context).pushReplacementNamed('/home');
+                      } catch (e) {
+                        if (kDebugMode) print('❌ [LoginScreenM3] Guest mode error: $e');
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error entering guest mode: ${e.toString()}')),
+                        );
+                      } finally {
+                        if (mounted) {
+                          setState(() => _isLoading = false);
+                        }
+                      }
                     },
               icon: const Icon(Icons.visibility, size: 18),
               label: const Text('Continue as guest'),

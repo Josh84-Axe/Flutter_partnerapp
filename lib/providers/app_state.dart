@@ -591,6 +591,10 @@ class AppState with ChangeNotifier {
     await _cacheService.clearAllCache();
     if (kDebugMode) print('🗑️ [AppState] Cleared all cache on logout');
     
+    // Clear user-specific notifications
+    await _localNotificationService.clearUserData();
+    if (kDebugMode) print('🔔 [AppState] Cleared user notifications on logout');
+    
     _currentUser = null;
     _users = [];
     _routers = [];
@@ -2707,12 +2711,19 @@ class AppState with ChangeNotifier {
   Future<void> _initializeNotificationService() async {
     try {
       await _localNotificationService.initialize(
+        userId: _currentUser?.id,  // Pass user ID for user-specific storage
         onFetchTransactions: () async => _walletTransactions,
         onFetchPayouts: () async => _withdrawals,
         onFetchWalletBalance: () async => _walletBalance,
         onFetchUserCount: () async => _hotspotUsers.length,
       );
-      if (kDebugMode) print('✅ [AppState] Notification service initialized');
+      
+      // Listen to notification stream and trigger UI updates (for Android/iOS/Web badge)
+      _localNotificationService.notificationStream.listen((_) {
+        notifyListeners();  // Ensure badge updates on all platforms
+      });
+      
+      if (kDebugMode) print('✅ [AppState] Notification service initialized for user: ${_currentUser?.id}');
     } catch (e) {
       if (kDebugMode) print('❌ [AppState] Notification service init error: $e');
     }

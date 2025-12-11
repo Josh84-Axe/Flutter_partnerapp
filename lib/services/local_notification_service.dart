@@ -5,12 +5,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/local_notification_model.dart';
 
 class LocalNotificationService {
-  static const String _notificationsKey = 'local_notifications';
-  static const String _lastTransactionIdKey = 'last_transaction_id';
-  static const String _lastPayoutIdKey = 'last_payout_id';
-  static const String _lastUserCountKey = 'last_user_count';
-  static const String _settingsKey = 'notification_settings';
   static const int _maxNotifications = 100; // Keep last 100 notifications
+  
+  // Current user ID for user-specific storage
+  String? _currentUserId;
+  
+  // User-specific storage keys
+  String get _notificationsKey => 'local_notifications_${_currentUserId ?? "guest"}';
+  String get _lastTransactionIdKey => 'last_transaction_id_${_currentUserId ?? "guest"}';
+  String get _lastPayoutIdKey => 'last_payout_id_${_currentUserId ?? "guest"}';
+  String get _lastUserCountKey => 'last_user_count_${_currentUserId ?? "guest"}';
+  String get _settingsKey => 'notification_settings_${_currentUserId ?? "guest"}'
   
   final List<LocalNotification> _notifications = [];
   final _notificationController = StreamController<LocalNotification>.broadcast();
@@ -38,11 +43,13 @@ class LocalNotificationService {
 
   /// Initialize the service and start polling
   Future<void> initialize({
+    String? userId,
     required Future<List<dynamic>> Function() onFetchTransactions,
     required Future<List<dynamic>> Function() onFetchPayouts,
     required Future<double> Function() onFetchWalletBalance,
     required Future<int> Function() onFetchUserCount,
   }) async {
+    _currentUserId = userId;
     fetchTransactions = onFetchTransactions;
     fetchPayouts = onFetchPayouts;
     fetchWalletBalance = onFetchWalletBalance;
@@ -332,6 +339,14 @@ class LocalNotificationService {
   Future<void> updateSettings(Map<String, bool> settings) async {
     _settings = Map<String, bool>.from(settings);
     await _saveSettings();
+  }
+
+  /// Clear user data on logout
+  Future<void> clearUserData() async {
+    if (kDebugMode) print('🔔 [LocalNotificationService] Clearing user data');
+    _notifications.clear();
+    _currentUserId = null;
+    stopPolling();
   }
 
   /// Dispose resources
