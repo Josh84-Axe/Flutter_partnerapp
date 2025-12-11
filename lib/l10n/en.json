@@ -671,5 +671,17 @@
   "privacy_policy": "Privacy Policy",
   "terms_of_service": "Terms of Service",
   "failed_to_load_document": "Failed to load document",
-  "retry": "Retry"
+  "retry": "Retry",
+  "registration_successful": "Registration Successful!",
+  "email_verification_sent": "Please check your email to verify your account.",
+  "welcome_message": "Welcome! Your account has been created successfully.",
+  "registration_failed": "Registration Failed",
+  "network_error_message": "Unable to connect. Please check your internet connection and try again.",
+  "timeout_error_message": "Request timed out. Please try again.",
+  "email_already_exists": "This email is already registered. Please use a different email or try logging in.",
+  "password_validation_error": "Password doesn't meet requirements. Please use a stronger password.",
+  "generic_error_message": "Something went wrong. Please try again or contact support if the problem persists.",
+  "continue": "Continue",
+  "try_again": "Try Again",
+  "contact_support": "Contact Support"
 }

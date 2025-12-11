@@ -657,5 +657,17 @@
   "privacy_policy": "Politique de Confidentialité",
   "terms_of_service": "Conditions d'Utilisation",
   "failed_to_load_document": "Échec du chargement du document",
-  "retry": "Réessayer"
+  "retry": "Réessayer",
+  "registration_successful": "Inscription Réussie!",
+  "email_verification_sent": "Veuillez vérifier votre email pour vérifier votre compte.",
+  "welcome_message": "Bienvenue! Votre compte a été créé avec succès.",
+  "registration_failed": "Échec de l'Inscription",
+  "network_error_message": "Impossible de se connecter. Veuillez vérifier votre connexion Internet et réessayer.",
+  "timeout_error_message": "Délai d'attente dépassé. Veuillez réessayer.",
+  "email_already_exists": "Cet email est déjà enregistré. Veuillez utiliser un autre email ou essayer de vous connecter.",
+  "password_validation_error": "Le mot de passe ne répond pas aux exigences. Veuillez utiliser un mot de passe plus fort.",
+  "generic_error_message": "Une erreur s'est produite. Veuillez réessayer ou contacter le support si le problème persiste.",
+  "continue": "Continuer",
+  "try_again": "Réessayer",
+  "contact_support": "Contacter le Support"
 }

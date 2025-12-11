@@ -7,6 +7,9 @@ import '../providers/app_state.dart';
 import '../utils/ip_geolocation.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'legal_document_screen.dart';
+import '../widgets/alerts/success_alert.dart';
+import '../widgets/alerts/action_failed_alert.dart';
+import '../utils/error_message_helper.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -153,7 +156,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       );
 
       if (success && mounted) {
-        // Check if email verification is required
+        // Show success message
+        await SuccessAlert.show(
+          context,
+          title: 'registration_successful'.tr(),
+          message: appState.currentUser != null && !appState.currentUser!.isActive
+              ? 'email_verification_sent'.tr()
+              : 'welcome_message'.tr(),
+          buttonText: 'continue'.tr(),
+        );
+        
+        // Navigate based on verification status
         if (appState.currentUser != null && !appState.currentUser!.isActive) {
           if (kDebugMode) print('ℹ️ [RegistrationScreen] Email verification required, navigating to verify-email');
           Navigator.of(context).pushReplacementNamed('/email-verification');
@@ -163,15 +176,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         }
       }
     } catch (e, stackTrace) {
-      print('❌ [RegistrationScreen] Error in _submit: $e');
-      print('❌ [RegistrationScreen] Stack trace: $stackTrace');
+      if (kDebugMode) {
+        print('❌ [RegistrationScreen] Error in _submit: $e');
+        print('❌ [RegistrationScreen] Stack trace: $stackTrace');
+      }
+      
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e\n$stackTrace'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-            duration: const Duration(seconds: 10),
-          ),
+        final errorMessage = ErrorMessageHelper.getUserFriendlyMessage(e);
+        
+        await ActionFailedAlert.show(
+          context,
+          title: 'registration_failed'.tr(),
+          message: errorMessage,
+          onTryAgain: () {
+            Navigator.pop(context);
+            _submit();
+          },
         );
       }
     }
