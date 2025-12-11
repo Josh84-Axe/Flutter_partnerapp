@@ -15,7 +15,7 @@ class LocalNotificationService {
   String get _lastTransactionIdKey => 'last_transaction_id_${_currentUserId ?? "guest"}';
   String get _lastPayoutIdKey => 'last_payout_id_${_currentUserId ?? "guest"}';
   String get _lastUserCountKey => 'last_user_count_${_currentUserId ?? "guest"}';
-  String get _settingsKey => 'notification_settings_${_currentUserId ?? "guest"}'
+  String get _settingsKey => 'notification_settings_${_currentUserId ?? "guest"}';
   
   final List<LocalNotification> _notifications = [];
   final _notificationController = StreamController<LocalNotification>.broadcast();
