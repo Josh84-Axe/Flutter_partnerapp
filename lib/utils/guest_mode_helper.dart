@@ -126,7 +126,8 @@ class GuestModeHelper {
         'status': 'completed',
         'customer_name': 'John Doe',
         'plan_name': 'Premium Plan',
-        'created_at': now.subtract(const Duration(days: 2)).toIso8601String(),
+        'description': 'Premium Plan purchase by John Doe',
+        'createdAt': now.subtract(const Duration(days: 2)).toIso8601String(),
       },
       {
         'id': 'demo-txn-2',
@@ -136,7 +137,8 @@ class GuestModeHelper {
         'status': 'completed',
         'customer_name': 'Jane Smith',
         'plan_name': 'Basic Plan',
-        'created_at': now.subtract(const Duration(days: 5)).toIso8601String(),
+        'description': 'Basic Plan purchase by Jane Smith',
+        'createdAt': now.subtract(const Duration(days: 5)).toIso8601String(),
       },
       {
         'id': 'demo-txn-3',
@@ -146,7 +148,8 @@ class GuestModeHelper {
         'status': 'completed',
         'customer_name': 'Mike Johnson',
         'plan_name': 'Standard Plan',
-        'created_at': now.subtract(const Duration(days: 7)).toIso8601String(),
+        'description': 'Standard Plan purchase by Mike Johnson',
+        'createdAt': now.subtract(const Duration(days: 7)).toIso8601String(),
       },
       {
         'id': 'demo-txn-4',
@@ -155,7 +158,7 @@ class GuestModeHelper {
         'currency': currency,
         'status': 'pending',
         'description': 'Withdrawal to bank account',
-        'created_at': now.subtract(const Duration(days: 1)).toIso8601String(),
+        'createdAt': now.subtract(const Duration(days: 1)).toIso8601String(),
       },
     ];
   }
