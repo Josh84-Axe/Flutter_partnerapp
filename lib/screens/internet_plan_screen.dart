@@ -259,7 +259,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                 onPressed: () => _navigateToCreateEdit(),
                 backgroundColor: const Color(0xFF7FD99A),
                 icon: const Icon(Icons.add, color: Colors.white),
-                label: const Text(
+                label: Text(
                   'new_plan'.tr(),
                   style: TextStyle(
                     color: Colors.white,

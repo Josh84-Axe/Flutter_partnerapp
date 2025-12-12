@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../utils/app_theme.dart';
 import '../providers/app_state.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
