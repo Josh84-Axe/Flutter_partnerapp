@@ -148,7 +148,6 @@ class UserModel {
       totalSessions: totalSessions ?? this.totalSessions,
       acquisitionType: acquisitionType ?? this.acquisitionType,
     );
-    );
   }
 
   Map<String, dynamic> toJson() {
