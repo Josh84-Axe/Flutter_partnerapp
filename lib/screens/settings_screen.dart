@@ -274,10 +274,10 @@ class SettingsScreen extends StatelessWidget {
 
   String _getSubscriptionTier(AppState appState) {
     final routerCount = appState.currentUser?.numberOfRouters ?? 0;
-    if (routerCount == 1) return 'Basic (15% fee)';
-    if (routerCount >= 2 && routerCount <= 4) return 'Standard (12% fee)';
-    if (routerCount >= 5) return 'Premium (10% fee)';
-    return 'No subscription';
+    if (routerCount == 1) return 'subscription_basic'.tr();
+    if (routerCount >= 2 && routerCount <= 4) return 'subscription_standard'.tr();
+    if (routerCount >= 5) return 'subscription_premium'.tr();
+    return 'subscription_none'.tr();
   }
 
   void _showThemeSelectionDialog(BuildContext context, ThemeProvider themeProvider) {

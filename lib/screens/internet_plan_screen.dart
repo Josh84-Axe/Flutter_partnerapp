@@ -173,7 +173,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  '${plan.dataLimit != null ? '${plan.dataLimit} GB' : 'Unlimited'} | ${plan.formattedValidity}',
+                                  '${plan.dataLimit != null ? '${plan.dataLimit} GB' : 'unlimited'.tr()} | ${plan.formattedValidity}',
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: Colors.grey[600],
@@ -260,7 +260,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                 backgroundColor: const Color(0xFF7FD99A),
                 icon: const Icon(Icons.add, color: Colors.white),
                 label: const Text(
-                  'New Plan',
+                  'new_plan'.tr(),
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,

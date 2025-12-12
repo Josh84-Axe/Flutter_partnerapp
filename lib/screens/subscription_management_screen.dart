@@ -394,7 +394,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Proceed to Payment'),
+            child: Text('proceed_to_payment'.tr()),
           ),
         ],
       ),
@@ -489,7 +489,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(paymentResult?['message'] ?? 'Payment cancelled'),
+              content: Text(paymentResult?['message'] ?? 'payment_cancelled'.tr()),
               backgroundColor: Colors.orange,
             ),
           );

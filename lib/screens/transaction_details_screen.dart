@@ -116,7 +116,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                       ElevatedButton.icon(
                         onPressed: _loadTransactionDetails,
                         icon: const Icon(Icons.refresh),
-                        label: const Text('Retry'),
+                        label: Text('retry'.tr()),
                       ),
                     ],
                   ),
@@ -188,10 +188,10 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                                         ),
                                   ),
                                   const SizedBox(height: 16),
-                                  _buildDetailRow('Transaction ID', _transactionDetails!['id']?.toString() ?? 'N/A'),
-                                  _buildDetailRow('Payment Reference', _transactionDetails!['payment_reference'] ?? 'N/A'),
-                                  _buildDetailRow('Type', _transactionDetails!['type'] ?? 'N/A'),
-                                  _buildDetailRow('Date', _transactionDetails!['formatted_created_at'] ?? 'N/A'),
+                                  _buildDetailRow('transaction_id'.tr(), _transactionDetails!['id']?.toString() ?? 'N/A'),
+                                  _buildDetailRow('payment_reference'.tr(), _transactionDetails!['payment_reference'] ?? 'N/A'),
+                                  _buildDetailRow('type'.tr(), _transactionDetails!['type'] ?? 'N/A'),
+                                  _buildDetailRow('date'.tr(), _transactionDetails!['formatted_created_at'] ?? 'N/A'),
                                 ],
                               ),
                             ),
@@ -212,9 +212,9 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                                         ),
                                   ),
                                   const SizedBox(height: 16),
-                                  _buildDetailRow('Username', _transactionDetails!['customer_username'] ?? 'N/A'),
-                                  _buildDetailRow('Name', _transactionDetails!['customer_firstname'] ?? 'N/A'),
-                                  _buildDetailRow('Email', _transactionDetails!['customer_email'] ?? 'N/A'),
+                                  _buildDetailRow('username'.tr(), _transactionDetails!['customer_username'] ?? 'N/A'),
+                                  _buildDetailRow('name'.tr(), _transactionDetails!['customer_firstname'] ?? 'N/A'),
+                                  _buildDetailRow('email'.tr(), _transactionDetails!['customer_email'] ?? 'N/A'),
                                 ],
                               ),
                             ),
@@ -237,11 +237,11 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                                     ),
                                     const SizedBox(height: 16),
                                     _buildDetailRow(
-                                      'Plan',
+                                      'plan'.tr(),
                                       (_transactionDetails!['related_model'] as Map)['display'] ?? 'N/A',
                                     ),
                                     _buildDetailRow(
-                                      'Model Type',
+                                      'model_type'.tr(),
                                       (_transactionDetails!['related_model'] as Map)['model_name'] ?? 'N/A',
                                     ),
                                   ],
@@ -256,14 +256,14 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
 
   Widget _buildPayoutStatusStepper(String status) {
     final steps = [
-      {'title': 'Requested', 'isActive': true, 'isCompleted': true},
+      {'title': 'requested'.tr(), 'isActive': true, 'isCompleted': true},
       {
-        'title': 'Processing',
+        'title': 'processing'.tr(),
         'isActive': true,
         'isCompleted': status.toLowerCase() != 'pending'
       },
       {
-        'title': status.toLowerCase() == 'failed' ? 'Failed' : 'Completed',
+        'title': status.toLowerCase() == 'failed' ? 'failed'.tr() : 'completed'.tr(),
         'isActive': status.toLowerCase() == 'completed' ||
             status.toLowerCase() == 'success' ||
             status.toLowerCase() == 'failed',
@@ -288,7 +288,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: (steps[i]['isActive'] as bool)
-                            ? ((steps[i]['title'] == 'Failed')
+                            ? ((steps[i]['title'] == 'failed'.tr())
                                 ? Colors.red
                                 : Theme.of(context).colorScheme.primary)
                             : Colors.grey[300],
@@ -350,17 +350,17 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       case 'completed':
         color = Theme.of(context).colorScheme.primary;
         icon = Icons.check_circle;
-        label = 'Success';
+        label = 'success'.tr();
         break;
       case 'pending':
         color = Colors.orange;
         icon = Icons.pending;
-        label = 'Pending';
+        label = 'pending'.tr();
         break;
       case 'failed':
         color = Colors.red;
         icon = Icons.error;
-        label = 'Failed';
+        label = 'failed'.tr();
         break;
       default:
         color = Colors.grey;

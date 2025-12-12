@@ -64,7 +64,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     Navigator.of(context).pushNamed('/otp-validation', arguments: {
-      'purpose': 'Verify profile changes',
+      'purpose': 'verify_profile_changes'.tr(),
       'onVerified': () async {
         Navigator.of(context).pop(); // Close OTP screen
         
@@ -97,8 +97,8 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
           
           if (success) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Profile updated successfully'),
+              SnackBar(
+                content: Text('profile_updated_success'.tr()),
                 backgroundColor: AppTheme.successGreen,
               ),
             );
@@ -106,7 +106,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(appState.error ?? 'Failed to update profile'),
+                content: Text(appState.error ?? 'failed_update_profile'.tr()),
                 backgroundColor: AppTheme.errorRed,
               ),
             );
@@ -123,7 +123,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Partner Profile'),
+        title: Text('partner_profile_title'.tr()),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -137,8 +137,8 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
               children: [
-                const Text(
-                  'Registration Details',
+                Text(
+                  'registration_details'.tr(),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -154,26 +154,27 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                   ),
                   child: Column(
                     children: [
-                      _buildDetailRow('Partner ID', appState.currentUser?.id ?? 'N/A'),
+                      _buildDetailRow('partner_id'.tr(), appState.currentUser?.id ?? 'N/A'),
                       const Divider(height: 24),
-                      _buildDetailRow('Registration Date', 
+                      _buildDetailRow('registration_date'.tr(), 
                         appState.currentUser?.createdAt != null 
                           ? DateFormat('MMM d, yyyy').format(appState.currentUser!.createdAt) 
                           : 'N/A'
                       ),
                       const Divider(height: 24),
-                      _buildDetailRow('Account Status', 
-                        appState.currentUser?.isActive == true ? 'Active' : 'Inactive',
+                      _buildDetailRow(
+                        'account_status'.tr(), 
+                        appState.currentUser?.isActive == true ? 'active'.tr() : 'inactive'.tr(),
                         valueColor: appState.currentUser?.isActive == true ? AppTheme.successGreen : AppTheme.errorRed,
                       ),
                       const Divider(height: 24),
-                      _buildDetailRow('Role', appState.currentUser?.role.toUpperCase() ?? 'N/A'),
+                      _buildDetailRow('role'.tr(), appState.currentUser?.role.toUpperCase() ?? 'N/A'),
                     ],
                   ),
                 ),
                 const SizedBox(height: 32),
-                const Text(
-                  'Basic Information',
+                Text(
+                  'basic_information'.tr(),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -182,13 +183,13 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _companyNameController,
-                  label: 'Full Name / Business Name',
+                  label: 'full_name_business_name'.tr(),
                   icon: Icons.business,
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _emailController,
-                  label: 'Email Address',
+                  label: 'email_address'.tr(),
                   icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                 ),

@@ -226,7 +226,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                 onPressed: () {
                   Navigator.pushNamed(context, '/transaction-history');
                 },
-                child: const Text('View All'),
+                child: Text('view_all'.tr()),
               ),
             ],
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
 import '../models/router_configuration_model.dart';
@@ -16,24 +17,24 @@ class _RouterSettingsScreenState extends State<RouterSettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Configuration'),
-        content: Text('Are you sure you want to delete "${config.name}"?'),
+        title: Text('delete_configuration'.tr()),
+        content: Text('delete_configuration_confirm'.tr(namedArgs: {'name': config.name})),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Router configuration deleted')),
+                SnackBar(content: Text('router_configuration_deleted'.tr())),
               );
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.errorRed,
             ),
-            child: const Text('Delete'),
+            child: Text('delete'.tr()),
           ),
         ],
       ),
@@ -49,14 +50,14 @@ class _RouterSettingsScreenState extends State<RouterSettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Router Configurations'),
+        title: Text('router_configurations'.tr()),
         actions: [
           FilledButton.icon(
             onPressed: () {
               Navigator.of(context).pushNamed('/add-router');
             },
             icon: const Icon(Icons.add),
-            label: const Text('Add New'),
+            label: Text('add_new'.tr()),
             style: FilledButton.styleFrom(
               backgroundColor: colorScheme.primary,
               foregroundColor: Colors.white,
@@ -98,7 +99,7 @@ class _RouterSettingsScreenState extends State<RouterSettingsScreen> {
                         if (config.apiPort != null) ...[
                           const SizedBox(height: 2),
                           Text(
-                            'Port: ${config.apiPort}',
+                            '${'port'.tr()}: ${config.apiPort}',
                             style: TextStyle(
                               fontSize: 12,
                               color: AppTheme.textLight,

@@ -211,7 +211,7 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
               backgroundColor: colorScheme.primary,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Text('Update Password'),
+            child: Text('update_password_btn'.tr()),
           ),
           const SizedBox(height: 32),
         ],

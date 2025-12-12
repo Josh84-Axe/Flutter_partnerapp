@@ -89,12 +89,12 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             children: [
               TextField(
                 controller: firstNameController,
-                decoration: InputDecoration(labelText: 'First Name'),
+                decoration: InputDecoration(labelText: 'first_name'.tr()),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: phoneController,
-                decoration: InputDecoration(labelText: 'Phone'),
+                decoration: InputDecoration(labelText: 'phone'.tr()),
                 keyboardType: TextInputType.phone,
               ),
             ],
@@ -302,7 +302,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        user.isActive ? 'Active' : 'Inactive',
+                        user.isActive ? 'active'.tr() : 'inactive'.tr(),
                         style: TextStyle(
                           color: user.isActive ? colorScheme.primary : colorScheme.onSurfaceVariant,
                           fontSize: 11,
@@ -325,7 +325,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                             Icon(Icons.block, size: 12, color: Colors.red),
                             const SizedBox(width: 4),
                             Text(
-                              'Blocked',
+                              'blocked'.tr(),
                               style: TextStyle(
                                 color: Colors.red,
                                 fontSize: 11,
@@ -355,7 +355,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              isConnected ? 'Connected' : 'Offline',
+                              isConnected ? 'connected'.tr() : 'offline'.tr(),
                               style: TextStyle(
                                 color: isConnected ? AppTheme.successGreen : Colors.orange,
                                 fontSize: 11,
@@ -494,7 +494,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  'You don\'t have permission to manage users',
+                  'no_permission_manage_users'.tr(),
                   style: TextStyle(color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
@@ -573,7 +573,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      'No Role',
+                      'no_role'.tr(),
                       style: TextStyle(
                         color: Colors.grey[700],
                         fontSize: 11,
@@ -634,7 +634,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             if (Permissions.canAssignRouters(currentUser.role))
               ListTile(
                 leading: const Icon(Icons.router),
-                title: Text('assign_routers'.tr()),
+                title: Text('assign_router'.tr()),
                 onTap: () async {
                   Navigator.pop(context);
                   // Navigate to assign routers screen
@@ -653,7 +653,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             // Assign/Change Role
             ListTile(
               leading: Icon(Icons.badge, color: Theme.of(context).colorScheme.primary),
-              title: Text(worker.roleName != null ? 'Change Role' : 'Assign Role'),
+              title: Text(worker.roleName != null ? 'change_role'.tr() : 'assign_role'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 _showAssignRoleDialog(context, worker);
@@ -663,7 +663,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             if (Permissions.canAssignRouters(currentUser.role))
               ListTile(
                 leading: Icon(Icons.router, color: Theme.of(context).colorScheme.secondary),
-                title: const Text('Assign Router'),
+                title: Text('assign_router'.tr()),
                 onTap: () {
                   Navigator.pop(context);
                   _showAssignRouterDialog(context, worker);
@@ -680,7 +680,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                     context: context,
                     builder: (context) => AlertDialog(
                       title: Text('remove_worker'.tr()),
-                      content: Text('Are you sure you want to remove ${worker.fullName}?'),
+                      content: Text('remove_worker_confirm'.tr(namedArgs: {'name': worker.fullName})),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
@@ -693,7 +693,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                               if (context.mounted) {
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Worker removed successfully')),
+                                  SnackBar(content: Text('worker_removed_success'.tr())),
                                 );
                               }
                             } catch (e) {
@@ -734,7 +734,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(worker.roleName != null ? 'Change Role' : 'Assign Role'),
+          title: Text(worker.roleName != null ? 'change_role'.tr() : 'assign_role'.tr()),
           content: SizedBox(
             width: double.maxFinite,
             child: SingleChildScrollView(

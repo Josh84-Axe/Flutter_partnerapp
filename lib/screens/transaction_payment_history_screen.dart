@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
@@ -20,7 +21,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transaction & Payout History'),
+        title: Text('transaction_payout_history'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -37,7 +38,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                     Expanded(
                       child: _buildSummaryCard(
                         context,
-                        'Wallet Balance',
+                        'wallet_balance'.tr(),
                         CurrencyUtils.formatPrice(1250.00, appState.partnerCountry),
                         colorScheme.primary,
                       ),
@@ -46,7 +47,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                     Expanded(
                       child: _buildSummaryCard(
                         context,
-                        'Earned Income',
+                        'earned_income'.tr(),
                         CurrencyUtils.formatPrice(5750.00, appState.partnerCountry),
                         colorScheme.primary,
                       ),
@@ -65,7 +66,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'History',
+                    'history'.tr(),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: Colors.grey[600],
@@ -154,9 +155,9 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                   children: [
                     const Icon(Icons.payments),
                     const SizedBox(width: 8),
-                    const Text(
-                      'Request Payout',
-                      style: TextStyle(
+                    Text(
+                      'request_payout'.tr(),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -340,13 +341,13 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Request Payout'),
+        title: Text('request_payout'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               decoration: InputDecoration(
-                labelText: 'Amount',
+                labelText: 'amount'.tr(),
                 prefixText: CurrencyUtils.getCurrencySymbol(context.read<AppState>().partnerCountry),
                 border: const OutlineInputBorder(),
               ),
@@ -354,13 +355,13 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                labelText: 'Payout Method',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: 'payout_method'.tr(),
+                border: const OutlineInputBorder(),
               ),
-              items: const [
-                DropdownMenuItem(value: 'bank', child: Text('Bank Transfer')),
-                DropdownMenuItem(value: 'mobile', child: Text('Mobile Money')),
+              items: [
+                DropdownMenuItem(value: 'bank', child: Text('bank_transfer'.tr())),
+                DropdownMenuItem(value: 'mobile', child: Text('mobile_money'.tr())),
               ],
               onChanged: (value) {},
             ),
@@ -369,20 +370,20 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Payout request submitted')),
+                SnackBar(content: Text('payout_request_submitted'.tr())),
               );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Theme.of(context).colorScheme.onPrimary,
             ),
-            child: const Text('Request'),
+            child: Text('request'.tr()),
           ),
         ],
       ),

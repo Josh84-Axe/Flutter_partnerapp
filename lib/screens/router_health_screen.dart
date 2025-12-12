@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
 
@@ -28,7 +29,7 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Router Health Check'),
+        title: Text('router_health_check'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
@@ -50,14 +51,14 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'No Routers Found',
+                        'no_routers_found'.tr(),
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               color: Colors.grey[600],
                             ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Add routers to monitor their health',
+                        'add_routers_to_monitor'.tr(),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Colors.grey[500],
                             ),
@@ -75,16 +76,16 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
                       
                       Color statusColor = colorScheme.primary;
                       Color containerColor = colorScheme.primaryContainer;
-                      String statusText = 'Online';
+                      String statusText = 'online'.tr();
                       
                       if (hasIssues) {
                         statusColor = Colors.orange;
                         containerColor = Colors.orange.withValues(alpha: 0.2);
-                        statusText = 'Issues Detected';
+                        statusText = 'issues_detected'.tr();
                       } else if (isOffline) {
                         statusColor = Colors.red;
                         containerColor = Colors.red.withValues(alpha: 0.2);
-                        statusText = 'Offline';
+                        statusText = 'offline'.tr();
                       }
                       
                       return Card(
@@ -161,7 +162,7 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      hasIssues ? 'Weak' : 'Strong',
+                                      hasIssues ? 'weak'.tr() : 'strong'.tr(),
                                       style: TextStyle(
                                         color: hasIssues ? Colors.orange : Colors.grey[600],
                                       ),
@@ -174,7 +175,7 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      '${router.connectedUsers} Devices',
+                                      '${router.connectedUsers} ${'devices'.tr()}',
                                       style: TextStyle(color: Colors.grey[600]),
                                     ),
                                   ],
@@ -193,7 +194,7 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
                                             borderRadius: BorderRadius.circular(24),
                                           ),
                                         ),
-                                        child: const Text('Run Diagnostics'),
+                                        child: Text('run_diagnostics'.tr()),
                                       ),
                                     ),
                                     const SizedBox(width: 12),
@@ -207,7 +208,7 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
                                             borderRadius: BorderRadius.circular(24),
                                           ),
                                         ),
-                                        child: const Text('View Report'),
+                                        child: Text('view_report'.tr()),
                                       ),
                                     ),
                                   ],
