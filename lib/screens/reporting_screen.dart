@@ -13,16 +13,16 @@ class ReportingScreen extends StatefulWidget {
 }
 
 class _ReportingScreenState extends State<ReportingScreen> {
-  String _selectedReportType = 'Transaction History';
+  String _selectedReportType = 'report_transaction_history'.tr();
   String _selectedFormat = 'CSV';
   DateTimeRange? _dateRange;
   bool _isGenerating = false;
 
   final List<String> _reportTypes = [
-    'User Data Usage',
-    'Transaction History',
-    'Router Performance',
-    'Revenue Report',
+    'report_user_data_usage'.tr(),
+    'report_transaction_history'.tr(),
+    'report_router_performance'.tr(),
+    'report_revenue'.tr(),
   ];
 
   @override
@@ -34,6 +34,31 @@ class _ReportingScreenState extends State<ReportingScreen> {
       start: DateTime(now.year, now.month, 1),
       end: now,
     );
+    // Initialize selected type after localization is available (in build or future, but for init we use defaults)
+    // Actually, we should initialize list in build or didChangeDependencies if we want dynamic lang switch.
+    // For now, let's keep it simple.
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _updateReportTypes();
+  }
+
+  void _updateReportTypes() {
+    // Update list with translated strings
+    _reportTypes.clear();
+    _reportTypes.addAll([
+      'report_user_data_usage'.tr(),
+      'report_transaction_history'.tr(),
+      'report_router_performance'.tr(),
+      'report_revenue'.tr(),
+    ]);
+    
+    // Reset selection if needed, or keep it if valid
+    if (!_reportTypes.contains(_selectedReportType)) {
+      _selectedReportType = 'report_transaction_history'.tr();
+    }
   }
 
   void _selectDateRange() async {
@@ -67,7 +92,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
     if (_dateRange == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please select a date range'),
+          content: Text('msg_select_date_range'.tr()),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -75,9 +100,9 @@ class _ReportingScreenState extends State<ReportingScreen> {
     }
 
     // Only transaction history is supported for now
-    if (_selectedReportType != 'Transaction History') {
+    if (_selectedReportType != 'report_transaction_history'.tr()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Only Transaction History reports are currently supported')),
+        SnackBar(content: Text('msg_only_transaction_history'.tr())),
       );
       return;
     }
@@ -100,14 +125,14 @@ class _ReportingScreenState extends State<ReportingScreen> {
         await FileHandler.saveAndLaunchFile(bytes, fileName);
         
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Report generated successfully')),
+          SnackBar(content: Text('msg_report_generated_success'.tr())),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to generate report: $e'),
+            content: Text('msg_failed_generate_report'.tr(args: [e.toString()])),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -127,7 +152,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Data Export & Reporting'),
+        title: Text('data_export_reporting'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -136,17 +161,17 @@ class _ReportingScreenState extends State<ReportingScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
-            'Generate New Report',
-            style: TextStyle(
+          Text(
+            'generate_new_report'.tr(),
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Report Type',
-            style: TextStyle(
+          Text(
+            'report_type'.tr(),
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -164,6 +189,8 @@ class _ReportingScreenState extends State<ReportingScreen> {
                 value: _selectedReportType,
                 isExpanded: true,
                 items: _reportTypes.map((String type) {
+                  // We need to map the display name back to the internal key or just use localized list
+                  // For simplicity, let's localize the display
                   return DropdownMenuItem<String>(
                     value: type,
                     child: Text(type),
@@ -178,9 +205,9 @@ class _ReportingScreenState extends State<ReportingScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Date Range',
-            style: TextStyle(
+          Text(
+            'date_range'.tr(),
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -201,7 +228,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
                   Expanded(
                     child: Text(
                       _dateRange == null
-                          ? 'Select date range'
+                          ? 'select_date_range'.tr()
                           : '${DateFormat('MMM dd, yyyy').format(_dateRange!.start)} - ${DateFormat('MMM dd, yyyy').format(_dateRange!.end)}',
                       style: TextStyle(
                         color: _dateRange == null ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
@@ -214,9 +241,9 @@ class _ReportingScreenState extends State<ReportingScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Export Format',
-            style: TextStyle(
+          Text(
+            'export_format'.tr(),
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -252,9 +279,9 @@ class _ReportingScreenState extends State<ReportingScreen> {
                         color: colorScheme.onPrimary,
                       ),
                     )
-                  : const Text(
-                      'Generate Report',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  : Text(
+                      'generate_report'.tr(),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
             ),
           ),

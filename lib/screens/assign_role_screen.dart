@@ -65,7 +65,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                     itemBuilder: (context, index) {
                       final worker = workers[index];
                       final displayName = worker.fullName.isNotEmpty ? worker.fullName : worker.username;
-                      final displayRole = worker.roleName ?? worker.roleSlug ?? 'No Role';
+                      final displayRole = worker.roleName ?? worker.roleSlug ?? 'no_role'.tr();
                       
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
