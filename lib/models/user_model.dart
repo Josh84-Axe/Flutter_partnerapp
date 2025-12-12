@@ -149,4 +149,31 @@ class UserModel {
       acquisitionType: acquisitionType ?? this.acquisitionType,
     );
   }
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'role': role,
+      'phone': phone,
+      'isActive': isActive,
+      'createdAt': createdAt.toIso8601String(),
+      'permissions': permissions,
+      'assignedRouters': assignedRouters,
+      'country': country,
+      'address': address,
+      'city': city,
+      'numberOfRouters': numberOfRouters,
+      'isBlocked': isBlocked,
+      'isConnected': isConnected,
+      'username': username,
+      'lastConnection': lastConnection,
+      'totalSessions': totalSessions,
+      'acquisitionType': acquisitionType,
+    };
+  }
 }
+
