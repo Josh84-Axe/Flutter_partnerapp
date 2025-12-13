@@ -2,11 +2,9 @@ import 'permission_mapping.dart';
 
 class Permissions {
   static const String roleOwner = 'Administrator';
-  static const String rolePartner = 'Partner';
-  static const String roleWorker = 'worker';
   
   static bool isOwner(String role) {
-    return role == roleOwner || role == rolePartner;
+    return role.toLowerCase() == 'administrator' || role.toLowerCase() == 'partner';
   }
   
   // Legacy methods (kept for backward compatibility)

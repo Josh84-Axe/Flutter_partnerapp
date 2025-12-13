@@ -76,7 +76,7 @@ class UserModel {
         id: json['id']?.toString() ?? '',
         name: json['name'] ?? '',
         email: json['email'] ?? '',
-        role: json['role'] ?? 'User',
+        role: json['role'] ?? '',
         phone: json['phone'],
         isActive: json['isActive'] ?? true,
         createdAt: json['createdAt'] != null

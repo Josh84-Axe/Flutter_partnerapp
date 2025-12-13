@@ -114,17 +114,22 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
   }
 
   Color _getRoleBadgeColor(String role, BuildContext context) {
-    switch (role.toLowerCase()) {
-      case 'admin':
-      case 'administrator':
-        return Colors.purple;
-      case 'manager':
-        return Colors.teal;
-      case 'worker':
-        return Colors.orange;
-      default:
-        return Theme.of(context).colorScheme.onSurfaceVariant;
-    }
+    if (role.isEmpty) return Theme.of(context).colorScheme.onSurfaceVariant;
+    
+    // Generate a consistent color based on the role string
+    final int hash = role.toLowerCase().codeUnits.fold(0, (prev, curr) => prev + curr);
+    final List<Color> roleColors = [
+      Colors.purple,
+      Colors.teal,
+      Colors.orange,
+      Colors.blue,
+      Colors.indigo,
+      Colors.pink,
+      Colors.cyan,
+      Colors.amber,
+    ];
+    
+    return roleColors[hash % roleColors.length];
   }
 
   void _showRoleSelector(BuildContext context, worker) {

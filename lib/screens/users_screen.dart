@@ -138,8 +138,8 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           (user.phone?.toLowerCase().contains(query) ?? false);
     }).toList();
 
-    final users = allUsers.where((u) => u.role == 'user').toList();
-    final workers = allUsers.where((u) => u.role == 'worker' || u.role == 'admin').toList();
+    final users = allUsers;
+    // workers variable removed as it was unused (appState.workers is used instead)
 
     return Scaffold(
       appBar: AppBar(
