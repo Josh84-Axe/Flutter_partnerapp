@@ -12,7 +12,9 @@ class TiknetThemes {
   // Only color schemes differ between variants
   static ThemeData _base(ColorScheme scheme) {
     final textTheme = GoogleFonts.interTextTheme(
-      Typography.material2021(platform: TargetPlatform.android).black,
+      scheme.brightness == Brightness.dark
+          ? Typography.material2021(platform: TargetPlatform.android).white
+          : Typography.material2021(platform: TargetPlatform.android).black,
     );
     
     // Enhanced color scheme with deeper, more outstanding colors

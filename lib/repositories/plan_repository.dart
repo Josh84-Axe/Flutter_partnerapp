@@ -120,10 +120,16 @@ class PlanRepository {
       final response = await _dio.get('/partner/assigned-plans/');
       final responseData = response.data;
       
-      if (responseData is Map && responseData['data'] is List) {
-        final plans = responseData['data'] as List;
-        if (kDebugMode) print('✅ [PlanRepository] Found ${plans.length} assigned plans');
-        return plans;
+      if (responseData is Map) {
+        final data = responseData['data'];
+        if (data is Map && data.containsKey('results')) {
+           final results = data['results'] as List;
+           if (kDebugMode) print('✅ [PlanRepository] Found ${results.length} assigned plans');
+           return results;
+        } else if (data is List) {
+           if (kDebugMode) print('✅ [PlanRepository] Found ${plans.length} assigned plans');
+           return data;
+        }
       }
       
       if (kDebugMode) print('⚠️ [PlanRepository] No assigned plans found');

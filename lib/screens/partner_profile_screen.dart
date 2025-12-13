@@ -61,60 +61,57 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     super.dispose();
   }
 
-  void _showOtpValidation() {
+  Future<void> _updateProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
-    Navigator.of(context).pushNamed('/otp-validation', arguments: {
-      'purpose': 'verify_profile_changes'.tr(),
-      'onVerified': () async {
-        Navigator.of(context).pop(); // Close OTP screen
-        
-        // Show loading indicator
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const Center(child: CircularProgressIndicator()),
-        );
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
 
-        final appState = context.read<AppState>();
-        
-        // Split name into first/last
-        final nameParts = _companyNameController.text.trim().split(' ');
-        final firstName = nameParts.first;
-        final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
-        
-        final success = await appState.updatePartnerProfile(
-          firstName: firstName,
-          lastName: lastName,
-          businessName: _companyNameController.text,
-          phone: _phoneController.text,
-          address: _addressController.text,
-          city: _cityController.text,
-          country: _countryController.text,
-        );
+    final appState = context.read<AppState>();
+    
+    // Split name into first/last
+    final nameParts = _companyNameController.text.trim().split(' ');
+    final firstName = nameParts.first;
+    final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+    
+    // Construct address
+    final fullAddress = '${_addressController.text}'.trim();
+    
+    final success = await appState.updatePartnerProfile(
+      firstName: firstName,
+      lastName: lastName,
+      businessName: _companyNameController.text,
+      phone: _phoneController.text,
+      address: fullAddress,
+      city: _cityController.text,
+      country: _countryController.text,
+      numberOfRouters: int.tryParse(_routersController.text) ?? 0,
+    );
 
-        if (context.mounted) {
-          Navigator.of(context).pop(); // Close loading dialog
-          
-          if (success) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('profile_updated_success'.tr()),
-                backgroundColor: AppTheme.successGreen,
-              ),
-            );
-            Navigator.of(context).pop(); // Exit profile screen
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(appState.error ?? 'failed_update_profile'.tr()),
-                backgroundColor: AppTheme.errorRed,
-              ),
-            );
-          }
-        }
-      },
-    });
+    if (mounted) {
+      Navigator.of(context).pop(); // Close loading dialog
+      
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('profile_updated_success'.tr()),
+            backgroundColor: AppTheme.successGreen,
+          ),
+        );
+        Navigator.of(context).pop(); // Exit profile screen
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(appState.error ?? 'failed_update_profile'.tr()),
+            backgroundColor: AppTheme.errorRed,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -275,7 +272,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: _showOtpValidation,
+                  onPressed: _updateProfile,
                   style: FilledButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),

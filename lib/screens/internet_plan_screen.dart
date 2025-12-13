@@ -180,14 +180,14 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 6),
-                                Text(
-                                  plan.priceDisplay,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                  Text(
+                                    '${plan.price} ${appState.currencyCode}',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),

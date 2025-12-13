@@ -442,6 +442,7 @@ class AppState with ChangeNotifier {
     String? address,
     String? city,
     String? country, // Changed from countryId to country
+    int? numberOfRouters,
   }) async {
     _setLoading(true);
     try {
@@ -455,6 +456,7 @@ class AppState with ChangeNotifier {
       if (address != null) profileData['address'] = address;
       if (city != null) profileData['city'] = city;
       if (country != null) profileData['country'] = country;
+      if (numberOfRouters != null) profileData['number_of_router'] = numberOfRouters;
       
       final result = await _authRepository!.updateProfile(profileData);
       
@@ -469,6 +471,7 @@ class AppState with ChangeNotifier {
             address: address,
             city: city,
             country: country,
+            numberOfRouters: numberOfRouters,
           );
           notifyListeners();
         }
@@ -1325,7 +1328,7 @@ class AppState with ChangeNotifier {
   }
 
   /// Get currency code for payment based on partner country
-  String _getCurrencyCodeForPayment() {
+  String get currencyCode {
     final country = _currentUser?.country;
     
     if (country == null) return 'GHS'; // Default to Ghana Cedis
@@ -1348,6 +1351,9 @@ class AppState with ChangeNotifier {
         return 'GHS'; // Default to Ghana Cedis
     }
   }
+
+  // Legacy private method for internal use if needed, but better to forward to getter
+  String _getCurrencyCodeForPayment() => currencyCode;
 
   void markAllNotificationsAsRead() {
     for (var notification in _notifications) {
@@ -2385,6 +2391,24 @@ class AppState with ChangeNotifier {
     } catch (e) {
       if (kDebugMode) print('❌ [AppState] Fetch permissions error: $e');
       rethrow;
+    }
+  }
+
+  /// Get assigned plans for a specific customer
+  Future<List<dynamic>> getCustomerAssignedPlans(String customerId) async {
+    try {
+      if (_planRepository == null) _initializeRepositories();
+      final allAssignedPlans = await _planRepository!.fetchAssignedPlans();
+      
+      // Filter by customer ID
+      return allAssignedPlans.where((plan) {
+        // Handle both String and Int ID comparisons
+        final planCustomerId = plan['customer']?.toString();
+        return planCustomerId == customerId.toString();
+      }).toList();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Get customer assigned plans error: $e');
+      return [];
     }
   }
 

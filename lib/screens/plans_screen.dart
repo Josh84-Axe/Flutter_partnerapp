@@ -124,7 +124,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                         ),
                                       ),
                                       Text(
-                                        plan.priceDisplay,
+                                        '${plan.price} ${appState.currencyCode}',
                                         style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,

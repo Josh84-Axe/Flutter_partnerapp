@@ -39,7 +39,7 @@ class PartnerRepository {
     try {
       if (kDebugMode) print('✏️ [PartnerRepository] Updating partner profile');
       if (kDebugMode) print('📦 [PartnerRepository] Profile data: $profileData');
-      await _dio.put('/partner/update/', data: profileData);
+      await _dio.put('/partner/profile/update/', data: profileData);
       if (kDebugMode) print('✅ [PartnerRepository] Profile updated successfully');
       return true;
     } catch (e) {

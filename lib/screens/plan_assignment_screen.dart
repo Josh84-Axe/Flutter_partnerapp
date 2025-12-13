@@ -157,7 +157,7 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                             return DropdownMenuItem(
                               value: plan.id.toString(),
                               child: Text(
-                                '${plan.name} - ${plan.priceDisplay}',
+                                '${plan.name} - ${plan.price} ${appState.currencyCode}',
                               ),
                             );
                           }).toList(),
@@ -204,7 +204,7 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildDetailRow('plan_name'.tr(), plan.name),
-                                _buildDetailRow('price'.tr(), plan.priceDisplay),
+                                _buildDetailRow('price'.tr(), '${plan.price} ${appState.currencyCode}'),
                                 _buildDetailRow('data_limit'.tr(), plan.dataLimit != null ? '${plan.dataLimit} GB' : 'Unlimited'),
                                 _buildDetailRow('validity'.tr(), plan.formattedValidity),
                                 _buildDetailRow('devices_allowed'.tr(), plan.sharedUsersLabel),
