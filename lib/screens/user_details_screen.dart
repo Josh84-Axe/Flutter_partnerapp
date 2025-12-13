@@ -17,8 +17,10 @@ class UserDetailsScreen extends StatefulWidget {
 class _UserDetailsScreenState extends State<UserDetailsScreen> {
   bool _isLoading = true;
   Map<String, dynamic>? _dataUsage;
-  List<dynamic> _transactions = [];
+  List<dynamic> _assignedTransactions = [];
+  List<dynamic> _walletTransactions = [];
   List<dynamic> _assignedPlans = [];
+  List<dynamic> _purchasedPlans = [];
 
   @override
   void initState() {
@@ -38,17 +40,45 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
       // Load data usage
       final dataUsage = await appState.getCustomerDataUsage(identifier);
       
-      // Load transactions
-      final transactions = await appState.getCustomerTransactions(identifier);
+      // Load split transactions
+      final assignedTransactions = await appState.getCustomerAssignedTransactions(identifier);
+      final walletTransactions = await appState.getCustomerWalletTransactions(identifier);
       
-      // Load assigned plans
+      // Load plans
       final assignedPlans = await appState.getCustomerAssignedPlans(widget.user.id);
+      final purchasedPlans = await appState.getCustomerPurchasedPlans(widget.user.id);
 
       if (mounted) {
         setState(() {
           _dataUsage = dataUsage;
-          _transactions = transactions;
-          _assignedPlans = assignedPlans;
+          _assignedTransactions = assignedTransactions;
+          _walletTransactions = walletTransactions;
+          
+          // Filter plans: Only Active (is_active=true) or Future? 
+          // User requirement: "Active or upcoming plan should only appear"
+          // We assume 'is_active' covers active. For upcoming, check start_date?
+          // For now, filtering by is_active or is_assigned (if that implies active)
+          // Actually, let's filter by checking if it's NOT expired physically or is explicitly active.
+          
+          _assignedPlans = assignedPlans.where((p) {
+             final isActive = p['is_active'] == true;
+             // Check expiry if available
+             if (p['expires_at'] != null) {
+                final expiry = DateTime.tryParse(p['expires_at']);
+                if (expiry != null && expiry.isAfter(DateTime.now())) return true;
+             }
+             return isActive;
+          }).toList();
+
+          _purchasedPlans = purchasedPlans.where((p) {
+             final isActive = p['is_active'] == true;
+              if (p['expires_at'] != null) {
+                final expiry = DateTime.tryParse(p['expires_at']);
+                if (expiry != null && expiry.isAfter(DateTime.now())) return true;
+             }
+             return isActive;
+          }).toList();
+          
           _isLoading = false;
         });
       }
@@ -203,81 +233,37 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                     const SizedBox(height: 24),
                   ],
 
-                  // Assigned Plans Section
-                  if (_assignedPlans.isNotEmpty) ...[
-                    Text(
-                      'assigned_plans'.tr(),
-                      style: Theme.of(context).textTheme.titleLarge,
+                  // Purchased Plans Section (Online/Gateway)
+                  if (_purchasedPlans.isNotEmpty) ...[
+                    Row(
+                      children: [
+                        Icon(Icons.shopping_cart, color: colorScheme.primary),
+                        const SizedBox(width: 8),
+                         Text(
+                          'Purchased Plans (Online)', 
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
-                    ..._assignedPlans.map((plan) {
-                      final isActive = plan['is_active'] == true;
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    plan['plan_name'] ?? 'Unknown Plan',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: isActive ? AppTheme.successGreen.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: isActive ? AppTheme.successGreen : Colors.grey,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      isActive ? 'active'.tr() : 'inactive'.tr(),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: isActive ? AppTheme.successGreen : Colors.grey,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              if (plan['routers'] is List && (plan['routers'] as List).isNotEmpty) ...[
-                                Row(
-                                  children: [
-                                    const Icon(Icons.router, size: 16, color: Colors.grey),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      (plan['routers'][0]['name'] ?? 'Unknown Router').toString(),
-                                      style: const TextStyle(color: Colors.grey),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                              ],
-                              Row(
-                                children: [
-                                  const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    plan['formatted_purchased_at'] ?? 'N/A',
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                    ..._purchasedPlans.map((plan) => _buildPlanCard(plan, isAssigned: false)),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Assigned Plans Section (Partner)
+                  if (_assignedPlans.isNotEmpty) ...[
+                    Row(
+                      children: [
+                        Icon(Icons.assignment_ind, color: colorScheme.secondary),
+                        const SizedBox(width: 8),
+                        Text(
+                          'assigned_plans'.tr(),
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
-                      );
-                    }),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ..._assignedPlans.map((plan) => _buildPlanCard(plan, isAssigned: true)),
                     const SizedBox(height: 24),
                   ],
 
@@ -307,41 +293,38 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   const SizedBox(height: 24),
 
                   // Transactions Section
-                   Text(
-                      'recent_transactions'.tr(),
+                  // Assigned Transactions
+                  if (_assignedTransactions.isNotEmpty) ...[
+                    Text(
+                      'Assigned Transactions',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
-                  const SizedBox(height: 12),
-                  Card(
-                    child: _transactions.isEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Center(
-                              child: Text('No transactions found', style: TextStyle(color: Colors.grey[600])),
-                            ),
-                          )
-                        : ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _transactions.take(5).length,
-                            separatorBuilder: (context, index) => const Divider(height: 1),
-                            itemBuilder: (context, index) {
-                              final txn = _transactions[index];
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: colorScheme.secondaryContainer,
-                                  child: Icon(Icons.receipt, size: 20, color: colorScheme.onSecondaryContainer),
-                                ),
-                                title: Text(txn['description'] ?? txn['type'] ?? 'Transaction'),
-                                subtitle: Text(_formatDate(DateTime.tryParse(txn['created_at'] ?? '') ?? DateTime.now())),
-                                trailing: Text(
-                                  '\$${txn['amount_paid'] ?? txn['amount'] ?? 0}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
+                    const SizedBox(height: 12),
+                    Card(
+                         child: _buildTransactionList(_assignedTransactions),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Wallet Transactions
+                  if (_walletTransactions.isNotEmpty) ...[
+                    Text(
+                      'Wallet/Online Transactions',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 12),
+                    Card(
+                         child: _buildTransactionList(_walletTransactions),
+                    ),
+                  ],
+                  
+                  if (_assignedTransactions.isEmpty && _walletTransactions.isEmpty)
+                     const Card(
+                        child: Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Center(child: Text('No transactions found')),
+                        ),
+                     ),
                   const SizedBox(height: 32),
                 ],
               ),
@@ -409,6 +392,120 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildPlanCard(dynamic plan, {required bool isAssigned}) {
+    final isActive = plan['is_active'] == true;
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    plan['plan_name'] ?? 'Unknown Plan',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isActive ? AppTheme.successGreen.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isActive ? AppTheme.successGreen : Colors.grey,
+                    ),
+                  ),
+                  child: Text(
+                    isActive ? 'active'.tr() : 'inactive'.tr(),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: isActive ? AppTheme.successGreen : Colors.grey,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Router Info
+            if (plan['routers'] is List && (plan['routers'] as List).isNotEmpty) ...[
+              Row(
+                children: [
+                  const Icon(Icons.router, size: 16, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(
+                    (plan['routers'][0]['name'] ?? 'Unknown Router').toString(),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
+            // Dates
+            Row(
+              children: [
+                const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                const SizedBox(width: 4),
+                Text(
+                  isAssigned 
+                      ? (plan['formatted_assigned_at'] ?? plan['formatted_purchased_at'] ?? 'N/A')
+                      : (plan['formatted_purchased_at'] ?? 'N/A'),
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+             // Price if available
+             if (plan['price'] != null) ...[
+                const SizedBox(height: 4),
+                 Text(
+                  '${plan['currency_symbol'] ?? ''}${plan['price']}',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, 
+                      color: colorScheme.primary
+                  ),
+                 ),
+             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransactionList(List<dynamic> transactions) {
+     final colorScheme = Theme.of(context).colorScheme;
+     return ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: transactions.take(5).length,
+        separatorBuilder: (context, index) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final txn = transactions[index];
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundColor: colorScheme.secondaryContainer,
+              child: Icon(Icons.receipt, size: 20, color: colorScheme.onSecondaryContainer),
+            ),
+            title: Text(txn['description'] ?? txn['type'] ?? 'Transaction'),
+            subtitle: Text(_formatDate(DateTime.tryParse(txn['created_at'] ?? '') ?? DateTime.now())),
+            trailing: Text(
+              '${txn['amount_paid'] ?? txn['amount'] ?? 0}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          );
+        },
+      );
   }
 
   String _formatDate(DateTime date) {

@@ -156,6 +156,7 @@ class AppState with ChangeNotifier {
   List<Map<String, dynamic>> _activeSessions = []; // Active WiFi sessions
   List<dynamic> _hotspotUsers = []; // Hotspot users list
   List<dynamic> _assignedPlans = []; // Assigned plans for matching
+  List<dynamic> _purchasedPlans = []; // Purchased plans (Gateway/Online)
   List<dynamic> _paymentMethods = []; // Payment methods for withdrawals
   
   // Configuration Lists
@@ -215,6 +216,7 @@ class AppState with ChangeNotifier {
   List<WorkerModel> get workers => _workers;
   List<Map<String, dynamic>> get activeSessions => _activeSessions;
   List<dynamic> get assignedPlans => _assignedPlans;
+  List<dynamic> get purchasedPlans => _purchasedPlans;
   List<dynamic> get hotspotUsers => _hotspotUsers;
   
   // Wallet History Getters
@@ -2393,6 +2395,60 @@ class AppState with ChangeNotifier {
       rethrow;
     }
   }
+
+  /// Load purchased plans
+  Future<void> loadPurchasedPlans() async {
+    try {
+      if (_customerRepository == null) _initializeRepositories();
+      final plans = await _customerRepository!.fetchPurchasedPlans();
+      _purchasedPlans = plans;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('Load purchased plans error: $e');
+    }
+  }
+
+  /// Get purchased plans for a specific customer
+  Future<List<dynamic>> getCustomerPurchasedPlans(String customerId) async {
+    try {
+      if (_customerRepository == null) _initializeRepositories();
+      // Ensure we have the latest list
+      await loadPurchasedPlans();
+      
+      // Filter by customer ID
+      return _purchasedPlans.where((plan) {
+        final planCustomerId = plan['customer']?.toString();
+        return planCustomerId == customerId.toString();
+      }).toList();
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Get customer purchased plans error: $e');
+      return [];
+    }
+  }
+
+  /// Get customer assigned transactions
+  Future<List<dynamic>> getCustomerAssignedTransactions(String username) async {
+    try {
+      if (_customerRepository == null) _initializeRepositories();
+      return await _customerRepository!.getCustomerAssignedTransactions(username);
+    } catch (e) {
+       if (kDebugMode) print('❌ [AppState] Get customer assigned transactions error: $e');
+       return [];
+    }
+  }
+
+  /// Get customer wallet transactions
+  Future<List<dynamic>> getCustomerWalletTransactions(String username) async {
+    try {
+      if (_customerRepository == null) _initializeRepositories();
+      return await _customerRepository!.getCustomerWalletTransactions(username);
+    } catch (e) {
+       if (kDebugMode) print('❌ [AppState] Get customer wallet transactions error: $e');
+       return [];
+    }
+  }
+  
+
 
   /// Get assigned plans for a specific customer
   Future<List<dynamic>> getCustomerAssignedPlans(String customerId) async {

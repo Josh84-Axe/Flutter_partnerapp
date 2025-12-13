@@ -288,6 +288,31 @@ class SettingsScreen extends StatelessWidget {
           'theme'.tr(),
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: TiknetThemeVariant.values.map((variant) {
+              return RadioListTile<TiknetThemeVariant>(
+                title: Text(themeProvider.getVariantName(variant)),
+                value: variant,
+                groupValue: themeProvider.currentVariant,
+                onChanged: (value) {
+                  if (value != null) {
+                    themeProvider.setThemeVariant(value);
+                    Navigator.pop(context);
+                  }
+                },
+                activeColor: Theme.of(context).colorScheme.primary,
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('close'.tr()),
+          ),
+        ],
       ),
     );
   }

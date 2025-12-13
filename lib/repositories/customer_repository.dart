@@ -187,4 +187,80 @@ class CustomerRepository {
       return [];
     }
   }
+  /// Get customer assigned transactions
+  Future<List<dynamic>> getCustomerAssignedTransactions(String username) async {
+    try {
+      if (kDebugMode) print('💳 [CustomerRepository] Fetching assigned transactions for: $username');
+      final response = await _dio.get('/partner/customers/$username/transactions/assigned/');
+      
+      final responseData = response.data;
+      if (responseData is Map && responseData['data'] is List) {
+        return responseData['data'] as List;
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) print('❌ [CustomerRepository] Get assigned transactions error: $e');
+      return [];
+    }
+  }
+
+  /// Get customer wallet transactions
+  Future<List<dynamic>> getCustomerWalletTransactions(String username) async {
+    try {
+      if (kDebugMode) print('💰 [CustomerRepository] Fetching wallet transactions for: $username');
+      final response = await _dio.get('/partner/customers/$username/transactions/wallet/');
+      
+      final responseData = response.data;
+      if (responseData is Map && responseData['data'] is List) {
+        return responseData['data'] as List;
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) print('❌ [CustomerRepository] Get wallet transactions error: $e');
+      return [];
+    }
+  }
+
+  /// Fetch purchased plans (Gateway/Online)
+  Future<List<dynamic>> fetchPurchasedPlans() async {
+    try {
+      if (kDebugMode) print('🛒 [CustomerRepository] Fetching purchased plans');
+      final response = await _dio.get('/partner/purchased-plans/');
+      final responseData = response.data;
+
+      if (responseData is Map) {
+         // Handle both nested 'results' (pagination) and direct list
+         if (responseData['data'] is Map && responseData['data']['results'] is List) {
+            return responseData['data']['results'] as List;
+         } else if (responseData['data'] is List) {
+            return responseData['data'] as List;
+         }
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) print('❌ [CustomerRepository] Fetch purchased plans error: $e');
+      rethrow;
+    }
+  }
+
+  /// Fetch assigned plans (Partner assigned)
+  Future<List<dynamic>> fetchAssignedPlans() async {
+    try {
+      if (kDebugMode) print('📋 [CustomerRepository] Fetching assigned plans');
+      final response = await _dio.get('/partner/assigned-plans/');
+      final responseData = response.data;
+
+      if (responseData is Map) {
+         if (responseData['data'] is Map && responseData['data']['results'] is List) {
+            return responseData['data']['results'] as List;
+         } else if (responseData['data'] is List) {
+            return responseData['data'] as List;
+         }
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) print('❌ [CustomerRepository] Fetch assigned plans error: $e');
+      rethrow;
+    }
+  }
 }
