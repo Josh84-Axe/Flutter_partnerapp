@@ -127,7 +127,7 @@ class PlanRepository {
            if (kDebugMode) print('✅ [PlanRepository] Found ${results.length} assigned plans');
            return results;
         } else if (data is List) {
-           if (kDebugMode) print('✅ [PlanRepository] Found ${plans.length} assigned plans');
+           if (kDebugMode) print('✅ [PlanRepository] Found ${data.length} assigned plans');
            return data;
         }
       }
