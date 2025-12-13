@@ -1341,6 +1341,9 @@ class AppState with ChangeNotifier {
         return 'ZAR';
       case 'uganda':
         return 'UGX';
+      case 'cote d\'ivoire':
+      case 'ivory coast':
+        return 'XOF'; // CFA Franc BCEAO
       default:
         return 'GHS'; // Default to Ghana Cedis
     }
@@ -2761,6 +2764,7 @@ class AppState with ChangeNotifier {
         range: dateRange,
         format: format,
         partnerName: _currentUser?.name ?? 'Partner',
+        currency: _getCurrencyCodeForPayment(),
       );
       
       _setLoading(false);

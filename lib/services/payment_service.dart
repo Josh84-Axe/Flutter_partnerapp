@@ -17,7 +17,7 @@ class PaymentService {
       slug: 'mock-plan',
       name: planData['name'],
       price: planData['price'].toString(),
-      priceDisplay: '${planData['price']} GHS',
+      priceDisplay: '${planData['price']}', // Removed hardcoded GHS
       dataLimit: planData['dataLimitGB'],
       validity: planData['validityDays'] ?? 30,
       formattedValidity: '${planData['validityDays']} Days',

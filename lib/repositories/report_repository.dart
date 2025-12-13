@@ -18,6 +18,7 @@ class ReportRepository {
     required DateTimeRange range,
     required String format,
     required String partnerName,
+    String currency = 'GHS',
   }) async {
     try {
       if (kDebugMode) print('📊 [ReportRepository] Generating $format report for ${range.start} - ${range.end}');
@@ -52,7 +53,7 @@ class ReportRepository {
       if (format.toUpperCase() == 'CSV') {
         return await _generateCSV(filteredTransactions);
       } else {
-        return await _generatePDF(filteredTransactions, range, partnerName);
+        return await _generatePDF(filteredTransactions, range, partnerName, currency);
       }
     } catch (e) {
       if (kDebugMode) print('❌ [ReportRepository] Generate report error: $e');
@@ -91,7 +92,7 @@ class ReportRepository {
     return Uint8List.fromList(csvData.codeUnits);
   }
 
-  Future<Uint8List> _generatePDF(List<dynamic> transactions, DateTimeRange range, String partnerName) async {
+  Future<Uint8List> _generatePDF(List<dynamic> transactions, DateTimeRange range, String partnerName, String currency) async {
     final pdf = pw.Document();
     
     // Calculate totals
@@ -114,9 +115,9 @@ class ReportRepository {
           return [
             _buildPdfHeader(range, partnerName),
             pw.SizedBox(height: 20),
-            _buildPdfSummary(transactions.length, successCount, totalAmount),
+            _buildPdfSummary(transactions.length, successCount, totalAmount, currency),
             pw.SizedBox(height: 20),
-            _buildPdfTable(transactions),
+            _buildPdfTable(transactions, currency),
           ];
         },
       ),
@@ -142,7 +143,7 @@ class ReportRepository {
     );
   }
   
-  pw.Widget _buildPdfSummary(int totalCount, int successCount, double totalAmount) {
+  pw.Widget _buildPdfSummary(int totalCount, int successCount, double totalAmount, String currency) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
@@ -154,7 +155,7 @@ class ReportRepository {
         children: [
           _buildSummaryItem('Total Transactions', totalCount.toString()),
           _buildSummaryItem('Successful', successCount.toString()),
-          _buildSummaryItem('Total Amount', 'GHS ${totalAmount.toStringAsFixed(2)}'),
+          _buildSummaryItem('Total Amount', '$currency ${totalAmount.toStringAsFixed(2)}'),
         ],
       ),
     );
@@ -170,7 +171,7 @@ class ReportRepository {
     );
   }
   
-  pw.Widget _buildPdfTable(List<dynamic> transactions) {
+  pw.Widget _buildPdfTable(List<dynamic> transactions, String currency) {
     // Limit rows for PDF performance if needed, or handle pagination
     // For now, taking first 100 to avoid memory issues if list is huge
     final tableData = transactions.take(200).map((t) {
@@ -179,13 +180,14 @@ class ReportRepository {
         t['type'] ?? 'Transaction',
         t['payment_reference']?.toString() ?? '#${t['id']}',
         t['status']?.toString().toUpperCase() ?? 'UNKNOWN',
-        'GHS ${t['amount_paid']?.toString() ?? t['amount']?.toString() ?? '0.00'}',
+        '$currency ${t['amount_paid']?.toString() ?? t['amount']?.toString() ?? '0.00'}',
       ];
     }).toList();
 
     return pw.Table.fromTextArray(
       headers: ['Date', 'Type', 'Reference', 'Status', 'Amount'],
       data: tableData,
+
       headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.blueGrey800),
       rowDecoration: const pw.BoxDecoration(
