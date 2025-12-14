@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -7,6 +8,7 @@ import '../widgets/metric_card.dart';
 import '../widgets/subscription_plan_card.dart';
 import '../widgets/quick_action_button.dart';
 import '../widgets/guest_mode_banner.dart';
+import '../services/update_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -19,7 +21,87 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    // Data is already loaded by login - no need to reload here
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkForUpdates();
+    });
+  }
+
+  Future<void> _checkForUpdates() async {
+    final updateService = UpdateService();
+    final updateInfo = await updateService.checkUpdate();
+
+    if (updateInfo != null && mounted) {
+      _showUpdateDialog(updateInfo);
+    }
+  }
+
+  void _showUpdateDialog(Map<String, dynamic> updateInfo) {
+    final bool forceUpdate = updateInfo['forceUpdate'] == true;
+    final String downloadUrl = updateInfo['downloadUrl'];
+    
+    showDialog(
+      context: context,
+      barrierDismissible: !forceUpdate,
+      builder: (context) {
+        return PopScope(
+          canPop: !forceUpdate,
+          child: AlertDialog(
+            title: Text('New Update Available'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('A new version (${updateInfo['latestVersion']}) is available.'),
+                const SizedBox(height: 8),
+                Text('Release Notes:'),
+                Text(updateInfo['releaseNotes'] ?? '', style: TextStyle(fontStyle: FontStyle.italic)),
+              ],
+            ),
+            actions: [
+              if (!forceUpdate)
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Later'),
+                ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  _performUpdate(downloadUrl);
+                },
+                child: Text('Update Now'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _performUpdate(String url) {
+    if (!mounted) return;
+    
+    final updateService = UpdateService();
+    // Show a progress indicator or snackbar?
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Downloading update... Check notification panel.'))
+    );
+    
+    updateService.performUpdate(url).listen(
+      (event) {
+        // ota_update handles the notification and install intent automatically.
+        // We can log progress here if needed.
+        if (kDebugMode) {
+          print('OTA Status: ${event.status}, Value: ${event.value}');
+        }
+      },
+      onError: (error) {
+         if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Update failed: $error'))
+           );
+         }
+      },
+    );
   }
 
   @override

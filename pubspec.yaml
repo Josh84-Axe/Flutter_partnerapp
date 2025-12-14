@@ -59,6 +59,8 @@ dependencies:
   path_provider: ^2.1.2
   open_file: ^3.3.2
   flutter_markdown: ^0.7.4+1
+  ota_update: ^5.1.0
+  package_info_plus: ^8.0.0
 
 dev_dependencies:
   flutter_test:

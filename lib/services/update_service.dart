@@ -1,0 +1,74 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:ota_update/ota_update.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import '../config/update_config.dart';
+
+class UpdateService {
+  final Dio _dio = Dio();
+
+  /// Checks if a new update is available.
+  /// Returns a Map with update details if available, or null if no update.
+  Future<Map<String, dynamic>?> checkUpdate() async {
+    if (kIsWeb) return null; // Updates not applicable for web
+
+    try {
+      final response = await _dio.get(UpdateConfig.versionCheckUrl);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final latestVersion = data['latestVersion'] as String?;
+        final downloadUrl = data['downloadUrl'] as String?;
+
+        if (latestVersion != null && downloadUrl != null) {
+          final packageInfo = await PackageInfo.fromPlatform();
+          final currentVersion = packageInfo.version;
+
+          if (_isNewerVersion(latestVersion, currentVersion)) {
+            return {
+              'latestVersion': latestVersion,
+              'currentVersion': currentVersion,
+              'downloadUrl': downloadUrl,
+              'releaseNotes': data['releaseNotes'] ?? 'New version available.',
+              'forceUpdate': data['forceUpdate'] ?? false,
+            };
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ [UpdateService] Error checking for updates: $e');
+      }
+    }
+    return null;
+  }
+
+  /// Triggers the OTA update process.
+  Stream<OtaEvent> performUpdate(String url) {
+    try {
+      // destinationFilename is optional, ota_update handles it.
+      // We listen to the stream to track progress.
+      return OtaUpdate().execute(url, destinationFilename: 'partner_app_update.apk');
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ [UpdateService] Error performing update: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Compares two version strings (e.g., "1.0.1" vs "1.0.0").
+  bool _isNewerVersion(String latest, String current) {
+    List<int> latestParts = latest.split('.').map(int.parse).toList();
+    List<int> currentParts = current.split('.').map(int.parse).toList();
+
+    for (int i = 0; i < latestParts.length; i++) {
+        // If current doesn't have this part (e.g. 1.0 vs 1.0.1), assume 0
+        int currentPart = i < currentParts.length ? currentParts[i] : 0;
+        
+        if (latestParts[i] > currentPart) return true;
+        if (latestParts[i] < currentPart) return false;
+    }
+    return false; // Versions are equal
+  }
+}
