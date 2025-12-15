@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:r_upgrade/r_upgrade.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../config/update_config.dart';
 
@@ -53,14 +56,47 @@ class UpdateService {
     }
   }
 
-  /// Triggers the OTA update process.
+  /// Triggers the OTA update process: Download -> Install.
   Future<void> performUpdate(String url) async {
     try {
-       await RUpgrade.upgrade(
-         url,
-         fileName: 'partner_app_update.apk',
-         notificationStyle: NotificationStyle.speechAndPlanTime,
+       // 1. Request permissions
+       if (Platform.isAndroid) {
+         final status = await Permission.requestInstallPackages.status;
+         if (!status.isGranted) {
+           final result = await Permission.requestInstallPackages.request();
+           if (!result.isGranted) {
+             throw Exception('Install permission denied.');
+           }
+         }
+       }
+
+       // 2. Prepare destination
+       final dir = await getTemporaryDirectory();
+       final fileName = 'update_${DateTime.now().millisecondsSinceEpoch}.apk';
+       final filePath = '${dir.path}/$fileName';
+
+       if (kDebugMode) print('⬇️ [UpdateService] Downloading to: $filePath');
+
+       // 3. Download APK
+       await _dio.download(
+         url, 
+         filePath,
+         onReceiveProgress: (received, total) {
+           if (kDebugMode && total != -1) {
+             print('⬇️ [UpdateService] Progress: ${((received / total) * 100).toStringAsFixed(0)}%');
+           }
+         },
        );
+       
+       if (kDebugMode) print('✅ [UpdateService] Download complete. Opening...');
+
+       // 4. Open/Install APK
+       final result = await OpenFile.open(filePath);
+       
+       if (result.type != ResultType.done) {
+         throw Exception('Error opening APK: ${result.message}');
+       }
+
     } catch (e) {
       if (kDebugMode) {
         print('❌ [UpdateService] Error performing update: $e');
