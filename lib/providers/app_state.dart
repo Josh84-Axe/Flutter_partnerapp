@@ -454,8 +454,8 @@ class AppState with ChangeNotifier {
       if (firstName != null) profileData['first_name'] = firstName;
       if (lastName != null) profileData['last_name'] = lastName;
       if (phone != null) profileData['phone'] = phone;
-      if (businessName != null) profileData['company_name'] = businessName;
-      if (address != null) profileData['address'] = address;
+      if (businessName != null) profileData['entreprise_name'] = businessName;
+      if (address != null) profileData['addresse'] = address;
       if (city != null) profileData['city'] = city;
       if (country != null) profileData['country'] = country;
       if (numberOfRouters != null) profileData['number_of_router'] = numberOfRouters;

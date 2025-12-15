@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:ota_update/ota_update.dart';
+import 'package:r_upgrade/r_upgrade.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../config/update_config.dart';
 
@@ -16,7 +17,7 @@ class UpdateService {
       final response = await _dio.get(UpdateConfig.versionCheckUrl);
 
       if (response.statusCode == 200) {
-        final data = response.data;
+        final data = response.data is String ? _parseJson(response.data) : response.data;
         final latestVersion = data['latestVersion'] as String?;
         final downloadUrl = data['downloadUrl'] as String?;
 
@@ -42,13 +43,24 @@ class UpdateService {
     }
     return null;
   }
+  
+  Map<String, dynamic> _parseJson(String jsonStr) {
+    try {
+      return jsonDecode(jsonStr) as Map<String, dynamic>;
+    } catch (e) {
+      if (kDebugMode) print('Error parsing JSON: $e');
+      return {};
+    }
+  }
 
   /// Triggers the OTA update process.
-  Stream<OtaEvent> performUpdate(String url) {
+  Future<void> performUpdate(String url) async {
     try {
-      // destinationFilename is optional, ota_update handles it.
-      // We listen to the stream to track progress.
-      return OtaUpdate().execute(url, destinationFilename: 'partner_app_update.apk');
+       await RUpgrade.upgrade(
+         url,
+         fileName: 'partner_app_update.apk',
+         notificationStyle: NotificationStyle.speechAndPlanTime,
+       );
     } catch (e) {
       if (kDebugMode) {
         print('❌ [UpdateService] Error performing update: $e');

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -77,31 +76,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  void _performUpdate(String url) {
+  void _performUpdate(String url) async {
     if (!mounted) return;
     
-    final updateService = UpdateService();
-    // Show a progress indicator or snackbar?
+    // Show a snackbar to indicate start
     ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Downloading update... Check notification panel.'))
+        SnackBar(content: Text('Starting download... Check your notification panel.'))
     );
     
-    updateService.performUpdate(url).listen(
-      (event) {
-        // ota_update handles the notification and install intent automatically.
-        // We can log progress here if needed.
-        if (kDebugMode) {
-          print('OTA Status: ${event.status}, Value: ${event.value}');
-        }
-      },
-      onError: (error) {
-         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Update failed: $error'))
-           );
-         }
-      },
-    );
+    try {
+      final updateService = UpdateService();
+      await updateService.performUpdate(url);
+    } catch (error) {
+       if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Update failed: $error'))
+         );
+       }
+    }
   }
 
   @override

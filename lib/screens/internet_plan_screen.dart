@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/app_state.dart';
 import '../models/plan_model.dart';
-import '../utils/currency_utils.dart';
 import '../utils/permissions.dart';
 import '../utils/permission_mapping.dart';
 import '../widgets/permission_denied_dialog.dart';
@@ -47,6 +46,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
       '/create-edit-plan',
       arguments: plan?.toJson(),
     ).then((_) {
+      if (!mounted) return;
       // Reload plans after returning from create/edit screen
       context.read<AppState>().loadPlans();
     });
@@ -109,17 +109,18 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final plans = appState.plans;
-    final partnerCountry = appState.currentUser?.country;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('internet_plans'.tr()),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
       ),
       body: appState.isLoading
@@ -129,11 +130,11 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.wifi_off, size: 64, color: Colors.grey[400]),
+                      Icon(Icons.wifi_off, size: 64, color: colorScheme.onSurfaceVariant),
                       const SizedBox(height: 16),
                       Text(
                         'no_plans_found'.tr(),
-                        style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                        style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
                       ),
                     ],
                   ),
@@ -147,11 +148,11 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: isDark ? colorScheme.surfaceContainer : Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -168,7 +169,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -176,7 +177,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                   '${plan.dataLimit != null ? '${plan.dataLimit} GB' : 'unlimited'.tr()} | ${plan.formattedValidity}',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: Colors.grey[600],
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -185,7 +186,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: colorScheme.primary,
                                     ),
                                   ),
                               ],
@@ -198,14 +199,14 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                 Container(
                                   width: 44,
                                   height: 44,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF7FD99A),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primaryContainer,
                                     shape: BoxShape.circle,
                                   ),
                                   child: IconButton(
                                     onPressed: () => _navigateToCreateEdit(plan: plan),
                                     icon: const Icon(Icons.edit, size: 20),
-                                    color: Colors.white,
+                                    color: colorScheme.onPrimaryContainer,
                                     padding: EdgeInsets.zero,
                                   ),
                                 ),
@@ -224,14 +225,14 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                 Container(
                                   width: 44,
                                   height: 44,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFFFCDD2),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.errorContainer,
                                     shape: BoxShape.circle,
                                   ),
                                   child: IconButton(
                                     onPressed: () => _showDeleteDialog(plan),
                                     icon: const Icon(Icons.delete, size: 20),
-                                    color: Color(0xFFD32F2F),
+                                    color: colorScheme.onErrorContainer,
                                     padding: EdgeInsets.zero,
                                   ),
                                 ),
@@ -249,7 +250,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF7FD99A).withOpacity(0.3),
+                    color: colorScheme.primary.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -257,12 +258,12 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
               ),
               child: FloatingActionButton.extended(
                 onPressed: () => _navigateToCreateEdit(),
-                backgroundColor: const Color(0xFF7FD99A),
-                icon: const Icon(Icons.add, color: Colors.white),
+                backgroundColor: colorScheme.primary,
+                icon: Icon(Icons.add, color: colorScheme.onPrimary),
                 label: Text(
                   'new_plan'.tr(),
                   style: TextStyle(
-                    color: Colors.white,
+                    color: colorScheme.onPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

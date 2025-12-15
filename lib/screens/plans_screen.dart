@@ -39,9 +39,10 @@ class _PlansScreenState extends State<PlansScreen> {
       return plan.name.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('internet_plans'.tr()),
         actions: [
@@ -68,7 +69,7 @@ class _PlansScreenState extends State<PlansScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: isDark ? colorScheme.surfaceContainerHighest : Colors.white,
               ),
               onChanged: (value) => setState(() => _searchQuery = value),
             ),
@@ -83,11 +84,11 @@ class _PlansScreenState extends State<PlansScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.wifi_off, size: 64, color: Colors.grey[400]),
+                            Icon(Icons.wifi_off, size: 64, color: colorScheme.onSurfaceVariant),
                             const SizedBox(height: 16),
                             Text(
                               'no_plans_found'.tr(),
-                              style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                              style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
                             ),
                           ],
                         ),
@@ -103,7 +104,7 @@ class _PlansScreenState extends State<PlansScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            color: Colors.white,
+                            color: isDark ? colorScheme.surfaceContainer : Colors.white,
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
                               child: Column(
@@ -136,18 +137,21 @@ class _PlansScreenState extends State<PlansScreen> {
                                   
                                   // Info chips
                                   _buildInfoChip(
+                                    context,
                                     Icons.cloud_download,
                                     'Data Limit',
                                     _getDataLimitLabel(plan.dataLimit, appState),
                                   ),
                                   const SizedBox(height: 8),
                                   _buildInfoChip(
+                                    context,
                                     Icons.devices,
                                     'Device Allowed',
                                     plan.sharedUsersLabel,
                                   ),
                                   const SizedBox(height: 8),
                                   _buildInfoChip(
+                                    context,
                                     Icons.calendar_month,
                                     'Validity',
                                     plan.formattedValidity,
@@ -167,7 +171,8 @@ class _PlansScreenState extends State<PlansScreen> {
                                       icon: const Icon(Icons.person_add, size: 18),
                                       label: Text('assign_to_user'.tr()),
                                       style: FilledButton.styleFrom(
-                                        backgroundColor: const Color(0xFF2D5F3F),
+                                        backgroundColor: colorScheme.primary,
+                                        foregroundColor: colorScheme.onPrimary,
                                         padding: const EdgeInsets.symmetric(vertical: 14),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(12),
@@ -186,17 +191,18 @@ class _PlansScreenState extends State<PlansScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToEditPlan(null),
-        backgroundColor: const Color(0xFF7FD99A),
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: colorScheme.primary,
+        child: Icon(Icons.add, color: colorScheme.onPrimary),
       ),
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String label, String value) {
+  Widget _buildInfoChip(BuildContext context, IconData icon, String label, String value) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF7FD99A).withOpacity(0.2),
+        color: colorScheme.primaryContainer.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -204,10 +210,10 @@ class _PlansScreenState extends State<PlansScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF7FD99A),
+              color: colorScheme.primary,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, size: 20, color: Colors.white),
+            child: Icon(icon, size: 20, color: colorScheme.onPrimary),
           ),
           const SizedBox(width: 12),
           Column(
@@ -217,7 +223,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 label,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
               Text(
@@ -241,7 +247,8 @@ class _PlansScreenState extends State<PlansScreen> {
         builder: (context) => CreateEditPlanScreen(planData: planData),
       ),
     ).then((_) {
-      // Reload plans after returning from create/edit screen
+      if (!mounted) return;
+      // Reload plans after returning fromcreate/edit screen
       context.read<AppState>().loadPlans();
     });
   }
