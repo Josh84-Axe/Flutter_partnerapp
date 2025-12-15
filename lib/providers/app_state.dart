@@ -138,6 +138,7 @@ class AppState with ChangeNotifier {
   List<PlanModel> _plans = [];
   List<TransactionModel> _transactions = [];
   double _walletBalance = 0.0; // Current wallet balance
+  double _aggregateDataUsage = 0.0; // Aggregated data usage for all active users
   
   // Revenue counters
   double _totalRevenue = 0.0;
@@ -196,6 +197,7 @@ class AppState with ChangeNotifier {
   List<PlanModel> get plans => _plans;
   List<TransactionModel> get transactions => _transactions;
   double get walletBalance => _walletBalance;
+  double get aggregateDataUsage => _aggregateDataUsage;
   double get assignedWalletBalance => _assignedRevenue; // Mapped to assigned revenue
   double get totalBalance => _walletBalance; // Mapped to current wallet balance
   
@@ -1235,6 +1237,8 @@ class AppState with ChangeNotifier {
         loadAllWalletBalances(),
         loadAllTransactions(),
         loadWithdrawals(),
+        // Load aggregate data usage for dashboard
+        getAggregateActiveDataUsage().then((value) => _aggregateDataUsage = value),
       ]);
       
       // Initialize local notification service
@@ -2826,6 +2830,76 @@ class AppState with ChangeNotifier {
       _setError(e.toString());
       _setLoading(false);
       rethrow;
+    }
+  }
+
+  // ==================== Customer Management ====================
+
+  /// Block a customer
+  Future<void> blockCustomer(String username) async {
+    _setLoading(true);
+    try {
+      if (_customerRepository == null) _initializeRepositories();
+      await _customerRepository!.blockCustomer(username);
+      // Refresh customers list if needed, or update local state
+      // For now we just return success
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  /// Unblock a customer
+  Future<void> unblockCustomer(String username) async {
+    _setLoading(true);
+    try {
+      if (_customerRepository == null) _initializeRepositories();
+      await _customerRepository!.unblockCustomer(username);
+      _setLoading(false);
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
+  /// Get aggregated data usage for all active users
+  Future<double> getAggregateActiveDataUsage() async {
+    // catch error to avoid breaking dashboard
+    try {
+      if (_customerRepository == null) _initializeRepositories();
+      
+      final activeUsernames = await _customerRepository!.getActiveSessions();
+      double totalUsageGB = 0.0;
+      
+      if (activeUsernames.isEmpty) return 0.0;
+      
+      // Parallel requests could be faster but might hit rate limits.
+      // Sequential for safety for now.
+      for (final username in activeUsernames) {
+        try {
+          final usageData = await _customerRepository!.getCustomerDataUsage(username);
+          if (usageData != null) {
+            // Adjust key based on API response structure
+            // Assuming 'total_usage' or 'data_usage' or similar. 
+            // Let's guess 'total_usage' or check typical response.
+            // If unknown, default to 0.
+            final usage = (usageData['total_usage'] ?? usageData['data_usage'] ?? 0);
+            if (usage is num) {
+              totalUsageGB += usage.toDouble();
+            }
+          }
+        } catch (e) {
+           if (kDebugMode) print('⚠️ [AppState] Failed to get usage for $username: $e');
+        }
+      }
+      
+      return totalUsageGB;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AppState] Aggregate data usage error: $e');
+      return 0.0;
     }
   }
 

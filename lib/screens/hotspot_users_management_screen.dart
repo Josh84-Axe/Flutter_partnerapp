@@ -268,6 +268,57 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
     }
   }
 
+  Future<void> _toggleBlockStatus(Map<String, dynamic> user) async {
+    final isBlocked = user['is_blocked'] ?? false;
+    final action = isBlocked ? 'unblock'.tr() : 'block'.tr();
+    final username = user['username'];
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('$action $username'),
+        content: Text('confirmation_message'.tr(namedArgs: {'action': action, 'item': username})),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              action,
+              style: TextStyle(color: isBlocked ? Colors.green : Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        if (isBlocked) {
+          await context.read<AppState>().unblockCustomer(username);
+        } else {
+          await context.read<AppState>().blockCustomer(username);
+        }
+        
+        await context.read<AppState>().loadHotspotUsers(); // Reload to see changes
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('success'.tr())),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(ErrorMessageHelper.getUserFriendlyMessage(e))),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
@@ -365,6 +416,12 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
                                     icon: const Icon(Icons.edit),
                                     color: colorScheme.primary,
                                     onPressed: () => _showEditUserDialog(user),
+                                  ),
+                                  IconButton(
+                                    icon: Icon((user['is_blocked'] ?? false) ? Icons.check_circle_outline : Icons.block),
+                                    color: (user['is_blocked'] ?? false) ? Colors.green : Colors.orange,
+                                    tooltip: (user['is_blocked'] ?? false) ? 'unblock'.tr() : 'block'.tr(),
+                                    onPressed: () => _toggleBlockStatus(user),
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete),

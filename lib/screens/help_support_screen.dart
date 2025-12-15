@@ -6,9 +6,9 @@ import '../utils/app_theme.dart';
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
 
-  // TODO: Replace with actual support contact details
+  // Support contact details
   static const String _supportEmail = 'assist@tiknetafrica.com';
-  static const String _supportWhatsApp = '233553439010'; // International format without +
+  static const String _supportWhatsApp = '233553439010'; // +233 55 343 9010
 
   Future<void> _launchEmail() async {
     final Uri emailLaunchUri = Uri(

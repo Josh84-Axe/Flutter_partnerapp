@@ -7,6 +7,8 @@ import '../widgets/metric_card.dart';
 import '../widgets/subscription_plan_card.dart';
 import '../widgets/quick_action_button.dart';
 import '../widgets/guest_mode_banner.dart';
+import '../widgets/guest_mode_banner.dart';
+import '../widgets/data_usage_card.dart';
 import '../services/update_service.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -257,12 +259,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 16),
             
             // Task 2: Data Usage Card moved below Quick Action Buttons - load from API
-            // TODO: Add API endpoint for data usage statistics
-            // DataUsageCard(
-            //   usedGB: 0.0,
-            //   totalGB: 0.0,
-            //   isLoading: appState.isLoading,
-            // ),
+            // Data Usage Card - Aggregated for all active users
+            DataUsageCard(
+              usedGB: appState.aggregateDataUsage,
+              totalGB: 100.0, // Arbitrary total for now as we aggregate multiple plans
+              isLoading: appState.isLoading,
+            ),
           ],
         ),
       ),
