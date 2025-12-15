@@ -25,6 +25,11 @@ class TiknetThemes {
       // Enhance secondary colors
       secondary: _deepenColor(scheme.secondary, 0.15),
       secondaryContainer: _deepenColor(scheme.secondaryContainer, 0.1),
+      
+      // Ensure specific surface colors for visibility
+      surfaceContainer: scheme.brightness == Brightness.dark 
+          ? const Color(0xFF1E1E1E) // Solid dark grey for cards
+          : const Color(0xFFFFFFFF), // White for light mode
     );
     
     return ThemeData(

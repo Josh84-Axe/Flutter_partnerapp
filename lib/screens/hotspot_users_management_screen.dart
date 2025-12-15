@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../utils/app_theme.dart';
+import '../utils/error_message_helper.dart';
 
 class HotspotUsersManagementScreen extends StatefulWidget {
   const HotspotUsersManagementScreen({super.key});
@@ -112,7 +113,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('error_generic'.tr(namedArgs: {'error': e.toString()}))),
+                        SnackBar(content: Text(ErrorMessageHelper.getUserFriendlyMessage(e))),
                       );
                     }
                   }
@@ -216,7 +217,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('error_generic'.tr(namedArgs: {'error': e.toString()}))),
+                        SnackBar(content: Text(ErrorMessageHelper.getUserFriendlyMessage(e))),
                       );
                     }
                   }
@@ -260,7 +261,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('error_generic'.tr(namedArgs: {'error': e.toString()}))),
+            SnackBar(content: Text(ErrorMessageHelper.getUserFriendlyMessage(e))),
           );
         }
       }

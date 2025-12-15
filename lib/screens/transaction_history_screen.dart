@@ -18,6 +18,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
   String _searchQuery = '';
   String _selectedDateFilter = 'all'; // all, today, week, month
   bool _isLoading = false;
+  
+  // Cached lists to prevent rebuild logic issues
+  List<dynamic> _allTransactions = [];
+  List<dynamic> _assignedTransactions = [];
+  List<dynamic> _walletTransactions = [];
 
   @override
   void initState() {
@@ -33,9 +38,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
           _tabController.index = initialTab;
         }
       }
+      _loadTransactions();
     });
-    
-    _loadTransactions();
   }
 
   @override
@@ -46,10 +50,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
   }
 
   Future<void> _loadTransactions() async {
+    if (_isLoading) return;
     setState(() => _isLoading = true);
+    
     try {
       final appState = context.read<AppState>();
       await appState.loadAllTransactions();
+      
+      // Update local cached lists safely
+      _updateLocalLists(appState);
+      
+    } catch (e) {
+      if (kDebugMode) print('Error loading transactions: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -57,14 +69,60 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
     }
   }
 
+  void _updateLocalLists(AppState appState) {
+    if (!mounted) return;
+    
+    try {
+      // Safely map and merge
+      final assigned = appState.assignedTransactions.map((txn) => 
+        Map<String, dynamic>.from(txn)..['transaction_type'] = 'assigned'
+      ).toList();
+      
+      final wallet = appState.walletTransactions.map((txn) => 
+        Map<String, dynamic>.from(txn)..['transaction_type'] = 'wallet'
+      ).toList();
+
+      _assignedTransactions = assigned;
+      _walletTransactions = wallet;
+      
+      _allTransactions = [...assigned, ...wallet];
+      
+      // Sort desc by date
+      _allTransactions.sort((a, b) {
+        try {
+          final aDate = DateTime.tryParse(a['created_at']?.toString() ?? a['createdAt']?.toString() ?? '');
+          final bDate = DateTime.tryParse(b['created_at']?.toString() ?? b['createdAt']?.toString() ?? '');
+          if (aDate == null || bDate == null) return 0;
+          return bDate.compareTo(aDate);
+        } catch (_) {
+          return 0;
+        }
+      });
+      
+    } catch (e) {
+      if (kDebugMode) print('Error processing transaction lists: $e');
+      _allTransactions = [];
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Re-sync with AppState if it changes (e.g. from another screen)
+    // But be careful not to trigger infinite loops. 
+    // context.watch is better used in build, but for heavy lists, logical separation is safer.
+    // Here we use context.watch in build to TRIGGER updates, but logic is separated.
+  }
+
   List<dynamic> _filterTransactions(List<dynamic> transactions) {
-    var filtered = transactions;
+    var filtered = List<dynamic>.from(transactions);
 
     // Apply search filter
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((txn) {
         final description = (txn['description'] ?? '').toString().toLowerCase();
         final amount = (txn['amount'] ?? '').toString();
+        // Handle potentially null ID
         final id = (txn['id'] ?? '').toString();
         return description.contains(_searchQuery.toLowerCase()) ||
                amount.contains(_searchQuery) ||
@@ -77,7 +135,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
       final now = DateTime.now();
       filtered = filtered.where((txn) {
         try {
-          final createdAt = DateTime.parse(txn['created_at'] ?? txn['createdAt'] ?? '');
+          final dateStr = txn['created_at'] ?? txn['createdAt'];
+          if (dateStr == null) return false;
+          
+          final createdAt = DateTime.parse(dateStr.toString());
           switch (_selectedDateFilter) {
             case 'today':
               return createdAt.year == now.year &&
@@ -92,7 +153,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
               return true;
           }
         } catch (e) {
-          return true;
+          return false;
         }
       }).toList();
     }
@@ -102,8 +163,30 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    // Watch state to trigger rebuilds on data change
     final appState = context.watch<AppState>();
+    
+    // Check if we need to update our local sorted lists (simple check if empty or mismatch)
+    // For now, we trust _loadTransactions populated it, OR we re-run logic if AppState has data and we don't.
+    // A better approach is to rely on the watcher to just call _updateLocalLists implicitly?
+    // No, side-effects in build are bad.
+    // Instead: We calculate filtered views on the fly, but the SOURCE lists are from AppState.
+    // Actually, to fix the "Crashing" bug, we should perform the Merge freshly but SAFELY.
+    // My previous _updateLocalLists strategy is good for caching but standard Build pattern is fine if safe.
+    
+    // Let's execute the safe merge HERE to ensure UI is always in sync, 
+    // but wrapped in try-catch to prevent grey screen.
+    List<dynamic> allTxnsSafe = [];
+    try {
+       // Create safe copies
+       final safeAssigned = appState.assignedTransactions.map((e) => safeMap(e, 'assigned')).toList();
+       final safeWallet = appState.walletTransactions.map((e) => safeMap(e, 'wallet')).toList();
+       
+       allTxnsSafe = [...safeAssigned, ...safeWallet];
+       allTxnsSafe.sort((a, b) => safeDateCompare(a, b));
+    } catch (e) {
+       if (kDebugMode) print('Error building allTxns: $e');
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -139,11 +222,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
                             },
                           )
                         : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[100],
                   ),
                   onChanged: (value) {
                     setState(() => _searchQuery = value);
@@ -173,15 +251,40 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildAllTransactionsTab(appState),
-                _buildAssignedTransactionsTab(appState),
-                _buildWalletTransactionsTab(appState),
+                _buildTransactionTab(allTxnsSafe, appState), // All
+                _buildTransactionTab(appState.assignedTransactions, appState, type: 'assigned'), // Assigned
+                _buildTransactionTab(appState.walletTransactions, appState, type: 'wallet'), // Wallet
               ],
             ),
           ),
         ],
       ),
     );
+  }
+  
+  // Helper for safe list generation
+  Map<String, dynamic> safeMap(dynamic item, String type) {
+    if (item == null) return {'transaction_type': type};
+    try {
+      final m = Map<String, dynamic>.from(item);
+      m['transaction_type'] = type;
+      return m;
+    } catch (_) {
+      return {'transaction_type': type};
+    }
+  }
+  
+  int safeDateCompare(dynamic a, dynamic b) {
+    try {
+       final aDate = DateTime.tryParse(a['created_at']?.toString() ?? a['createdAt']?.toString() ?? '');
+       final bDate = DateTime.tryParse(b['created_at']?.toString() ?? b['createdAt']?.toString() ?? '');
+       if (aDate == null && bDate == null) return 0;
+       if (aDate == null) return 1;
+       if (bDate == null) return -1;
+       return bDate.compareTo(aDate);
+    } catch (_) {
+      return 0;
+    }
   }
 
   Widget _buildFilterChip(String value, String label) {
@@ -200,36 +303,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
     );
   }
 
-  Widget _buildAllTransactionsTab(AppState appState) {
-    final allTransactions = [
-      ...appState.assignedTransactions.map((txn) => {...txn, '_type': 'assigned'}),
-      ...appState.walletTransactions.map((txn) => {...txn, '_type': 'wallet'}),
-    ];
-
-    // Sort by date (newest first)
-    allTransactions.sort((a, b) {
-      try {
-        final aDate = DateTime.parse(a['created_at'] ?? a['createdAt'] ?? '');
-        final bDate = DateTime.parse(b['created_at'] ?? b['createdAt'] ?? '');
-        return bDate.compareTo(aDate);
-      } catch (e) {
-        return 0;
-      }
-    });
-
-    final filtered = _filterTransactions(allTransactions);
-
-    return _buildTransactionList(filtered, appState);
-  }
-
-  Widget _buildAssignedTransactionsTab(AppState appState) {
-    final filtered = _filterTransactions(appState.assignedTransactions);
-    return _buildTransactionList(filtered, appState, transactionType: 'assigned');
-  }
-
-  Widget _buildWalletTransactionsTab(AppState appState) {
-    final filtered = _filterTransactions(appState.walletTransactions);
-    return _buildTransactionList(filtered, appState, transactionType: 'wallet');
+  Widget _buildTransactionTab(List<dynamic> sourceList, AppState appState, {String? type}) {
+     // If explicit type provided, use it, else generic logic
+     List<dynamic> filtered = _filterTransactions(sourceList);
+     return _buildTransactionList(filtered, appState, transactionType: type);
   }
 
   Widget _buildTransactionList(List<dynamic> transactions, AppState appState, {String? transactionType}) {
@@ -247,8 +324,13 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
         padding: const EdgeInsets.all(16),
         itemCount: transactions.length,
         itemBuilder: (context, index) {
-          final transaction = transactions[index];
-          return _buildTransactionCard(transaction, appState);
+          try {
+            final transaction = transactions[index];
+            if (transaction == null) return const SizedBox();
+            return _buildTransactionCard(transaction, appState);
+          } catch (e) {
+            return const SizedBox(); // Skip broken items
+          }
         },
       ),
     );

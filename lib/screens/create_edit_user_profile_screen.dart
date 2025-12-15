@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../providers/app_state.dart';
 import '../models/hotspot_profile_model.dart';
 import '../utils/app_theme.dart';
+import '../utils/error_message_helper.dart';
 
 class CreateEditUserProfileScreen extends StatefulWidget {
   final HotspotProfileModel? profile;
@@ -338,7 +339,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Error deleting profile: ${e.toString()}'),
+                      content: Text(ErrorMessageHelper.getUserFriendlyMessage(e, context: 'Profile')),
                       backgroundColor: Theme.of(context).colorScheme.error,
                     ),
                   );
@@ -399,7 +400,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('error_saving_profile'.tr(namedArgs: {'error': e.toString()})),
+            content: Text(ErrorMessageHelper.getUserFriendlyMessage(e)),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

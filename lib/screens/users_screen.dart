@@ -12,6 +12,7 @@ import '../widgets/create_worker_dialog.dart';
 import '../utils/permissions.dart';
 import '../utils/permission_mapping.dart';
 import '../widgets/permission_denied_dialog.dart';
+import '../utils/error_message_helper.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -701,7 +702,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Error: ${e.toString()}'),
+                                    content: Text(ErrorMessageHelper.getUserFriendlyMessage(e)),
                                     backgroundColor: Colors.red,
                                   ),
                                 );
@@ -792,7 +793,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Error: ${e.toString()}'),
+                          content: Text(ErrorMessageHelper.getUserFriendlyMessage(e)),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -913,7 +914,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Error: ${e.toString()}'),
+                      content: Text(ErrorMessageHelper.getUserFriendlyMessage(e)),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -985,7 +986,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Error: ${e.toString()}'),
+                              content: Text(ErrorMessageHelper.getUserFriendlyMessage(e)),
                               backgroundColor: Colors.red,
                             ),
                           );
