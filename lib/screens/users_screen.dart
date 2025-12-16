@@ -974,7 +974,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                   ? null
                   : () async {
                       try {
-                        await appState.assignRouterToWorker(worker.username, selectedRouter!);
+                        await appState.assignRouterToWorker(worker.email, selectedRouter!);
                         if (context.mounted) {
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(

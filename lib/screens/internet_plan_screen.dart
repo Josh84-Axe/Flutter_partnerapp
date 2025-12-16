@@ -148,11 +148,12 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: isDark ? colorScheme.surfaceContainer : Colors.white,
+                        color: isDark ? colorScheme.surfaceContainerHighest : Colors.white,
                         borderRadius: BorderRadius.circular(16),
+                        border: isDark ? Border.all(color: colorScheme.outline.withOpacity(0.2)) : null,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),

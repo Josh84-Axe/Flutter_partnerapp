@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../widgets/router_resources_screen.dart'; // Ensure correct path or use screen if in screens folder
+import 'router_resources_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
@@ -209,6 +211,13 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
                                           ),
                                         ),
                                         child: Text('view_report'.tr()),
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => RouterResourcesScreen(router: router.toJson()),
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ),
                                   ],
