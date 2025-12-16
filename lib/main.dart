@@ -26,10 +26,10 @@ import 'screens/set_new_password_screen.dart';
 import 'screens/password_success_screen.dart';
 import 'screens/profiles_screen.dart';
 import 'screens/router_details_screen.dart';
-import 'screens/support_screen.dart';
+
 import 'screens/bulk_actions_screen.dart';
 import 'models/hotspot_profile_model.dart';
-import 'screens/create_edit_user_profile_screen.dart';
+
 import 'screens/hotspot_user_screen.dart';
 import 'screens/configurations_screen.dart';
 import 'screens/router_registration_screen.dart';
@@ -39,12 +39,12 @@ import 'screens/config/plan_validity_config_screen.dart';
 import 'screens/config/data_limit_config_screen.dart';
 import 'screens/config/shared_user_config_screen.dart';
 import 'screens/config/additional_device_config_screen.dart';
-import 'screens/internet_plan_screen.dart';
+
 import 'screens/internet_plans_settings_screen.dart';
 import 'screens/subscription_management_screen.dart';
 import 'screens/router_settings_screen.dart';
 import 'screens/add_router_screen.dart';
-import 'screens/create_edit_internet_plan_screen.dart';
+
 import 'screens/create_edit_plan_screen.dart';
 import 'screens/assign_user_screen.dart';
 import 'screens/create_role_screen.dart';
@@ -80,7 +80,7 @@ import 'screens/payout_history_screen.dart';
 import 'screens/transaction_details_screen.dart';
 import 'screens/add_payout_method_screen.dart';
 import 'screens/assign_router_screen.dart';
-import 'screens/email_verification_screen.dart';
+
 import 'screens/hotspot_users_management_screen.dart';
 import 'screens/plan_assignment_screen.dart';
 import 'screens/session_management_screen.dart';
@@ -89,7 +89,7 @@ import 'screens/collaborators_management_screen.dart';
 import 'screens/assigned_plans_list_screen.dart';
 import 'screens/active_sessions_screen.dart';
 import 'screens/help_support_screen.dart';
-import 'models/hotspot_profile_model.dart';
+
 import 'models/user_model.dart';
 
 void main() async {
@@ -147,7 +147,7 @@ class HotspotPartnerApp extends StatelessWidget {
         '/set-new-password': (context) => const SetNewPasswordScreen(),
         '/password-success': (context) => const PasswordSuccessScreen(),
         '/profiles': (context) => const ProfilesScreen(),
-        '/support': (context) => const SupportScreen(),
+
         '/bulk-actions': (context) => const BulkActionsScreen(),
         '/hotspot-user': (context) => const HotspotUserScreen(),
         '/configurations': (context) => const ConfigurationsScreen(),

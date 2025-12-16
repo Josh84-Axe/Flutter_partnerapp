@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/router_resources_screen.dart'; // Ensure correct path or use screen if in screens folder
 import 'router_resources_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -202,7 +201,7 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: OutlinedButton(
-                                        onPressed: () {},
+
                                         style: OutlinedButton.styleFrom(
                                           foregroundColor: colorScheme.primary,
                                           side: BorderSide(color: Colors.grey[400]!),

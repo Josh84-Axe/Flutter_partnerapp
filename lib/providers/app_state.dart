@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'dart:typed_data';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -70,6 +71,8 @@ class AppState with ChangeNotifier {
   // Feature flag to toggle between mock and real API
   bool _useRemoteApi = ApiConfig.useRemoteApi;
   
+  Dio? _dio; // Exposed getter available
+  
   // Constructor with debug logging
   AppState() {
     if (kDebugMode) print('🔧 [AppState] Initializing AppState');
@@ -78,6 +81,10 @@ class AppState with ChangeNotifier {
   }
   
   bool get useRemoteApi => _useRemoteApi;
+  
+  // Getters for repositories and Dio
+  Dio get dio => _dio!;
+  RouterRepository? get routerRepository => _routerRepository;
   
   /// Toggle between mock data and real API (for testing)
   void setUseRemoteApi(bool value) {
@@ -94,7 +101,8 @@ class AppState with ChangeNotifier {
         tokenStorage: tokenStorage,
         baseUrl: ApiConfig.baseUrl,
       );
-      final dio = apiFactory.createDio();
+      _dio = apiFactory.createDio();
+      final dio = _dio!;
       
       _authRepository = AuthRepository(
         dio: dio,
