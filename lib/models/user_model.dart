@@ -20,6 +20,7 @@ class UserModel {
   final String? lastConnection;
   final int? totalSessions;
   final String? acquisitionType;
+  final String? planName;
 
   UserModel({
     required this.id,
@@ -41,6 +42,7 @@ class UserModel {
     this.lastConnection,
     this.totalSessions,
     this.acquisitionType,
+    this.planName,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json, {bool? isConnected}) {
@@ -69,6 +71,7 @@ class UserModel {
         lastConnection: null,
         totalSessions: null,
         acquisitionType: json['acquisition_type'],
+        planName: json['plan_name'],
       );
     } else {
       // Legacy format
@@ -98,6 +101,7 @@ class UserModel {
         lastConnection: json['lastConnection'],
         totalSessions: json['totalSessions'],
         acquisitionType: json['acquisitionType'],
+        planName: json['planName'],
       );
     }
   }
@@ -126,6 +130,7 @@ class UserModel {
     String? lastConnection,
     int? totalSessions,
     String? acquisitionType,
+    String? planName,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -147,6 +152,7 @@ class UserModel {
       lastConnection: lastConnection ?? this.lastConnection,
       totalSessions: totalSessions ?? this.totalSessions,
       acquisitionType: acquisitionType ?? this.acquisitionType,
+      planName: planName ?? this.planName,
     );
   }
 
@@ -171,6 +177,7 @@ class UserModel {
       'lastConnection': lastConnection,
       'totalSessions': totalSessions,
       'acquisitionType': acquisitionType,
+      'planName': planName,
     };
   }
 }

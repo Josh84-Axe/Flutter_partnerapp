@@ -2679,21 +2679,43 @@ class AppState with ChangeNotifier {
   
   /// Assign routers to a worker/manager
   Future<void> assignRoutersToWorker(String username, List<String> routerIds) async {
-    _routerAssignments[username] = routerIds;
+    _routerAssignments[username.toLowerCase()] = routerIds; // Store as lowercase
     await saveRouterAssignments();
-    if (kDebugMode) print('✅ [RouterAssignment] Assigned ${routerIds.length} routers to $username');
+    if (kDebugMode) print('✅ [RouterAssignment] Assigned ${routerIds.length} routers to ${username.toLowerCase()}');
   }
   
   /// Get assigned routers for a specific worker/manager
   List<String> getAssignedRouters(String username) {
-    return _routerAssignments[username] ?? [];
+    return _routerAssignments[username.toLowerCase()] ?? []; // Retrieve as lowercase
   }
   
   /// Remove router assignment for a worker
   Future<void> removeRouterAssignment(String username) async {
-    _routerAssignments.remove(username);
+    _routerAssignments.remove(username.toLowerCase());
     await saveRouterAssignments();
-    if (kDebugMode) print('✅ [RouterAssignment] Removed assignment for $username');
+    if (kDebugMode) print('✅ [RouterAssignment] Removed assignment for ${username.toLowerCase()}');
+  }
+
+  /// Calculate total data limit for all active users (to show progress)
+  double get getAggregateTotalDataLimit {
+    double totalLimit = 0.0;
+    for (var user in _users) {
+      if (user.isActive && user.planName != null) {
+        // Find plan by name (loose matching)
+        try {
+          final plan = _plans.firstWhere((p) => p.name == user.planName);
+          if (plan.dataLimit != null) {
+            totalLimit += plan.dataLimit!;
+          } else {
+             // For unlimited plans, add a placeholder amount (e.g. 100GB) or ignore?
+             // Adding 0 doesn't help the progress bar. Let's assume unlimited = 500GB for viz purpose
+             totalLimit += 500.0; 
+          }
+        } catch (_) {}
+      }
+    }
+    // If no active users or plans found, return a fallback to avoid division by zero
+    return totalLimit == 0 ? 100.0 : totalLimit;
   }
   
   /// Get all router assignments (for admin view)

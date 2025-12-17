@@ -30,6 +30,11 @@ class TiknetThemes {
       surfaceContainer: scheme.brightness == Brightness.dark 
           ? const Color(0xFF1E1E1E) // Solid dark grey for cards
           : const Color(0xFFFFFFFF), // White for light mode
+      
+      // Ensure visible contrast for container highest
+      surfaceContainerHighest: scheme.brightness == Brightness.dark
+          ? const Color(0xFF2C2C2C) // Lighter grey for containers
+          : const Color(0xFFE0E0E0), // Light grey for light mode
     );
     
     return ThemeData(

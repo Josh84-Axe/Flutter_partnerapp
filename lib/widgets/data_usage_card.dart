@@ -21,7 +21,7 @@ class DataUsageCard extends StatelessWidget {
     return Card(
       elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Row(
           children: [
             // Left side - Text info
@@ -29,85 +29,70 @@ class DataUsageCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '${percentage.toStringAsFixed(0)}%',
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                   Text(
+                    'data_usage'.tr(),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    '${usedGB.toStringAsFixed(1)} GB ${'of'.tr()}',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        usedGB.toStringAsFixed(1),
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'GB',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                   Text(
-                    '${totalGB.toStringAsFixed(1)} GB ${'used'.tr()}',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    'aggregated_usage'.tr(),
+                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
               ),
             ),
             // Right side - Circular progress
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(16),
+                color: colorScheme.primaryContainer.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: SizedBox(
-                width: 88,
-                height: 88,
+                width: 60,
+                height: 60,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Background circle
-                    SizedBox(
-                      width: 88,
-                      height: 88,
-                      child: CircularProgressIndicator(
-                        value: 1.0,
-                        strokeWidth: 8,
-                        backgroundColor: colorScheme.surfaceContainerHighest,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          colorScheme.surfaceContainerHighest,
-                        ),
-                      ),
+                    CircularProgressIndicator(
+                      value: 1.0,
+                      strokeWidth: 6,
+                      color: colorScheme.surfaceContainerHighest,
                     ),
-                    // Progress circle
-                    SizedBox(
-                      width: 88,
-                      height: 88,
-                      child: CircularProgressIndicator(
-                        value: percentage / 100,
-                        strokeWidth: 8,
-                        backgroundColor: Colors.transparent,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          colorScheme.primary,
-                        ),
-                      ),
+                    CircularProgressIndicator(
+                      value: percentage / 100,
+                      strokeWidth: 6,
+                      color: colorScheme.primary,
+                      strokeCap: StrokeCap.round,
                     ),
-                    // Center text
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '${percentage.toStringAsFixed(0)}%',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onPrimaryContainer,
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Bottom label
-                    Positioned(
-                      bottom: 8,
-                      child: Text(
-                        'data_usage'.tr(),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
-                          fontSize: 10,
-                        ),
+                    Text(
+                      '${percentage.toStringAsFixed(0)}%',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onPrimaryContainer,
                       ),
                     ),
                   ],

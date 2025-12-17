@@ -143,17 +143,37 @@ class _RouterAssignScreenState extends State<RouterAssignScreen> {
     );
   }
 
-  void _saveAssignment() {
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'routers_assigned_to'.tr(namedArgs: {
-            'count': '${_selectedRouterIds.length}',
-            'name': widget.userName
-          }),
+  Future<void> _saveAssignment() async {
+    try {
+      // Calls AppState to save assignments to SharedPreferences (Local Storage Only)
+      // Note: This feature currently works per-device as there is no backend endpoint for assignment syncing.
+      await context.read<AppState>().assignRoutersToWorker(
+        widget.userId, // Using userId which is actually the email/username passed from UsersScreen
+        _selectedRouterIds.toList(),
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'routers_assigned_to'.tr(namedArgs: {
+              'count': '${_selectedRouterIds.length}',
+              'name': widget.userName
+            }),
+          ),
+          backgroundColor: Colors.green,
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error assigning routers: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

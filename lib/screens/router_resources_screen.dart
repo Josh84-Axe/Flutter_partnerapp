@@ -33,8 +33,10 @@ class _RouterResourcesScreenState extends State<RouterResourcesScreen> {
 
     try {
       final repository = context.read<AppState>().routerRepository ?? RouterRepository(dio: context.read<AppState>().dio);
-      // Ensure we have a valid slug/id. Use 'id' if 'slug' is missing based on RouterModel structure.
-      final slug = widget.router['id']?.toString() ?? ''; 
+      // Ensure we have a valid slug/id. Use 'slug' if available (preferred), otherwise 'id'.
+      final slug = widget.router['slug']?.toString() ?? widget.router['id']?.toString() ?? '';
+      
+      if (slug.isEmpty) throw Exception('Invalid router configuration: Missing slug/ID'); 
       
       final data = await repository.fetchRouterResources(slug);
       

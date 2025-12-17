@@ -262,7 +262,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             // Data Usage Card - Aggregated for all active users
             DataUsageCard(
               usedGB: appState.aggregateDataUsage,
-              totalGB: 100.0, // Arbitrary total for now as we aggregate multiple plans
+              totalGB: appState.getAggregateTotalDataLimit,
               isLoading: appState.isLoading,
             ),
           ],
