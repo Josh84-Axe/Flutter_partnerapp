@@ -54,6 +54,8 @@ class ErrorMessageHelper {
   
   /// Extract specific error details from DioException
   static String getDetailedError(dynamic error) {
+    final errorString = error.toString().toLowerCase();
+    
     if (error is DioException) {
       if (error.response?.data != null) {
         final data = error.response!.data;

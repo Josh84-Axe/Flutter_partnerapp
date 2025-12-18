@@ -59,11 +59,8 @@ class TiknetThemes {
         ),
       ),
       
-      // Explicitly set surface and background for dark mode to ensure deep contrast
+      // Explicitly set background for dark mode to ensure deep contrast
       scaffoldBackgroundColor: scheme.brightness == Brightness.dark
-          ? const Color(0xFF121212)
-          : scheme.surface,
-      surfaceColor: scheme.brightness == Brightness.dark
           ? const Color(0xFF121212)
           : scheme.surface,
       
