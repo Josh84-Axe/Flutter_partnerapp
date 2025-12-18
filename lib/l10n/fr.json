@@ -740,5 +740,12 @@
   "msg_only_transaction_history": "Seuls les rapports d'historique des transactions sont actuellement pris en charge",
   "msg_report_generated_success": "Rapport généré avec succès",
   "msg_failed_generate_report": "Échec de la génération du rapport : {}",
-  "aggregated_usage": "Utilisation Globale (Tous les Utilisateurs)"
+  "aggregated_usage": "Utilisation Globale (Tous les Utilisateurs)",
+  "online_users": "Utilisateurs en Ligne",
+  "assigned_users": "Utilisateurs Assignés",
+  "block_user": "Bloquer l'Utilisateur",
+  "block_user_confirmation": "Êtes-vous sûr de vouloir bloquer {0} ? Ils seront déconnectés immédiatement.",
+  "user_blocked_disconnected": "L'utilisateur {0} a été bloqué et déconnecté.",
+  "user_disconnected": "L'utilisateur {0} a été déconnecté.",
+  "no_purchased_plans": "Aucun plan acheté trouvé."
 }

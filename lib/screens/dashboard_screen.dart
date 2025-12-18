@@ -194,7 +194,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 16),
             
-            // Task 1: Total Revenue and Active Users moved below Subscription Plan
+            // Row 1: Revenue and Active Users
             Row(
               children: [
                 Expanded(
@@ -209,7 +209,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: GestureDetector(
                     onTap: () => _showActiveUsersDetails(context, appState),
@@ -220,6 +220,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       icon: Icons.group,
                       isLoading: appState.isLoading,
                     ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            
+            // Row 2: Data Usage (Compact) and Active Sessions
+            Row(
+              children: [
+                Expanded(
+                  child: DataUsageCard(
+                    usedGB: appState.aggregateDataUsage,
+                    totalGB: appState.getAggregateTotalDataLimit,
+                    isLoading: appState.isLoading,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildMetricWidget(
+                    context,
+                    title: 'active_sessions'.tr(),
+                    value: MetricCard.formatNumber(appState.activeSessions.length),
+                    icon: Icons.devices,
+                    isLoading: appState.isLoading,
                   ),
                 ),
               ],
@@ -257,14 +281,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            
-            // Task 2: Data Usage Card moved below Quick Action Buttons - load from API
-            // Data Usage Card - Aggregated for all active users
-            DataUsageCard(
-              usedGB: appState.aggregateDataUsage,
-              totalGB: appState.getAggregateTotalDataLimit,
-              isLoading: appState.isLoading,
-            ),
           ],
         ),
       ),

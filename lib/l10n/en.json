@@ -753,5 +753,12 @@
   "msg_only_transaction_history": "Only Transaction History reports are currently supported",
   "msg_report_generated_success": "Report generated successfully",
   "msg_failed_generate_report": "Failed to generate report: {}",
-  "aggregated_usage": "Aggregated Usage (All Users)"
+  "aggregated_usage": "Aggregated Usage (All Users)",
+  "online_users": "Online Users",
+  "assigned_users": "Assigned Users",
+  "block_user": "Block User",
+  "block_user_confirmation": "Are you sure you want to block {0}? They will be disconnected immediately.",
+  "user_blocked_disconnected": "User {0} has been blocked and disconnected.",
+  "user_disconnected": "User {0} has been disconnected.",
+  "no_purchased_plans": "No purchased plans found."
 }

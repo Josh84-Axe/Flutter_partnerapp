@@ -26,6 +26,7 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
   Future<void> _loadData() async {
     await context.read<AppState>().loadActiveSessions();
     await context.read<AppState>().loadAssignedPlans();
+    await context.read<AppState>().loadPurchasedPlans();
   }
 
   @override
@@ -68,32 +69,41 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
   }
 
   Widget _buildOnlineUsersTab(AppState appState, ColorScheme colorScheme) {
-    if (appState.isLoading && appState.activeSessions.isEmpty) {
+    if (appState.isLoading && appState.purchasedPlans.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (appState.activeSessions.isEmpty) {
+    if (appState.purchasedPlans.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.wifi_off, size: 64, color: colorScheme.outline),
+            Icon(Icons.shopping_cart_outlined, size: 64, color: colorScheme.outline),
             const SizedBox(height: 16),
-            Text('no_active_sessions'.tr()),
+            Text('no_purchased_plans'.tr()),
           ],
         ),
       );
     }
 
-    final sessions = appState.activeSessions;
+    final plans = appState.purchasedPlans;
+    final activeSessions = appState.activeSessions;
+    
+    // Quick lookup for active sessions
+    final activeSessionMap = {
+      for (var s in activeSessions) s['username']?.toString().toLowerCase(): s
+    };
 
     return RefreshIndicator(
       onRefresh: _loadData,
       child: ListView.builder(
-        itemCount: sessions.length,
+        itemCount: plans.length,
         itemBuilder: (context, index) {
-          final session = sessions[index];
-          return _buildSessionCard(session, colorScheme, isAssignedTab: false);
+          final plan = plans[index];
+          final username = plan['username']?.toString().toLowerCase();
+          final activeSession = activeSessionMap[username];
+          
+          return _buildUserCard(plan, activeSession, colorScheme);
         },
       ),
     );
@@ -135,142 +145,37 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
           final username = plan['username']?.toString().toLowerCase();
           final activeSession = activeSessionMap[username];
           
-          return _buildAssignedUserCard(plan, activeSession, colorScheme);
+          return _buildUserCard(plan, activeSession, colorScheme);
         },
       ),
     );
   }
 
-  Widget _buildAssignedUserCard(
+  Widget _buildUserCard(
     Map<String, dynamic> plan, 
     Map<String, dynamic>? activeSession, 
     ColorScheme colorScheme
   ) {
-    final username = plan['username'] ?? 'Unknown';
-    final planName = plan['plan_name'] ?? 'Unknown Plan';
+    final username = plan['username'] ?? plan['customer_username'] ?? 'Unknown';
+    final planName = plan['plan_name'] ?? plan['name'] ?? 'Unknown Plan';
     final isOnline = activeSession != null;
+    
+    // Extract session details if online
+    final ipAddress = activeSession?['ip_address'] ?? 'N/A';
+    final uptime = activeSession?['uptime'] ?? 'N/A';
+    final bytesIn = activeSession?['bytes_in'] ?? 0;
+    final bytesOut = activeSession?['bytes_out'] ?? 0;
+    final routerName = activeSession?['router_name'] ?? 'Unknown Router';
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      username,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    Text(
-                      planName,
-                      style: TextStyle(
-                        color: colorScheme.secondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isOnline ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isOnline ? Colors.green : Colors.grey,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.circle,
-                        size: 8,
-                        color: isOnline ? Colors.green : Colors.grey,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        isOnline ? 'Online' : 'Offline',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isOnline ? Colors.green : Colors.grey,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            if (isOnline) ...[
-              const Divider(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildInfoItem('IP Address', activeSession!['ip_address'] ?? 'N/A'),
-                  _buildInfoItem('Uptime', activeSession['uptime'] ?? 'N/A'),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildInfoItem('Download', _formatBytes(activeSession['bytes_in'])),
-                  _buildInfoItem('Upload', _formatBytes(activeSession['bytes_out'])),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Block User',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  Switch(
-                    value: false, // TODO: Track blocked state from backend
-                    onChanged: (value) => _toggleUserBlock(activeSession, value),
-                    activeColor: Colors.red,
-                  ),
-                ],
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSessionCard(Map<String, dynamic> session, ColorScheme colorScheme, {required bool isAssignedTab}) {
-    final username = session['username'] ?? 'Unknown';
-    final ipAddress = session['ip_address'] ?? 'N/A';
-    final macAddress = session['mac_address'] ?? 'N/A';
-    final uptime = session['uptime'] ?? 'N/A';
-    final bytesIn = session['bytes_in'] ?? 0;
-    final bytesOut = session['bytes_out'] ?? 0;
-    final routerName = session['router_name'] ?? 'Unknown Router';
-    final routerIp = session['router_ip'] ?? 'N/A';
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with username and disconnect button
+            // Header: User and Connection Status
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -285,55 +190,98 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
                           fontSize: 16,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.router, size: 14, color: Colors.grey[600]),
-                          const SizedBox(width: 4),
-                          Text(
-                            routerName,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        planName,
+                        style: TextStyle(
+                          color: colorScheme.secondary,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Switch(
-                  value: false, // TODO: Track blocked state from backend
-                  onChanged: (value) => _toggleUserBlock(session, value),
-                  activeColor: Colors.red,
+                
+                // Status Label and Disconnect Toggle
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isOnline ? Colors.green.withOpacity(0.1) : colorScheme.outline.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.circle,
+                            size: 8,
+                            color: isOnline ? Colors.green : colorScheme.outline,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isOnline ? 'online'.tr() : 'offline'.tr(),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: isOnline ? Colors.green : colorScheme.outline,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isOnline) ...[
+                      const SizedBox(width: 8),
+                      Transform.scale(
+                        scale: 0.8,
+                        child: Switch(
+                          value: true, 
+                          onChanged: (value) {
+                             if (!value) _toggleUserBlock(activeSession!, false); // Pass false for shouldBlock since it's just a disconnect
+                          },
+                          activeColor: Colors.green,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
-            const Divider(),
-            // Session details
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildInfoItem('IP Address', ipAddress),
-                _buildInfoItem('MAC', macAddress),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildInfoItem('Uptime', uptime),
-                _buildInfoItem('Router IP', routerIp),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildInfoItem('Download', _formatBytes(bytesIn)),
-                _buildInfoItem('Upload', _formatBytes(bytesOut)),
-              ],
-            ),
+            
+            // Session Details (only if online)
+            if (isOnline) ...[
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
+              
+              Row(
+                children: [
+                  Expanded(child: _buildInfoItem('ip_address'.tr(), ipAddress)),
+                  Expanded(child: _buildInfoItem('uptime'.tr(), uptime)),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(child: _buildInfoItem('download'.tr(), _formatBytes(bytesIn))),
+                  Expanded(child: _buildInfoItem('upload'.tr(), _formatBytes(bytesOut))),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.router, size: 14, color: colorScheme.outline),
+                  const SizedBox(width: 4),
+                  Text(
+                    routerName,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: colorScheme.outline,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -365,16 +313,16 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
     return '${(b / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
-  Future<void> _toggleUserBlock(Map<String, dynamic> session, bool shouldBlock) async {
+  Future<void> _handleSessionAction(Map<String, dynamic> session, {required bool block}) async {
     final username = session['username'] ?? 'User';
     
-    if (shouldBlock) {
+    if (block) {
       // Show confirmation before blocking
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Block User'),
-          content: Text('Block $username? They will be disconnected and prevented from reconnecting until unblocked.'),
+          title: Text('block_user'.tr()),
+          content: Text('block_user_confirmation'.tr(args: [username])),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -382,7 +330,7 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Block', style: TextStyle(color: Colors.red)),
+              child: Text('block'.tr(), style: const TextStyle(color: Colors.red)),
             ),
           ],
         ),
@@ -392,15 +340,15 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
     }
 
     try {
-      // Use disconnect endpoint to block/unblock user
+      // Use disconnect endpoint
       await context.read<AppState>().disconnectSession(session);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(shouldBlock 
-              ? '$username has been blocked and disconnected' 
-              : '$username has been unblocked'),
+            content: Text(block 
+              ? 'user_blocked_disconnected'.tr(args: [username]) 
+              : 'user_disconnected'.tr(args: [username])),
           ),
         );
         // Reload sessions to reflect changes
@@ -410,11 +358,15 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('error'.tr(args: [e.toString()])),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
     }
   }
+
+  // Legacy method name kept or updated in caller
+  Future<void> _toggleUserBlock(Map<String, dynamic> session, bool shouldBlock) => 
+      _handleSessionAction(session, block: shouldBlock);
 }
