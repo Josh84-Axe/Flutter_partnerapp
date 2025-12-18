@@ -73,6 +73,17 @@ class ErrorMessageHelper {
       }
     }
     
+    // Generic catch for raw exceptions and technical errors
+    if (errorString.startsWith('exception:') || 
+        errorString.startsWith('error:') ||
+        errorString.contains('dioexception') ||
+        errorString.contains('http status') ||
+        errorString.contains('invalid type') ||
+        errorString.contains('null check') ||
+        errorString.contains('type \'')) {
+      return 'An unexpected error occurred. Please try again.';
+    }
+
     return getUserFriendlyMessage(error);
   }
 }

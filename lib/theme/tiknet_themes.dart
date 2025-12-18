@@ -44,7 +44,9 @@ class TiknetThemes {
       
       // Unified AppBar theme
       appBarTheme: AppBarTheme(
-        backgroundColor: scheme.surface,
+        backgroundColor: scheme.brightness == Brightness.dark
+            ? const Color(0xFF121212) // Deepest black for AppBar in dark mode
+            : scheme.surface,
         foregroundColor: scheme.onSurface,
         surfaceTintColor: scheme.surfaceTint,
         elevation: 0,
@@ -56,6 +58,14 @@ class TiknetThemes {
           color: scheme.onSurface,
         ),
       ),
+      
+      // Explicitly set surface and background for dark mode to ensure deep contrast
+      scaffoldBackgroundColor: scheme.brightness == Brightness.dark
+          ? const Color(0xFF121212)
+          : scheme.surface,
+      surfaceColor: scheme.brightness == Brightness.dark
+          ? const Color(0xFF121212)
+          : scheme.surface,
       
       // Unified Card theme - elevation 1, borderRadius 16
       cardTheme: CardThemeData(

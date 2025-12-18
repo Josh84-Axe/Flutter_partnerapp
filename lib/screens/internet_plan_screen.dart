@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
@@ -21,6 +22,15 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppState>().loadPlans();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Ensure rebuild when theme changes
+    // This is often handled automatically but explicit call helps if context hierarchy is complex
+    final theme = Theme.of(context);
+    if (kDebugMode) print('🎨 [InternetPlanScreen] Theme changed: brightness=${theme.brightness}');
   }
 
   void _navigateToCreateEdit({PlanModel? plan}) {

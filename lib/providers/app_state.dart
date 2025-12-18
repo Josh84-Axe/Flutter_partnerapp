@@ -2746,6 +2746,13 @@ class AppState with ChangeNotifier {
     }
     
     // Workers/Managers see only assigned routers
+    // User Feedback Round 4: Abandoning client-side filtering for now as it was deemed "utopia" / problematic.
+    // Reverting to showing all routers until backend support allows proper server-side filtering.
+    if (kDebugMode) print('⚠️ [visibleRouters] Filtering disabled by request - returning ALL ${_routers.length} routers');
+    return _routers; 
+
+    /* 
+    // Previous Logic (Disabled)
     if (kDebugMode) print('🔍 [visibleRouters] User is worker/manager - checking assigned routers');
     final assignedIds = getAssignedRouters(_currentUser!.email); // Use email as username
     if (assignedIds.isEmpty) {
@@ -2756,6 +2763,7 @@ class AppState with ChangeNotifier {
     final filtered = _routers.where((r) => assignedIds.contains(r.id)).toList();
     if (kDebugMode) print('✅ [RouterAssignment] ${_currentUser!.email} can see ${filtered.length}/${_routers.length} routers');
     return filtered;
+    */
   }
   
   /// Get users visible to current user (filtered by assigned routers)
