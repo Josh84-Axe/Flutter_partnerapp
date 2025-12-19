@@ -226,30 +226,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 12),
             
-            // Row 2: Data Usage (Compact) and Active Sessions
-            Row(
-              children: [
-                Expanded(
-                  child: DataUsageCard(
-                    usedGB: appState.aggregateDataUsage,
-                    totalGB: appState.getAggregateTotalDataLimit,
-                    isLoading: appState.isLoading,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildMetricWidget(
-                    context,
-                    title: 'active_sessions'.tr(),
-                    value: MetricCard.formatNumber(appState.activeSessions.length),
-                    icon: Icons.devices,
-                    isLoading: appState.isLoading,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            
             // Quick Action Buttons Grid
             GridView.count(
               crossAxisCount: 4,
@@ -280,6 +256,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 24),
+
+            // Data Usage Card (Full Width)
+            DataUsageCard(
+              usedGB: appState.aggregateDataUsage,
+              totalGB: appState.getAggregateTotalDataLimit,
+              isLoading: appState.isLoading,
+            ),
+            
+            const SizedBox(height: 16),
             const SizedBox(height: 16),
           ],
         ),

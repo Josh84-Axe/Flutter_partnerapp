@@ -87,11 +87,22 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
     }
 
     final plans = appState.purchasedPlans;
-    final activeSessions = appState.activeSessions;
     
-    // Quick lookup for active sessions
+    // Flatten active sessions from all routers
+    // API returns List<RouterSession> where RouterSession has 'active_users' list
+    final allActiveSessions = appState.activeSessions.expand((router) {
+      if (router is Map && router['active_users'] is List) {
+        return router['active_users'] as List;
+      }
+      return [];
+    }).toList();
+
+    // Create a map for quick lookup.
+    // We assume 'user' or 'name' in active session matches 'customer_name' or 'username' in plan.
+    // 'customer_name' is the reliable field in purchased plans.
     final activeSessionMap = {
-      for (var s in activeSessions) s['username']?.toString().toLowerCase(): s
+      for (var s in allActiveSessions) 
+        (s['user'] ?? s['name'] ?? s['username'])?.toString().toLowerCase(): s
     };
 
     return RefreshIndicator(
@@ -100,10 +111,14 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
         itemCount: plans.length,
         itemBuilder: (context, index) {
           final plan = plans[index];
-          final username = plan['username']?.toString().toLowerCase();
-          final activeSession = activeSessionMap[username];
+          // Use customer_name as the primary identifier for display
+          final displayName = plan['customer_name']?.toString() ?? 'Unknown User';
+          // Use username (if exists) or customer_name to match session
+          final matchKey = (plan['username'] ?? displayName).toString().toLowerCase();
           
-          return _buildUserCard(plan, activeSession, colorScheme);
+          final activeSession = activeSessionMap[matchKey];
+          
+          return _buildUserCard(plan, activeSession, colorScheme, isAssigned: false);
         },
       ),
     );
@@ -127,13 +142,18 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       );
     }
 
-    // Match active sessions to assigned plans
     final assignedPlans = appState.assignedPlans;
-    final activeSessions = appState.activeSessions;
     
-    // Create a map of active sessions for quick lookup by username
+    final allActiveSessions = appState.activeSessions.expand((router) {
+      if (router is Map && router['active_users'] is List) {
+        return router['active_users'] as List;
+      }
+      return [];
+    }).toList();
+
     final activeSessionMap = {
-      for (var s in activeSessions) s['username']?.toString().toLowerCase(): s
+      for (var s in allActiveSessions) 
+        (s['user'] ?? s['name'] ?? s['username'])?.toString().toLowerCase(): s
     };
 
     return RefreshIndicator(
@@ -142,30 +162,33 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
         itemCount: assignedPlans.length,
         itemBuilder: (context, index) {
           final plan = assignedPlans[index];
-          final username = plan['username']?.toString().toLowerCase();
-          final activeSession = activeSessionMap[username];
+          final displayName = plan['customer_name']?.toString() ?? 'Unknown User';
+          final matchKey = (plan['username'] ?? displayName).toString().toLowerCase();
           
-          return _buildUserCard(plan, activeSession, colorScheme);
+          final activeSession = activeSessionMap[matchKey];
+          
+          return _buildUserCard(plan, activeSession, colorScheme, isAssigned: true);
         },
       ),
     );
   }
 
   Widget _buildUserCard(
-    Map<String, dynamic> plan, 
-    Map<String, dynamic>? activeSession, 
-    ColorScheme colorScheme
+      Map<String, dynamic> plan, 
+      Map<String, dynamic>? activeSession, 
+      ColorScheme colorScheme,
+      {required bool isAssigned}
   ) {
-    final username = plan['username'] ?? plan['customer_username'] ?? 'Unknown';
-    final planName = plan['plan_name'] ?? plan['name'] ?? 'Unknown Plan';
+    final username = plan['customer_name']?.toString() ?? 'Unknown User';
+    final planName = plan['plan_name']?.toString() ?? 'Unknown Plan';
     final isOnline = activeSession != null;
     
     // Extract session details if online
-    final ipAddress = activeSession?['ip_address'] ?? 'N/A';
+    final ipAddress = activeSession?['ip_address'] ?? activeSession?['ip'] ?? 'N/A';
     final uptime = activeSession?['uptime'] ?? 'N/A';
-    final bytesIn = activeSession?['bytes_in'] ?? 0;
-    final bytesOut = activeSession?['bytes_out'] ?? 0;
-    final routerName = activeSession?['router_name'] ?? 'Unknown Router';
+    final bytesIn = activeSession?['bytes_in'] ?? activeSession?['bytes-in'] ?? 0;
+    final bytesOut = activeSession?['bytes_out'] ?? activeSession?['bytes-out'] ?? 0;
+    final routerName = activeSession?['router_dns_name'] ?? activeSession?['router_name'] ?? 'Unknown Router';
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -237,7 +260,9 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
                         child: Switch(
                           value: true, 
                           onChanged: (value) {
-                             if (!value) _toggleUserBlock(activeSession!, false); // Pass false for shouldBlock since it's just a disconnect
+                             // Pass false for shouldBlock since it's just a disconnect
+                             // Also need to handle session correctly - session is activeSession
+                             if (!value) _toggleUserBlock(activeSession!, false); 
                           },
                           activeColor: Colors.green,
                         ),
