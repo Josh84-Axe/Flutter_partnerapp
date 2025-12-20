@@ -1245,8 +1245,8 @@ class AppState with ChangeNotifier {
         loadAllWalletBalances(),
         loadAllTransactions(),
         loadWithdrawals(),
-        // Load aggregate data usage for dashboard
-        getAggregateActiveDataUsage().then((value) => _aggregateDataUsage = value),
+        // Load active sessions (which calculates aggregate data usage)
+        loadActiveSessions(),
       ]);
       
       // Initialize local notification service
@@ -1822,6 +1822,27 @@ class AppState with ChangeNotifier {
       if (_sessionRepository == null) _initializeRepositories();
       final sessions = await _sessionRepository!.fetchActiveSessions();
       _activeSessions = sessions.map((s) => s as Map<String, dynamic>).toList();
+      
+      // Calculate aggregate data usage from active sessions
+      double totalUsageGB = 0.0;
+      for (var router in _activeSessions) {
+        if (router['active_users'] is List) {
+          for (var userSession in router['active_users']) {
+            if (userSession is Map) {
+              final bytesIn = int.tryParse(userSession['bytes_in']?.toString() ?? '0') ?? 0;
+              final bytesOut = int.tryParse(userSession['bytes_out']?.toString() ?? '0') ?? 0;
+              
+              // Convert bytes to GB
+              final totalBytes = bytesIn + bytesOut;
+              totalUsageGB += totalBytes / (1024 * 1024 * 1024);
+            }
+          }
+        }
+      }
+      
+      _aggregateDataUsage = totalUsageGB;
+      if (kDebugMode) print('📊 [AppState] Calculated aggregate usage: ${_aggregateDataUsage.toStringAsFixed(2)} GB');
+      
       notifyListeners();
     } catch (e) {
       if (kDebugMode) print('Load active sessions error: $e');
@@ -2904,41 +2925,9 @@ class AppState with ChangeNotifier {
   }
 
   /// Get aggregated data usage for all active users
+  /// Updated: Returns locally calculated value from loadActiveSessions
   Future<double> getAggregateActiveDataUsage() async {
-    // catch error to avoid breaking dashboard
-    try {
-      if (_customerRepository == null) _initializeRepositories();
-      
-      final activeUsernames = await _customerRepository!.getActiveSessions();
-      double totalUsageGB = 0.0;
-      
-      if (activeUsernames.isEmpty) return 0.0;
-      
-      // Parallel requests could be faster but might hit rate limits.
-      // Sequential for safety for now.
-      for (final username in activeUsernames) {
-        try {
-          final usageData = await _customerRepository!.getCustomerDataUsage(username);
-          if (usageData != null) {
-            // Adjust key based on API response structure
-            // Assuming 'total_usage' or 'data_usage' or similar. 
-            // Let's guess 'total_usage' or check typical response.
-            // If unknown, default to 0.
-            final usage = (usageData['total_usage'] ?? usageData['data_usage'] ?? 0);
-            if (usage is num) {
-              totalUsageGB += usage.toDouble();
-            }
-          }
-        } catch (e) {
-           if (kDebugMode) print('⚠️ [AppState] Failed to get usage for $username: $e');
-        }
-      }
-      
-      return totalUsageGB;
-    } catch (e) {
-      if (kDebugMode) print('❌ [AppState] Aggregate data usage error: $e');
-      return 0.0;
-    }
+    return _aggregateDataUsage;
   }
 
   // ==================== Report Generation ====================

@@ -88,22 +88,24 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
 
     final plans = appState.purchasedPlans;
     
-    // Flatten active sessions from all routers
-    // API returns List<RouterSession> where RouterSession has 'active_users' list
-    final allActiveSessions = appState.activeSessions.expand((router) {
+    // Flatten active sessions from all routers AND inject router details
+    final allActiveSessions = <Map<String, dynamic>>[];
+    for (var router in appState.activeSessions) {
       if (router is Map && router['active_users'] is List) {
-        return router['active_users'] as List;
+        final routerName = router['router_dns_name'] ?? router['name'] ?? 'Unknown';
+        final routerIp = router['router_ip'] ?? router['ip_address'] ?? 'N/A';
+        
+        for (var session in router['active_users']) {
+          if (session is Map) {
+            allActiveSessions.add({
+              ...session as Map<String, dynamic>,
+              'router_name': routerName,
+              'router_ip': routerIp,
+            });
+          }
+        }
       }
-      return [];
-    }).toList();
-
-    // Create a map for quick lookup.
-    // We assume 'user' or 'name' in active session matches 'customer_name' or 'username' in plan.
-    // 'customer_name' is the reliable field in purchased plans.
-    final activeSessionMap = {
-      for (var s in allActiveSessions) 
-        (s['user'] ?? s['name'] ?? s['username'])?.toString().toLowerCase(): s
-    };
+    }
 
     return RefreshIndicator(
       onRefresh: _loadData,
@@ -111,12 +113,39 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
         itemCount: plans.length,
         itemBuilder: (context, index) {
           final plan = plans[index];
-          // Use customer_name as the primary identifier for display
-          final displayName = plan['customer_name']?.toString() ?? 'Unknown User';
-          // Use username (if exists) or customer_name to match session
-          final matchKey = (plan['username'] ?? displayName).toString().toLowerCase();
+          final customerName = plan['customer_name']?.toString() ?? '';
+          final planUsername = plan['username']?.toString();
           
-          final activeSession = activeSessionMap[matchKey];
+          // Match logic: 
+          // 1. Direct match on 'username' if available in plan
+          // 2. Fuzzy match: session username starts with customer_name (case-insensitive)
+          Map<String, dynamic>? activeSession;
+          
+          try {
+            activeSession = allActiveSessions.firstWhere((session) {
+              final sessionUser = session['username']?.toString().toLowerCase() ?? '';
+              
+              // Direct ID match
+              if (planUsername != null && sessionUser == planUsername.toLowerCase()) {
+                return true;
+              }
+              
+              // Fuzzy name match (e.g. 'Win' matches 'win_5c3e...')
+              // We check if sessionUser starts with customerName + '_' OR just customerName if exact
+              if (customerName.isNotEmpty) {
+                final normalizedName = customerName.toLowerCase();
+                if (sessionUser == normalizedName) return true;
+                if (sessionUser.startsWith('${normalizedName}_')) return true;
+                // Fallback: simple startsWith for other patterns
+                if (sessionUser.startsWith(normalizedName) && sessionUser.length > normalizedName.length) return true;
+              }
+              
+              return false;
+            });
+          } catch (e) {
+            // No match found
+            activeSession = null;
+          }
           
           return _buildUserCard(plan, activeSession, colorScheme, isAssigned: false);
         },
@@ -144,17 +173,24 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
 
     final assignedPlans = appState.assignedPlans;
     
-    final allActiveSessions = appState.activeSessions.expand((router) {
+    // Flatten active sessions from all routers AND inject router details
+    final allActiveSessions = <Map<String, dynamic>>[];
+    for (var router in appState.activeSessions) {
       if (router is Map && router['active_users'] is List) {
-        return router['active_users'] as List;
+        final routerName = router['router_dns_name'] ?? router['name'] ?? 'Unknown';
+        final routerIp = router['router_ip'] ?? router['ip_address'] ?? 'N/A';
+        
+        for (var session in router['active_users']) {
+          if (session is Map) {
+            allActiveSessions.add({
+              ...session as Map<String, dynamic>,
+              'router_name': routerName,
+              'router_ip': routerIp,
+            });
+          }
+        }
       }
-      return [];
-    }).toList();
-
-    final activeSessionMap = {
-      for (var s in allActiveSessions) 
-        (s['user'] ?? s['name'] ?? s['username'])?.toString().toLowerCase(): s
-    };
+    }
 
     return RefreshIndicator(
       onRefresh: _loadData,
@@ -162,10 +198,36 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
         itemCount: assignedPlans.length,
         itemBuilder: (context, index) {
           final plan = assignedPlans[index];
-          final displayName = plan['customer_name']?.toString() ?? 'Unknown User';
-          final matchKey = (plan['username'] ?? displayName).toString().toLowerCase();
+          final customerName = plan['customer_name']?.toString() ?? '';
+          final planUsername = plan['username']?.toString();
           
-          final activeSession = activeSessionMap[matchKey];
+          // Match logic: 
+          // 1. Direct match on 'username' if available in plan
+          // 2. Fuzzy match: session username starts with customer_name (case-insensitive)
+          Map<String, dynamic>? activeSession;
+          
+          try {
+            activeSession = allActiveSessions.firstWhere((session) {
+              final sessionUser = session['username']?.toString().toLowerCase() ?? '';
+              
+              // Direct ID match
+              if (planUsername != null && sessionUser == planUsername.toLowerCase()) {
+                return true;
+              }
+              
+              // Fuzzy name match (e.g. 'Win' matches 'win_5c3e...')
+              if (customerName.isNotEmpty) {
+                final normalizedName = customerName.toLowerCase();
+                if (sessionUser == normalizedName) return true;
+                if (sessionUser.startsWith('${normalizedName}_')) return true;
+                if (sessionUser.startsWith(normalizedName) && sessionUser.length > normalizedName.length) return true;
+              }
+              
+              return false;
+            });
+          } catch (e) {
+            activeSession = null;
+          }
           
           return _buildUserCard(plan, activeSession, colorScheme, isAssigned: true);
         },
