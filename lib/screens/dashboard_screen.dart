@@ -258,11 +258,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Data Usage Card (Full Width)
-            DataUsageCard(
-              usedGB: appState.aggregateDataUsage,
-              totalGB: appState.getAggregateTotalDataLimit,
-              isLoading: appState.isLoading,
+            // Data Usage Card (Centered with max width)
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: DataUsageCard(
+                  usedGB: appState.aggregateDataUsage,
+                  totalGB: appState.getAggregateTotalDataLimit,
+                  isLoading: appState.isLoading,
+                ),
+              ),
             ),
             
             const SizedBox(height: 16),
