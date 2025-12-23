@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../providers/app_state.dart';
+import '../providers/split/billing_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/currency_utils.dart';
 import '../widgets/metric_card.dart';
@@ -23,17 +23,17 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadTransactions();
-      context.read<AppState>().loadWalletBalance();
+      final billingProvider = context.read<BillingProvider>();
+      billingProvider.loadTransactions();
+      billingProvider.loadWalletBalance();
     });
   }
 
   void _showPayoutDialog() {
     final amountController = TextEditingController();
     String selectedMethod = 'bank_transfer';
-    final appState = context.read<AppState>();
-    final partnerCountry = appState.currentUser?.country;
-    final currencySymbol = appState.currencySymbol;
+    final billingProvider = context.read<BillingProvider>();
+    final currencySymbol = billingProvider.currencySymbol;
 
     showDialog(
       context: context,
@@ -86,7 +86,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               onPressed: () {
                 final amount = double.tryParse(amountController.text);
                 if (amount != null && amount > 0) {
-                  context.read<AppState>().requestPayout(amount, selectedMethod);
+                  context.read<BillingProvider>().requestPayout(amount, selectedMethod);
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('payout_request_submitted'.tr())),
@@ -103,15 +103,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    final billingProvider = context.watch<BillingProvider>();
     final colorScheme = Theme.of(context).colorScheme;
-    final partnerCountry = appState.currentUser?.country;
     
-    final totalRevenue = appState.transactions
+    // Calculate total revenue from billing provider transactions
+    final totalRevenue = billingProvider.transactions
         .where((t) => t.type == 'revenue')
         .fold(0.0, (sum, t) => sum + t.amount);
     
-    final filteredTransactions = appState.transactions.where((transaction) {
+    final filteredTransactions = billingProvider.transactions.where((transaction) {
       if (_selectedType != 'All' && transaction.type != _selectedType.toLowerCase()) {
         return false;
       }
@@ -125,8 +125,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              appState.loadTransactions();
-              appState.loadWalletBalance();
+              billingProvider.loadTransactions();
+              billingProvider.loadWalletBalance();
             },
           ),
         ],
@@ -155,15 +155,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                           'wallet_balance'.tr(),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: Colors.white70,
-                              ),
+                                ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          appState.formatMoney(appState.walletBalance),
+                          billingProvider.formatMoney(billingProvider.walletBalance),
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                              ),
+                                ),
                         ),
                       ],
                     ),
@@ -191,7 +191,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          appState.formatMoney(totalRevenue),
+                          billingProvider.formatMoney(totalRevenue),
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 color: colorScheme.primary,
                                 fontWeight: FontWeight.bold,
@@ -240,7 +240,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: appState.isLoading
+            child: billingProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : filteredTransactions.isEmpty
                     ? Center(
@@ -295,7 +295,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                 ],
                               ),
                               trailing: Text(
-                                '${isRevenue ? '+' : '-'}${appState.formatMoney(transaction.amount.abs())}',
+                                '${isRevenue ? '+' : '-'}${billingProvider.formatMoney(transaction.amount.abs())}',
                                 style: TextStyle(
                                   color: isRevenue ? colorScheme.primary : colorScheme.error,
                                   fontWeight: FontWeight.bold,

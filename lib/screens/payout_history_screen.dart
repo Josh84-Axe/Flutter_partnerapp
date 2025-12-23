@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/billing_provider.dart';
 import '../utils/currency_utils.dart';
 import '../utils/app_theme.dart';
 
@@ -47,10 +47,10 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> with SingleTi
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final appState = context.read<AppState>();
+      final billingProvider = context.read<BillingProvider>();
       await Future.wait([
-        appState.loadWalletTransactions(),
-        appState.loadWithdrawals(),
+        billingProvider.loadWalletTransactions(),
+        billingProvider.loadWithdrawals(),
       ]);
     } finally {
       if (mounted) {
@@ -104,7 +104,7 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> with SingleTi
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    final billingProvider = context.watch<BillingProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -174,9 +174,9 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> with SingleTi
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildAllTab(appState),
-                _buildPaymentsInTab(appState),
-                _buildPayoutsOutTab(appState),
+                _buildAllTab(billingProvider),
+                _buildPaymentsInTab(billingProvider),
+                _buildPayoutsOutTab(billingProvider),
               ],
             ),
           ),
@@ -201,28 +201,28 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> with SingleTi
     );
   }
 
-  Widget _buildAllTab(AppState appState) {
-    final filtered = _filterTransactions(appState.walletHistory);
-    return _buildTransactionList(filtered, appState);
+  Widget _buildAllTab(BillingProvider billingProvider) {
+    final filtered = _filterTransactions(billingProvider.walletHistory);
+    return _buildTransactionList(filtered, billingProvider);
   }
 
-  Widget _buildPaymentsInTab(AppState appState) {
-    final paymentsIn = appState.walletHistory
+  Widget _buildPaymentsInTab(BillingProvider billingProvider) {
+    final paymentsIn = billingProvider.walletHistory
         .where((txn) => txn['_direction'] == 'in')
         .toList();
     final filtered = _filterTransactions(paymentsIn);
-    return _buildTransactionList(filtered, appState);
+    return _buildTransactionList(filtered, billingProvider);
   }
 
-  Widget _buildPayoutsOutTab(AppState appState) {
-    final payoutsOut = appState.walletHistory
+  Widget _buildPayoutsOutTab(BillingProvider billingProvider) {
+    final payoutsOut = billingProvider.walletHistory
         .where((txn) => txn['_direction'] == 'out')
         .toList();
     final filtered = _filterTransactions(payoutsOut);
-    return _buildTransactionList(filtered, appState);
+    return _buildTransactionList(filtered, billingProvider);
   }
 
-  Widget _buildTransactionList(List<Map<String, dynamic>> transactions, AppState appState) {
+  Widget _buildTransactionList(List<Map<String, dynamic>> transactions, BillingProvider billingProvider) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -238,7 +238,7 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> with SingleTi
         itemCount: transactions.length,
         itemBuilder: (context, index) {
           final transaction = transactions[index];
-          return _buildTransactionCard(transaction, appState);
+          return _buildTransactionCard(transaction, billingProvider);
         },
       ),
     );
@@ -276,7 +276,7 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> with SingleTi
     );
   }
 
-  Widget _buildTransactionCard(Map<String, dynamic> transaction, AppState appState) {
+  Widget _buildTransactionCard(Map<String, dynamic> transaction, BillingProvider billingProvider) {
     final direction = transaction['_direction'] ?? 'in';
     final isIn = direction == 'in';
     
@@ -353,7 +353,7 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> with SingleTi
                           ),
                         ),
                         Text(
-                          '${isIn ? '+' : '-'}${CurrencyUtils.formatPrice(amount.abs(), appState.partnerCountry)}',
+                          '${isIn ? '+' : '-'}${billingProvider.formatMoney(amount.abs())}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: color,

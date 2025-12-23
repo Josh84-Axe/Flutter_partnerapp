@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/billing_provider.dart';
 import '../utils/app_theme.dart';
 import '../widgets/metric_card.dart';
 
@@ -20,17 +20,17 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final appState = context.read<AppState>();
-      appState.loadAllWalletBalances();
-      appState.loadAllTransactions();
-      appState.loadWithdrawals();
-      appState.loadTransactions(); // Load TransactionModel list
+      final billingProvider = context.read<BillingProvider>();
+      billingProvider.loadAllWalletBalances();
+      billingProvider.loadAllTransactions();
+      billingProvider.loadWithdrawals();
+      billingProvider.loadTransactions(); // Load TransactionModel list
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    final billingProvider = context.watch<BillingProvider>();
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -46,10 +46,10 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              appState.loadAllWalletBalances();
-              appState.loadAllTransactions();
-              appState.loadWithdrawals();
-              appState.loadTransactions();
+              billingProvider.loadAllWalletBalances();
+              billingProvider.loadAllTransactions();
+              billingProvider.loadWithdrawals();
+              billingProvider.loadTransactions();
             },
           ),
         ],
@@ -86,7 +86,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  appState.formatMoney(appState.totalBalance),
+                  billingProvider.formatMoney(billingProvider.totalBalance),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 36,
@@ -95,7 +95,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Online: ${appState.formatMoney(appState.walletBalance)} • Assigned: ${appState.formatMoney(appState.assignedWalletBalance)}',
+                  'Online: ${billingProvider.formatMoney(billingProvider.walletBalance)} • Assigned: ${billingProvider.formatMoney(billingProvider.assignedWalletBalance)}',
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
@@ -141,7 +141,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
           ),
           
           // Pending Payouts Card
-          if (appState.pendingPayoutsCount > 0)
+          if (billingProvider.pendingPayoutsCount > 0)
             Padding(
               padding: const EdgeInsets.only(top: 24),
               child: InkWell(
@@ -191,7 +191,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${appState.pendingPayoutsCount} request${appState.pendingPayoutsCount > 1 ? 's' : ''} • ${appState.formatMoney(appState.pendingPayoutsTotal)}',
+                              '${billingProvider.pendingPayoutsCount} request${billingProvider.pendingPayoutsCount > 1 ? 's' : ''} • ${billingProvider.formatMoney(billingProvider.pendingPayoutsTotal)}',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[600],
@@ -231,7 +231,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          ...appState.transactions.take(5).map((transaction) {
+          ...billingProvider.transactions.take(5).map((transaction) {
             final isRevenue = transaction.type == 'revenue';
             return Card(
               margin: const EdgeInsets.only(bottom: 8),
@@ -252,7 +252,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
                   style: const TextStyle(fontSize: 12),
                 ),
                 trailing: Text(
-                  '${isRevenue ? '+' : '-'}${appState.formatMoney(transaction.amount.abs())}',
+                  '${isRevenue ? '+' : '-'}${billingProvider.formatMoney(transaction.amount.abs())}',
                   style: TextStyle(
                     color: isRevenue ? colorScheme.primary : colorScheme.error,
                     fontWeight: FontWeight.bold,
@@ -307,7 +307,7 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: _buildFinancialSummaryContent(appState, colorScheme),
+              child: _buildFinancialSummaryContent(billingProvider, colorScheme),
             ),
           ),
         ],
@@ -315,33 +315,33 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
     );
   }
 
-  Widget _buildFinancialSummaryContent(AppState appState, ColorScheme colorScheme) {
+  Widget _buildFinancialSummaryContent(BillingProvider billingProvider, ColorScheme colorScheme) {
     switch (_selectedTab) {
       case 'Revenue':
         return Column(
           children: [
             _buildSummaryRow(
               'Total Revenue',
-              appState.formatMoney(appState.totalRevenue),
+              billingProvider.formatMoney(billingProvider.totalRevenue),
               colorScheme.primary,
             ),
             const Divider(height: 24),
             _buildSummaryRow(
               'Online Revenue',
-              appState.formatMoney(appState.onlineRevenue),
+              billingProvider.formatMoney(billingProvider.onlineRevenue),
               colorScheme.primary,
             ),
             const Divider(height: 24),
             _buildSummaryRow(
               'Assigned Revenue',
-              appState.formatMoney(appState.assignedRevenue),
+              billingProvider.formatMoney(billingProvider.assignedRevenue),
               Colors.blue,
             ),
           ],
         );
       case 'Payouts':
         // Use withdrawals data instead of transactions
-        final withdrawals = appState.withdrawals;
+        final withdrawals = billingProvider.withdrawals;
         
         final totalPayouts = withdrawals.fold(0.0, (sum, w) {
           final amount = double.tryParse(w['amount']?.toString() ?? '0') ?? 0.0;
@@ -369,19 +369,19 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
           children: [
             _buildSummaryRow(
               'Total Payouts',
-              appState.formatMoney(totalPayouts),
+              billingProvider.formatMoney(totalPayouts),
               Theme.of(context).colorScheme.error,
             ),
             const Divider(height: 24),
             _buildSummaryRow(
               'Pending Payouts',
-              appState.formatMoney(pendingPayouts),
+              billingProvider.formatMoney(pendingPayouts),
               Colors.orange,
             ),
             const Divider(height: 24),
             _buildSummaryRow(
               'Completed Payouts',
-              appState.formatMoney(completedPayouts),
+              billingProvider.formatMoney(completedPayouts),
               colorScheme.primary,
             ),
           ],
@@ -392,19 +392,19 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
           children: [
             _buildSummaryRow(
               'Total Balance',
-              appState.formatMoney(appState.totalBalance),
+              billingProvider.formatMoney(billingProvider.totalBalance),
               colorScheme.primary,
             ),
             const Divider(height: 24),
             _buildSummaryRow(
               'Wallet Balance',
-              appState.formatMoney(appState.walletBalance),
+              billingProvider.formatMoney(billingProvider.walletBalance),
               Colors.purple,
             ),
             const Divider(height: 24),
             _buildSummaryRow(
               'Assigned Balance',
-              appState.formatMoney(appState.assignedWalletBalance),
+              billingProvider.formatMoney(billingProvider.assignedWalletBalance),
               Colors.blue,
             ),
           ],

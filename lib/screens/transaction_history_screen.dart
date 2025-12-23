@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/billing_provider.dart';
 import '../utils/currency_utils.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
@@ -54,11 +54,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
     setState(() => _isLoading = true);
     
     try {
-      final appState = context.read<AppState>();
-      await appState.loadAllTransactions();
+      final billingProvider = context.read<BillingProvider>();
+      await billingProvider.loadAllTransactions();
       
       // Update local cached lists safely
-      _updateLocalLists(appState);
+      _updateLocalLists(billingProvider);
       
     } catch (e) {
       if (kDebugMode) print('Error loading transactions: $e');
@@ -69,16 +69,16 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
     }
   }
 
-  void _updateLocalLists(AppState appState) {
+  void _updateLocalLists(BillingProvider billingProvider) {
     if (!mounted) return;
     
     try {
       // Safely map and merge
-      final assigned = appState.assignedTransactions.map((txn) => 
+      final assigned = billingProvider.assignedTransactions.map((txn) => 
         Map<String, dynamic>.from(txn)..['transaction_type'] = 'assigned'
       ).toList();
       
-      final wallet = appState.walletTransactions.map((txn) => 
+      final wallet = billingProvider.walletTransactions.map((txn) => 
         Map<String, dynamic>.from(txn)..['transaction_type'] = 'wallet'
       ).toList();
 
@@ -108,10 +108,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Re-sync with AppState if it changes (e.g. from another screen)
-    // But be careful not to trigger infinite loops. 
-    // context.watch is better used in build, but for heavy lists, logical separation is safer.
-    // Here we use context.watch in build to TRIGGER updates, but logic is separated.
   }
 
   List<dynamic> _filterTransactions(List<dynamic> transactions) {
@@ -164,23 +160,13 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
   @override
   Widget build(BuildContext context) {
     // Watch state to trigger rebuilds on data change
-    final appState = context.watch<AppState>();
+    final billingProvider = context.watch<BillingProvider>();
     
-    // Check if we need to update our local sorted lists (simple check if empty or mismatch)
-    // For now, we trust _loadTransactions populated it, OR we re-run logic if AppState has data and we don't.
-    // A better approach is to rely on the watcher to just call _updateLocalLists implicitly?
-    // No, side-effects in build are bad.
-    // Instead: We calculate filtered views on the fly, but the SOURCE lists are from AppState.
-    // Actually, to fix the "Crashing" bug, we should perform the Merge freshly but SAFELY.
-    // My previous _updateLocalLists strategy is good for caching but standard Build pattern is fine if safe.
-    
-    // Let's execute the safe merge HERE to ensure UI is always in sync, 
-    // but wrapped in try-catch to prevent grey screen.
     List<dynamic> allTxnsSafe = [];
     try {
        // Create safe copies
-       final safeAssigned = appState.assignedTransactions.map((e) => safeMap(e, 'assigned')).toList();
-       final safeWallet = appState.walletTransactions.map((e) => safeMap(e, 'wallet')).toList();
+       final safeAssigned = billingProvider.assignedTransactions.map((e) => safeMap(e, 'assigned')).toList();
+       final safeWallet = billingProvider.walletTransactions.map((e) => safeMap(e, 'wallet')).toList();
        
        allTxnsSafe = [...safeAssigned, ...safeWallet];
        allTxnsSafe.sort((a, b) => safeDateCompare(a, b));
@@ -251,9 +237,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildTransactionTab(allTxnsSafe, appState), // All
-                _buildTransactionTab(appState.assignedTransactions, appState, type: 'assigned'), // Assigned
-                _buildTransactionTab(appState.walletTransactions, appState, type: 'wallet'), // Wallet
+                _buildTransactionTab(allTxnsSafe, billingProvider), // All
+                _buildTransactionTab(billingProvider.assignedTransactions, billingProvider, type: 'assigned'), // Assigned
+                _buildTransactionTab(billingProvider.walletTransactions, billingProvider, type: 'wallet'), // Wallet
               ],
             ),
           ),
@@ -303,13 +289,13 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
     );
   }
 
-  Widget _buildTransactionTab(List<dynamic> sourceList, AppState appState, {String? type}) {
+  Widget _buildTransactionTab(List<dynamic> sourceList, BillingProvider billingProvider, {String? type}) {
      // If explicit type provided, use it, else generic logic
      List<dynamic> filtered = _filterTransactions(sourceList);
-     return _buildTransactionList(filtered, appState, transactionType: type);
+     return _buildTransactionList(filtered, billingProvider, transactionType: type);
   }
 
-  Widget _buildTransactionList(List<dynamic> transactions, AppState appState, {String? transactionType}) {
+  Widget _buildTransactionList(List<dynamic> transactions, BillingProvider billingProvider, {String? transactionType}) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -327,7 +313,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
           try {
             final transaction = transactions[index];
             if (transaction == null) return const SizedBox();
-            return _buildTransactionCard(transaction, appState);
+            return _buildTransactionCard(transaction, billingProvider);
           } catch (e) {
             return const SizedBox(); // Skip broken items
           }
@@ -368,7 +354,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
     );
   }
 
-  Widget _buildTransactionCard(Map<String, dynamic> transaction, AppState appState) {
+  Widget _buildTransactionCard(Map<String, dynamic> transaction, BillingProvider billingProvider) {
     // Parse amount from API - use amount_paid field
     final amountPaid = transaction['amount_paid'];
     final amount = amountPaid != null 
@@ -445,7 +431,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${isPositive ? '+' : '-'}${CurrencyUtils.formatPrice(amount.abs(), appState.partnerCountry)}',
+                '${isPositive ? '+' : '-'}${billingProvider.formatMoney(amount.abs())}',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: color,

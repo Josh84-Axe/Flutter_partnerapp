@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/billing_provider.dart';
 import '../utils/app_theme.dart';
 import '../widgets/metric_card.dart';
 
@@ -26,12 +26,13 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
     _amountController.addListener(_calculateFees);
     // Load payment methods when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final appState = context.read<AppState>();
-      appState.loadPaymentMethods().then((_) {
-        if (mounted && appState.paymentMethods.isNotEmpty && _selectedMethod.isEmpty) {
+      final billingProvider = context.read<BillingProvider>();
+      billingProvider.loadPaymentMethods().then((_) {
+        // Need to check mounted again because async gap
+        if (mounted && billingProvider.paymentMethods.isNotEmpty && _selectedMethod.isEmpty) {
           setState(() {
             // Select first method by default
-            final firstMethod = appState.paymentMethods.first;
+            final firstMethod = billingProvider.paymentMethods.first;
             _selectedMethod = firstMethod['id']?.toString() ?? '';
             _calculateFees();
           });
@@ -53,9 +54,9 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
     String methodType = 'mobile_money'; // Default fallback
     
     if (_selectedMethod.isNotEmpty) {
-      final appState = context.read<AppState>();
+      final billingProvider = context.read<BillingProvider>();
       // Find the method object that matches the selected slug
-      final selectedMethodObj = appState.paymentMethods.firstWhere(
+      final selectedMethodObj = billingProvider.paymentMethods.firstWhere(
         (m) => m['id']?.toString() == _selectedMethod,
         orElse: () => null,
       );
@@ -76,7 +77,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final appState = context.watch<AppState>();
+    final billingProvider = context.watch<BillingProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -113,7 +114,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        appState.formatMoney(appState.totalBalance),
+                        billingProvider.formatMoney(billingProvider.totalBalance),
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -122,7 +123,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Online: ${appState.formatMoney(appState.walletBalance)} • Assigned: ${appState.formatMoney(appState.assignedWalletBalance)}',
+                        'Online: ${billingProvider.formatMoney(billingProvider.walletBalance)} • Assigned: ${billingProvider.formatMoney(billingProvider.assignedWalletBalance)}',
                         style: const TextStyle(
                           fontSize: 11,
                           color: AppTheme.textLight,
@@ -150,7 +151,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                           FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                         ],
                         decoration: InputDecoration(
-                          prefixText: '${appState.currencySymbol} ',
+                          prefixText: '${billingProvider.currencySymbol} ',
                           hintText: '0.00',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -165,7 +166,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                     const SizedBox(width: 12),
                     FilledButton(
                       onPressed: () {
-                        _amountController.text = appState.totalBalance.toStringAsFixed(2);
+                        _amountController.text = billingProvider.totalBalance.toStringAsFixed(2);
                       },
                       style: FilledButton.styleFrom(
                         backgroundColor: colorScheme.primary,
@@ -192,7 +193,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                         final result = await Navigator.of(context).pushNamed('/add-payout-method');
                         if (result == true && context.mounted) {
                           // Reload payment methods after adding new one
-                          context.read<AppState>().loadPaymentMethods();
+                          context.read<BillingProvider>().loadPaymentMethods();
                         }
                       },
                       icon: const Icon(Icons.add, size: 18),
@@ -202,7 +203,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                 ),
                 const SizedBox(height: 12),
                 // Dynamic payment methods list
-                appState.paymentMethods.isEmpty
+                billingProvider.paymentMethods.isEmpty
                     ? Card(
                         child: Padding(
                           padding: const EdgeInsets.all(24),
@@ -235,7 +236,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                                 onPressed: () async {
                                   final result = await Navigator.of(context).pushNamed('/add-payout-method');
                                   if (result == true && context.mounted) {
-                                    context.read<AppState>().loadPaymentMethods();
+                                    context.read<BillingProvider>().loadPaymentMethods();
                                   }
                                 },
                                 icon: const Icon(Icons.add),
@@ -246,7 +247,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                         ),
                       )
                     : Column(
-                        children: appState.paymentMethods.map((method) {
+                        children: billingProvider.paymentMethods.map((method) {
                           final methodType = method['method_type']?.toString() ?? '';
                           final provider = method['provider']?.toString() ?? '';
                           final accountNumber = method['account_number']?.toString() ?? '';
@@ -337,7 +338,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                               ),
                             ),
                             Text(
-                              appState.formatMoney(_finalAmount),
+                              billingProvider.formatMoney(_finalAmount),
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -370,7 +371,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: _requestedAmount > 0 && _selectedMethod.isNotEmpty ? () async {
-                    final success = await context.read<AppState>().requestPayout(_requestedAmount, _selectedMethod);
+                    final success = await context.read<BillingProvider>().requestPayout(_requestedAmount, _selectedMethod);
                     if (!mounted) return;
                     
                     if (success) {
@@ -448,7 +449,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
   }
 
   Widget _buildSummaryRow(String label, double amount, {bool isNegative = false}) {
-    final appState = context.read<AppState>();
+    final billingProvider = context.read<BillingProvider>();
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -457,7 +458,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
           style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         Text(
-          '${isNegative ? '-' : ''}${appState.formatMoney(amount)}',
+          '${isNegative ? '-' : ''}${billingProvider.formatMoney(amount)}',
           style: TextStyle(
             fontWeight: FontWeight.w600,
             color: isNegative ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.onSurface,

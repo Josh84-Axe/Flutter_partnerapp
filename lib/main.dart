@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'providers/split/auth_provider.dart';
+import 'providers/split/billing_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'providers/app_state.dart';
@@ -105,6 +107,24 @@ void main() async {
         providers: [
           ChangeNotifierProvider(create: (_) => AppState()),
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          
+          // Phase 1 Migration: Injecting Repositories from AppState to new Providers
+          ChangeNotifierProxyProvider<AppState, AuthProvider>(
+            create: (context) => AuthProvider(),
+            update: (context, appState, previous) => AuthProvider(
+              authRepository: appState.authRepository,
+              tokenStorage: appState.authRepository?.tokenStorage,
+            ),
+          ),
+          ChangeNotifierProxyProvider<AppState, BillingProvider>(
+            create: (context) => BillingProvider(),
+            update: (context, appState, previous) => BillingProvider(
+              walletRepository: appState.walletRepository,
+              transactionRepository: appState.transactionRepository,
+              paymentMethodRepository: appState.paymentMethodRepository,
+              partnerCountry: appState.partnerCountry,
+            ),
+          ),
         ],
         child: const HotspotPartnerApp(),
       ),

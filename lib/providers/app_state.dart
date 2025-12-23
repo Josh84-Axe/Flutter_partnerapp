@@ -85,6 +85,11 @@ class AppState with ChangeNotifier {
   // Getters for repositories and Dio
   Dio get dio => _dio!;
   RouterRepository? get routerRepository => _routerRepository;
+  WalletRepository? get walletRepository => _walletRepository;
+  TransactionRepository? get transactionRepository => _transactionRepository;
+  AuthRepository? get authRepository => _authRepository;
+  PaymentMethodRepository? get paymentMethodRepository => _paymentMethodRepository;
+  TokenStorage get tokenStorage => _authRepository!.tokenStorage;
   
   /// Toggle between mock data and real API (for testing)
   void setUseRemoteApi(bool value) {
