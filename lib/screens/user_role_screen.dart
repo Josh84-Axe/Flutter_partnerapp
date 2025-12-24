@@ -47,7 +47,7 @@ class _UserRoleScreenState extends State<UserRoleScreen> {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: Text(
-                'permissions_enabled'.tr(namedArgs: {'count': '${role.permissions.values.where((v) => v).length}'}),
+                'permissions_enabled'.tr(namedArgs: {'count': '${role.permissions.length}'}),
                 style: TextStyle(color: AppTheme.textLight),
               ),
               trailing: Row(

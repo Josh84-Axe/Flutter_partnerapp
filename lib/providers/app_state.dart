@@ -87,25 +87,73 @@ class AppState with ChangeNotifier {
     if (_dio == null) _initializeRepositories();
     return _dio!;
   }
-  RouterRepository? get routerRepository {
+  RouterRepository get routerRepository {
     if (_routerRepository == null) _initializeRepositories();
-    return _routerRepository;
+    return _routerRepository!;
   }
-  WalletRepository? get walletRepository {
+  WalletRepository get walletRepository {
     if (_walletRepository == null) _initializeRepositories();
-    return _walletRepository;
+    return _walletRepository!;
   }
-  TransactionRepository? get transactionRepository {
+  TransactionRepository get transactionRepository {
     if (_transactionRepository == null) _initializeRepositories();
-    return _transactionRepository;
+    return _transactionRepository!;
   }
-  AuthRepository? get authRepository {
+  AuthRepository get authRepository {
     if (_authRepository == null) _initializeRepositories();
-    return _authRepository;
+    return _authRepository!;
   }
-  PaymentMethodRepository? get paymentMethodRepository {
+  PaymentMethodRepository get paymentMethodRepository {
     if (_paymentMethodRepository == null) _initializeRepositories();
-    return _paymentMethodRepository;
+    return _paymentMethodRepository!;
+  }
+  CollaboratorRepository get collaboratorRepository {
+    if (_collaboratorRepository == null) _initializeRepositories();
+    return _collaboratorRepository!;
+  }
+  RoleRepository get roleRepository {
+    if (_roleRepository == null) _initializeRepositories();
+    return _roleRepository!;
+  }
+  PartnerRepository get partnerRepository {
+    if (_partnerRepository == null) _initializeRepositories();
+    return _partnerRepository!;
+  }
+  CustomerRepository get customerRepository {
+    if (_customerRepository == null) _initializeRepositories();
+    return _customerRepository!;
+  }
+  HotspotRepository get hotspotRepository {
+    if (_hotspotRepository == null) _initializeRepositories();
+    return _hotspotRepository!;
+  }
+  PlanRepository get planRepository {
+    if (_planRepository == null) _initializeRepositories();
+    return _planRepository!;
+  }
+  SessionRepository get sessionRepository {
+    if (_sessionRepository == null) _initializeRepositories();
+    return _sessionRepository!;
+  }
+  PasswordRepository get passwordRepository {
+    if (_passwordRepository == null) _initializeRepositories();
+    return _passwordRepository!;
+  }
+  PlanConfigRepository get planConfigRepository {
+    if (_planConfigRepository == null) _initializeRepositories();
+    return _planConfigRepository!;
+  }
+  AdditionalDeviceRepository get additionalDeviceRepository {
+    if (_additionalDeviceRepository == null) _initializeRepositories();
+    return _additionalDeviceRepository!;
+  }
+  SubscriptionRepository get subscriptionRepository {
+    if (_subscriptionRepository == null) _initializeRepositories();
+    return _subscriptionRepository!;
+  }
+  ReportRepository get reportRepository {
+    if (_reportRepository == null) _initializeRepositories();
+    return _reportRepository!;
   }
   TokenStorage get tokenStorage {
     if (_authRepository == null) _initializeRepositories();
@@ -318,39 +366,6 @@ class AppState with ChangeNotifier {
   // Currency formatting helpers
   String get currencySymbol => CurrencyUtils.getCurrencySymbol(_partnerCountry);
   String formatMoney(double amount) => CurrencyUtils.formatPrice(amount, _partnerCountry);
-  
-  // Repository getters
-  SessionRepository get sessionRepository {
-    _initializeRepositories();
-    return _sessionRepository!;
-  }
-  
-  PasswordRepository get passwordRepository {
-    _initializeRepositories();
-    return _passwordRepository!;
-  }
-  
-  PlanConfigRepository get planConfigRepository {
-    _initializeRepositories();
-    return _planConfigRepository!;
-  }
-  
-
-  
-  AdditionalDeviceRepository get additionalDeviceRepository {
-    _initializeRepositories();
-    return _additionalDeviceRepository!;
-  }
-  
-  PlanRepository get planRepository {
-    _initializeRepositories();
-    return _planRepository!;
-  }
-
-  ReportRepository get reportRepository {
-    _initializeRepositories();
-    return _reportRepository!;
-  }
   
   Future<bool> login(String email, String password) async {
     if (kDebugMode) print('🔐 [AppState] login() called with email: $email');

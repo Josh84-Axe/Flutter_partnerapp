@@ -352,7 +352,7 @@ class BillingProvider with ChangeNotifier {
       
       final result = await _paymentMethodRepository!.requestCreateOtp(data);
       
-      if (result['otp_id'] != null) {
+      if (result != null && result['otp_id'] != null) {
         _paymentMethodOtpId = result['otp_id'].toString();
         notifyListeners();
         _setLoading(false);
