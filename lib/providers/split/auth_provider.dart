@@ -5,8 +5,8 @@ import '../../services/api/token_storage.dart';
 import '../../models/user_model.dart';
 
 class AuthProvider with ChangeNotifier {
-  final AuthRepository? _authRepository;
-  final TokenStorage? _tokenStorage;
+  AuthRepository? _authRepository;
+  TokenStorage? _tokenStorage;
   
   UserModel? _currentUser;
   bool _isLoading = false;
@@ -17,6 +17,14 @@ class AuthProvider with ChangeNotifier {
     TokenStorage? tokenStorage,
   }) : _authRepository = authRepository,
        _tokenStorage = tokenStorage;
+
+  void update({
+    AuthRepository? authRepository,
+    TokenStorage? tokenStorage,
+  }) {
+    _authRepository = authRepository;
+    _tokenStorage = tokenStorage;
+  }
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;

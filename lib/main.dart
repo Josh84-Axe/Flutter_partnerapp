@@ -111,19 +111,27 @@ void main() async {
           // Phase 1 Migration: Injecting Repositories from AppState to new Providers
           ChangeNotifierProxyProvider<AppState, AuthProvider>(
             create: (context) => AuthProvider(),
-            update: (context, appState, previous) => AuthProvider(
-              authRepository: appState.authRepository,
-              tokenStorage: appState.authRepository?.tokenStorage,
-            ),
+            update: (context, appState, previous) {
+              final provider = previous ?? AuthProvider();
+              provider.update(
+                authRepository: appState.authRepository,
+                tokenStorage: appState.authRepository?.tokenStorage,
+              );
+              return provider;
+            },
           ),
           ChangeNotifierProxyProvider<AppState, BillingProvider>(
             create: (context) => BillingProvider(),
-            update: (context, appState, previous) => BillingProvider(
-              walletRepository: appState.walletRepository,
-              transactionRepository: appState.transactionRepository,
-              paymentMethodRepository: appState.paymentMethodRepository,
-              partnerCountry: appState.partnerCountry,
-            ),
+            update: (context, appState, previous) {
+              final provider = previous ?? BillingProvider();
+              provider.update(
+                walletRepository: appState.walletRepository,
+                transactionRepository: appState.transactionRepository,
+                paymentMethodRepository: appState.paymentMethodRepository,
+                partnerCountry: appState.partnerCountry,
+              );
+              return provider;
+            },
           ),
         ],
         child: const HotspotPartnerApp(),

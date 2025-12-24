@@ -83,13 +83,34 @@ class AppState with ChangeNotifier {
   bool get useRemoteApi => _useRemoteApi;
   
   // Getters for repositories and Dio
-  Dio get dio => _dio!;
-  RouterRepository? get routerRepository => _routerRepository;
-  WalletRepository? get walletRepository => _walletRepository;
-  TransactionRepository? get transactionRepository => _transactionRepository;
-  AuthRepository? get authRepository => _authRepository;
-  PaymentMethodRepository? get paymentMethodRepository => _paymentMethodRepository;
-  TokenStorage get tokenStorage => _authRepository!.tokenStorage;
+  Dio get dio {
+    if (_dio == null) _initializeRepositories();
+    return _dio!;
+  }
+  RouterRepository? get routerRepository {
+    if (_routerRepository == null) _initializeRepositories();
+    return _routerRepository;
+  }
+  WalletRepository? get walletRepository {
+    if (_walletRepository == null) _initializeRepositories();
+    return _walletRepository;
+  }
+  TransactionRepository? get transactionRepository {
+    if (_transactionRepository == null) _initializeRepositories();
+    return _transactionRepository;
+  }
+  AuthRepository? get authRepository {
+    if (_authRepository == null) _initializeRepositories();
+    return _authRepository;
+  }
+  PaymentMethodRepository? get paymentMethodRepository {
+    if (_paymentMethodRepository == null) _initializeRepositories();
+    return _paymentMethodRepository;
+  }
+  TokenStorage get tokenStorage {
+    if (_authRepository == null) _initializeRepositories();
+    return _authRepository!.tokenStorage;
+  }
   
   /// Toggle between mock data and real API (for testing)
   void setUseRemoteApi(bool value) {
@@ -314,20 +335,7 @@ class AppState with ChangeNotifier {
     return _planConfigRepository!;
   }
   
-  TransactionRepository get transactionRepository {
-    _initializeRepositories();
-    return _transactionRepository!;
-  }
-  
-  CollaboratorRepository get collaboratorRepository {
-    _initializeRepositories();
-    return _collaboratorRepository!;
-  }
-  
-  PaymentMethodRepository get paymentMethodRepository {
-    _initializeRepositories();
-    return _paymentMethodRepository!;
-  }
+
   
   AdditionalDeviceRepository get additionalDeviceRepository {
     _initializeRepositories();

@@ -6,9 +6,9 @@ import '../../utils/currency_utils.dart'; // Assuming this exists, based on AppS
 import '../../models/transaction_model.dart'; // Import TransactionModel
 
 class BillingProvider with ChangeNotifier {
-  final WalletRepository? _walletRepository;
-  final TransactionRepository? _transactionRepository;
-  final PaymentMethodRepository? _paymentMethodRepository;
+  WalletRepository? _walletRepository;
+  TransactionRepository? _transactionRepository;
+  PaymentMethodRepository? _paymentMethodRepository;
 
   bool _isLoading = false;
   String? _error;
@@ -43,6 +43,18 @@ class BillingProvider with ChangeNotifier {
        _transactionRepository = transactionRepository,
        _paymentMethodRepository = paymentMethodRepository,
        _partnerCountry = partnerCountry;
+
+  void update({
+    WalletRepository? walletRepository,
+    TransactionRepository? transactionRepository,
+    PaymentMethodRepository? paymentMethodRepository,
+    String? partnerCountry,
+  }) {
+    _walletRepository = walletRepository;
+    _transactionRepository = transactionRepository;
+    _paymentMethodRepository = paymentMethodRepository;
+    _partnerCountry = partnerCountry;
+  }
 
   // Getters
   double get walletBalance => _walletBalance;
@@ -157,10 +169,12 @@ class BillingProvider with ChangeNotifier {
       if (_walletRepository == null) return;
       
       if (kDebugMode) print('💰 [BillingProvider] Loading wallet balance...');
-      final balanceData = await _walletRepository!.fetchWalletBalance();
+      final balanceData = await _walletRepository!.fetchBalance();
       
-      if (balanceData != null && balanceData['wallet_balance'] != null) {
-        _walletBalance = CurrencyUtils.parseAmount(balanceData['wallet_balance']);
+      if (balanceData != null) {
+        // Handle both 'balance' and 'wallet_balance' keys for safety
+        final balanceVal = balanceData['balance'] ?? balanceData['wallet_balance'];
+        _walletBalance = CurrencyUtils.parseAmount(balanceVal);
         if (kDebugMode) print('✅ [BillingProvider] Wallet balance loaded: $_walletBalance');
       } else {
         if (kDebugMode) print('⚠️ [BillingProvider] No wallet balance data received');
@@ -179,7 +193,7 @@ class BillingProvider with ChangeNotifier {
       if (_walletRepository == null) return;
       
       if (kDebugMode) print('💰 [BillingProvider] Loading revenue counters...');
-      final countersData = await _walletRepository!.fetchCountersBalance();
+      final countersData = await _walletRepository!.fetchBalance();
       
       if (kDebugMode) print('📊 [BillingProvider] Raw countersData: $countersData');
       
@@ -336,7 +350,7 @@ class BillingProvider with ChangeNotifier {
       // Store data for later verification
       _pendingPaymentMethodData = data;
       
-      final result = await _paymentMethodRepository!.requestOtp(data);
+      final result = await _paymentMethodRepository!.requestCreateOtp(data);
       
       if (result['otp_id'] != null) {
         _paymentMethodOtpId = result['otp_id'].toString();
@@ -364,19 +378,16 @@ class BillingProvider with ChangeNotifier {
         throw Exception('Missing OTP session data');
       }
       
-      final success = await _paymentMethodRepository!.verifyOtpAndCreate(
-        _paymentMethodOtpId!,
-        otp,
-        _pendingPaymentMethodData!,
+      final success = await _paymentMethodRepository!.verifyCreateOtp(
+        data: _pendingPaymentMethodData!,
+        otp: otp,
+        otpId: _paymentMethodOtpId!,
       );
       
-      if (success) {
-        // Reload payment methods to show new one
-        await loadPaymentMethods();
-        
-        // Clear session data
-        _paymentMethodOtpId = null;
+      if (success != null) {
+        // Clear pending data
         _pendingPaymentMethodData = null;
+        _paymentMethodOtpId = null;
         notifyListeners();
         _setLoading(false);
         return true;

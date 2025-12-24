@@ -28,7 +28,10 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
 
     try {
       final appState = context.read<AppState>();
-      final methods = await appState.paymentMethodRepository.fetchPaymentMethods();
+      if (appState.paymentMethodRepository == null) {
+         throw Exception("Payment Repository not initialized");
+      }
+      final methods = await appState.paymentMethodRepository!.fetchPaymentMethods();
       
       if (mounted) {
         setState(() {
@@ -87,7 +90,10 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
 
     try {
       final appState = context.read<AppState>();
-      final success = await appState.paymentMethodRepository.deletePaymentMethod(slug);
+      if (appState.paymentMethodRepository == null) {
+         throw Exception("Payment Repository not initialized");
+      }
+      final success = await appState.paymentMethodRepository!.deletePaymentMethod(slug);
       
       if (mounted) {
         if (success) {
