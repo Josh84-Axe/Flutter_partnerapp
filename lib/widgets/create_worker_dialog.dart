@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
 
 class CreateWorkerDialog extends StatefulWidget {
   const CreateWorkerDialog({super.key});
@@ -40,8 +40,8 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final roles = appState.roles;
+    final userProvider = context.watch<UserProvider>();
+    final roles = userProvider.roles;
 
     return AlertDialog(
       title: Text('create_worker'.tr()),
@@ -251,7 +251,7 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
               try {
-                await appState.createWorker({
+                await userProvider.createWorker({
                   'first_name': _firstNameController.text,
                   'last_name': _lastNameController.text,
                   'email': _emailController.text,

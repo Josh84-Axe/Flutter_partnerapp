@@ -1,12 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'providers/split/auth_provider.dart';
-import 'providers/split/billing_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'providers/app_state.dart';
+
+// Providers
+import 'providers/split/auth_provider.dart';
+import 'providers/split/billing_provider.dart';
+import 'providers/split/user_provider.dart';
+import 'providers/split/network_provider.dart';
 import 'providers/theme_provider.dart';
 import 'theme/tiknet_themes.dart';
+
+// Services
+import 'services/api/api_client_factory.dart';
+import 'services/api/token_storage.dart';
+import 'services/api/api_config.dart';
+
+// Repositories
+import 'repositories/auth_repository.dart';
+import 'repositories/wallet_repository.dart';
+import 'repositories/transaction_repository.dart';
+import 'repositories/payment_method_repository.dart';
+import 'repositories/customer_repository.dart';
+import 'repositories/collaborator_repository.dart';
+import 'repositories/role_repository.dart';
+import 'repositories/partner_repository.dart';
+import 'repositories/plan_repository.dart';
+import 'repositories/router_repository.dart';
+import 'repositories/hotspot_repository.dart';
+import 'repositories/session_repository.dart';
+import 'repositories/plan_config_repository.dart';
+import 'repositories/subscription_repository.dart';
+
+// Screens
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -31,6 +57,7 @@ import 'screens/router_details_screen.dart';
 
 import 'screens/bulk_actions_screen.dart';
 import 'models/hotspot_profile_model.dart';
+import 'models/user_model.dart';
 
 import 'screens/hotspot_user_screen.dart';
 import 'screens/configurations_screen.dart';
@@ -92,11 +119,37 @@ import 'screens/assigned_plans_list_screen.dart';
 import 'screens/active_sessions_screen.dart';
 import 'screens/help_support_screen.dart';
 
-import 'models/user_model.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+  
+  // Dependency Injection Setup
+  final tokenStorage = TokenStorage();
+  final apiClientFactory = ApiClientFactory(
+    tokenStorage: tokenStorage,
+    baseUrl: ApiConfig.baseUrl, 
+  );
+  final dio = apiClientFactory.createDio();
+
+  // Core Repositories
+  final authRepository = AuthRepository(dio: dio, tokenStorage: tokenStorage);
+  final partnerRepository = PartnerRepository(dio: dio);
+  
+  // Feature Repositories
+  final walletRepository = WalletRepository(dio: dio);
+  final transactionRepository = TransactionRepository(dio: dio);
+  final paymentMethodRepository = PaymentMethodRepository(dio: dio);
+  
+  final customerRepository = CustomerRepository(dio: dio);
+  final collaboratorRepository = CollaboratorRepository(dio: dio);
+  final roleRepository = RoleRepository(dio: dio);
+  final subscriptionRepository = SubscriptionRepository(dio: dio);
+  final planRepository = PlanRepository(dio: dio);
+  
+  final routerRepository = RouterRepository(dio: dio);
+  final hotspotRepository = HotspotRepository(dio: dio);
+  final sessionRepository = SessionRepository(dio: dio);
+  final planConfigRepository = PlanConfigRepository(dio: dio);
   
   runApp(
     EasyLocalization(
@@ -105,31 +158,75 @@ void main() async {
       fallbackLocale: const Locale('en'),
       child: MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => AppState()),
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
           
-          // Phase 1 Migration: Injecting Repositories from AppState to new Providers
-          ChangeNotifierProxyProvider<AppState, AuthProvider>(
-            create: (context) => AuthProvider(),
-            update: (context, appState, previous) {
-              final provider = previous ?? AuthProvider();
-              provider.update(
-                authRepository: appState.authRepository,
-                tokenStorage: appState.authRepository?.tokenStorage,
+          ChangeNotifierProvider(
+            create: (_) => AuthProvider(
+              authRepository: authRepository,
+              partnerRepository: partnerRepository,
+              tokenStorage: tokenStorage,
+            ),
+          ),
+          
+          ChangeNotifierProxyProvider<AuthProvider, BillingProvider>(
+            create: (_) => BillingProvider(
+              walletRepository: walletRepository,
+              transactionRepository: transactionRepository,
+              paymentMethodRepository: paymentMethodRepository,
+            ),
+            update: (context, auth, prev) {
+              final provider = prev ?? BillingProvider(
+                walletRepository: walletRepository,
+                transactionRepository: transactionRepository,
+                paymentMethodRepository: paymentMethodRepository,
               );
+              provider.update(partnerCountry: auth.partnerCountry);
               return provider;
             },
           ),
-          ChangeNotifierProxyProvider<AppState, BillingProvider>(
-            create: (context) => BillingProvider(),
-            update: (context, appState, previous) {
-              final provider = previous ?? BillingProvider();
-              provider.update(
-                walletRepository: appState.walletRepository,
-                transactionRepository: appState.transactionRepository,
-                paymentMethodRepository: appState.paymentMethodRepository,
-                partnerCountry: appState.partnerCountry,
+          
+          ChangeNotifierProxyProvider<AuthProvider, UserProvider>(
+            create: (_) => UserProvider(
+              customerRepository: customerRepository,
+              collaboratorRepository: collaboratorRepository,
+              roleRepository: roleRepository,
+              subscriptionRepository: subscriptionRepository,
+              partnerRepository: partnerRepository,
+              planRepository: planRepository,
+            ),
+            update: (context, auth, prev) {
+              final provider = prev ?? UserProvider(
+                customerRepository: customerRepository,
+                collaboratorRepository: collaboratorRepository,
+                roleRepository: roleRepository,
+                subscriptionRepository: subscriptionRepository,
+                partnerRepository: partnerRepository,
+                planRepository: planRepository,
               );
+              provider.update(authProvider: auth);
+              return provider;
+            },
+          ),
+          
+          ChangeNotifierProxyProvider<AuthProvider, NetworkProvider>(
+            create: (_) => NetworkProvider(
+              routerRepository: routerRepository,
+              hotspotRepository: hotspotRepository,
+              sessionRepository: sessionRepository,
+              customerRepository: customerRepository,
+              planConfigRepository: planConfigRepository,
+              planRepository: planRepository,
+            ),
+            update: (context, auth, prev) {
+              final provider = prev ?? NetworkProvider(
+                routerRepository: routerRepository,
+                hotspotRepository: hotspotRepository,
+                sessionRepository: sessionRepository,
+                customerRepository: customerRepository,
+                planConfigRepository: planConfigRepository,
+                planRepository: planRepository,
+              );
+              provider.update(authProvider: auth);
               return provider;
             },
           ),
@@ -335,7 +432,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     if (_hasSeenOnboarding) {
       if (mounted) {
-        context.read<AppState>().checkAuthStatus();
+        context.read<AuthProvider>().checkAuthStatus();
       }
     }
   }
@@ -353,7 +450,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
       return const OnboardingScreen();
     }
 
-    final currentUser = context.watch<AppState>().currentUser;
+    final currentUser = context.watch<AuthProvider>().currentUser;
 
     if (currentUser == null) {
       // Show new M3 login screen
@@ -481,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  context.watch<AppState>().currentUser?.name ?? 'Partner',
+                  context.watch<AuthProvider>().currentUser?.name ?? 'Partner',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -489,7 +586,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Text(
-                  context.watch<AppState>().currentUser?.email ?? '',
+                  context.watch<AuthProvider>().currentUser?.email ?? '',
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
@@ -511,7 +608,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: FilledButton.icon(
               onPressed: () async {
-                await context.read<AppState>().logout();
+                await context.read<AuthProvider>().logout();
                 if (context.mounted) {
                   Navigator.of(context).pushReplacementNamed('/login');
                 }

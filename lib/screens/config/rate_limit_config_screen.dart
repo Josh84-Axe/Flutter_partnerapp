@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
-import '../../providers/app_state.dart';
+import '../../providers/split/network_provider.dart';
 
 class RateLimitConfigScreen extends StatefulWidget {
   const RateLimitConfigScreen({super.key});
@@ -15,7 +15,7 @@ class _RateLimitConfigScreenState extends State<RateLimitConfigScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadAllConfigurations();
+      context.read<NetworkProvider>().loadAllConfigurations();
     });
   }
 
@@ -47,7 +47,7 @@ class _RateLimitConfigScreenState extends State<RateLimitConfigScreen> {
             onPressed: () async {
               if (valueController.text.isNotEmpty) {
                 try {
-                  await context.read<AppState>().createRateLimit({
+                  await context.read<NetworkProvider>().createRateLimit({
                     'value': valueController.text,
                   });
                   if (mounted) {
@@ -89,7 +89,7 @@ class _RateLimitConfigScreenState extends State<RateLimitConfigScreen> {
           FilledButton(
             onPressed: () async {
               try {
-                await context.read<AppState>().deleteRateLimit(id);
+                await context.read<NetworkProvider>().deleteRateLimit(id);
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -117,8 +117,8 @@ class _RateLimitConfigScreenState extends State<RateLimitConfigScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final appState = context.watch<AppState>();
-    final configs = appState.rateLimits;
+    final networkProvider = context.watch<NetworkProvider>();
+    final configs = networkProvider.rateLimits;
 
     return Scaffold(
       appBar: AppBar(
@@ -127,7 +127,7 @@ class _RateLimitConfigScreenState extends State<RateLimitConfigScreen> {
       body: Column(
         children: [
           Expanded(
-            child: appState.isLoading
+            child: networkProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : configs.isEmpty
                     ? const Center(child: Text('No rate limits configured'))

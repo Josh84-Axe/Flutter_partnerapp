@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+import '../providers/split/billing_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/file_handler/file_handler.dart';
 
@@ -112,8 +112,8 @@ class _ReportingScreenState extends State<ReportingScreen> {
     });
 
     try {
-      final appState = context.read<AppState>();
-      final bytes = await appState.generateReport(
+      final billingProvider = context.read<BillingProvider>();
+      final bytes = await billingProvider.generateReport(
         dateRange: _dateRange!,
         format: _selectedFormat,
       );

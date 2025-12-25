@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../providers/app_state.dart';
-import '../models/notification_model.dart';
+import '../providers/split/user_provider.dart';
+import '../models/local_notification_model.dart';
 import '../utils/app_theme.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -17,7 +17,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadNotifications();
+      context.read<UserProvider>().loadNotifications();
     });
   }
 
@@ -25,11 +25,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final appState = context.watch<AppState>();
-    final notifications = appState.notifications;
+    final userProvider = context.watch<UserProvider>();
+    final notifications = userProvider.localNotifications;
 
-    final today = <NotificationModel>[];
-    final yesterday = <NotificationModel>[];
+    final today = <LocalNotification>[];
+    final yesterday = <LocalNotification>[];
     final now = DateTime.now();
 
     for (final notification in notifications) {
@@ -50,7 +50,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => appState.markAllNotificationsAsRead(),
+            onPressed: () => userProvider.markAllNotificationsAsRead(),
             child: const Text(
               'Mark all as read',
               style: TextStyle(color: AppTheme.pureWhite),
@@ -82,11 +82,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               children: [
                 if (today.isNotEmpty) ...[
                   _buildSectionHeader(context, 'Today'),
-                  ...today.map((n) => _buildNotificationItem(context, n, appState)),
+                  ...today.map((n) => _buildNotificationItem(context, n, userProvider)),
                 ],
                 if (yesterday.isNotEmpty) ...[
                   _buildSectionHeader(context, 'Yesterday'),
-                  ...yesterday.map((n) => _buildNotificationItem(context, n, appState)),
+                  ...yesterday.map((n) => _buildNotificationItem(context, n, userProvider)),
                 ],
               ],
             ),
@@ -108,14 +108,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _buildNotificationItem(
     BuildContext context,
-    NotificationModel notification,
-    AppState appState,
+    LocalNotification notification,
+    UserProvider userProvider,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     return Dismissible(
       key: Key(notification.id),
       direction: DismissDirection.endToStart,
-      onDismissed: (_) => appState.dismissNotification(notification.id),
+      onDismissed: (_) => userProvider.dismissNotification(notification.id),
       background: Container(
         color: AppTheme.errorRed,
         alignment: Alignment.centerRight,
@@ -163,11 +163,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
           trailing: IconButton(
             icon: const Icon(Icons.close, size: 20),
-            onPressed: () => appState.dismissNotification(notification.id),
+            onPressed: () => userProvider.dismissNotification(notification.id),
           ),
           onTap: () {
             if (!notification.isRead) {
-              appState.markNotificationAsRead(notification.id);
+              userProvider.markNotificationAsRead(notification.id);
             }
           },
         ),

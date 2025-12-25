@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+
+import '../providers/split/auth_provider.dart';
 import '../providers/theme_provider.dart';
 import '../theme/tiknet_themes.dart';
 
@@ -11,7 +12,8 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+
+    final authProvider = context.watch<AuthProvider>();
     final themeProvider = context.watch<ThemeProvider>();
 
     return Scaffold(
@@ -56,7 +58,7 @@ class SettingsScreen extends StatelessWidget {
                 context,
                 icon: Icons.card_membership_outlined,
                 title: 'subscription_management'.tr(),
-                subtitle: _getSubscriptionTier(appState),
+                subtitle: _getSubscriptionTier(authProvider),
                 onTap: () {
                   Navigator.of(context).pushNamed('/subscription-management');
                 },
@@ -83,7 +85,7 @@ class SettingsScreen extends StatelessWidget {
                 context,
                 icon: Icons.language_outlined,
                 title: 'language'.tr(),
-                subtitle: appState.selectedLanguage.nativeName,
+                subtitle: context.locale.languageCode.toUpperCase(),
                 onTap: () {
                   Navigator.of(context).pushNamed('/language');
                 },
@@ -162,7 +164,7 @@ class SettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: FilledButton(
               onPressed: () async {
-                await appState.logout();
+                await authProvider.logout();
                 if (context.mounted) {
                   Navigator.of(context).pushReplacementNamed('/login');
                 }
@@ -272,8 +274,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  String _getSubscriptionTier(AppState appState) {
-    final routerCount = appState.currentUser?.numberOfRouters ?? 0;
+  String _getSubscriptionTier(AuthProvider authProvider) {
+    final routerCount = authProvider.currentUser?.numberOfRouters ?? 0;
     if (routerCount == 1) return 'subscription_basic'.tr();
     if (routerCount >= 2 && routerCount <= 4) return 'subscription_standard'.tr();
     if (routerCount >= 5) return 'subscription_premium'.tr();

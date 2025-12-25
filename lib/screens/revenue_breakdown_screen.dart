@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+import 'package:provider/provider.dart';
+import '../providers/split/billing_provider.dart';
 import '../utils/currency_utils.dart';
 
 class RevenueBreakdownScreen extends StatelessWidget {
@@ -9,7 +10,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    final billingProvider = context.watch<BillingProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -25,7 +26,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
           _buildRevenueCard(
             context,
             'assigned_revenue'.tr(),
-            appState.formatMoney(appState.assignedRevenue),
+            billingProvider.formatMoney(billingProvider.assignedRevenue),
             'assigned_revenue_desc'.tr(),
             Icons.assignment_ind,
             Theme.of(context).colorScheme.primary,
@@ -35,7 +36,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
           _buildRevenueCard(
             context,
             'online_revenue'.tr(),
-            appState.formatMoney(appState.onlineRevenue),
+            billingProvider.formatMoney(billingProvider.onlineRevenue),
             'online_revenue_desc'.tr(),
             Icons.credit_card,
             Theme.of(context).colorScheme.primaryContainer,

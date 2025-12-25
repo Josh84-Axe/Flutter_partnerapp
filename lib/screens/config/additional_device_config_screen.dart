@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_state.dart';
+import '../../providers/split/user_provider.dart';
 import '../../utils/currency_utils.dart';
 import '../../utils/app_theme.dart';
 import '../../models/config_item_model.dart';
@@ -26,22 +26,22 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
-      final appState = context.read<AppState>();
+      final userProvider = context.read<UserProvider>();
       _configs = [
         ConfigItem(
           id: '1',
           name: 'no_extra_devices'.tr(),
-          description: '0 additional devices - ${CurrencyUtils.formatPrice(0, appState.partnerCountry)}',
+          description: '0 additional devices - ${CurrencyUtils.formatPrice(0, userProvider.partnerCountry)}',
         ),
         ConfigItem(
           id: '2',
           name: 'extra_device'.tr(namedArgs: {'count': '1'}),
-          description: '1 additional device - ${CurrencyUtils.formatPrice(5, appState.partnerCountry)}',
+          description: '1 additional device - ${CurrencyUtils.formatPrice(5, userProvider.partnerCountry)}',
         ),
         ConfigItem(
           id: '3',
           name: 'extra_devices'.tr(namedArgs: {'count': '3'}),
-          description: 'Up to 3 devices - ${CurrencyUtils.formatPrice(12, appState.partnerCountry)}',
+          description: 'Up to 3 devices - ${CurrencyUtils.formatPrice(12, userProvider.partnerCountry)}',
         ),
       ];
       _initialized = true;
@@ -108,8 +108,8 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
 
     final deviceCount = _deviceCountController.text;
     final price = _priceController.text;
-    final appState = context.read<AppState>();
-    final formattedPrice = CurrencyUtils.formatPrice(double.tryParse(price) ?? 0, appState.partnerCountry);
+    final userProvider = context.read<UserProvider>();
+    final formattedPrice = CurrencyUtils.formatPrice(double.tryParse(price) ?? 0, userProvider.partnerCountry);
     final description = '$deviceCount additional ${int.parse(deviceCount) == 1 ? "device" : "devices"} - $formattedPrice';
 
     final newConfig = ConfigItem(
@@ -301,7 +301,7 @@ class _AdditionalDeviceConfigScreenState extends State<AdditionalDeviceConfigScr
                           decoration: InputDecoration(
                             labelText: 'price'.tr(),
                             hintText: '0.00',
-                            prefixText: '${CurrencyUtils.getCurrencySymbol(context.read<AppState>().partnerCountry)} ',
+                            prefixText: '${CurrencyUtils.getCurrencySymbol(context.read<UserProvider>().partnerCountry)} ',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),

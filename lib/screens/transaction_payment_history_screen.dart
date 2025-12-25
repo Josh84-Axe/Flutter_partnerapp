@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
 import '../utils/currency_utils.dart';
 
 class TransactionPaymentHistoryScreen extends StatefulWidget {
@@ -17,7 +17,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final appState = context.watch<AppState>();
+    final userProvider = context.watch<UserProvider>();
     
     return Scaffold(
       appBar: AppBar(
@@ -39,7 +39,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                       child: _buildSummaryCard(
                         context,
                         'wallet_balance'.tr(),
-                        CurrencyUtils.formatPrice(1250.00, appState.partnerCountry),
+                        CurrencyUtils.formatPrice(1250.00, userProvider.partnerCountry),
                         colorScheme.primary,
                       ),
                     ),
@@ -48,7 +48,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                       child: _buildSummaryCard(
                         context,
                         'earned_income'.tr(),
-                        CurrencyUtils.formatPrice(5750.00, appState.partnerCountry),
+                        CurrencyUtils.formatPrice(5750.00, userProvider.partnerCountry),
                         colorScheme.primary,
                       ),
                     ),
@@ -80,7 +80,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                           context,
                           'Payment Transaction',
                           'June 15, 2024',
-                          '+${CurrencyUtils.formatPrice(50.00, appState.partnerCountry)}',
+                          '+${CurrencyUtils.formatPrice(50.00, userProvider.partnerCountry)}',
                           Colors.green,
                           Icons.arrow_downward,
                         ),
@@ -88,7 +88,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                           context,
                           'Payout Transaction',
                           'June 10, 2024',
-                          '-${CurrencyUtils.formatPrice(500.00, appState.partnerCountry)}',
+                          '-${CurrencyUtils.formatPrice(500.00, userProvider.partnerCountry)}',
                           Colors.red,
                           Icons.arrow_upward,
                         ),
@@ -96,7 +96,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                           context,
                           'Subscription Payment',
                           'June 8, 2024',
-                          '-${CurrencyUtils.formatPrice(29.99, appState.partnerCountry)}',
+                          '-${CurrencyUtils.formatPrice(29.99, userProvider.partnerCountry)}',
                           Colors.red,
                           Icons.credit_card,
                         ),
@@ -104,7 +104,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                           context,
                           'Payment Transaction',
                           'June 5, 2024',
-                          '+${CurrencyUtils.formatPrice(75.00, appState.partnerCountry)}',
+                          '+${CurrencyUtils.formatPrice(75.00, userProvider.partnerCountry)}',
                           Colors.green,
                           Icons.arrow_downward,
                         ),
@@ -112,7 +112,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
                           context,
                           'Payment Transaction',
                           'May 20, 2024',
-                          '+${CurrencyUtils.formatPrice(100.00, appState.partnerCountry)}',
+                          '+${CurrencyUtils.formatPrice(100.00, userProvider.partnerCountry)}',
                           Colors.green,
                           Icons.arrow_downward,
                         ),
@@ -348,7 +348,7 @@ class _TransactionPaymentHistoryScreenState extends State<TransactionPaymentHist
             TextField(
               decoration: InputDecoration(
                 labelText: 'amount'.tr(),
-                prefixText: CurrencyUtils.getCurrencySymbol(context.read<AppState>().partnerCountry),
+                prefixText: CurrencyUtils.getCurrencySymbol(context.read<UserProvider>().partnerCountry),
                 border: const OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,

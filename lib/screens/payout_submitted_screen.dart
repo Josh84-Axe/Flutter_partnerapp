@@ -3,14 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../utils/app_theme.dart';
-import '../providers/app_state.dart';
+import '../providers/split/billing_provider.dart';
 
 class PayoutSubmittedScreen extends StatelessWidget {
   const PayoutSubmittedScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final trackingRef = context.read<AppState>().lastWithdrawalId ?? 'TXN${DateTime.now().millisecondsSinceEpoch}';
+    final trackingRef = context.read<BillingProvider>().lastWithdrawalId ?? 'TXN${DateTime.now().millisecondsSinceEpoch}';
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(

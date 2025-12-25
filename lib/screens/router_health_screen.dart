@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'router_resources_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+
+import '../providers/split/network_provider.dart';
 
 
 class RouterHealthScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadRouters();
+      context.read<NetworkProvider>().loadRouters();
     });
   }
 
@@ -25,8 +26,8 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final appState = context.watch<AppState>();
-    final routers = appState.visibleRouters;
+    final networkProvider = context.watch<NetworkProvider>();
+    final routers = networkProvider.visibleRouters;
 
     return Scaffold(
       appBar: AppBar(
@@ -38,7 +39,7 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
           ),
         ],
       ),
-      body: appState.isLoading
+      body: networkProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : routers.isEmpty
               ? Center(

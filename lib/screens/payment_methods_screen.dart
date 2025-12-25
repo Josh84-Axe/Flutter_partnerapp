@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/billing_provider.dart';
 import '../utils/app_theme.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
@@ -27,15 +27,12 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     });
 
     try {
-      final appState = context.read<AppState>();
-      if (appState.paymentMethodRepository == null) {
-         throw Exception("Payment Repository not initialized");
-      }
-      final methods = await appState.paymentMethodRepository!.fetchPaymentMethods();
+      final billingProvider = context.read<BillingProvider>();
+      await billingProvider.loadPaymentMethods();
       
       if (mounted) {
         setState(() {
-          _paymentMethods = methods;
+          _paymentMethods = billingProvider.paymentMethods;
           _isLoading = false;
         });
       }
@@ -89,11 +86,8 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     if (confirmed != true) return;
 
     try {
-      final appState = context.read<AppState>();
-      if (appState.paymentMethodRepository == null) {
-         throw Exception("Payment Repository not initialized");
-      }
-      final success = await appState.paymentMethodRepository!.deletePaymentMethod(slug);
+      final billingProvider = context.read<BillingProvider>();
+      final success = await billingProvider.deletePaymentMethod(slug);
       
       if (mounted) {
         if (success) {

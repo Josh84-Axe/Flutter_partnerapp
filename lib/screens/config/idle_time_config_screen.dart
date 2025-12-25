@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
-import '../../providers/app_state.dart';
+import '../../providers/split/network_provider.dart';
 
 class IdleTimeConfigScreen extends StatefulWidget {
   const IdleTimeConfigScreen({super.key});
@@ -15,7 +15,7 @@ class _IdleTimeConfigScreenState extends State<IdleTimeConfigScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadAllConfigurations();
+      context.read<NetworkProvider>().loadAllConfigurations();
     });
   }
 
@@ -47,7 +47,7 @@ class _IdleTimeConfigScreenState extends State<IdleTimeConfigScreen> {
             onPressed: () async {
               if (valueController.text.isNotEmpty) {
                 try {
-                  await context.read<AppState>().createIdleTimeout({
+                  await context.read<NetworkProvider>().createIdleTimeout({
                     'value': valueController.text,
                   });
                   if (mounted) {
@@ -89,7 +89,7 @@ class _IdleTimeConfigScreenState extends State<IdleTimeConfigScreen> {
           FilledButton(
             onPressed: () async {
               try {
-                await context.read<AppState>().deleteIdleTimeout(id);
+                await context.read<NetworkProvider>().deleteIdleTimeout(id);
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -117,8 +117,8 @@ class _IdleTimeConfigScreenState extends State<IdleTimeConfigScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final appState = context.watch<AppState>();
-    final configs = appState.idleTimeouts;
+    final networkProvider = context.watch<NetworkProvider>();
+    final configs = networkProvider.idleTimeouts;
 
     return Scaffold(
       appBar: AppBar(
@@ -127,7 +127,7 @@ class _IdleTimeConfigScreenState extends State<IdleTimeConfigScreen> {
       body: Column(
         children: [
           Expanded(
-            child: appState.isLoading
+            child: networkProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : configs.isEmpty
                     ? const Center(child: Text('No idle timeouts configured'))

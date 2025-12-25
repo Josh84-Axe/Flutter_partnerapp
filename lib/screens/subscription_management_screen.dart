@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
+import '../providers/split/billing_provider.dart';
 import '../utils/currency_utils.dart';
+import '../models/subscription_model.dart';
 import 'payment_gateway_screen.dart';
 
 class SubscriptionManagementScreen extends StatefulWidget {
@@ -22,12 +24,13 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
-      final appState = context.read<AppState>();
+      final userProvider = context.read<UserProvider>();
       await Future.wait([
-        appState.loadSubscription(),
-        appState.loadAvailableSubscriptionPlans(),
+        userProvider.loadSubscription(),
+        userProvider.loadAvailableSubscriptionPlans(),
       ]);
     } finally {
       if (mounted) {
@@ -38,9 +41,10 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final subscription = appState.subscription;
-    final availablePlans = appState.availableSubscriptionPlans;
+    final userProvider = context.watch<UserProvider>();
+    final billingProvider = context.watch<BillingProvider>();
+    final subscription = userProvider.subscription;
+    final availablePlans = userProvider.availableSubscriptionPlans;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -53,7 +57,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
           ),
         ],
       ),
-      body: _isLoading
+      body: _isLoading || userProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _loadData,
@@ -114,7 +118,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                               context,
                               Icons.payments_outlined,
                               'monthly_fee'.tr(),
-                              CurrencyUtils.formatPrice(subscription.monthlyFee, appState.partnerCountry),
+                              CurrencyUtils.formatPrice(subscription.monthlyFee, userProvider.partnerCountry),
                             ),
                             const SizedBox(height: 8),
                             _buildInfoRow(
@@ -231,7 +235,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                 ],
                                 const SizedBox(height: 16),
                                 Text(
-                                  '${CurrencyUtils.formatPrice(plan.price, appState.partnerCountry)} / ${'month'.tr()}',
+                                  '${CurrencyUtils.formatPrice(plan.price, userProvider.partnerCountry)} / ${'month'.tr()}',
                                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: colorScheme.primary,
@@ -355,12 +359,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
   }
 
   Future<void> _purchasePlan(String planId, String planName, double amount) async {
-    debugPrint('🛒 [Subscription] _purchasePlan called');
-    debugPrint('   Plan ID: $planId');
-    debugPrint('   Plan Name: $planName');
-    debugPrint('   Amount: $amount');
-    
-    final appState = context.read<AppState>();
+    final userProvider = context.read<UserProvider>();
     
     final confirmed = await showDialog<bool>(
       context: context,
@@ -378,7 +377,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             ),
             const SizedBox(height: 8),
             Text(
-              CurrencyUtils.formatPrice(amount, appState.partnerCountry),
+              CurrencyUtils.formatPrice(amount, userProvider.partnerCountry),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
@@ -400,50 +399,31 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
       ),
     );
 
-    debugPrint('💬 [Subscription] User confirmed: $confirmed');
-
-    if (confirmed != true || !mounted) {
-      debugPrint('⚠️ [Subscription] Payment cancelled or widget unmounted');
-      return;
-    }
+    if (confirmed != true || !mounted) return;
 
     setState(() => _isLoading = false);
     
     try {
-      debugPrint('📦 [Subscription] Getting payment details...');
-      
       // Get payment details for Paystack popup
-      final paymentDetails = appState.getPaymentDetails(
+      final paymentDetails = userProvider.getPaymentDetails(
         planId: planId,
         planName: planName,
         amount: amount,
       );
       
-      debugPrint('✅ [Subscription] Payment details retrieved:');
-      debugPrint('   Email: ${paymentDetails['email']}');
-      debugPrint('   Currency: ${paymentDetails['currency']}');
-      
-      debugPrint('🚀 [Subscription] Opening PaymentGatewayScreen...');
-      
       // Open Paystack inline popup
       final paymentResult = await Navigator.push<Map<String, dynamic>>(
         context,
         MaterialPageRoute(
-          builder: (context) {
-            debugPrint('🏗️ [Subscription] Building PaymentGatewayScreen...');
-            return PaymentGatewayScreen(
-              email: paymentDetails['email'],
-              amount: paymentDetails['amount'],
-              planId: paymentDetails['planId'],
-              planName: paymentDetails['planName'],
-              currency: paymentDetails['currency'],
-            );
-          },
+          builder: (context) => PaymentGatewayScreen(
+            email: paymentDetails['email'],
+            amount: paymentDetails['amount'],
+            planId: paymentDetails['planId'],
+            planName: paymentDetails['planName'],
+            currency: paymentDetails['currency'],
+          ),
         ),
       );
-      
-      debugPrint('🔙 [Subscription] Returned from PaymentGatewayScreen');
-      debugPrint('   Result: $paymentResult');
       
       if (!mounted) return;
       
@@ -458,7 +438,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
         setState(() => _isLoading = true);
         
         // Purchase subscription with payment reference
-        final success = await appState.purchaseSubscriptionPlan(
+        final success = await userProvider.purchaseSubscriptionPlan(
           planId,
           paymentReference,
         );

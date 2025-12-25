@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../providers/app_state.dart';
+import '../providers/split/network_provider.dart';
+import '../providers/split/user_provider.dart';
 import '../models/plan_model.dart';
 import '../utils/permissions.dart';
 import '../utils/permission_mapping.dart';
@@ -20,7 +21,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadPlans();
+      context.read<NetworkProvider>().loadPlans();
     });
   }
 
@@ -34,7 +35,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
   }
 
   void _navigateToCreateEdit({PlanModel? plan}) {
-    final user = context.read<AppState>().currentUser;
+    final user = context.read<UserProvider>().currentUser;
     if (user == null) return;
     
     // Check permission based on whether creating or editing
@@ -58,12 +59,12 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
     ).then((_) {
       if (!mounted) return;
       // Reload plans after returning from create/edit screen
-      context.read<AppState>().loadPlans();
+      context.read<NetworkProvider>().loadPlans();
     });
   }
 
   void _showDeleteDialog(PlanModel plan) {
-    final user = context.read<AppState>().currentUser;
+    final user = context.read<UserProvider>().currentUser;
     if (user == null) return;
     
     if (!Permissions.canDeletePlans(user.role, user.permissions)) {
@@ -87,14 +88,13 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
           FilledButton(
             onPressed: () async {
               Navigator.pop(context);
+              final networkProvider = context.read<NetworkProvider>();
               try {
-                await context.read<AppState>().deletePlan(plan.slug);
+                await networkProvider.deletePlan(plan.slug);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('plan_deleted_successfully'.tr())),
                   );
-                  // Reload plans after deletion
-                  context.read<AppState>().loadPlans();
                 }
               } catch (e) {
                 if (context.mounted) {
@@ -117,8 +117,9 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final plans = appState.plans;
+    final networkProvider = context.watch<NetworkProvider>();
+    final userProvider = context.watch<UserProvider>();
+    final plans = networkProvider.plans;
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -133,7 +134,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
       ),
-      body: appState.isLoading
+      body: networkProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : plans.isEmpty
               ? Center(
@@ -193,7 +194,7 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                   Text(
-                                    '${plan.price} ${appState.currencyCode}',
+                                    '${plan.price} ${userProvider.currencyCode}',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -204,8 +205,8 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                             ),
                           ),
                           if (Permissions.canEditPlans(
-                                appState.currentUser?.role ?? '',
-                                appState.currentUser?.permissions,
+                                userProvider.currentUser?.role ?? '',
+                                userProvider.currentUser?.permissions,
                               ))
                                 Container(
                                   width: 44,
@@ -222,16 +223,16 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                   ),
                                 ),
                               if (Permissions.canEditPlans(
-                                appState.currentUser?.role ?? '',
-                                appState.currentUser?.permissions,
+                                userProvider.currentUser?.role ?? '',
+                                userProvider.currentUser?.permissions,
                               ) && Permissions.canDeletePlans(
-                                appState.currentUser?.role ?? '',
-                                appState.currentUser?.permissions,
+                                userProvider.currentUser?.role ?? '',
+                                userProvider.currentUser?.permissions,
                               ))
                                 const SizedBox(width: 12),
                               if (Permissions.canDeletePlans(
-                                appState.currentUser?.role ?? '',
-                                appState.currentUser?.permissions,
+                                userProvider.currentUser?.role ?? '',
+                                userProvider.currentUser?.permissions,
                               ))
                                 Container(
                                   width: 44,
@@ -253,8 +254,8 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                   },
                 ),
       floatingActionButton: Permissions.canCreatePlans(
-        appState.currentUser?.role ?? '',
-        appState.currentUser?.permissions,
+        userProvider.currentUser?.role ?? '',
+        userProvider.currentUser?.permissions,
       )
           ? Container(
               decoration: BoxDecoration(

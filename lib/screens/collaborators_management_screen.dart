@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+
+import '../providers/split/user_provider.dart';
 import '../utils/app_theme.dart';
 
 class CollaboratorsManagementScreen extends StatefulWidget {
@@ -12,9 +13,6 @@ class CollaboratorsManagementScreen extends StatefulWidget {
 }
 
 class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementScreen> {
-  bool _isLoading = false;
-  List<dynamic> _collaborators = [];
-  List<dynamic> _roles = [];
 
   @override
   void initState() {
@@ -23,35 +21,8 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
   }
 
   Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final appState = context.read<AppState>();
-      final collaborators = await appState.collaboratorRepository.fetchCollaborators();
-      final roles = await appState.collaboratorRepository.fetchRoles();
-      
-      if (mounted) {
-        setState(() {
-          _collaborators = collaborators;
-          _roles = roles;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${'error_loading_collaborators'.tr()}: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+    await context.read<UserProvider>().loadWorkers();
+    await context.read<UserProvider>().loadRoles();
   }
 
   Future<void> _showCreateCollaboratorDialog() async {
@@ -91,10 +62,10 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
                     labelText: 'role'.tr(),
                     border: const OutlineInputBorder(),
                   ),
-                  items: _roles.map((role) {
+                  items: context.read<UserProvider>().roles.map((role) {
                     return DropdownMenuItem<String>(
-                      value: role['slug'],
-                      child: Text(role['name'] ?? role['slug']),
+                      value: role.slug,
+                      child: Text(role.name),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -123,8 +94,8 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
     if (result != true) return;
 
     try {
-      final appState = context.read<AppState>();
-      await appState.collaboratorRepository.createCollaborator({
+      final userProvider = context.read<UserProvider>();
+      await userProvider.createWorker({
         'email': emailController.text,
         'username': usernameController.text,
         'role': selectedRole,
@@ -137,7 +108,6 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
             backgroundColor: Colors.green,
           ),
         );
-        _loadData();
       }
     } catch (e) {
       if (mounted) {
@@ -176,19 +146,16 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
     if (confirmed != true) return;
 
     try {
-      final appState = context.read<AppState>();
-      final success = await appState.collaboratorRepository.deleteCollaborator(username);
+      final userProvider = context.read<UserProvider>();
+      await userProvider.deleteWorker(username);
       
       if (mounted) {
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('collaborator_deleted_success'.tr()),
-              backgroundColor: Colors.green,
-            ),
-          );
-          _loadData();
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('collaborator_deleted_success'.tr()),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -204,6 +171,9 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider>();
+    final collaborators = userProvider.workers;
+    final isLoading = userProvider.isLoading;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -217,9 +187,9 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
           ),
         ],
       ),
-      body: _isLoading
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _collaborators.isEmpty
+          : collaborators.isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -251,9 +221,9 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
                   onRefresh: _loadData,
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: _collaborators.length,
+                    itemCount: collaborators.length,
                     itemBuilder: (context, index) {
-                      final collaborator = _collaborators[index];
+                      final collaborator = collaborators[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
                         child: ListTile(
@@ -265,21 +235,21 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
                             ),
                           ),
                           title: Text(
-                            collaborator['username'] ?? 'unknown_user'.tr(),
+                            collaborator.username,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 4),
-                              Text(collaborator['email'] ?? 'N/A'),
-                              Text('${'role'.tr()}: ${collaborator['role'] ?? 'N/A'}'),
+                              Text(collaborator.email),
+                              Text('${'role'.tr()}: ${collaborator.roleName}'),
                             ],
                           ),
                           trailing: IconButton(
                             icon: const Icon(Icons.delete_outline),
                             color: Colors.red,
-                            onPressed: () => _deleteCollaborator(collaborator['username'] ?? ''),
+                            onPressed: () => _deleteCollaborator(collaborator.username),
                             tooltip: 'delete'.tr(),
                           ),
                           isThreeLine: true,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
 import '../utils/app_theme.dart';
 
 class UserRoleScreen extends StatefulWidget {
@@ -16,7 +16,7 @@ class _UserRoleScreenState extends State<UserRoleScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadRoles();
+      context.read<UserProvider>().loadRoles();
     });
   }
 
@@ -24,8 +24,8 @@ class _UserRoleScreenState extends State<UserRoleScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final appState = context.watch<AppState>();
-    final roles = appState.roles;
+    final userProvider = context.watch<UserProvider>();
+    final roles = userProvider.roles;
 
     return Scaffold(
       appBar: AppBar(
@@ -102,7 +102,7 @@ class _UserRoleScreenState extends State<UserRoleScreen> {
           ),
           FilledButton(
             onPressed: () {
-              context.read<AppState>().deleteRole(role.slug);
+              context.read<UserProvider>().deleteRole(role.slug);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('role_deleted'.tr())),

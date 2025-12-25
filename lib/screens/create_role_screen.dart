@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
 
 class CreateRoleScreen extends StatefulWidget {
   final Map<String, dynamic>? roleData;
@@ -35,7 +35,7 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
   Future<void> _loadPermissions() async {
     try {
       // Add a timeout to prevent infinite loading
-      final permissions = await context.read<AppState>().fetchPermissions()
+      final permissions = await context.read<UserProvider>().fetchPermissions()
           .timeout(const Duration(seconds: 10));
       
       if (mounted) {
@@ -86,9 +86,9 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
 
     if (widget.roleData != null) {
       final slug = widget.roleData!['slug'] ?? widget.roleData!['id'];
-      context.read<AppState>().updateRole(slug, data);
+      context.read<UserProvider>().updateRole(slug, data);
     } else {
-      context.read<AppState>().createRole(data);
+      context.read<UserProvider>().createRole(data);
     }
 
     Navigator.pop(context);

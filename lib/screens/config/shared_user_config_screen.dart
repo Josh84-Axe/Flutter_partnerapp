@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
-import '../../providers/app_state.dart';
+import '../../providers/split/network_provider.dart';
 
 class SharedUserConfigScreen extends StatefulWidget {
   const SharedUserConfigScreen({super.key});
@@ -15,7 +15,7 @@ class _SharedUserConfigScreenState extends State<SharedUserConfigScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadAllConfigurations();
+      context.read<NetworkProvider>().loadAllConfigurations();
     });
   }
 
@@ -57,7 +57,7 @@ class _SharedUserConfigScreenState extends State<SharedUserConfigScreen> {
             onPressed: () async {
               if (valueController.text.isNotEmpty && labelController.text.isNotEmpty) {
                 try {
-                  await context.read<AppState>().createSharedUsersConfig({
+                  await context.read<NetworkProvider>().createSharedUsersConfig({
                     'value': int.tryParse(valueController.text) ?? 1,
                     'label': labelController.text,
                   });
@@ -100,7 +100,7 @@ class _SharedUserConfigScreenState extends State<SharedUserConfigScreen> {
           FilledButton(
             onPressed: () async {
               try {
-                await context.read<AppState>().deleteSharedUsersConfig(id);
+                await context.read<NetworkProvider>().deleteSharedUsersConfig(id);
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -167,7 +167,7 @@ class _SharedUserConfigScreenState extends State<SharedUserConfigScreen> {
             onPressed: () async {
               if (valueController.text.isNotEmpty && labelController.text.isNotEmpty) {
                 try {
-                  await context.read<AppState>().updateSharedUsersConfig(id, {
+                  await context.read<NetworkProvider>().updateSharedUsersConfig(id, {
                     'value': int.tryParse(valueController.text) ?? 1,
                     'label': labelController.text,
                   });
@@ -196,8 +196,8 @@ class _SharedUserConfigScreenState extends State<SharedUserConfigScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final appState = context.watch<AppState>();
-    final configs = appState.sharedUsers;
+    final networkProvider = context.watch<NetworkProvider>();
+    final configs = networkProvider.sharedUsers;
 
     return Scaffold(
       appBar: AppBar(
@@ -206,7 +206,7 @@ class _SharedUserConfigScreenState extends State<SharedUserConfigScreen> {
       body: Column(
         children: [
           Expanded(
-            child: appState.isLoading
+            child: networkProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : configs.isEmpty
                     ? const Center(child: Text('No shared users configs'))

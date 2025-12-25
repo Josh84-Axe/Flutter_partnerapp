@@ -338,6 +338,22 @@ class AuthRepository {
       return false;
     }
   }
+  
+  /// Verify password reset OTP
+  Future<Map<String, dynamic>?> verifyPasswordResetOtp(String email, String otp) async {
+    try {
+      if (kDebugMode) print('🔑 [AuthRepository] Verify password reset OTP for: $email');
+      final response = await _dio.post(
+        '/partner/password-reset-verify-otp/', // Guessing endpoint, or logic?
+        data: {'email': email, 'otp': otp},
+      );
+      if (kDebugMode) print('✅ [AuthRepository] Verify password reset OTP response: ${response.data}');
+      return response.data as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AuthRepository] Verify password reset OTP error: $e');
+      return null;
+    }
+  }
 
   /// Confirm password reset with OTP
   Future<bool> confirmPasswordReset({

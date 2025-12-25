@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/auth_provider.dart';
 import '../utils/app_theme.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
@@ -52,8 +52,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     _resendTimer?.cancel();
     
     // Clear any errors when leaving OTP screen
-    final appState = context.read<AppState>();
-    appState.clearError();
+    final authProvider = context.read<AuthProvider>();
+    authProvider.clearError();
     
     super.dispose();
   }
@@ -62,8 +62,19 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     setState(() => _hasAttemptedVerification = true); // Mark that user has attempted verification
     if (!_formKey.currentState!.validate()) return;
 
-    final appState = context.read<AppState>();
-    final success = await appState.confirmRegistration(_otpController.text.trim());
+    final authProvider = context.read<AuthProvider>();
+    // Get email from arguments
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final email = args?['email'] as String? ?? '';
+    
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('error_occurred'.tr())),
+      );
+      return;
+    }
+
+    final success = await authProvider.confirmRegistration(email, _otpController.text.trim());
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -80,8 +91,14 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   Future<void> _resendCode() async {
     if (!_canResend) return;
 
-    final appState = context.read<AppState>();
-    final success = await appState.resendVerifyEmailOtp();
+    final authProvider = context.read<AuthProvider>();
+    
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final email = args?['email'] as String? ?? '';
+    
+    if (email.isEmpty) return;
+
+    final success = await authProvider.resendVerifyEmailOtp(email);
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -93,8 +110,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final email = appState.registrationEmail ?? 'your email';
+    final authProvider = context.watch<AuthProvider>();
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final email = args?['email'] as String? ?? 'your email';
 
     return Scaffold(
       appBar: AppBar(
@@ -159,21 +177,21 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
-                if (appState.error != null && _hasAttemptedVerification)
+                if (authProvider.error != null && _hasAttemptedVerification)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Text(
-                      appState.error!,
+                      authProvider.error!,
                       style: const TextStyle(color: AppTheme.errorRed),
                       textAlign: TextAlign.center,
                     ),
                   ),
                 FilledButton(
-                  onPressed: appState.isLoading ? null : _verifyOtp,
+                  onPressed: authProvider.isLoading ? null : _verifyOtp,
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: appState.isLoading
+                  child: authProvider.isLoading
                       ? const SizedBox(
                           height: 24,
                           width: 24,
@@ -183,7 +201,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 ),
                 const SizedBox(height: 24),
                 TextButton(
-                  onPressed: _canResend && !appState.isLoading ? _resendCode : null,
+                  onPressed: _canResend && !authProvider.isLoading ? _resendCode : null,
                   child: Text(
                     _canResend
                         ? 'resend_code'.tr()

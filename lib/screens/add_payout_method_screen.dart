@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+import '../providers/split/billing_provider.dart';
+import '../providers/split/auth_provider.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import '../utils/country_utils.dart';
 
@@ -241,7 +242,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
             ignoreBlank: false,
             autoValidateMode: AutovalidateMode.disabled,
             selectorTextStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-            initialValue: PhoneNumber(isoCode: CountryUtils.getIsoCode(context.read<AppState>().partnerCountry ?? 'Togo')),
+            initialValue: PhoneNumber(isoCode: CountryUtils.getIsoCode(context.read<AuthProvider>().partnerCountry ?? 'Togo')),
             textFieldController: _mobileNumberController,
             formatInput: true,
             keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
@@ -381,8 +382,8 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
         }
         
         // Request OTP
-        final appState = context.read<AppState>();
-        await appState.requestPaymentMethodOtp(paymentData);
+        final billingProvider = context.read<BillingProvider>();
+        await billingProvider.requestPaymentMethodOtp(paymentData);
         
         if (context.mounted) {
           // Show OTP verification dialog
@@ -423,7 +424,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
                     final otp = otpController.text.trim();
                     if (otp.length == 6) {
                       try {
-                        await appState.verifyPaymentMethodOtp(otp);
+                        await billingProvider.verifyPaymentMethodOtp(otp);
                         if (context.mounted) {
                           Navigator.pop(context, true);
                         }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
 import '../utils/app_theme.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
@@ -22,14 +22,14 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   }
 
   void _loadSettings() {
-    final appState = context.read<AppState>();
-    _settings = appState.getNotificationSettings();
+    final userProvider = context.read<UserProvider>();
+    _settings = userProvider.getNotificationSettings();
     setState(() => _isLoading = false);
   }
 
   Future<void> _saveSettings() async {
-    final appState = context.read<AppState>();
-    await appState.updateNotificationSettings(_settings);
+    final userProvider = context.read<UserProvider>();
+    await userProvider.updateNotificationSettings(_settings);
     
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

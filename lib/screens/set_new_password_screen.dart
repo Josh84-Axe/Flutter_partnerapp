@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+import '../providers/split/auth_provider.dart';
 import '../utils/app_theme.dart';
 
 class SetNewPasswordScreen extends StatefulWidget {
@@ -60,7 +60,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
         return;
       }
       
-      final appState = context.read<AppState>();
+      final authProvider = context.read<AuthProvider>();
       
       // Show loading indicator
       showDialog(
@@ -70,7 +70,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
       );
       
       try {
-        final success = await appState.confirmPasswordReset(
+        final success = await authProvider.confirmPasswordReset(
           email: email,
           otp: otp,
           newPassword: _passwordController.text.trim(),

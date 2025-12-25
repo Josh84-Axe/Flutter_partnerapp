@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../providers/app_state.dart';
+import '../providers/split/network_provider.dart';
 
 class RouterRegistrationScreen extends StatefulWidget {
   const RouterRegistrationScreen({super.key});
@@ -64,7 +64,7 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
       'isActive': _isActive,
     };
 
-    await context.read<AppState>().createRouter(routerData);
+    await context.read<NetworkProvider>().addRouter(routerData);
     
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -78,7 +78,7 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final appState = context.watch<AppState>();
+    final networkProvider = context.watch<NetworkProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -216,10 +216,10 @@ class _RouterRegistrationScreenState extends State<RouterRegistrationScreen> {
               ),
               const SizedBox(height: 24),
               FilledButton(
-                onPressed: appState.isLoading ? null : _submitForm,
+                onPressed: networkProvider.isLoading ? null : _submitForm,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: appState.isLoading
+                  child: networkProvider.isLoading
                       ? const SizedBox(
                           height: 20,
                           width: 20,

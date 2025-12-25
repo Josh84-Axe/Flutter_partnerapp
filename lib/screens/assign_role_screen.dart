@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
 import '../utils/app_theme.dart';
 
 class AssignRoleScreen extends StatefulWidget {
@@ -18,8 +18,8 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadWorkers();
-      context.read<AppState>().loadRoles();
+      context.read<UserProvider>().loadWorkers();
+      context.read<UserProvider>().loadRoles();
     });
   }
 
@@ -27,8 +27,8 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final appState = context.watch<AppState>();
-    final workers = appState.workers;
+    final userProvider = context.watch<UserProvider>();
+    final workers = userProvider.workers;
 
     return Scaffold(
       appBar: AppBar(
@@ -133,8 +133,8 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
   }
 
   void _showRoleSelector(BuildContext context, worker) {
-    final appState = context.read<AppState>();
-    final roles = appState.roles;
+    final userProvider = context.read<UserProvider>();
+    final roles = userProvider.roles;
     final displayName = worker.fullName.isNotEmpty ? worker.fullName : worker.username;
 
     showModalBottomSheet(
@@ -224,7 +224,7 @@ class _AssignRoleScreenState extends State<AssignRoleScreen> {
                       if (_selectedRoleId != null) {
                         Navigator.pop(context);
                         try {
-                          await appState.assignRoleToWorker(worker.username, _selectedRoleId!);
+                          await userProvider.assignRoleToWorker(worker.username, _selectedRoleId!);
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(

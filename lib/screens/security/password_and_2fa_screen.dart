@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_state.dart';
+import '../../providers/split/auth_provider.dart';
 import '../../utils/app_theme.dart';
 import 'verify_identity_dialog.dart';
 
@@ -34,7 +34,7 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
   }
 
   Future<void> _loadTwoFactorStatus() async {
-    final status = await context.read<AppState>().getTwoFactorStatus();
+    final status = await context.read<AuthProvider>().getTwoFactorStatus();
     if (mounted) {
       setState(() {
         _is2FAEnabled = status;
@@ -80,7 +80,7 @@ class _PasswordAndTwoFactorScreenState extends State<PasswordAndTwoFactorScreen>
 
     setState(() => _isLoading = true);
     
-    final success = await context.read<AppState>().changePassword(
+    final success = await context.read<AuthProvider>().changePassword(
       _currentPasswordController.text,
       _newPasswordController.text,
     );

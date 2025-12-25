@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+
+import '../providers/split/network_provider.dart';
+import '../providers/split/user_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/error_message_helper.dart';
 
@@ -24,9 +26,9 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
   }
 
   Future<void> _loadData() async {
-    final appState = context.read<AppState>();
-    await appState.loadHotspotUsers();
-    await appState.loadHotspotProfiles();
+    final networkProvider = context.read<NetworkProvider>();
+    await networkProvider.loadHotspotUsers();
+    await networkProvider.loadHotspotProfiles();
   }
 
   void _showCreateUserDialog() {
@@ -74,7 +76,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
                       border: const OutlineInputBorder(),
                     ),
                     hint: Text('select_profile'.tr()),
-                    items: context.watch<AppState>().hotspotProfiles.map((profile) {
+                    items: context.watch<NetworkProvider>().hotspotProfiles.map((profile) {
                       return DropdownMenuItem(
                         value: profile.id,
                         child: Text(profile.name),
@@ -96,7 +98,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
               onPressed: () async {
                 if (formKey.currentState?.validate() ?? false) {
                   try {
-                    await context.read<AppState>().createHotspotUser({
+                    await context.read<NetworkProvider>().createHotspotUser({
                       'username': usernameController.text,
                       'password': passwordController.text,
                       'profile': selectedProfile,
@@ -170,7 +172,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
                       border: const OutlineInputBorder(),
                     ),
                     hint: Text('select_profile'.tr()),
-                    items: context.watch<AppState>().hotspotProfiles.map((profile) {
+                    items: context.watch<NetworkProvider>().hotspotProfiles.map((profile) {
                       return DropdownMenuItem(
                         value: profile.id,
                         child: Text(profile.name),
@@ -201,7 +203,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
                       updateData['password'] = passwordController.text;
                     }
                     
-                    await context.read<AppState>().updateHotspotUser(
+                    await context.read<NetworkProvider>().updateHotspotUser(
                       user['username'],
                       updateData,
                     );
@@ -252,7 +254,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
 
     if (confirmed == true && mounted) {
       try {
-        await context.read<AppState>().deleteHotspotUser(user['username']);
+        await context.read<NetworkProvider>().deleteHotspotUser(user['username']);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('user_deleted'.tr())),
@@ -297,12 +299,12 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
     if (confirmed == true && mounted) {
       try {
         if (isBlocked) {
-          await context.read<AppState>().unblockCustomer(username);
+          await context.read<UserProvider>().toggleUserBlock(username, true);
         } else {
-          await context.read<AppState>().blockCustomer(username);
+          await context.read<UserProvider>().toggleUserBlock(username, false);
         }
         
-        await context.read<AppState>().loadHotspotUsers(); // Reload to see changes
+        await context.read<NetworkProvider>().loadHotspotUsers(); // Reload to see changes
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -321,10 +323,10 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    final networkProvider = context.watch<NetworkProvider>();
     final colorScheme = Theme.of(context).colorScheme;
     
-    final filteredUsers = appState.hotspotUsers.where((user) {
+    final filteredUsers = networkProvider.hotspotUsers.where((user) {
       final username = user['username']?.toString().toLowerCase() ?? '';
       return username.contains(_searchQuery.toLowerCase());
     }).toList();
@@ -363,7 +365,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
             ),
           ),
           Expanded(
-            child: appState.isLoading && appState.hotspotUsers.isEmpty
+            child: networkProvider.isLoading && networkProvider.hotspotUsers.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : filteredUsers.isEmpty
                     ? Center(

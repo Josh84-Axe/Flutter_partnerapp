@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/network_provider.dart';
+import '../providers/split/user_provider.dart';
 import '../models/plan_model.dart';
 import 'create_edit_plan_screen.dart';
 import '../utils/permissions.dart';
@@ -20,14 +21,15 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadPlans();
-      context.read<AppState>().loadAllConfigurations();
-      context.read<AppState>().loadHotspotProfiles();
+      final networkProvider = context.read<NetworkProvider>();
+      networkProvider.loadPlans();
+      networkProvider.loadAllConfigurations();
+      networkProvider.loadHotspotProfiles();
     });
   }
 
   void _navigateToCreateEdit({PlanModel? plan}) {
-    final user = context.read<AppState>().currentUser;
+    final user = context.read<UserProvider>().currentUser;
     if (user == null) return;
     
     // Check permission based on whether creating or editing
@@ -52,12 +54,12 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
       ),
     ).then((_) {
       // Reload plans after returning from create/edit screen
-      context.read<AppState>().loadPlans();
+      context.read<NetworkProvider>().loadPlans();
     });
   }
 
   void _showDeleteDialog(PlanModel plan) {
-    final user = context.read<AppState>().currentUser;
+    final user = context.read<UserProvider>().currentUser;
     if (user == null) return;
     
     if (!Permissions.canDeletePlans(user.role, user.permissions)) {
@@ -82,13 +84,13 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
             onPressed: () async {
               Navigator.pop(context);
               try {
-                await context.read<AppState>().deletePlan(plan.slug);
+                await context.read<NetworkProvider>().deletePlan(plan.slug);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('plan_deleted_successfully'.tr())),
                   );
                   // Reload plans after deletion
-                  context.read<AppState>().loadPlans();
+                  context.read<NetworkProvider>().loadPlans();
                 }
               } catch (e) {
                 if (context.mounted) {
@@ -111,8 +113,9 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final plans = appState.plans;
+    final networkProvider = context.watch<NetworkProvider>();
+    final userProvider = context.watch<UserProvider>();
+    final plans = networkProvider.plans;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -123,7 +126,7 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
         surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
-      body: appState.isLoading
+      body: networkProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : plans.isEmpty
               ? Center(
@@ -191,7 +194,7 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
                                 children: [
                                   _buildInfoRow(
                                     Icons.cloud_download_outlined,
-                                    _getDataLimitLabel(plan.dataLimit, appState),
+                                    _getDataLimitLabel(plan.dataLimit, networkProvider),
                                   ),
                                   const SizedBox(height: 4),
                                   _buildInfoRow(
@@ -236,8 +239,8 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
                   },
                 ),
       floatingActionButton: Permissions.canCreatePlans(
-        appState.currentUser?.role ?? '',
-        appState.currentUser?.permissions,
+        userProvider.currentUser?.role ?? '',
+        userProvider.currentUser?.permissions,
       )
           ? FloatingActionButton(
               onPressed: () => _navigateToCreateEdit(),
@@ -263,13 +266,13 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
       ],
     );
   }
-
-  String _getDataLimitLabel(int? dataLimitId, AppState appState) {
+  
+  String _getDataLimitLabel(int? dataLimitId, NetworkProvider networkProvider) {
     if (dataLimitId == null) return 'Unlimited';
     
     // Find the configuration with this ID
     try {
-      final config = appState.dataLimits.firstWhere(
+      final config = networkProvider.dataLimits.firstWhere(
         (limit) => limit is Map && limit['id'] == dataLimitId,
         orElse: () => null,
       );

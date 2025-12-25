@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+
+import '../providers/split/auth_provider.dart';
+import '../providers/split/user_provider.dart';
 import '../models/worker_model.dart';
 import '../models/user_model.dart'; // Added by instruction
+import '../providers/split/network_provider.dart';
 import '../utils/app_theme.dart';
 import 'assign_routers_screen.dart'; // Added by instruction
 import '../widgets/search_bar_widget.dart';
@@ -49,9 +52,9 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadUsers();
-      context.read<AppState>().loadWorkers();
-      context.read<AppState>().loadRoles();
+      context.read<UserProvider>().loadUsers();
+      context.read<UserProvider>().loadWorkers();
+      context.read<UserProvider>().loadRoles();
     });
   }
 
@@ -64,7 +67,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
 
 
   void _showUserDialog({Map<String, dynamic>? userData}) {
-    final currentUser = context.read<AppState>().currentUser;
+    final currentUser = context.read<AuthProvider>().currentUser;
     if (currentUser == null) return;
     // Permission check for create vs edit
     final hasPermission = userData == null
@@ -114,9 +117,9 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               };
 
               if (userData == null) {
-                context.read<AppState>().createUser(data);
+                context.read<UserProvider>().createUser(data);
               } else {
-                context.read<AppState>().updateUser(userData['id'], data);
+                context.read<UserProvider>().updateUser(userData['id'], data);
               }
 
               Navigator.pop(context);
@@ -130,8 +133,10 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final allUsers = appState.users.where((user) {
+
+    final authProvider = context.watch<AuthProvider>();
+    final userProvider = context.watch<UserProvider>();
+    final allUsers = userProvider.users.where((user) {
       if (_searchQuery.isEmpty) return true;
       final query = _searchQuery.toLowerCase();
       return user.name.toLowerCase().contains(query) ||
@@ -140,7 +145,6 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     }).toList();
 
     final users = allUsers;
-    // workers variable removed as it was unused (appState.workers is used instead)
 
     return Scaffold(
       appBar: AppBar(
@@ -161,7 +165,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => appState.loadUsers(),
+            onPressed: () => context.read<UserProvider>().loadUsers(),
           ),
         ],
         bottom: TabBar(
@@ -188,26 +192,26 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             ),
           ),
           Expanded(
-            child: appState.isLoading
+            child: userProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : TabBarView(
                     controller: _tabController,
                     children: [
                       _buildUserList(users, isCustomers: true),
-                      _buildWorkerList(appState.workers),
+                      _buildWorkerList(userProvider.workers),
                     ],
                   ),
           ),
         ],
       ),
-      floatingActionButton: _buildFAB(appState),
+      floatingActionButton: _buildFAB(authProvider),
     );
   }
 
-  Widget? _buildFAB(AppState appState) {
+  Widget? _buildFAB(AuthProvider authProvider) {
     final canCreate = Permissions.canCreateUsers(
-      appState.currentUser?.role ?? '',
-      appState.currentUser?.permissions,
+      authProvider.currentUser?.role ?? '',
+      authProvider.currentUser?.permissions,
     );
     
     if (!canCreate) return null;
@@ -384,7 +388,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
   }
 
   void _showUserMenu(BuildContext context, user) {
-    final currentUser = context.read<AppState>().currentUser;
+    final currentUser = context.read<AuthProvider>().currentUser;
     if (currentUser == null) return;
     
     // Debug logging
@@ -431,7 +435,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 onTap: () async {
                   Navigator.pop(context);
                   try {
-                    await context.read<AppState>().toggleUserBlock(
+                    await context.read<UserProvider>().toggleUserBlock(
                       user.username ?? user.id,
                       user.isBlocked ?? false,
                     );
@@ -474,7 +478,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                         ),
                         FilledButton(
                           onPressed: () {
-                            context.read<AppState>().deleteUser(user.id);
+                            context.read<UserProvider>().deleteUser(user.id);
                             Navigator.pop(context);
                           },
                           style: FilledButton.styleFrom(
@@ -596,7 +600,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
   }
 
   void _showWorkerMenu(BuildContext context, worker) {
-    final currentUser = context.read<AppState>().currentUser;
+    final currentUser = context.read<AuthProvider>().currentUser;
     if (currentUser == null) return;
     
     // Debug logging
@@ -646,9 +650,9 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                     ),
                   );
                   // Refresh if changes were made
-                  if (result == true && context.mounted) {
-                    context.read<AppState>().loadWorkers();
-                  }
+                    if (result == true && context.mounted) {
+                      context.read<UserProvider>().loadWorkers();
+                    }
                 },
               ),
             // Assign/Change Role
@@ -690,7 +694,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                         FilledButton(
                           onPressed: () async {
                             try {
-                              await context.read<AppState>().deleteWorker(worker.username);
+                              await context.read<UserProvider>().deleteWorker(worker.username);
                               if (context.mounted) {
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -727,8 +731,8 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
   }
 
   void _showAssignRoleDialog(BuildContext context, worker) {
-    final appState = context.read<AppState>();
-    final roles = appState.roles;
+    final userProvider = context.read<UserProvider>();
+    final roles = userProvider.roles;
     String? selectedRole = worker.roleSlug;
 
     showDialog(
@@ -774,9 +778,9 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 if (selectedRole != null) {
                   try {
                     if (worker.roleSlug == null) { // Check against roleSlug
-                      await appState.assignRoleToWorker(worker.username, selectedRole!);
+                      await userProvider.assignRoleToWorker(worker.username, selectedRole!);
                     } else {
-                      await appState.updateWorkerRole(worker.username, selectedRole!);
+                      await userProvider.updateWorkerRole(worker.username, selectedRole!);
                     }
                     
                     if (context.mounted) {
@@ -899,7 +903,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           FilledButton(
             onPressed: () async {
               try {
-                await context.read<AppState>().updateWorker(worker.username, {
+                await context.read<UserProvider>().updateWorker(worker.username, {
                   'first_name': firstNameController.text,
                   'last_name': lastNameController.text,
                   'email': emailController.text,
@@ -929,8 +933,8 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
   }
 
   void _showAssignRouterDialog(BuildContext context, WorkerModel worker) {
-    final appState = context.read<AppState>();
-    final routers = appState.visibleRouters;
+    final networkProvider = context.read<NetworkProvider>();
+    final routers = networkProvider.routers; // Assuming routers getter exists
     String? selectedRouter;
 
     showDialog(
@@ -974,7 +978,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                   ? null
                   : () async {
                       try {
-                        await appState.assignRouterToWorker(worker.email, selectedRouter!);
+                        await context.read<UserProvider>().assignRouterToWorker(worker.email, selectedRouter!);
                         if (context.mounted) {
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(

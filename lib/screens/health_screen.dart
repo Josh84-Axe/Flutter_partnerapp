@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../providers/app_state.dart';
+
+import '../providers/split/network_provider.dart';
 import '../models/router_model.dart';
 import '../utils/app_theme.dart';
 
@@ -17,7 +18,7 @@ class _HealthScreenState extends State<HealthScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadRouters();
+      context.read<NetworkProvider>().loadRouters();
     });
   }
 
@@ -51,10 +52,11 @@ class _HealthScreenState extends State<HealthScreen> {
           ),
           FilledButton(
             onPressed: () {
+              final networkProvider = context.read<NetworkProvider>();
               if (isBlocked) {
-                context.read<AppState>().unblockDevice(routerId);
+                networkProvider.unblockDevice(routerId);
               } else {
-                context.read<AppState>().blockDevice(routerId);
+                networkProvider.blockDevice(routerId);
               }
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -79,7 +81,7 @@ class _HealthScreenState extends State<HealthScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final appState = context.watch<AppState>();
+    final networkProvider = context.watch<NetworkProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -87,13 +89,13 @@ class _HealthScreenState extends State<HealthScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => appState.loadRouters(),
+            onPressed: () => networkProvider.loadRouters(),
           ),
         ],
       ),
-      body: appState.isLoading
+      body: networkProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : appState.visibleRouters.isEmpty
+          : networkProvider.visibleRouters.isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -109,9 +111,9 @@ class _HealthScreenState extends State<HealthScreen> {
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(16.0),
-                  itemCount: appState.visibleRouters.length,
+                  itemCount: networkProvider.visibleRouters.length,
                   itemBuilder: (context, index) {
-                    final router = appState.visibleRouters[index];
+                    final router = networkProvider.visibleRouters[index];
                     final isOnline = router.status == 'online';
                     final signalStrength = _getSignalStrength(router);
                     final hasIssues = _hasIssues(router);

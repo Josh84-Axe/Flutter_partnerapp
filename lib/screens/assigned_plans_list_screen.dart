@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/network_provider.dart';
+import '../providers/split/auth_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/currency_utils.dart';
 
@@ -29,8 +31,10 @@ class _AssignedPlansListScreenState extends State<AssignedPlansListScreen> {
     });
 
     try {
-      final appState = context.read<AppState>();
-      final plans = await appState.planRepository.fetchAssignedPlans();
+      final networkProvider = context.read<NetworkProvider>();
+      
+      if (kDebugMode) print('📡 [AssignedPlans] Fetching plans...');
+      final plans = await networkProvider.loadAssignedPlans();
       
       if (mounted) {
         setState(() {
@@ -94,8 +98,8 @@ class _AssignedPlansListScreenState extends State<AssignedPlansListScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final appState = context.watch<AppState>();
-    final partnerCountry = appState.currentUser?.country ?? 'Togo';
+    final authProvider = context.watch<AuthProvider>();
+    final partnerCountry = authProvider.currentUser?.country ?? 'Togo';
     final currencySymbol = CurrencyUtils.getCurrencySymbol(partnerCountry);
 
     return Scaffold(

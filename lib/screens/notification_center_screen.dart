@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
 import '../utils/app_theme.dart';
 
 class NotificationCenterScreen extends StatelessWidget {
@@ -10,8 +10,8 @@ class NotificationCenterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final appState = context.watch<AppState>();
-    final notifications = appState.localNotifications;
+    final userProvider = context.watch<UserProvider>();
+    final notifications = userProvider.localNotifications;
 
     return Scaffold(
       appBar: AppBar(
@@ -19,7 +19,7 @@ class NotificationCenterScreen extends StatelessWidget {
         actions: [
           if (notifications.isNotEmpty)
             TextButton(
-              onPressed: () => appState.markAllLocalNotificationsAsRead(),
+              onPressed: () => userProvider.markAllLocalNotificationsAsRead(),
               child: Text('mark_all_read'.tr()),
             ),
         ],
@@ -53,7 +53,7 @@ class NotificationCenterScreen extends StatelessWidget {
                 return _buildNotificationCard(
                   context,
                   notification,
-                  appState,
+                  userProvider,
                   colorScheme,
                 );
               },
@@ -64,7 +64,7 @@ class NotificationCenterScreen extends StatelessWidget {
   Widget _buildNotificationCard(
     BuildContext context,
     notification,
-    AppState appState,
+    UserProvider userProvider,
     ColorScheme colorScheme,
   ) {
     IconData icon;
@@ -99,7 +99,7 @@ class NotificationCenterScreen extends StatelessWidget {
           ? colorScheme.surface
           : colorScheme.primary.withValues(alpha: 0.05),
       child: InkWell(
-        onTap: () => appState.markLocalNotificationAsRead(notification.id),
+        onTap: () => userProvider.markNotificationAsRead(notification.id),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),

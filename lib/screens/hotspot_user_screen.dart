@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/network_provider.dart';
 import '../models/hotspot_profile_model.dart';
 import '../utils/app_theme.dart';
 
@@ -19,7 +19,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadHotspotProfiles();
+      context.read<NetworkProvider>().loadHotspotProfiles();
     });
   }
 
@@ -42,7 +42,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
             onPressed: () async {
               Navigator.pop(context); // Close dialog
               try {
-                final message = await context.read<AppState>().deleteHotspotProfile(profile.slug);
+                final message = await context.read<NetworkProvider>().deleteHotspotProfile(profile.slug);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -51,7 +51,7 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
                     ),
                   );
                   // Reload profiles
-                  context.read<AppState>().loadHotspotProfiles();
+                  context.read<NetworkProvider>().loadHotspotProfiles();
                 }
               } catch (e) {
                 if (context.mounted) {
@@ -78,8 +78,8 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final appState = context.watch<AppState>();
-    final allProfiles = appState.hotspotProfiles;
+    final networkProvider = context.watch<NetworkProvider>();
+    final allProfiles = networkProvider.hotspotProfiles;
     final filteredProfiles = allProfiles.where((profile) {
       return profile.name.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();

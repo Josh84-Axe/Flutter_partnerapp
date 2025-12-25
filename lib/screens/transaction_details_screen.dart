@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/billing_provider.dart';
+import '../providers/split/auth_provider.dart';
 import '../utils/currency_utils.dart';
 
 class TransactionDetailsScreen extends StatefulWidget {
@@ -61,8 +62,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
 
     try {
       if (kDebugMode) print('📡 [TransactionDetails] Fetching details from API...');
-      final appState = context.read<AppState>();
-      final details = await appState.getTransactionDetails(id, type);
+      final billingProvider = context.read<BillingProvider>();
+      final details = await billingProvider.getTransactionDetails(id, type);
       
       if (kDebugMode) {
         print('✅ [TransactionDetails] Details received:');
@@ -87,7 +88,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final appState = context.watch<AppState>();
+    final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -161,7 +162,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
                                   Text(
                                     CurrencyUtils.formatPrice(
                                       double.tryParse(_transactionDetails!['amount_paid']?.toString() ?? '0') ?? 0,
-                                      appState.partnerCountry,
+                                      authProvider.partnerCountry,
                                     ),
                                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                                           fontWeight: FontWeight.bold,

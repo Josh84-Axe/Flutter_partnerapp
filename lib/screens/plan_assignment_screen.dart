@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
+import '../providers/split/network_provider.dart';
+import '../providers/split/billing_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/currency_utils.dart';
 
@@ -30,8 +32,8 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
     });
 
     try {
-      final appState = context.read<AppState>();
-      await appState.assignPlan(_selectedUser!, _selectedPlan!);
+      final userProvider = context.read<UserProvider>();
+      await userProvider.assignPlan(_selectedUser!, _selectedPlan!);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -60,7 +62,9 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    final userProvider = context.watch<UserProvider>();
+    final networkProvider = context.watch<NetworkProvider>();
+    final billingProvider = context.watch<BillingProvider>();
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -111,20 +115,20 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                       prefixIcon: const Icon(Icons.person_outline),
                     ),
                     hint: Text('select_customer'.tr()),
-                    items: appState.users.isEmpty
+                    items: userProvider.users.isEmpty
                         ? [
                             DropdownMenuItem(
                               value: null,
                               child: Text('no_customers_available'.tr()),
                             )
                           ]
-                        : appState.users.map((user) {
+                        : userProvider.users.map((user) {
                             return DropdownMenuItem(
                               value: user.id,
                               child: Text('${user.name} (${user.email})'),
                             );
                           }).toList(),
-                    onChanged: appState.users.isEmpty
+                    onChanged: userProvider.users.isEmpty
                         ? null
                         : (value) => setState(() => _selectedUser = value),
                   ),
@@ -143,25 +147,25 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                       prefixIcon: const Icon(Icons.wifi_outlined),
                     ),
                     hint: Text('select_plan'.tr()),
-                    items: appState.plans.isEmpty
+                    items: networkProvider.plans.isEmpty
                         ? [
                             DropdownMenuItem(
                               value: null,
                               child: Text('no_plans_available'.tr()),
                             )
                           ]
-                        : appState.plans.map((plan) {
-                            final partnerCountry = appState.currentUser?.country ?? 'TG';
+                        : networkProvider.plans.map((plan) {
+                            final partnerCountry = userProvider.partnerCountry ?? 'TG';
                             final currencySymbol = CurrencyUtils.getCurrencySymbol(partnerCountry);
                             
                             return DropdownMenuItem(
                               value: plan.id.toString(),
                               child: Text(
-                                '${plan.name} - ${plan.price} ${appState.currencyCode}',
+                                '${plan.name} - ${plan.price} ${userProvider.currencyCode}',
                               ),
                             );
                           }).toList(),
-                    onChanged: appState.plans.isEmpty
+                    onChanged: networkProvider.plans.isEmpty
                         ? null
                         : (value) => setState(() => _selectedPlan = value),
                   ),
@@ -196,15 +200,15 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
-                          ...appState.plans
+                           const SizedBox(height: 12),
+                          ...networkProvider.plans
                               .where((p) => p.id.toString() == _selectedPlan)
                               .map((plan) {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildDetailRow('plan_name'.tr(), plan.name),
-                                _buildDetailRow('price'.tr(), '${plan.price} ${appState.currencyCode}'),
+                                _buildDetailRow('price'.tr(), '${plan.price} ${userProvider.currencyCode}'),
                                 _buildDetailRow('data_limit'.tr(), plan.dataLimit != null ? '${plan.dataLimit} GB' : 'Unlimited'),
                                 _buildDetailRow('validity'.tr(), plan.formattedValidity),
                                 _buildDetailRow('devices_allowed'.tr(), plan.sharedUsersLabel),

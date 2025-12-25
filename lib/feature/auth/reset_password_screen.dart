@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../motion/m3_motion.dart';
-import '../../providers/app_state.dart';
+import '../../providers/split/auth_provider.dart';
 
 /// Reset Password screen - Step 3: Set new password
 class ResetPasswordScreen extends StatefulWidget {
@@ -63,7 +63,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     });
 
     try {
-      final success = await context.read<AppState>().confirmPasswordReset(
+      final success = await context.read<AuthProvider>().confirmPasswordReset(
             email: widget.email,
             otp: widget.otp,
             newPassword: _passwordController.text,

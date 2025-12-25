@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../providers/split/network_provider.dart';
 import '../../utils/app_theme.dart';
-import '../../providers/app_state.dart';
 
 class PlanValidityConfigScreen extends StatefulWidget {
   const PlanValidityConfigScreen({super.key});
@@ -15,7 +15,7 @@ class _PlanValidityConfigScreenState extends State<PlanValidityConfigScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadAllConfigurations();
+      context.read<NetworkProvider>().loadAllConfigurations();
     });
   }
 
@@ -47,7 +47,7 @@ class _PlanValidityConfigScreenState extends State<PlanValidityConfigScreen> {
             onPressed: () async {
               if (valueController.text.isNotEmpty) {
                 try {
-                  await context.read<AppState>().createValidityPeriod({
+                  await context.read<NetworkProvider>().createValidityPeriod({
                     'value': valueController.text,
                   });
                   if (mounted) {
@@ -89,7 +89,7 @@ class _PlanValidityConfigScreenState extends State<PlanValidityConfigScreen> {
           FilledButton(
             onPressed: () async {
               try {
-                await context.read<AppState>().deleteValidityPeriod(id);
+                await context.read<NetworkProvider>().deleteValidityPeriod(id);
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -144,7 +144,7 @@ class _PlanValidityConfigScreenState extends State<PlanValidityConfigScreen> {
             onPressed: () async {
               if (valueController.text.isNotEmpty) {
                 try {
-                  await context.read<AppState>().updateValidityPeriod(id, {
+                  await context.read<NetworkProvider>().updateValidityPeriod(id, {
                     'value': valueController.text,
                   });
                   if (mounted) {
@@ -172,8 +172,8 @@ class _PlanValidityConfigScreenState extends State<PlanValidityConfigScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final appState = context.watch<AppState>();
-    final configs = appState.validityPeriods;
+    final networkProvider = context.watch<NetworkProvider>();
+    final validityPeriods = networkProvider.validityPeriods;
 
     return Scaffold(
       appBar: AppBar(
@@ -182,15 +182,15 @@ class _PlanValidityConfigScreenState extends State<PlanValidityConfigScreen> {
       body: Column(
         children: [
           Expanded(
-            child: appState.isLoading
+            child: networkProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : configs.isEmpty
+                : validityPeriods.isEmpty
                     ? const Center(child: Text('No validity periods configured'))
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: configs.length,
+                        itemCount: validityPeriods.length,
                         itemBuilder: (context, index) {
-                          final config = configs[index];
+                          final config = validityPeriods[index];
                           final value = config['value']?.toString() ?? 'Unknown';
                           
                           return Card(

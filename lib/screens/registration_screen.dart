@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../providers/app_state.dart';
+import '../providers/split/auth_provider.dart';
 import '../utils/ip_geolocation.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'legal_document_screen.dart';
@@ -109,8 +109,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _confirmPasswordController.dispose();
     
     // Clear any errors when leaving registration screen
-    final appState = context.read<AppState>();
-    appState.clearError();
+    final authProvider = context.read<AuthProvider>();
+    authProvider.clearError();
     
     super.dispose();
   }
@@ -136,13 +136,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       }
 
       print('📝 [RegistrationScreen] Form valid, preparing registration...');
-      final appState = context.read<AppState>();
+      final authProvider = context.read<AuthProvider>();
       
       // Get phone number with country code (e.g., +23355349010)
       final phoneWithCode = _phoneNumber?.phoneNumber ?? _phoneController.text.trim();
       if (kDebugMode) print('📞 [RegistrationScreen] Phone number: $phoneWithCode');
       
-      final success = await appState.register(
+      final success = await authProvider.register(
         firstName: _fullNameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
@@ -160,14 +160,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         await SuccessAlert.show(
           context,
           title: 'registration_successful'.tr(),
-          message: appState.currentUser != null && !appState.currentUser!.isActive
+          message: authProvider.currentUser != null && !authProvider.currentUser!.isActive
               ? 'email_verification_sent'.tr()
               : 'welcome_message'.tr(),
           buttonText: 'continue'.tr(),
         );
         
         // Navigate based on verification status
-        if (appState.currentUser != null && !appState.currentUser!.isActive) {
+        if (authProvider.currentUser != null && !authProvider.currentUser!.isActive) {
           if (kDebugMode) print('ℹ️ [RegistrationScreen] Email verification required, navigating to verify-email');
           Navigator.of(context).pushReplacementNamed('/email-verification');
         } else {
@@ -200,7 +200,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final appState = context.watch<AppState>();
+    final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -549,24 +549,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (appState.error != null && _hasSubmitted)
+                  if (authProvider.error != null && _hasSubmitted)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(
-                        appState.error!,
+                        authProvider.error!,
                         style: TextStyle(color: colorScheme.error),
                         textAlign: TextAlign.center,
                       ),
                     ),
                   FilledButton(
-                    onPressed: appState.isLoading ? null : _submit,
+                    onPressed: authProvider.isLoading ? null : _submit,
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(double.infinity, 48),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100),
                       ),
                     ),
-                    child: appState.isLoading
+                    child: authProvider.isLoading
                         ? const SizedBox(
                             height: 20,
                             width: 20,
@@ -584,19 +584,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        'register.login.prompt'.tr(),
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      Text('register.label.already_have_account'.tr()),
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
                         child: Text(
-                          'register.login.link'.tr(),
+                          'register.button.login'.tr(),
                           style: TextStyle(
                             color: colorScheme.primary,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),

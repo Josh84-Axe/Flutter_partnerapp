@@ -1,14 +1,19 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import '../../repositories/wallet_repository.dart';
 import '../../repositories/transaction_repository.dart';
 import '../../repositories/payment_method_repository.dart';
+import '../../repositories/report_repository.dart';
 import '../../utils/currency_utils.dart'; // Assuming this exists, based on AppState usage
 import '../../models/transaction_model.dart'; // Import TransactionModel
 
 class BillingProvider with ChangeNotifier {
   WalletRepository? _walletRepository;
   TransactionRepository? _transactionRepository;
+
   PaymentMethodRepository? _paymentMethodRepository;
+  ReportRepository? _reportRepository;
 
   bool _isLoading = false;
   String? _error;
@@ -42,6 +47,7 @@ class BillingProvider with ChangeNotifier {
   }) : _walletRepository = walletRepository,
        _transactionRepository = transactionRepository,
        _paymentMethodRepository = paymentMethodRepository,
+       _reportRepository = transactionRepository != null ? ReportRepository(transactionRepository: transactionRepository) : null,
        _partnerCountry = partnerCountry;
 
   void update({
@@ -53,6 +59,10 @@ class BillingProvider with ChangeNotifier {
     _walletRepository = walletRepository;
     _transactionRepository = transactionRepository;
     _paymentMethodRepository = paymentMethodRepository;
+    // Update ReportRepository when TransactionRepository changes
+    if (transactionRepository != null) {
+      _reportRepository = ReportRepository(transactionRepository: transactionRepository);
+    }
     _partnerCountry = partnerCountry;
   }
 
@@ -117,6 +127,7 @@ class BillingProvider with ChangeNotifier {
   
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String? get lastWithdrawalId => _lastWithdrawalId;
 
   void _setError(String error) {
     _error = error;
@@ -403,6 +414,28 @@ class BillingProvider with ChangeNotifier {
     }
   }
 
+  /// Delete a payment method
+  Future<bool> deletePaymentMethod(String methodId) async {
+    _setLoading(true);
+    try {
+      if (_paymentMethodRepository == null) throw Exception('PaymentRepository not initialized');
+      
+      final success = await _paymentMethodRepository!.deletePaymentMethod(methodId);
+      
+      if (success) {
+        await loadPaymentMethods();
+      }
+      
+      _setLoading(false);
+      return success;
+    } catch (e) {
+      if (kDebugMode) print('❌ [BillingProvider] Delete payment method error: $e');
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
+
   /// Request payout/withdrawal
   Future<bool> requestPayout(double amount, String paymentMethodId) async {
     try {
@@ -434,6 +467,30 @@ class BillingProvider with ChangeNotifier {
       if (kDebugMode) print('❌ [BillingProvider] Request payout error: $e');
       _setError(e.toString());
       return false;
+    }
+  }
+    /// Generate a report (PDF or CSV)
+  Future<Uint8List?> generateReport({
+    required DateTimeRange dateRange,
+    required String format,
+  }) async {
+    try {
+      if (_reportRepository == null) {
+        throw Exception('Report repository not initialized');
+      }
+
+      if (kDebugMode) print('📊 [BillingProvider] Generating report...');
+      
+      return await _reportRepository!.generateTransactionReport(
+        range: dateRange,
+        format: format,
+        partnerName: _partnerCountry ?? 'Partner', // Ideally use actual partner name from AuthProvider if available, or just 'Partner'
+        currency: currencySymbol,
+      );
+    } catch (e) {
+      if (kDebugMode) print('❌ [BillingProvider] Generate report error: $e');
+      _setError(e.toString());
+      rethrow;
     }
   }
 }

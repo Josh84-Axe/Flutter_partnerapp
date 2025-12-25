@@ -142,25 +142,6 @@ class CustomerRepository {
     }
   }
 
-  /// Get customer data usage
-  Future<Map<String, dynamic>?> getCustomerDataUsage(String username) async {
-    try {
-      if (kDebugMode) print('📊 [CustomerRepository] Fetching data usage for: $username');
-      final response = await _dio.get('/partner/customers/$username/data-usage/');
-      
-      final responseData = response.data;
-      if (responseData is Map && responseData['data'] != null) {
-        if (kDebugMode) print('✅ [CustomerRepository] Data usage retrieved successfully');
-        return responseData['data'] as Map<String, dynamic>;
-      }
-      
-      return responseData as Map<String, dynamic>?;
-    } catch (e) {
-      if (kDebugMode) print('❌ [CustomerRepository] Get data usage error: $e');
-      rethrow;
-    }
-  }
-
   /// Fetch active sessions to determine online status
   Future<List<String>> getActiveSessions() async {
     try {
@@ -187,6 +168,7 @@ class CustomerRepository {
       return [];
     }
   }
+
   /// Get customer assigned transactions
   Future<List<dynamic>> getCustomerAssignedTransactions(String username) async {
     try {
@@ -261,6 +243,65 @@ class CustomerRepository {
     } catch (e) {
       if (kDebugMode) print('❌ [CustomerRepository] Fetch assigned plans error: $e');
       rethrow;
+    }
+  }
+
+  /// Fetch data usage for a specific customer
+  Future<Map<String, dynamic>?> getCustomerDataUsage(String username) async {
+    try {
+      if (kDebugMode) print('📊 [CustomerRepository] Fetching data usage for: $username');
+      final response = await _dio.get('/partner/customers/$username/data-usage/');
+      
+      final responseData = response.data;
+      if (responseData is Map && responseData['data'] != null) {
+        return responseData['data'] as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) print('❌ [CustomerRepository] Get data usage error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get customer assigned plans
+  Future<List<dynamic>> getCustomerAssignedPlans(String username) async {
+    try {
+      if (kDebugMode) print('📋 [CustomerRepository] Fetching assigned plans for: $username');
+      final response = await _dio.get('/partner/customers/$username/plans/assigned/');
+      
+      final responseData = response.data;
+      if (responseData is Map) {
+         if (responseData['data'] is List) {
+           return responseData['data'] as List;
+         } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+           return responseData['data']['results'] as List;
+         }
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) print('❌ [CustomerRepository] Get assigned plans error: $e');
+      return [];
+    }
+  }
+
+  /// Get customer purchased plans
+  Future<List<dynamic>> getCustomerPurchasedPlans(String username) async {
+    try {
+      if (kDebugMode) print('🛒 [CustomerRepository] Fetching purchased plans for: $username');
+      final response = await _dio.get('/partner/customers/$username/plans/purchased/');
+      
+      final responseData = response.data;
+      if (responseData is Map) {
+         if (responseData['data'] is List) {
+           return responseData['data'] as List;
+         } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+           return responseData['data']['results'] as List;
+         }
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) print('❌ [CustomerRepository] Get purchased plans error: $e');
+      return [];
     }
   }
 }

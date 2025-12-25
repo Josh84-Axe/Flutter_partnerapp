@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../providers/app_state.dart';
+import '../providers/split/network_provider.dart';
+import '../providers/split/auth_provider.dart';
 import '../services/hotspot_configuration_service.dart';
 
 class CreateEditInternetPlanScreen extends StatefulWidget {
@@ -27,8 +28,8 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadAllConfigurations();
-      context.read<AppState>().loadHotspotProfiles();
+      context.read<NetworkProvider>().loadAllConfigurations();
+      context.read<NetworkProvider>().loadHotspotProfiles();
     });
     
     if (widget.planData != null) {
@@ -51,7 +52,8 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    final networkProvider = context.watch<NetworkProvider>();
+    final authProvider = context.watch<AuthProvider>();
     final isEdit = widget.planData != null;
 
     return Scaffold(
@@ -89,7 +91,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                       labelText: 'price'.tr(),
                       hintText: 'price_hint'.tr(),
                       border: const OutlineInputBorder(),
-                      prefixText: '${appState.currencySymbol} ',
+                      prefixText: '${authProvider.currencySymbol} ',
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
@@ -109,11 +111,11 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                       labelText: 'validity'.tr(),
                       border: const OutlineInputBorder(),
                     ),
-                    items: appState.validityPeriods.isEmpty
+                    items: networkProvider.validityPeriods.isEmpty
                         ? (HotspotConfigurationService.getValidityOptions().isNotEmpty
                             ? HotspotConfigurationService.getValidityOptions().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
                             : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
-                        : appState.validityPeriods
+                        : networkProvider.validityPeriods
                             .map((v) {
                               final label = v is Map ? (v['name'] ?? 'Unknown') : v.toString();
                               return DropdownMenuItem(value: v, child: Text(label));
@@ -134,11 +136,11 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                       labelText: 'data_limit'.tr(),
                       border: const OutlineInputBorder(),
                     ),
-                    items: appState.dataLimits.isEmpty
+                    items: networkProvider.dataLimits.isEmpty
                         ? (HotspotConfigurationService.getDataLimits().isNotEmpty
                             ? HotspotConfigurationService.getDataLimits().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
                             : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
-                        : appState.dataLimits
+                        : networkProvider.dataLimits
                             .map((d) {
                               final label = d is Map ? (d['name'] ?? 'Unknown') : d.toString();
                               return DropdownMenuItem(value: d, child: Text(label));
@@ -159,11 +161,11 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                       labelText: 'additional_devices_allowed'.tr(),
                       border: const OutlineInputBorder(),
                     ),
-                    items: appState.sharedUsers.isEmpty
+                    items: networkProvider.sharedUsers.isEmpty
                         ? (HotspotConfigurationService.getDeviceAllowed().isNotEmpty
                             ? HotspotConfigurationService.getDeviceAllowed().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
                             : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
-                        : appState.sharedUsers
+                        : networkProvider.sharedUsers
                             .map((d) {
                               final label = d is Map ? (d['name'] ?? 'Unknown') : d.toString();
                               return DropdownMenuItem(value: d, child: Text(label));
@@ -184,9 +186,9 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                       labelText: 'hotspot_user_profile'.tr(),
                       border: const OutlineInputBorder(),
                     ),
-                    items: appState.hotspotProfiles.isEmpty
+                    items: networkProvider.hotspotProfiles.isEmpty
                         ? [DropdownMenuItem<String>(value: null, child: Text('no_profiles_configured'.tr()))]
-                        : appState.hotspotProfiles
+                        : networkProvider.hotspotProfiles
                             .map((p) => DropdownMenuItem(value: p.id, child: Text(p.name)))
                             .toList(),
                     onChanged: (value) => setState(() => _selectedHotspotProfile = value),
@@ -264,17 +266,17 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
     // Get profile name from selected profile ID
     String getProfileName(String? profileId) {
       if (profileId == null) return 'Basic';
-      final appState = context.read<AppState>();
+      final networkProvider = context.read<NetworkProvider>();
       
       // Check if profiles list is empty
-      if (appState.hotspotProfiles.isEmpty) {
+      if (networkProvider.hotspotProfiles.isEmpty) {
         if (kDebugMode) print('⚠️ [CreatePlan] No hotspot profiles loaded, using "Basic"');
         return 'Basic';
       }
       
       // Find the profile by ID
       try {
-        final profile = appState.hotspotProfiles.firstWhere(
+        final profile = networkProvider.hotspotProfiles.firstWhere(
           (p) => p.id == profileId,
         );
         if (kDebugMode) print('✅ [CreatePlan] Found profile: ${profile.name}');
@@ -282,7 +284,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
       } catch (e) {
         // Profile not found, return first profile name or 'Basic'
         if (kDebugMode) print('⚠️ [CreatePlan] Profile not found, using first available or "Basic"');
-        return appState.hotspotProfiles.isNotEmpty ? appState.hotspotProfiles.first.name : 'Basic';
+        return networkProvider.hotspotProfiles.isNotEmpty ? networkProvider.hotspotProfiles.first.name : 'Basic';
       }
     }
 
@@ -323,12 +325,12 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
       if (widget.planData != null && widget.planData!['id'] != null) {
         // Update existing plan
         if (kDebugMode) print('🔄 [CreatePlan] Updating plan: ${widget.planData!['id']}');
-        await context.read<AppState>().updatePlan(widget.planData!['id'], data);
+        await context.read<NetworkProvider>().updatePlan(widget.planData!['id'], data);
         if (kDebugMode) print('✅ [CreatePlan] Plan updated successfully');
       } else {
         // Create new plan
         if (kDebugMode) print('➕ [CreatePlan] Creating new plan');
-        await context.read<AppState>().createPlan(data);
+        await context.read<NetworkProvider>().createPlan(data);
         if (kDebugMode) print('✅ [CreatePlan] Plan created successfully');
       }
       

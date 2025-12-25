@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+
+import '../providers/split/network_provider.dart';
 import '../widgets/search_bar_widget.dart';
 
 class ProfilesScreen extends StatefulWidget {
@@ -18,7 +19,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadHotspotProfiles();
+      context.read<NetworkProvider>().loadHotspotProfiles();
     });
   }
 
@@ -30,9 +31,9 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    final networkProvider = context.watch<NetworkProvider>();
     final colorScheme = Theme.of(context).colorScheme;
-    final profiles = appState.hotspotProfiles.where((profile) {
+    final profiles = networkProvider.hotspotProfiles.where((profile) {
       if (_searchQuery.isEmpty) return true;
       return profile.name.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
@@ -60,7 +61,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
             ),
           ),
           Expanded(
-            child: appState.isLoading
+            child: networkProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : profiles.isEmpty
                     ? const Center(
@@ -131,7 +132,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                                       );
                                       if (confirmed == true && context.mounted) {
                                         try {
-                                          final message = await appState.deleteHotspotProfile(profile.slug);
+                                          final message = await networkProvider.deleteHotspotProfile(profile.slug);
                                           if (context.mounted) {
                                             ScaffoldMessenger.of(context).showSnackBar(
                                               SnackBar(
@@ -139,8 +140,6 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                                                 backgroundColor: Colors.green,
                                               ),
                                             );
-                                            // Reload profiles after deletion
-                                            context.read<AppState>().loadHotspotProfiles();
                                           }
                                         } catch (e) {
                                           if (context.mounted) {

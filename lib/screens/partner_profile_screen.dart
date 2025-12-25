@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../utils/app_theme.dart';
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
+import '../providers/split/auth_provider.dart';
+import '../providers/split/billing_provider.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import '../utils/country_utils.dart';
 import 'package:intl/intl.dart';
@@ -33,8 +35,10 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
   }
 
   Future<void> _loadData() async {
-    final appState = context.read<AppState>();
-    final user = appState.currentUser;
+    final userProvider = context.read<UserProvider>();
+    final authProvider = context.read<AuthProvider>();
+    final billingProvider = context.read<BillingProvider>();
+    final user = authProvider.currentUser;
     
     // Initialize controllers with user data
     _companyNameController.text = user?.name ?? '';
@@ -46,7 +50,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     _routersController.text = user?.numberOfRouters?.toString() ?? '';
     
     // Load payment methods
-    await appState.loadPaymentMethods();
+    await billingProvider.loadPaymentMethods();
   }
 
   @override
@@ -71,7 +75,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
-    final appState = context.read<AppState>();
+    final authProvider = context.read<AuthProvider>();
     
     // Split name into first/last
     final nameParts = _companyNameController.text.trim().split(' ');
@@ -81,16 +85,16 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     // Construct address
     final fullAddress = '${_addressController.text}'.trim();
     
-    final success = await appState.updatePartnerProfile(
-      firstName: firstName,
-      lastName: lastName,
-      businessName: _companyNameController.text,
-      phone: _phoneController.text,
-      address: fullAddress,
-      city: _cityController.text,
-      country: _countryController.text,
-      numberOfRouters: int.tryParse(_routersController.text) ?? 0,
-    );
+    final success = await authProvider.updateProfile({
+      'first_name': firstName,
+      'last_name': lastName,
+      'business_name': _companyNameController.text,
+      'phone': _phoneController.text,
+      'address': fullAddress,
+      'city': _cityController.text,
+      'country': _countryController.text,
+      'number_of_routers': int.tryParse(_routersController.text) ?? 0,
+    });
 
     if (mounted) {
       Navigator.of(context).pop(); // Close loading dialog
@@ -106,7 +110,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(appState.error ?? 'failed_update_profile'.tr()),
+            content: Text(authProvider.error ?? 'failed_update_profile'.tr()),
             backgroundColor: AppTheme.errorRed,
           ),
         );
@@ -117,7 +121,8 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final appState = context.read<AppState>();
+    final authProvider = context.watch<AuthProvider>();
+    final billingProvider = context.watch<BillingProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -152,21 +157,21 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                   ),
                   child: Column(
                     children: [
-                      _buildDetailRow('partner_id'.tr(), appState.currentUser?.id ?? 'N/A'),
+                      _buildDetailRow('partner_id'.tr(), authProvider.currentUser?.id ?? 'N/A'),
                       const Divider(height: 24),
                       _buildDetailRow('registration_date'.tr(), 
-                        appState.currentUser?.createdAt != null 
-                          ? DateFormat('MMM d, yyyy').format(appState.currentUser!.createdAt) 
+                        authProvider.currentUser?.createdAt != null 
+                          ? DateFormat('MMM d, yyyy').format(authProvider.currentUser!.createdAt) 
                           : 'N/A'
                       ),
                       const Divider(height: 24),
                       _buildDetailRow(
                         'account_status'.tr(), 
-                        appState.currentUser?.isActive == true ? 'active'.tr() : 'inactive'.tr(),
-                        valueColor: appState.currentUser?.isActive == true ? AppTheme.successGreen : AppTheme.errorRed,
+                        authProvider.currentUser?.isActive == true ? 'active'.tr() : 'inactive'.tr(),
+                        valueColor: authProvider.currentUser?.isActive == true ? AppTheme.successGreen : AppTheme.errorRed,
                       ),
                       const Divider(height: 24),
-                      _buildDetailRow('role'.tr(), appState.currentUser?.role.toUpperCase() ?? 'N/A'),
+                      _buildDetailRow('role'.tr(), authProvider.currentUser?.role.toUpperCase() ?? 'N/A'),
                     ],
                   ),
                 ),
@@ -204,7 +209,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                     ignoreBlank: false,
                     autoValidateMode: AutovalidateMode.disabled,
                     selectorTextStyle: TextStyle(color: colorScheme.onSurface),
-                    initialValue: PhoneNumber(isoCode: CountryUtils.getIsoCode(appState.partnerCountry ?? 'Togo')),
+                    initialValue: PhoneNumber(isoCode: CountryUtils.getIsoCode(authProvider.partnerCountry ?? 'Togo')),
                     textFieldController: _phoneController,
                     formatInput: true,
                     keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
@@ -434,7 +439,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
 
     if (confirmed == true && mounted) {
       try {
-        await context.read<AppState>().deletePaymentMethod(methodId);
+        await context.read<BillingProvider>().deletePaymentMethod(methodId);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -460,7 +465,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     final result = await Navigator.of(context).pushNamed('/add-payout-method');
     if (result == true && mounted) {
       // Reload payment methods after adding
-      context.read<AppState>().loadPaymentMethods();
+      context.read<BillingProvider>().loadPaymentMethods();
     }
   }
 }

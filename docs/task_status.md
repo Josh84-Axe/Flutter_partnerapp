@@ -238,15 +238,24 @@
   - [x] Identify caching gaps (`CacheService` unused).
   - [x] Create `OPTIMIZATION_PLAN.md` with Safety & Migration Strategy.
 
-- [ ] **Optimization Phase 2: Billing Migration**
+- [x] **Optimization Phase 1: Setup & Initialization**
+  - [x] Create domain-specific Providers (`BillingProvider`, etc.)
+  - [x] Configure `MultiProvider` in `main.dart`
+- [x] **Optimization Phase 2: Billing Migration**
   - [x] Implement Wallet/Transaction logic in `BillingProvider`.
   - [x] Consolidate usage in `WalletOverviewScreen` to `BillingProvider`.
   - [x] Consolidate usage in `PayoutHistoryScreen` and `TransactionHistoryScreen`.
   - [x] Consolidate usage in `PayoutRequestScreen`.
   - [x] Verify Payouts/History functionality.
+  - [x] Fix compilation errors and repository getters in `AppState`
+  - [x] Push verified fixes to `fix/token-storage-windows` branch
 
+- [ ] **Optimization Phase 3: User & Network Migration**
+  - [ ] Move User/Customer logic to `UserProvider`.
+  - [ ] Move Router/Hotspot/Network logic to `NetworkProvider`.
+  - [ ] Update corresponding screens to use new providers.
 
-- ✅ **Web**: Compiles successfully
+- ✅ **Web**: Compiles successfully (Verified on correct branch `fix/token-storage-windows`)
 - ✅ **Mobile (Android/iOS)**: Should build successfully
 - ⚠️ **Wasm**: Expected warnings about dart:html (not critical)
 

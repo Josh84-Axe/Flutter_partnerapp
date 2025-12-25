@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
+import '../providers/split/network_provider.dart';
 import '../widgets/search_bar_widget.dart';
 import '../utils/app_theme.dart';
-import '../utils/currency_utils.dart';
 
 class BulkActionsScreen extends StatefulWidget {
   const BulkActionsScreen({super.key});
@@ -26,9 +26,10 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final userProvider = context.watch<UserProvider>();
+    final networkProvider = context.watch<NetworkProvider>();
 
-    final appState = context.watch<AppState>();
-    final users = appState.users.where((user) {
+    final users = userProvider.users.where((user) {
       if (_searchQuery.isEmpty) return true;
       return user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           user.email.toLowerCase().contains(_searchQuery.toLowerCase());
@@ -100,7 +101,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                     secondary: CircleAvatar(
                       backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                       child: Text(
-                        user.name[0].toUpperCase(),
+                        user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
                         style: TextStyle(color: colorScheme.primary),
                       ),
                     ),
@@ -132,7 +133,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () {
-                          _showAssignPlanDialog(context);
+                          _showAssignPlanDialog(context, networkProvider);
                         },
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -195,34 +196,35 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
     );
   }
 
-  void _showAssignPlanDialog(BuildContext context) {
-    final appState = context.read<AppState>();
-    final partnerCountry = appState.currentUser?.country;
+  void _showAssignPlanDialog(BuildContext context, NetworkProvider networkProvider) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Assign Plan'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: appState.plans.map((plan) {
-            return ListTile(
-              title: Text(plan.name),
-              subtitle: Text(plan.priceDisplay),
-              onTap: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '${plan.name} assigned to ${_selectedUserIds.length} user(s)',
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView(
+            shrinkWrap: true,
+            children: networkProvider.plans.map((plan) {
+              return ListTile(
+                title: Text(plan.name),
+                subtitle: Text('${plan.price} ${Provider.of<UserProvider>(context, listen: false).currencyCode}'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${plan.name} assigned to ${_selectedUserIds.length} user(s)',
+                      ),
                     ),
-                  ),
-                );
-                setState(() {
-                  _selectedUserIds.clear();
-                });
-              },
-            );
-          }).toList(),
+                  );
+                  setState(() {
+                    _selectedUserIds.clear();
+                  });
+                },
+              );
+            }).toList(),
+          ),
         ),
         actions: [
           TextButton(

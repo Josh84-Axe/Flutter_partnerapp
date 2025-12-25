@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+
+import '../providers/split/network_provider.dart';
 import '../models/worker_model.dart';
 
 class AssignRoutersScreen extends StatefulWidget {
@@ -24,9 +25,9 @@ class _AssignRoutersScreenState extends State<AssignRoutersScreen> {
   @override
   void initState() {
     super.initState();
-    // Load current assignments
-    final appState = context.read<AppState>();
-    _selectedRouterIds = List.from(appState.getAssignedRouters(widget.worker.username));
+    // Load current assignments from NetworkProvider
+    final networkProvider = context.read<NetworkProvider>();
+    _selectedRouterIds = List.from(networkProvider.getAssignedRouters(widget.worker.username));
   }
 
   void _toggleRouter(String routerId) {
@@ -41,10 +42,10 @@ class _AssignRoutersScreenState extends State<AssignRoutersScreen> {
   }
 
   Future<void> _saveAssignments() async {
-    final appState = context.read<AppState>();
+    final networkProvider = context.read<NetworkProvider>();
     
     try {
-      await appState.assignRoutersToWorker(widget.worker.username, _selectedRouterIds);
+      await networkProvider.assignRoutersToWorker(widget.worker.username, _selectedRouterIds);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -69,8 +70,8 @@ class _AssignRoutersScreenState extends State<AssignRoutersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final allRouters = appState.routers;
+    final networkProvider = context.watch<NetworkProvider>();
+    final allRouters = networkProvider.routers;
     final colorScheme = Theme.of(context).colorScheme;
 
     // Filter routers based on search query

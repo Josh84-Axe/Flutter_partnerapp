@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/network_provider.dart';
 import '../repositories/router_repository.dart';
 import '../utils/error_message_helper.dart';
 
@@ -32,13 +32,13 @@ class _RouterResourcesScreenState extends State<RouterResourcesScreen> {
     });
 
     try {
-      final repository = context.read<AppState>().routerRepository ?? RouterRepository(dio: context.read<AppState>().dio);
+      final provider = context.read<NetworkProvider>();
       // Ensure we have a valid slug/id. Use 'slug' if available (preferred), otherwise 'id'.
       final slug = widget.router['slug']?.toString() ?? widget.router['id']?.toString() ?? '';
       
       if (slug.isEmpty) throw Exception('Invalid router configuration: Missing slug/ID'); 
       
-      final data = await repository.fetchRouterResources(slug);
+      final data = await provider.fetchRouterResources(slug);
       
       if (mounted) {
         setState(() {

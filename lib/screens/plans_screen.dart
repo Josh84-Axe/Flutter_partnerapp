@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../providers/app_state.dart';
+import '../providers/split/network_provider.dart';
+import '../providers/split/user_provider.dart';
 import 'create_edit_plan_screen.dart';
 
 class PlansScreen extends StatefulWidget {
@@ -19,9 +20,10 @@ class _PlansScreenState extends State<PlansScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadPlans();
-      context.read<AppState>().loadAllConfigurations();
-      context.read<AppState>().loadHotspotProfiles();
+      final networkProvider = context.read<NetworkProvider>();
+      networkProvider.loadPlans();
+      networkProvider.loadAllConfigurations();
+      networkProvider.loadHotspotProfiles();
     });
   }
 
@@ -33,8 +35,9 @@ class _PlansScreenState extends State<PlansScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final filteredPlans = appState.plans.where((plan) {
+    final networkProvider = context.watch<NetworkProvider>();
+    final userProvider = context.watch<UserProvider>();
+    final filteredPlans = networkProvider.plans.where((plan) {
       if (_searchQuery.isEmpty) return true;
       return plan.name.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
@@ -49,8 +52,9 @@ class _PlansScreenState extends State<PlansScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              appState.loadPlans();
-              appState.loadAllConfigurations();
+              final networkProvider = context.read<NetworkProvider>();
+              networkProvider.loadPlans();
+              networkProvider.loadAllConfigurations();
             },
           ),
         ],
@@ -77,7 +81,7 @@ class _PlansScreenState extends State<PlansScreen> {
 
           // Plans List
           Expanded(
-            child: appState.isLoading
+            child: networkProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : filteredPlans.isEmpty
                     ? Center(
@@ -125,7 +129,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '${plan.price} ${appState.currencyCode}',
+                                        '${plan.price} ${userProvider.currencyCode}',
                                         style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
@@ -140,7 +144,7 @@ class _PlansScreenState extends State<PlansScreen> {
                                     context,
                                     Icons.cloud_download,
                                     'Data Limit',
-                                    _getDataLimitLabel(plan.dataLimit, appState),
+                                    _getDataLimitLabel(plan.dataLimit, networkProvider),
                                   ),
                                   const SizedBox(height: 8),
                                   _buildInfoChip(
@@ -249,16 +253,16 @@ class _PlansScreenState extends State<PlansScreen> {
     ).then((_) {
       if (!mounted) return;
       // Reload plans after returning fromcreate/edit screen
-      context.read<AppState>().loadPlans();
+      context.read<NetworkProvider>().loadPlans();
     });
   }
 
-  String _getDataLimitLabel(int? dataLimitId, AppState appState) {
+  String _getDataLimitLabel(int? dataLimitId, NetworkProvider networkProvider) {
     if (dataLimitId == null) return 'Unlimited';
     
     // Find the configuration with this ID
     try {
-      final config = appState.dataLimits.firstWhere(
+      final config = networkProvider.dataLimits.firstWhere(
         (limit) => limit is Map && limit['id'] == dataLimitId,
         orElse: () => null,
       );

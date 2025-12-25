@@ -1,5 +1,5 @@
 import 'package:intl/intl.dart';
-import '../providers/app_state.dart';
+
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'currency_utils.dart';

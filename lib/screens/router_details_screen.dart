@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../models/router_model.dart';
+import '../providers/split/network_provider.dart';
 import '../utils/app_theme.dart';
+import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 
 class RouterDetailsScreen extends StatelessWidget {
   final RouterModel router;
@@ -92,29 +94,37 @@ class RouterDetailsScreen extends StatelessWidget {
                 context,
                 icon: Icons.restart_alt,
                 label: 'restart_router'.tr(),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('router_restart_initiated'.tr())),
-                  );
+                onTap: () async {
+                  final networkProvider = context.read<NetworkProvider>();
+                  final success = await networkProvider.rebootRouter(router.id);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(success ? 'router_restart_initiated'.tr() : 'error_occurred'.tr())),
+                    );
+                  }
                 },
               ),
               const SizedBox(height: 8),
               _buildActionButton(
                 context,
-                icon: Icons.map_outlined,
-                label: 'view_network_map'.tr(),
-                onTap: () {},
+                icon: Icons.flash_on,
+                label: 'restart_hotspot'.tr(),
+                onTap: () async {
+                  final networkProvider = context.read<NetworkProvider>();
+                  final success = await networkProvider.restartHotspot(router.id);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(success ? 'hotspot_restart_initiated'.tr() : 'error_occurred'.tr())),
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 8),
               _buildActionButton(
                 context,
-                icon: Icons.system_update,
-                label: 'update_firmware'.tr(),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('checking_for_updates'.tr())),
-                  );
-                },
+                icon: Icons.delete_outline,
+                label: 'delete_router'.tr(),
+                onTap: () => _showDeleteDialog(context),
               ),
             ],
           ),
@@ -213,6 +223,41 @@ class RouterDetailsScreen extends StatelessWidget {
             const Icon(Icons.chevron_right),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('delete_router'.tr()),
+        content: Text('delete_router_confirm'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () async {
+              final networkProvider = context.read<NetworkProvider>();
+              Navigator.pop(context); // Close dialog
+              try {
+                await networkProvider.deleteRouter(router.id);
+                if (context.mounted) {
+                  Navigator.pop(context); // Close details screen
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('error_occurred'.tr())),
+                  );
+                }
+              }
+            },
+            child: Text('delete'.tr(), style: const TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

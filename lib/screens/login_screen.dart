@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../providers/app_state.dart';
+import '../providers/split/auth_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/ip_geolocation.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
@@ -104,11 +104,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final appState = context.read<AppState>();
+    final authProvider = context.read<AuthProvider>();
     bool success;
 
     if (_isLogin) {
-      success = await appState.login(
+      success = await authProvider.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
@@ -121,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       
-      success = await appState.register(
+      success = await authProvider.register(
         firstName: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
@@ -144,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final appState = context.watch<AppState>();
+    final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -386,20 +386,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                   const SizedBox(height: 16),
-                  if (appState.error != null)
+                  if (authProvider.error != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(
-                        ErrorMessageHelper.getUserFriendlyMessage(appState.error!),
+                        ErrorMessageHelper.getUserFriendlyMessage(authProvider.error!),
                         style: const TextStyle(color: Colors.red),
                         textAlign: TextAlign.center,
                       ),
                     ),
                   FilledButton(
-                    onPressed: appState.isLoading ? null : _submit,
+                    onPressed: authProvider.isLoading ? null : _submit,
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
-                      child: appState.isLoading
+                      child: authProvider.isLoading
                           ? const SizedBox(
                               height: 20,
                               width: 20,
@@ -435,7 +435,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextButton.icon(
                       onPressed: () async {
                         // Enter guest mode with detected country
-                        await appState.enterGuestMode(countryCode: _selectedCountry);
+                        await authProvider.enterGuestMode(countryCode: _selectedCountry);
                         if (mounted) {
                           Navigator.of(context).pushReplacementNamed('/home');
                         }

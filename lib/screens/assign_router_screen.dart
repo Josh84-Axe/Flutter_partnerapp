@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+import '../providers/split/network_provider.dart';
 
 class AssignRouterScreen extends StatefulWidget {
   const AssignRouterScreen({super.key});
@@ -24,8 +24,8 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final appState = context.watch<AppState>();
-    final routers = appState.routers.where((router) {
+    final networkProvider = context.watch<NetworkProvider>();
+    final routers = networkProvider.routers.where((router) {
       if (_searchQuery.isEmpty) return true;
       return router.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           router.id.toLowerCase().contains(_searchQuery.toLowerCase());

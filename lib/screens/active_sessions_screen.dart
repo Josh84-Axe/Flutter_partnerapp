@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+
+import '../providers/split/user_provider.dart';
+import '../providers/split/network_provider.dart';
 
 class ActiveSessionsScreen extends StatefulWidget {
   const ActiveSessionsScreen({super.key});
@@ -24,9 +26,9 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
   }
 
   Future<void> _loadData() async {
-    await context.read<AppState>().loadActiveSessions();
-    await context.read<AppState>().loadAssignedPlans();
-    await context.read<AppState>().loadPurchasedPlans();
+    await context.read<NetworkProvider>().loadActiveSessions();
+    await context.read<UserProvider>().loadAssignedPlans();
+    await context.read<UserProvider>().loadPurchasedPlans();
   }
 
   @override
@@ -38,7 +40,9 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+
+    final userProvider = context.watch<UserProvider>();
+    final networkProvider = context.watch<NetworkProvider>();
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -61,19 +65,19 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildOnlineUsersTab(appState, colorScheme),
-          _buildAssignedUsersTab(appState, colorScheme),
+          _buildOnlineUsersTab(userProvider, networkProvider, colorScheme),
+          _buildAssignedUsersTab(userProvider, networkProvider, colorScheme),
         ],
       ),
     );
   }
 
-  Widget _buildOnlineUsersTab(AppState appState, ColorScheme colorScheme) {
-    if (appState.isLoading && appState.purchasedPlans.isEmpty) {
+  Widget _buildOnlineUsersTab(UserProvider userProvider, NetworkProvider networkProvider, ColorScheme colorScheme) {
+    if (userProvider.isLoading && userProvider.purchasedPlans.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (appState.purchasedPlans.isEmpty) {
+    if (userProvider.purchasedPlans.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -86,11 +90,11 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       );
     }
 
-    final plans = appState.purchasedPlans;
+    final plans = userProvider.purchasedPlans;
     
     // Flatten active sessions from all routers AND inject router details
     final allActiveSessions = <Map<String, dynamic>>[];
-    for (var router in appState.activeSessions) {
+    for (var router in networkProvider.activeSessions) {
       if (router is Map && router['active_users'] is List) {
         final routerName = router['router_dns_name'] ?? router['name'] ?? 'Unknown';
         final routerIp = router['router_ip'] ?? router['ip_address'] ?? 'N/A';
@@ -153,12 +157,12 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
     );
   }
 
-  Widget _buildAssignedUsersTab(AppState appState, ColorScheme colorScheme) {
-    if (appState.isLoading && appState.assignedPlans.isEmpty) {
+  Widget _buildAssignedUsersTab(UserProvider userProvider, NetworkProvider networkProvider, ColorScheme colorScheme) {
+    if (userProvider.isLoading && userProvider.assignedPlans.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (appState.assignedPlans.isEmpty) {
+    if (userProvider.assignedPlans.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -171,11 +175,11 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       );
     }
 
-    final assignedPlans = appState.assignedPlans;
+    final assignedPlans = userProvider.assignedPlans;
     
     // Flatten active sessions from all routers AND inject router details
     final allActiveSessions = <Map<String, dynamic>>[];
-    for (var router in appState.activeSessions) {
+    for (var router in networkProvider.activeSessions) {
       if (router is Map && router['active_users'] is List) {
         final routerName = router['router_dns_name'] ?? router['name'] ?? 'Unknown';
         final routerIp = router['router_ip'] ?? router['ip_address'] ?? 'N/A';
@@ -427,8 +431,13 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
     }
 
     try {
+      if (block) {
+        // Actually block the user using UserProvider - pass false as currentlyBlocked to trigger block
+        await context.read<UserProvider>().toggleUserBlock(username, false);
+      }
+
       // Use disconnect endpoint
-      await context.read<AppState>().disconnectSession(session);
+      await context.read<NetworkProvider>().disconnectSession(session['session_id']);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

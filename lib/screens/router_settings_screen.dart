@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+import '../providers/split/network_provider.dart';
 import '../models/router_configuration_model.dart';
 import '../utils/app_theme.dart';
 
@@ -26,6 +26,7 @@ class _RouterSettingsScreenState extends State<RouterSettingsScreen> {
           ),
           FilledButton(
             onPressed: () {
+              context.read<NetworkProvider>().deleteRouter(config.id);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('router_configuration_deleted'.tr())),
@@ -45,8 +46,8 @@ class _RouterSettingsScreenState extends State<RouterSettingsScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final appState = context.watch<AppState>();
-    final configurations = appState.routerConfigurations;
+    final networkProvider = context.watch<NetworkProvider>();
+    final configurations = networkProvider.routerConfigurations;
 
     return Scaffold(
       appBar: AppBar(

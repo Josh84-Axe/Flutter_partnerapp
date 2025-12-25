@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
 import '../utils/app_theme.dart';
 import '../models/role_model.dart';
 
@@ -17,7 +17,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadRoles();
+      context.read<UserProvider>().loadRoles();
     });
   }
 
@@ -25,8 +25,8 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final appState = context.watch<AppState>();
-    final roles = appState.roles;
+    final userProvider = context.watch<UserProvider>();
+    final roles = userProvider.roles;
 
     return Scaffold(
       appBar: AppBar(
@@ -62,7 +62,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          if (appState.isLoading && roles.isEmpty)
+          if (userProvider.isLoading && roles.isEmpty)
             const Center(child: CircularProgressIndicator())
           else if (roles.isEmpty)
              Center(
@@ -265,7 +265,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
           ),
           FilledButton(
             onPressed: () {
-              context.read<AppState>().deleteRole(role.slug);
+              context.read<UserProvider>().deleteRole(role.slug);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('role_deleted'.tr())),

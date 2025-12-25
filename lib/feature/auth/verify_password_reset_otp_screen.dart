@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../motion/m3_motion.dart';
-import '../../providers/app_state.dart';
+import '../../providers/split/auth_provider.dart';
 
 /// OTP Verification screen - Step 2: Verify OTP code
 class VerifyPasswordResetOtpScreen extends StatefulWidget {
@@ -43,7 +43,7 @@ class _VerifyPasswordResetOtpScreenState
 
     try {
       // Verify OTP with backend first
-      final success = await context.read<AppState>().verifyPasswordResetOtp(
+      final success = await context.read<AuthProvider>().verifyPasswordResetOtp(
             widget.email,
             _otpController.text,
           );
@@ -87,7 +87,7 @@ class _VerifyPasswordResetOtpScreenState
     });
 
     try {
-      final success = await context.read<AppState>().requestPasswordReset(
+      final success = await context.read<AuthProvider>().requestPasswordReset(
             widget.email,
           );
 

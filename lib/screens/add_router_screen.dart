@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:easy_localization/easy_localization.dart';
 import '../models/router_configuration_model.dart';
+import '../providers/split/network_provider.dart';
+import 'package:provider/provider.dart';
 
 class AddRouterScreen extends StatefulWidget {
   const AddRouterScreen({super.key});
@@ -58,18 +60,50 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
     super.dispose();
   }
 
-  void _saveConfiguration() {
+  Future<void> _saveConfiguration() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _existingConfig != null
-                ? 'router_config_updated'.tr()
-                : 'router_config_saved'.tr(),
-          ),
-        ),
-      );
-      Navigator.of(context).pop();
+      final networkProvider = context.read<NetworkProvider>();
+      
+      final data = {
+        'name': _nameController.text,
+        'ip_address': _ipAddressController.text,
+        'username': _usernameController.text,
+        'password': _passwordController.text,
+        'dns_name': _dnsNameController.text.isEmpty ? null : _dnsNameController.text,
+        'api_port': _apiPortController.text.isEmpty ? null : int.tryParse(_apiPortController.text),
+        'coa_port': _coaPortController.text.isEmpty ? null : int.tryParse(_coaPortController.text),
+        //getRadiusSecret is not in the form but radius_secret is
+        'radius_secret': _radiusSecretController.text.isEmpty ? null : _radiusSecretController.text,
+      };
+
+      try {
+        if (_existingConfig != null) {
+          // Assuming the slug is the name or we should have a slug in RouterConfigurationModel
+          // For now, using ID if available or name as fallback
+          await networkProvider.updateRouter(_existingConfig!.id, data);
+        } else {
+          await networkProvider.addRouter(data);
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                _existingConfig != null
+                    ? 'router_config_updated'.tr()
+                    : 'router_config_saved'.tr(),
+              ),
+            ),
+          );
+          Navigator.of(context).pop();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('error_occurred'.tr())),
+          );
+        }
+      }
     }
   }
 
@@ -238,7 +272,7 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: Text('save_configuration'.tr()),
+                        child: Text(context.watch<NetworkProvider>().isLoading ? 'saving'.tr() : 'save_configuration'.tr()),
                       ),
                     ),
                   ],

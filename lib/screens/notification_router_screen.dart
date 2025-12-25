@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+import '../providers/split/auth_provider.dart';
 import '../utils/currency_utils.dart';
 import '../utils/app_theme.dart';
 import '../models/notification_model.dart';
@@ -21,7 +21,7 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
-      final appState = context.read<AppState>();
+      final authProvider = context.read<AuthProvider>();
       _notifications = [
         NotificationModel(
           id: '1',
@@ -43,7 +43,7 @@ class _NotificationRouterScreenState extends State<NotificationRouterScreen> {
           id: '3',
           type: 'payment',
           title: 'Payment Received',
-          message: 'Received ${CurrencyUtils.formatPrice(250, appState.partnerCountry)} from UserX.',
+          message: 'Received ${CurrencyUtils.formatPrice(250, authProvider.currentUser?.country)} from UserX.',
           timestamp: DateTime.now().subtract(const Duration(hours: 6, minutes: 15)),
           isRead: false,
         ),

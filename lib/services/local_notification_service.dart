@@ -259,6 +259,13 @@ class LocalNotificationService {
     }
   }
 
+  /// Delete a notification
+  Future<void> deleteNotification(String id) async {
+    _notifications.removeWhere((n) => n.id == id);
+    await _saveNotifications();
+    if (kDebugMode) print('🔔 [LocalNotificationService] Deleted notification: $id');
+  }
+
   /// Mark all notifications as read
   Future<void> markAllAsRead() async {
     for (int i = 0; i < _notifications.length; i++) {

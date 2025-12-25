@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+import '../providers/split/network_provider.dart';
 import '../models/user_model.dart';
 import '../utils/app_theme.dart';
 
@@ -34,19 +34,19 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
     setState(() => _isLoading = true);
     
     try {
-      final appState = context.read<AppState>();
+      final networkProvider = context.read<NetworkProvider>();
       final identifier = widget.user.username ?? widget.user.phone ?? widget.user.id;
       
       // Load data usage
-      final dataUsage = await appState.getCustomerDataUsage(identifier);
+      final dataUsage = await networkProvider.getCustomerDataUsage(identifier);
       
       // Load split transactions
-      final assignedTransactions = await appState.getCustomerAssignedTransactions(identifier);
-      final walletTransactions = await appState.getCustomerWalletTransactions(identifier);
+      final assignedTransactions = await networkProvider.getCustomerAssignedTransactions(identifier);
+      final walletTransactions = await networkProvider.getCustomerWalletTransactions(identifier);
       
       // Load plans
-      final assignedPlans = await appState.getCustomerAssignedPlans(widget.user.id);
-      final purchasedPlans = await appState.getCustomerPurchasedPlans(widget.user.id);
+      final assignedPlans = await networkProvider.getCustomerAssignedPlans(identifier);
+      final purchasedPlans = await networkProvider.getCustomerPurchasedPlans(identifier);
 
       if (mounted) {
         setState(() {

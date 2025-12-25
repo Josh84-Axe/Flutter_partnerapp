@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+
+import '../providers/split/network_provider.dart';
 import '../utils/app_theme.dart';
 
 class SessionManagementScreen extends StatefulWidget {
@@ -12,8 +13,6 @@ class SessionManagementScreen extends StatefulWidget {
 }
 
 class _SessionManagementScreenState extends State<SessionManagementScreen> {
-  bool _isLoading = false;
-  List<dynamic> _sessions = [];
 
   @override
   void initState() {
@@ -22,33 +21,7 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
   }
 
   Future<void> _loadSessions() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final appState = context.read<AppState>();
-      final sessions = await appState.sessionRepository.fetchActiveSessions();
-      
-      if (mounted) {
-        setState(() {
-          _sessions = sessions;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${'error_loading_sessions'.tr()}: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+    await context.read<NetworkProvider>().loadActiveSessions();
   }
 
   Future<void> _disconnectSession(Map<String, dynamic> session) async {
@@ -76,26 +49,23 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
     if (confirmed != true) return;
 
     try {
-      final appState = context.read<AppState>();
-      final success = await appState.sessionRepository.disconnectSession(session);
+      final networkProvider = context.read<NetworkProvider>();
+      // Use disconnectSession with just the session ID if available, or session map
+      // NetworkProvider.disconnectSession currently takes String sessionId
+      final sessionId = session['session_id'] ?? session['id']?.toString();
+      if (sessionId == null) {
+        throw Exception('Session ID not found');
+      }
+      
+      await networkProvider.disconnectSession(sessionId);
       
       if (mounted) {
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('session_disconnected_success'.tr()),
-              backgroundColor: Colors.green,
-            ),
-          );
-          _loadSessions(); // Reload sessions
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('session_disconnect_failed'.tr()),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('session_disconnected_success'.tr()),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -111,6 +81,9 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final networkProvider = context.watch<NetworkProvider>();
+    final sessions = networkProvider.activeSessions;
+    final isLoading = networkProvider.isLoading;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -124,9 +97,9 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
           ),
         ],
       ),
-      body: _isLoading
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _sessions.isEmpty
+          : sessions.isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -158,9 +131,9 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
                   onRefresh: _loadSessions,
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: _sessions.length,
+                    itemCount: sessions.length,
                     itemBuilder: (context, index) {
-                      final session = _sessions[index];
+                      final session = sessions[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
                         child: ListTile(

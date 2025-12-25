@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
+import '../providers/split/auth_provider.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -22,7 +22,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
-      final appState = context.read<AppState>();
+      final authProvider = context.read<AuthProvider>();
       
       // Show loading indicator
       showDialog(
@@ -32,7 +32,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       );
       
       try {
-        final success = await appState.requestPasswordReset(_emailController.text.trim());
+        final success = await authProvider.requestPasswordReset(_emailController.text.trim());
         
         // Close loading dialog
         if (mounted) Navigator.of(context).pop();

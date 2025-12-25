@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../motion/m3_motion.dart';
-import '../../providers/app_state.dart';
+import '../../providers/split/auth_provider.dart';
 import '../../services/api/token_storage.dart';
 import 'package:flutter/foundation.dart';
 
@@ -41,18 +41,18 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
     });
 
     try {
-      if (kDebugMode) print('🔐 [LoginScreenM3] Calling AppState.login()');
-      final success = await context.read<AppState>().login(
+      if (kDebugMode) print('🔐 [LoginScreenM3] Calling AuthProvider.login()');
+      final success = await context.read<AuthProvider>().login(
             _emailController.text,
             _passwordController.text,
           );
-      if (kDebugMode) print('🔐 [LoginScreenM3] AppState.login() returned: $success');
+      if (kDebugMode) print('🔐 [LoginScreenM3] AuthProvider.login() returned: $success');
 
       if (!mounted) return;
 
       // Check if login was successful
       if (!success) {
-        final error = context.read<AppState>().error;
+        final error = context.read<AuthProvider>().error;
         if (kDebugMode) print('🔐 [LoginScreenM3] Login failed - showing error: $error');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(error ?? 'Login failed - invalid credentials')),
@@ -212,6 +212,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
             ).animate().scale(
                   duration: M3Motion.buttonBounce,
                   curve: M3Motion.bounce,
+                  // delay: 200.ms, 
                 ),
             const SizedBox(height: 12),
             // Create account button
@@ -232,7 +233,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                       setState(() => _isLoading = true);
                       try {
                         // Enter guest mode
-                        await context.read<AppState>().enterGuestMode();
+                        await context.read<AuthProvider>().enterGuestMode();
                         if (!mounted) return;
                         Navigator.of(context).pushReplacementNamed('/home');
                       } catch (e) {

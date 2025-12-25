@@ -1,7 +1,8 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
-import '../../providers/app_state.dart';
+import '../../providers/split/network_provider.dart';
 
 class DataLimitConfigScreen extends StatefulWidget {
   const DataLimitConfigScreen({super.key});
@@ -15,7 +16,7 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadAllConfigurations();
+      context.read<NetworkProvider>().loadAllConfigurations();
     });
   }
 
@@ -57,7 +58,7 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
             onPressed: () async {
               if (formKey.currentState!.validate()) {
                 try {
-                  await context.read<AppState>().createDataLimit({
+                  await context.read<NetworkProvider>().createDataLimit({
                     'value': valueController.text,
                   });
                   if (mounted) {
@@ -99,7 +100,7 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
           FilledButton(
             onPressed: () async {
               try {
-                await context.read<AppState>().deleteDataLimit(id);
+                await context.read<NetworkProvider>().deleteDataLimit(id);
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -164,7 +165,7 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
             onPressed: () async {
               if (formKey.currentState!.validate()) {
                 try {
-                  await context.read<AppState>().updateDataLimit(id, {
+                  await context.read<NetworkProvider>().updateDataLimit(id, {
                     'value': valueController.text,
                   });
                   if (mounted) {
@@ -192,8 +193,8 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final appState = context.watch<AppState>();
-    final configs = appState.dataLimits;
+    final networkProvider = context.watch<NetworkProvider>();
+    final dataLimits = networkProvider.dataLimits;
 
     return Scaffold(
       appBar: AppBar(
@@ -202,15 +203,15 @@ class _DataLimitConfigScreenState extends State<DataLimitConfigScreen> {
       body: Column(
         children: [
           Expanded(
-            child: appState.isLoading
+            child: networkProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : configs.isEmpty
+                : dataLimits.isEmpty
                     ? const Center(child: Text('No data limits configured'))
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: configs.length,
+                        itemCount: dataLimits.length,
                         itemBuilder: (context, index) {
-                          final config = configs[index];
+                          final config = dataLimits[index];
                           final value = config['value']?.toString() ?? 'Unknown';
                           
                           return Card(

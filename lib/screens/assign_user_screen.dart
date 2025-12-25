@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../providers/app_state.dart';
+import '../providers/split/user_provider.dart';
 import '../utils/app_theme.dart';
 
 class AssignUserScreen extends StatefulWidget {
@@ -31,8 +31,8 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final users = appState.users.where((user) {
+    final userProvider = context.watch<UserProvider>();
+    final users = userProvider.users.where((user) {
       if (_searchQuery.isEmpty) return true;
       return user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           user.email.toLowerCase().contains(_searchQuery.toLowerCase());
@@ -145,8 +145,8 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
   }
 
   void _showConfirmation() {
-    final appState = context.read<AppState>();
-    final user = appState.users.firstWhere((u) => u.id == _selectedUserId);
+    final userProvider = context.read<UserProvider>();
+    final user = userProvider.users.firstWhere((u) => u.id == _selectedUserId);
 
     showDialog(
       context: context,
@@ -185,7 +185,7 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
           ),
           FilledButton(
             onPressed: () {
-              appState.assignPlan(_selectedUserId!, widget.planId);
+              userProvider.assignPlan(_selectedUserId!, widget.planId);
               Navigator.pop(context);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(

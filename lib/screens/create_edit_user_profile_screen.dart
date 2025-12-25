@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+
+import '../providers/split/network_provider.dart';
 import '../models/hotspot_profile_model.dart';
 import '../utils/app_theme.dart';
 import '../utils/error_message_helper.dart';
@@ -33,7 +34,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
     
     // Load configurations
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppState>().loadAllConfigurations();
+      context.read<NetworkProvider>().loadAllConfigurations();
     });
 
     // Initialize form data if editing
@@ -65,7 +66,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    final networkProvider = context.watch<NetworkProvider>();
     final isEdit = widget.profile != null;
     final colorScheme = Theme.of(context).colorScheme;
     
@@ -129,9 +130,9 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                         prefixIcon: const Icon(Icons.speed),
                       ),
                       hint: Text('select_rate_limit'.tr()),
-                      items: appState.rateLimits.isEmpty
+                      items: networkProvider.rateLimits.isEmpty
                           ? [DropdownMenuItem(value: null, child: Text('loading'.tr()))]
-                          : appState.rateLimits.map((limit) {
+                          : networkProvider.rateLimits.map((limit) {
                               return DropdownMenuItem(
                                 value: limit,
                                 child: Text(getDisplayText(limit)),
@@ -153,9 +154,9 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                         prefixIcon: const Icon(Icons.timer_outlined),
                       ),
                       hint: Text('select_idle_time'.tr()),
-                      items: appState.idleTimeouts.isEmpty
+                      items: networkProvider.idleTimeouts.isEmpty
                           ? [DropdownMenuItem(value: null, child: Text('loading'.tr()))]
-                          : appState.idleTimeouts.map((timeout) {
+                          : networkProvider.idleTimeouts.map((timeout) {
                               return DropdownMenuItem(
                                 value: timeout,
                                 child: Text(getDisplayText(timeout)),
@@ -179,7 +180,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                       hint: Text('select_router'.tr()),
                       items: [
                         DropdownMenuItem(value: 'all', child: Text('all_routers'.tr())),
-                        ...appState.visibleRouters.map((router) =>
+                        ...networkProvider.visibleRouters.map((router) =>
                             DropdownMenuItem(value: router.id, child: Text(router.name))),
                       ],
                       onChanged: (value) => setState(() => _selectedRouter = value),
@@ -264,7 +265,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                       child: OutlinedButton(
                         onPressed: () {
                           if (kDebugMode) print('🔴 DELETE BUTTON PRESSED!');
-                          _confirmDelete(context, appState);
+                          _confirmDelete(context, networkProvider);
                         },
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -279,11 +280,11 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
                   Expanded(
                     flex: 2,
                     child: FilledButton(
-                      onPressed: appState.isLoading ? null : () => _saveProfile(appState),
+                      onPressed: networkProvider.isLoading ? null : () => _saveProfile(networkProvider),
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: appState.isLoading
+                      child: networkProvider.isLoading
                           ? const SizedBox(
                               height: 20,
                               width: 20,
@@ -301,7 +302,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
     );
   }
 
-  void _confirmDelete(BuildContext context, AppState appState) {
+  void _confirmDelete(BuildContext context, NetworkProvider networkProvider) {
     if (kDebugMode) print('🗑️ [CreateEditProfile] Delete button clicked');
     if (kDebugMode) print('🗑️ [CreateEditProfile] Profile slug: ${widget.profile?.slug}');
     
@@ -323,7 +324,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
               if (kDebugMode) print('🗑️ [CreateEditProfile] Delete confirmed, slug: ${widget.profile!.slug}');
               Navigator.pop(context); // Close dialog
               try {
-                final message = await appState.deleteHotspotProfile(widget.profile!.slug);
+                final message = await networkProvider.deleteHotspotProfile(widget.profile!.slug);
                 if (kDebugMode) print('✅ [CreateEditProfile] Delete successful: $message');
                 if (mounted) {
                   Navigator.pop(context); // Close screen
@@ -354,7 +355,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
     );
   }
 
-  Future<void> _saveProfile(AppState appState) async {
+  Future<void> _saveProfile(NetworkProvider networkProvider) async {
     if (!_formKey.currentState!.validate()) return;
 
     // Helper to extract ID from dynamic item (Map or String)
@@ -382,9 +383,9 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
 
     try {
       if (widget.profile != null) {
-        await appState.updateHotspotProfile(widget.profile!.slug, data);
+        await networkProvider.updateHotspotProfile(widget.profile!.slug, data);
       } else {
-        await appState.createHotspotProfile(data);
+        await networkProvider.createHotspotProfile(data);
       }
       
       if (mounted) {

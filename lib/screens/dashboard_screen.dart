@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/app_state.dart';
+
+import '../providers/split/user_provider.dart';
+import '../providers/split/network_provider.dart';
+import '../providers/split/billing_provider.dart';
 import '../utils/app_theme.dart';
 import '../widgets/metric_card.dart';
 import '../widgets/subscription_plan_card.dart';
@@ -100,11 +103,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    final userProvider = context.watch<UserProvider>();
+    final networkProvider = context.watch<NetworkProvider>();
+    final billingProvider = context.watch<BillingProvider>();
     
-    final totalRevenue = appState.totalRevenue;
+    final totalRevenue = billingProvider.totalRevenue;
     
-    final activeUsers = appState.users.where((u) => u.isActive).length;
+    final activeUsers = userProvider.users.where((u) => u.isActive).length;
 
     return Scaffold(
       appBar: AppBar(
@@ -124,7 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Navigator.of(context).pushNamed('/notification-center');
                 },
               ),
-              if (appState.localUnreadCount > 0)
+              if (userProvider.localUnreadCount > 0)
                 Positioned(
                   right: 8,
                   top: 8,
@@ -139,7 +144,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       minHeight: 16,
                     ),
                     child: Text(
-                      '${appState.localUnreadCount}',
+                      '${userProvider.localUnreadCount}',
                       style: const TextStyle(
                         color: AppTheme.pureWhite,
                         fontSize: 10,
@@ -153,12 +158,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => appState.loadDashboardData(),
+            onPressed: () => _refreshAll(context),
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => appState.loadDashboardData(),
+        onRefresh: () => _refreshAll(context),
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
@@ -171,13 +176,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'welcome_back'.tr(namedArgs: {'name': appState.currentUser?.name ?? 'Joe'}),
+              'welcome_back'.tr(namedArgs: {'name': userProvider.currentUser?.name ?? 'Joe'}),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
             
             // Guest mode banner
-            if (appState.isGuestMode)
+            if (userProvider.isGuestMode)
               GuestModeBanner(
                 onRegister: () {
                   Navigator.of(context).pushReplacementNamed('/register');
@@ -188,9 +193,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             
             // Subscription Plan Card - load from API
             SubscriptionPlanCard(
-              planName: appState.subscription?.tier ?? 'Free Plan',
-              renewalDate: appState.subscription?.renewalDate ?? DateTime.now().add(const Duration(days: 30)),
-              isLoading: appState.isLoading,
+              planName: userProvider.subscription?.tier ?? 'Free Plan',
+              renewalDate: userProvider.subscription?.renewalDate ?? DateTime.now().add(const Duration(days: 30)),
+              isLoading: userProvider.isLoading || networkProvider.isLoading || billingProvider.isLoading,
             ),
             const SizedBox(height: 16),
             
@@ -199,26 +204,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => _showRevenueDetails(context, appState),
+                    onTap: () => _showRevenueDetails(context),
                     child: _buildMetricWidget(
                       context,
                       title: 'total_revenue'.tr(),
-                      value: appState.formatMoney(totalRevenue),
+                      value: billingProvider.formatMoney(totalRevenue),
                       icon: Icons.paid,
-                      isLoading: appState.isLoading,
+                      isLoading: billingProvider.isLoading,
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => _showActiveUsersDetails(context, appState),
+                    onTap: () => _showActiveUsersDetails(context, userProvider),
                     child: _buildMetricWidget(
                       context,
                       title: 'active_users'.tr(),
                       value: MetricCard.formatNumber(activeUsers),
                       icon: Icons.group,
-                      isLoading: appState.isLoading,
+                      isLoading: userProvider.isLoading,
                     ),
                   ),
                 ),
@@ -263,9 +268,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 600),
                 child: DataUsageCard(
-                  usedGB: appState.aggregateDataUsage,
-                  totalGB: appState.getAggregateTotalDataLimit,
-                  isLoading: appState.isLoading,
+                  usedGB: networkProvider.aggregateActiveDataUsage,
+                  totalGB: networkProvider.aggregateTotalDataLimit,
+                  isLoading: networkProvider.isLoading,
                 ),
               ),
             ),
@@ -278,13 +283,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  void _showRevenueDetails(BuildContext context, AppState appState) {
+  void _showRevenueDetails(BuildContext context) {
     // Navigate to transaction history screen with API data and enhanced UX
     Navigator.of(context).pushNamed('/transaction-history');
   }
 
-  void _showActiveUsersDetails(BuildContext context, AppState appState) {
-    final activeUsers = appState.users.where((u) => u.isActive).toList();
+  void _showActiveUsersDetails(BuildContext context, UserProvider userProvider) {
+    final activeUsers = userProvider.users.where((u) => u.isActive).toList();
     
     showModalBottomSheet(
       context: context,
@@ -399,4 +404,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Future<void> _refreshAll(BuildContext context) async {
+    await Future.wait([
+      context.read<UserProvider>().loadUsers(),
+      context.read<NetworkProvider>().loadActiveSessions(),
+      context.read<BillingProvider>().loadAllWalletBalances(),
+      context.read<UserProvider>().loadSubscription(),
+    ]);
+  }
 }

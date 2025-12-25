@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import '../providers/app_state.dart';
+import '../providers/split/network_provider.dart';
+import '../providers/split/user_provider.dart';
+import '../providers/split/billing_provider.dart';
 
 class CreateEditPlanScreen extends StatefulWidget {
   final Map<String, dynamic>? planData;
@@ -43,7 +45,9 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    final networkProvider = context.watch<NetworkProvider>();
+    final userProvider = context.watch<UserProvider>();
+    final billingProvider = context.watch<BillingProvider>();
     final colorScheme = Theme.of(context).colorScheme;
     final isEdit = widget.planData != null;
 
@@ -84,7 +88,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                       hintText: 'price_hint'.tr(),
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.attach_money),
-                      prefixText: '${appState.currencySymbol} ',
+                      prefixText: '${userProvider.currencyCode} ',
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
@@ -107,7 +111,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.cloud_download),
                     ),
-                    items: appState.dataLimits.isEmpty
+                    items: networkProvider.dataLimits.isEmpty
                         ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
                         : [
                             // Add Unlimited option first
@@ -116,7 +120,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                               child: Text('Unlimited'),
                             ),
                             // Then add all configured data limits
-                            ...appState.dataLimits.map((limit) {
+                            ...networkProvider.dataLimits.map((limit) {
                               return DropdownMenuItem(
                                 value: limit, 
                                 child: Text(_getLabel(limit, 'data_limit'))
@@ -141,9 +145,9 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.calendar_month),
                     ),
-                    items: appState.validityPeriods.isEmpty
+                    items: networkProvider.validityPeriods.isEmpty
                         ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
-                        : appState.validityPeriods.map((validity) {
+                        : networkProvider.validityPeriods.map((validity) {
                             return DropdownMenuItem(
                               value: validity, 
                               child: Text(_getLabel(validity, 'validity'))
@@ -167,9 +171,9 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.devices),
                     ),
-                    items: appState.sharedUsers.isEmpty
+                    items: networkProvider.sharedUsers.isEmpty
                         ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
-                        : appState.sharedUsers.map((user) {
+                        : networkProvider.sharedUsers.map((user) {
                             return DropdownMenuItem(
                               value: user, 
                               child: Text(_getLabel(user, 'shared_users'))
@@ -193,9 +197,9 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.person),
                     ),
-                    items: appState.hotspotProfiles.isEmpty
+                    items: networkProvider.hotspotProfiles.isEmpty
                         ? []
-                        : appState.hotspotProfiles
+                        : networkProvider.hotspotProfiles
                             .map((profile) => DropdownMenuItem(
                                   value: int.tryParse(profile.id),
                                   child: Text(profile.name),
@@ -316,11 +320,11 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
 
       if (kDebugMode) print('📦 [CreatePlan] Plan data: $data');
 
-      final appState = context.read<AppState>();
+      final networkProvider = context.read<NetworkProvider>();
       if (widget.planData != null && widget.planData!['id'] != null) {
-        await appState.updatePlan(widget.planData!['slug']?.toString() ?? widget.planData!['id'].toString(), data);
+        await networkProvider.updatePlan(widget.planData!['slug']?.toString() ?? widget.planData!['id'].toString(), data);
       } else {
-        await appState.createPlan(data);
+        await networkProvider.createPlan(data);
       }
 
       if (mounted) {
@@ -369,7 +373,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
     if (confirmed == true && mounted) {
       setState(() => _isLoading = true);
       try {
-        await context.read<AppState>().deletePlan(widget.planData!['slug']?.toString() ?? widget.planData!['id'].toString());
+        await context.read<NetworkProvider>().deletePlan(widget.planData!['slug']?.toString() ?? widget.planData!['id'].toString());
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
