@@ -18,14 +18,19 @@ class AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     // Skip adding token for auth endpoints
-    final isAuthEndpoint = options.path.contains('/login/') ||
-        options.path.contains('/register/') ||
-        options.path.contains('/token/refresh/');
+    // Check both with and without leading slash to be safe
+    final isAuthEndpoint = options.path.contains('login/') ||
+        options.path.contains('register/') ||
+        options.path.contains('token/refresh/') ||
+        options.path.contains('password-reset/');
 
     if (!isAuthEndpoint) {
       final accessToken = await _tokenStorage.getAccessToken();
       if (accessToken != null) {
+        if (kDebugMode) print('🔑 [AuthInterceptor] Adding token to request: ${options.path}');
         options.headers['Authorization'] = 'Bearer $accessToken';
+      } else {
+        if (kDebugMode) print('⚠️ [AuthInterceptor] No access token found for request: ${options.path}');
       }
     }
 
@@ -36,6 +41,7 @@ class AuthInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     // Handle 401 Unauthorized - token expired
     if (err.response?.statusCode == 401 && !_isRefreshRequest(err.requestOptions)) {
+      if (kDebugMode) print('🔄 [AuthInterceptor] 401 detected on ${err.requestOptions.path}, attempting token refresh...');
       try {
         // Wait for refresh if already in progress
         await _queueRefresh();
@@ -45,16 +51,22 @@ class AuthInterceptor extends Interceptor {
         final requestOptions = err.requestOptions;
         requestOptions.headers['Authorization'] = 'Bearer $accessToken';
 
+        if (kDebugMode) print('🔁 [AuthInterceptor] Retrying ${err.requestOptions.path} with new token');
         // Create a new Dio instance to avoid interceptor loops
         final dio = Dio(BaseOptions(baseUrl: _baseUrl));
         final response = await dio.fetch(requestOptions);
         
         return handler.resolve(response);
       } catch (refreshError) {
+        if (kDebugMode) print('❌ [AuthInterceptor] Token refresh failed: $refreshError');
         // Refresh failed, clear tokens and let the error propagate
         await _tokenStorage.clearTokens();
         return handler.reject(err);
       }
+    }
+
+    if (kDebugMode) {
+      print('❌ [AuthInterceptor] Error on ${err.requestOptions.path}: ${err.response?.statusCode} ${err.message}');
     }
 
     handler.next(err);
@@ -62,7 +74,7 @@ class AuthInterceptor extends Interceptor {
 
   /// Check if this is a token refresh request to avoid infinite loops
   bool _isRefreshRequest(RequestOptions options) {
-    return options.path.contains('/token/refresh/');
+    return options.path.contains('token/refresh/');
   }
 
   /// Queue token refresh to prevent multiple simultaneous refresh calls
@@ -82,19 +94,32 @@ class AuthInterceptor extends Interceptor {
       }
 
       // Call the refresh endpoint
-      // Note: Using /customer/token/refresh/ as per API spec
-      // TODO: Verify if partner uses same endpoint or has separate /partner/token/refresh/
+      // Partner app MUST use /partner/token/refresh/
+      if (kDebugMode) print('📡 [AuthInterceptor] Calling token refresh endpoint: /partner/token/refresh/');
       final dio = Dio(BaseOptions(baseUrl: _baseUrl));
       final response = await dio.post(
-        '/customer/token/refresh/',
+        '/partner/token/refresh/',
         data: {'refresh': refreshToken},
       );
 
-      final newAccessToken = response.data['access'] as String?;
+      final responseData = response.data;
+      String? newAccessToken;
+      
+      if (responseData is Map) {
+        // Adapt to possible API formats
+        if (responseData['data'] != null && responseData['data']['access'] != null) {
+          newAccessToken = responseData['data']['access'].toString();
+        } else {
+          newAccessToken = responseData['access']?.toString();
+        }
+      }
+
       if (newAccessToken == null) {
+        if (kDebugMode) print('❌ [AuthInterceptor] No access token in refresh response: $responseData');
         throw Exception('No access token in refresh response');
       }
 
+      if (kDebugMode) print('✅ [AuthInterceptor] Token refreshed successfully');
       // Save the new access token (keep the same refresh token)
       await _tokenStorage.saveTokens(
         accessToken: newAccessToken,
