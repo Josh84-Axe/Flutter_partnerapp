@@ -405,9 +405,8 @@ class NetworkProvider with ChangeNotifier {
   Future<void> _loadDataLimits() async {
     if (_planConfigRepository == null) return;
     try {
-      _dataLimits = await _planConfigRepository!.fetchDataLimits();
       final config = await _planConfigRepository!.fetchDataLimits();
-      _dataLimits = config; // Assuming returns List
+      _dataLimits = config;
       notifyListeners();
     } catch (e) {
       if (kDebugMode) print('Error loading data limits: $e');
@@ -416,10 +415,7 @@ class NetworkProvider with ChangeNotifier {
 
   // ==================== Plan Configurations ====================
 
-  Future<void> _loadDateLimits() async {
-    // Legacy typo fix: call _loadDataLimits
-    await _loadDataLimits();
-  }
+
 
 
 

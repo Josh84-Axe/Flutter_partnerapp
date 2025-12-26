@@ -10,7 +10,6 @@ import '../widgets/metric_card.dart';
 import '../widgets/subscription_plan_card.dart';
 import '../widgets/quick_action_button.dart';
 import '../widgets/guest_mode_banner.dart';
-import '../widgets/guest_mode_banner.dart';
 import '../widgets/data_usage_card.dart';
 import '../services/update_service.dart';
 
@@ -27,6 +26,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkForUpdates();
+      _refreshAll(context);
     });
   }
 
@@ -38,6 +38,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _showUpdateDialog(updateInfo);
     }
   }
+
+// ... unchanged code ...
+
+
 
   void _showUpdateDialog(Map<String, dynamic> updateInfo) {
     final bool forceUpdate = updateInfo['forceUpdate'] == true;
@@ -405,11 +409,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _refreshAll(BuildContext context) async {
-    await Future.wait([
-      context.read<UserProvider>().loadUsers(),
-      context.read<NetworkProvider>().loadActiveSessions(),
-      context.read<BillingProvider>().loadAllWalletBalances(),
-      context.read<UserProvider>().loadSubscription(),
-    ]);
+    final networkProvider = context.read<NetworkProvider>();
+    final userProvider = context.read<UserProvider>();
+    final billingProvider = context.read<BillingProvider>();
+
+    try {
+      await Future.wait([
+        // Network
+        networkProvider.loadAllConfigurations(),
+        networkProvider.loadHotspotProfiles(),
+        networkProvider.loadActiveSessions(),
+        networkProvider.loadPlans(),
+
+        // User
+        userProvider.loadUsers(),
+        userProvider.loadWorkers(),
+        userProvider.loadRoles(),
+        userProvider.loadSubscription(),
+
+        // Billing
+        billingProvider.loadAllWalletBalances(),
+        billingProvider.loadTransactions(),
+        billingProvider.loadPaymentMethods(),
+      ]);
+    } catch (e) {
+      debugPrint('Error refreshing data: $e');
+    }
   }
 }
