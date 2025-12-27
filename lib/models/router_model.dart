@@ -1,34 +1,38 @@
 class RouterModel {
   final String id;
   final String name;
-  final String macAddress;
+  final String slug;
+  final String? ipAddress;
   final String status;
   final int connectedUsers;
   final double dataUsageGB;
   final int uptimeHours;
-  final DateTime lastSeen;
+  final DateTime? lastSeen;
 
   RouterModel({
     required this.id,
     required this.name,
-    required this.macAddress,
-    required this.status,
-    required this.connectedUsers,
-    required this.dataUsageGB,
-    required this.uptimeHours,
-    required this.lastSeen,
+    required this.slug,
+    this.ipAddress,
+    this.status = 'unknown',
+    this.connectedUsers = 0,
+    this.dataUsageGB = 0.0,
+    this.uptimeHours = 0,
+    this.lastSeen,
   });
 
   factory RouterModel.fromJson(Map<String, dynamic> json) {
     return RouterModel(
-      id: json['id'],
-      name: json['name'],
-      macAddress: json['macAddress'],
-      status: json['status'],
-      connectedUsers: json['connectedUsers'],
-      dataUsageGB: (json['dataUsageGB'] as num).toDouble(),
-      uptimeHours: json['uptimeHours'],
-      lastSeen: DateTime.parse(json['lastSeen']),
+      id: json['id']?.toString() ?? '',
+      name: json['name'] ?? '',
+      slug: json['slug'] ?? '',
+      ipAddress: json['ip_address'],
+      // Basic mapping from 'is_active' until real health endpoints are integrated
+      status: (json['is_active'] == true) ? 'online' : 'offline',
+      connectedUsers: json['connected_users'] ?? 0,
+      dataUsageGB: (json['data_usage_gb'] as num?)?.toDouble() ?? 0.0,
+      uptimeHours: json['uptime_hours'] ?? 0,
+      lastSeen: json['last_seen'] != null ? DateTime.tryParse(json['last_seen']) : null,
     );
   }
 
@@ -36,12 +40,13 @@ class RouterModel {
     return {
       'id': id,
       'name': name,
-      'macAddress': macAddress,
+      'slug': slug,
+      'ip_address': ipAddress,
       'status': status,
-      'connectedUsers': connectedUsers,
-      'dataUsageGB': dataUsageGB,
-      'uptimeHours': uptimeHours,
-      'lastSeen': lastSeen.toIso8601String(),
+      'connected_users': connectedUsers,
+      'data_usage_gb': dataUsageGB,
+      'uptime_hours': uptimeHours,
+      'last_seen': lastSeen?.toIso8601String(),
     };
   }
 }

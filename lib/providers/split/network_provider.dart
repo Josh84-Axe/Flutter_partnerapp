@@ -125,7 +125,14 @@ class NetworkProvider with ChangeNotifier {
       if (kDebugMode) print('📡 [NetworkProvider] Loading routers...');
       final routersData = await _routerRepository!.fetchRouters();
       
-      _routers = routersData.map((data) => RouterModel.fromJson(data)).toList();
+      _routers = routersData.map((data) {
+        try {
+          return RouterModel.fromJson(data);
+        } catch (e) {
+          if (kDebugMode) print('❌ [NetworkProvider] Error parsing router: $data\nError: $e');
+          rethrow;
+        }
+      }).toList();
       _routerConfigurations = routersData.map((data) => RouterConfigurationModel.fromJson(data)).toList();
       _error = null;
     } catch (e) {

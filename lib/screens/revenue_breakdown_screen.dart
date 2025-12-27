@@ -59,7 +59,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: color.withValues(alpha: 0.1),
+      color: color.withValues(alpha: 0.15), // Increased from 0.1
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -78,7 +78,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
                         Text(
                           title,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600, // Increased weight
                             color: color,
                           ),
                         ),
@@ -94,7 +94,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
                         Text(
                           description,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: color.withValues(alpha: 0.8),
+                            color: color.withValues(alpha: 0.9), // Increased from 0.8
                           ),
                         ),
                       ],
@@ -103,7 +103,7 @@ class RevenueBreakdownScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.2),
+                      color: color.withValues(alpha: 0.25), // Increased from 0.2
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(

@@ -97,12 +97,14 @@ class UserProvider with ChangeNotifier {
   Stream<LocalNotification> get localNotificationStream => _localNotificationService.notificationStream;
 
   String get currencyCode {
-    if (_partnerCountry == null || _partnerCountry!.isEmpty) return '₦';
+    final country = _partnerCountry ?? _authProvider?.partnerCountry;
+    if (country == null || country.isEmpty) return '₦';
+    
     // Mapping from country name/code to currency symbol
-    switch (_partnerCountry?.toLowerCase()) {
-      // Add other country mappings if needed
+    switch (country.toLowerCase()) {
       case 'ghana': return 'GH₵';
       case 'kenya': return 'KSh';
+      case 'nigeria': return '₦';
       default: return '₦';
     }
   }

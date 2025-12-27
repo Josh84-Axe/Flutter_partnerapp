@@ -194,7 +194,9 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                   Text(
-                                    '${plan.price} ${userProvider.currencyCode}',
+                                    plan.priceDisplay.isNotEmpty 
+                                        ? plan.priceDisplay 
+                                        : '${plan.price} ${userProvider.currencyCode}',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
