@@ -437,7 +437,7 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       }
 
       // Use disconnect endpoint
-      await context.read<NetworkProvider>().disconnectSession(session['session_id']);
+      await context.read<NetworkProvider>().disconnectSession(session);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

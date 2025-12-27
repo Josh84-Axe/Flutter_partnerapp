@@ -49,59 +49,78 @@ class TokenStorage {
 
   /// Get the access token
   Future<String?> getAccessToken() async {
-    String? token;
-    
-    if (kIsWeb) {
-      await _ensurePrefsInitialized();
-      token = _prefs!.getString(_accessTokenKey);
-    } else {
-      token = await _secureStorage!.read(key: _accessTokenKey);
+    try {
+      String? token;
+      
+      if (kIsWeb) {
+        await _ensurePrefsInitialized();
+        token = _prefs!.getString(_accessTokenKey);
+      } else {
+        token = await _secureStorage!.read(key: _accessTokenKey);
+      }
+      
+      if (token != null) {
+        if (kDebugMode) print('TokenStorage: Retrieved access token (${token.substring(0, 8)}...)');
+      } else {
+        if (kDebugMode) print('TokenStorage: No access token found');
+      }
+      return token;
+    } catch (e) {
+      if (kDebugMode) print('TokenStorage: Error getting access token: $e');
+      return null;
     }
-    
-    if (token != null) {
-      if (kDebugMode) print('TokenStorage: Retrieved access token (${token.substring(0, 8)}...)');
-    } else {
-      if (kDebugMode) print('TokenStorage: No access token found');
-    }
-    return token;
   }
 
   /// Get the refresh token
   Future<String?> getRefreshToken() async {
-    String? token;
-    
-    if (kIsWeb) {
-      await _ensurePrefsInitialized();
-      token = _prefs!.getString(_refreshTokenKey);
-    } else {
-      token = await _secureStorage!.read(key: _refreshTokenKey);
+    try {
+      String? token;
+      
+      if (kIsWeb) {
+        await _ensurePrefsInitialized();
+        token = _prefs!.getString(_refreshTokenKey);
+      } else {
+        token = await _secureStorage!.read(key: _refreshTokenKey);
+      }
+      
+      if (token != null) {
+        if (kDebugMode) print('TokenStorage: Retrieved refresh token (${token.substring(0, 8)}...)');
+      } else {
+        if (kDebugMode) print('TokenStorage: No refresh token found');
+      }
+      return token;
+    } catch (e) {
+      if (kDebugMode) print('TokenStorage: Error getting refresh token: $e');
+      return null;
     }
-    
-    if (token != null) {
-      if (kDebugMode) print('TokenStorage: Retrieved refresh token (${token.substring(0, 8)}...)');
-    } else {
-      if (kDebugMode) print('TokenStorage: No refresh token found');
-    }
-    return token;
   }
 
   /// Check if tokens exist
   Future<bool> hasTokens() async {
-    final access = await getAccessToken();
-    final refresh = await getRefreshToken();
-    return access != null && refresh != null;
+    try {
+      final access = await getAccessToken();
+      final refresh = await getRefreshToken();
+      return access != null && refresh != null;
+    } catch (e) {
+      if (kDebugMode) print('TokenStorage: Error checking tokens: $e');
+      return false;
+    }
   }
 
   /// Clear all tokens (logout)
   Future<void> clearTokens() async {
-    if (kIsWeb) {
-      await _ensurePrefsInitialized();
-      await Future.wait([
-        _prefs!.remove(_accessTokenKey),
-        _prefs!.remove(_refreshTokenKey),
-      ]);
-    } else {
-      await _secureStorage!.deleteAll();
+    try {
+      if (kIsWeb) {
+        await _ensurePrefsInitialized();
+        await Future.wait([
+          _prefs!.remove(_accessTokenKey),
+          _prefs!.remove(_refreshTokenKey),
+        ]);
+      } else {
+        await _secureStorage!.deleteAll();
+      }
+    } catch (e) {
+      if (kDebugMode) print('TokenStorage: Error clearing tokens: $e');
     }
   }
 }

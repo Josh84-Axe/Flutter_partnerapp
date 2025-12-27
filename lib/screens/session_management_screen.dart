@@ -50,14 +50,7 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
 
     try {
       final networkProvider = context.read<NetworkProvider>();
-      // Use disconnectSession with just the session ID if available, or session map
-      // NetworkProvider.disconnectSession currently takes String sessionId
-      final sessionId = session['session_id'] ?? session['id']?.toString();
-      if (sessionId == null) {
-        throw Exception('Session ID not found');
-      }
-      
-      await networkProvider.disconnectSession(sessionId);
+      await networkProvider.disconnectSession(session);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

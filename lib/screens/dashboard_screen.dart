@@ -434,6 +434,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ]);
     } catch (e) {
       debugPrint('Error refreshing data: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load data: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 10),
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: () => _refreshAll(context),
+            ),
+          ),
+        );
+      }
     }
   }
 }
