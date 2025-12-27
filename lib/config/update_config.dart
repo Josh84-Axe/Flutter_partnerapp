@@ -7,5 +7,5 @@ class UpdateConfig {
   ///   "forceUpdate": false,
   ///   "releaseNotes": "Fixes payment bug and adds new features."
   /// }
-  static const String versionCheckUrl = 'https://raw.githubusercontent.com/Josh84-Axe/Flutter_partnerapp/fix/token-storage-windows/version.json';
+  static const String versionCheckUrl = 'https://raw.githubusercontent.com/Josh84-Axe/Flutter_partnerapp/main/version.json';
 }
