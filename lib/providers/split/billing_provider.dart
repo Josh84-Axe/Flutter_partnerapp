@@ -204,7 +204,7 @@ class BillingProvider with ChangeNotifier {
       if (_walletRepository == null) return;
       
       if (kDebugMode) print('💰 [BillingProvider] Loading revenue counters...');
-      final countersData = await _walletRepository!.fetchBalance();
+      final countersData = await _walletRepository!.fetchCounters();
       
       if (kDebugMode) print('📊 [BillingProvider] Raw countersData: $countersData');
       

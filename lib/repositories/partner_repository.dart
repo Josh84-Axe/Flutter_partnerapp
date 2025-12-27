@@ -73,7 +73,21 @@ class PartnerRepository {
     try {
       if (kDebugMode) print('🌍 [PartnerRepository] Fetching countries');
       final response = await _dio.get('/partner/countries/');
-      final List<dynamic> data = response.data['results'] ?? [];
+      final responseData = response.data;
+      List<dynamic> data = [];
+      
+      if (responseData is Map) {
+        if (responseData['data'] is List) {
+          data = responseData['data'] as List;
+        } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          data = responseData['data']['results'] as List;
+        } else if (responseData['results'] is List) {
+          data = responseData['results'] as List;
+        }
+      } else if (responseData is List) {
+        data = responseData as List;
+      }
+
       return data.map<Map<String, String>>((item) => {
         'code': item['code']?.toString() ?? '',
         'name': item['name']?.toString() ?? '',
@@ -89,7 +103,21 @@ class PartnerRepository {
     try {
       if (kDebugMode) print('💳 [PartnerRepository] Fetching payment methods');
       final response = await _dio.get('/partner/payment-methods/');
-      final List<dynamic> data = response.data['results'] ?? [];
+      final responseData = response.data;
+      List<dynamic> data = [];
+
+      if (responseData is Map) {
+        if (responseData['data'] is List) {
+          data = responseData['data'] as List;
+        } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          data = responseData['data']['results'] as List;
+        } else if (responseData['results'] is List) {
+          data = responseData['results'] as List;
+        }
+      } else if (responseData is List) {
+        data = responseData as List;
+      }
+      
       return data.map((item) => item['name']?.toString() ?? '').toList();
     } catch (e) {
       if (kDebugMode) print('❌ [PartnerRepository] Fetch payment methods error: $e');
@@ -151,7 +179,21 @@ class PartnerRepository {
     try {
       if (kDebugMode) print('📊 [PartnerRepository] Fetching report types');
       final response = await _dio.get('/partner/report-types/');
-      final List<dynamic> data = response.data['results'] ?? [];
+      final responseData = response.data;
+      List<dynamic> data = [];
+
+      if (responseData is Map) {
+        if (responseData['data'] is List) {
+          data = responseData['data'] as List;
+        } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          data = responseData['data']['results'] as List;
+        } else if (responseData['results'] is List) {
+          data = responseData['results'] as List;
+        }
+      } else if (responseData is List) {
+        data = responseData as List;
+      }
+      
       return data.map((item) => item['name']?.toString() ?? '').toList();
     } catch (e) {
       if (kDebugMode) print('❌ [PartnerRepository] Fetch report types error: $e');

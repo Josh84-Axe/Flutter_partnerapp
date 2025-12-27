@@ -15,7 +15,7 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/rate-limit/list/');
       final responseData = response.data;
       
-      // Handle nested data structure: { data: { results: [...] } }
+      // Handle nested data structure
       if (responseData is Map) {
         if (responseData['data'] is Map && responseData['data']['results'] is List) {
           return responseData['data']['results'] as List;
@@ -85,7 +85,7 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/data-limit/list/');
       final responseData = response.data;
       
-      // Handle nested data structure: { data: { results: [...] } }
+      // Handle nested data structure
       if (responseData is Map) {
         if (responseData['data'] is Map && responseData['data']['results'] is List) {
           return responseData['data']['results'] as List;
@@ -155,7 +155,7 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/shared-users/list/');
       final responseData = response.data;
       
-      // Handle nested data structure: { data: { results: [...] } }
+      // Handle nested data structure
       if (responseData is Map) {
         if (responseData['data'] is Map && responseData['data']['results'] is List) {
           return responseData['data']['results'] as List;
@@ -225,7 +225,7 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/validity/list/');
       final responseData = response.data;
       
-      // Handle nested data structure: { data: { results: [...] } }
+      // Handle nested data structure
       if (responseData is Map) {
         if (responseData['data'] is Map && responseData['data']['results'] is List) {
           return responseData['data']['results'] as List;
@@ -295,7 +295,7 @@ class PlanConfigRepository {
       final response = await _dio.get('/partner/idle-timeout/list/');
       final responseData = response.data;
       
-      // Handle nested data structure: { data: { results: [...] } }
+      // Handle nested data structure
       if (responseData is Map) {
         if (responseData['data'] is Map && responseData['data']['results'] is List) {
           return responseData['data']['results'] as List;

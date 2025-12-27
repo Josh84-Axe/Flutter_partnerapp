@@ -18,7 +18,7 @@ class HotspotRepository {
       
       final responseData = response.data;
       
-      // Handle nested data structure: { data: { results: [...] } } or { data: [...] }
+      // Handle nested data structure
       if (responseData is Map) {
         if (responseData['data'] is Map && responseData['data']['results'] is List) {
           final profiles = responseData['data']['results'] as List;
@@ -52,7 +52,7 @@ class HotspotRepository {
       
       final responseData = response.data;
       
-      // Handle nested data structure: { data: { results: [...] } } or { data: [...] }
+      // Handle nested data structure
       if (responseData is Map) {
         if (responseData['data'] is Map && responseData['data']['results'] is List) {
           final users = responseData['data']['results'] as List;

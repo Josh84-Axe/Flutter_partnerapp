@@ -15,8 +15,12 @@ class CollaboratorRepository {
       final response = await _dio.get('/partner/collaborators/list/');
       final responseData = response.data;
       
-      if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+      if (responseData is Map) {
+         if (responseData['data'] is List) {
+           return responseData['data'] as List;
+         } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+           return responseData['data']['results'] as List;
+         }
       }
       
       return [];

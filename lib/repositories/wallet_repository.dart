@@ -29,6 +29,27 @@ class WalletRepository {
     }
   }
 
+  /// Fetch counters balance (Total, Online, Assigned Revenue)
+  Future<Map<String, dynamic>?> fetchCounters() async {
+    try {
+      if (kDebugMode) print('💰 [WalletRepository] Fetching counters balance');
+      final response = await _dio.get('/partner/counters/balance/');
+      if (kDebugMode) print('✅ [WalletRepository] Fetch counters response: ${response.data}');
+      
+      final responseData = response.data;
+      
+      // API wraps data in {statusCode, error, message, data: {...}}
+      if (responseData is Map && responseData['data'] is Map) {
+        return responseData['data'] as Map<String, dynamic>;
+      }
+      
+      return responseData as Map<String, dynamic>?;
+    } catch (e) {
+      if (kDebugMode) print('❌ [WalletRepository] Fetch counters error: $e');
+      rethrow;
+    }
+  }
+
   /// Fetch available plans
   Future<List<dynamic>> fetchPlans() async {
     try {

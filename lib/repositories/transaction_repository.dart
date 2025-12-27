@@ -34,9 +34,24 @@ class TransactionRepository {
       
       final responseData = response.data;
       
-      if (responseData is Map && responseData['data'] is List) {
-        final transactions = responseData['data'] as List;
-        if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} transactions');
+      // Standardized parsing logic
+      if (responseData is Map) {
+        if (responseData['data'] is List) {
+          final transactions = responseData['data'] as List;
+          if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} transactions');
+          return transactions;
+        } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          final transactions = responseData['data']['results'] as List;
+          if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} transactions (nested)');
+          return transactions;
+        } else if (responseData['results'] is List) {
+          final transactions = responseData['results'] as List;
+          if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} transactions (results)');
+          return transactions;
+        }
+      } else if (responseData is List) {
+        final transactions = responseData as List;
+        if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} transactions (direct)');
         return transactions;
       }
       
@@ -57,9 +72,24 @@ class TransactionRepository {
       
       final responseData = response.data;
       
-      if (responseData is Map && responseData['data'] is List) {
-        final transactions = responseData['data'] as List;
-        if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} device transactions');
+      // Standardized parsing logic
+      if (responseData is Map) {
+        if (responseData['data'] is List) {
+          final transactions = responseData['data'] as List;
+          if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} device transactions');
+          return transactions;
+        } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          final transactions = responseData['data']['results'] as List;
+          if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} device transactions (nested)');
+          return transactions;
+        } else if (responseData['results'] is List) {
+          final transactions = responseData['results'] as List;
+          if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} device transactions (results)');
+          return transactions;
+        }
+      } else if (responseData is List) {
+        final transactions = responseData as List;
+        if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} device transactions (direct)');
         return transactions;
       }
       
@@ -81,19 +111,28 @@ class TransactionRepository {
       final responseData = response.data;
       
       // Handle nested structure: data.paginate_data
-      if (responseData is Map && responseData['data'] is Map) {
-        final data = responseData['data'] as Map;
-        if (data['paginate_data'] is List) {
-          final transactions = data['paginate_data'] as List;
+      // Standardized parsing logic
+      if (responseData is Map) {
+        if (responseData['data'] is List) {
+          final transactions = responseData['data'] as List;
           if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} plan transactions');
           return transactions;
+        } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          final transactions = responseData['data']['results'] as List;
+          if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} plan transactions (nested)');
+          return transactions;
+        } else if (responseData['data'] is Map && responseData['data']['paginate_data'] is List) {
+             final transactions = responseData['data']['paginate_data'] as List;
+             if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} plan transactions (paginate)');
+             return transactions;
+        } else if (responseData['results'] is List) {
+          final transactions = responseData['results'] as List;
+          if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} plan transactions (results)');
+          return transactions;
         }
-      }
-      
-      // Fallback: check if data is directly a list
-      if (responseData is Map && responseData['data'] is List) {
-        final transactions = responseData['data'] as List;
-        if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} plan transactions');
+      } else if (responseData is List) {
+        final transactions = responseData as List;
+        if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} plan transactions (direct)');
         return transactions;
       }
       
@@ -152,11 +191,18 @@ class TransactionRepository {
       if (kDebugMode) print('✅ [TransactionRepository] Response: ${response.data}');
       
       final responseData = response.data;
-      if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
-      }
-      if (responseData is List) {
-        return responseData;
+
+      // Standardized parsing logic
+      if (responseData is Map) {
+        if (responseData['data'] is List) {
+          return responseData['data'] as List;
+        } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          return responseData['data']['results'] as List;
+        } else if (responseData['results'] is List) {
+          return responseData['results'] as List;
+        }
+      } else if (responseData is List) {
+        return responseData as List;
       }
       return [];
     } catch (e) {
@@ -187,20 +233,28 @@ class TransactionRepository {
       
       final responseData = response.data;
       
-      // Handle nested structure: data.paginate_data
-      if (responseData is Map && responseData['data'] is Map) {
-        final data = responseData['data'] as Map;
-        if (data['paginate_data'] is List) {
-          final transactions = data['paginate_data'] as List;
-          if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} wallet transactions');
+      // Standardized parsing logic
+      if (responseData is Map) {
+        if (responseData['data'] is List) {
+          final transactions = responseData['data'] as List;
+           if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} wallet transactions');
+          return transactions;
+        } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          final transactions = responseData['data']['results'] as List;
+           if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} wallet transactions (nested)');
+          return transactions;
+        } else if (responseData['data'] is Map && responseData['data']['paginate_data'] is List) {
+          final transactions = responseData['data']['paginate_data'] as List;
+           if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} wallet transactions (paginate)');
+          return transactions;
+        } else if (responseData['results'] is List) {
+          final transactions = responseData['results'] as List;
+           if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} wallet transactions (results)');
           return transactions;
         }
-      }
-      
-      // Fallback: check if data is directly a list
-      if (responseData is Map && responseData['data'] is List) {
-        final transactions = responseData['data'] as List;
-        if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} wallet transactions');
+      } else if (responseData is List) {
+        final transactions = responseData as List;
+         if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} wallet transactions (direct)');
         return transactions;
       }
       
@@ -239,33 +293,30 @@ class TransactionRepository {
       final responseData = response.data;
       
       // Handle nested data structure
-      if (responseData is Map && responseData['data'] is List) {
-        final withdrawals = responseData['data'] as List;
-        if (kDebugMode) print('   Found ${withdrawals.length} withdrawals in data.data');
-        return withdrawals;
-      }
-      
-      // Handle paginated structure
-      if (responseData is Map && responseData['data'] is Map) {
-        final data = responseData['data'] as Map;
-        if (data['paginate_data'] is List) {
-          final withdrawals = data['paginate_data'] as List;
-          if (kDebugMode) print('   Found ${withdrawals.length} withdrawals in data.data.paginate_data');
+      // Standardized parsing logic
+      if (responseData is Map) {
+        if (responseData['data'] is List) {
+          final withdrawals = responseData['data'] as List;
+          if (kDebugMode) print('   Found ${withdrawals.length} withdrawals (data)');
+          return withdrawals;
+        } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          final withdrawals = responseData['data']['results'] as List;
+          if (kDebugMode) print('   Found ${withdrawals.length} withdrawals (nested results)');
+          return withdrawals;
+        } else if (responseData['data'] is Map && responseData['data']['paginate_data'] is List) {
+          final withdrawals = responseData['data']['paginate_data'] as List;
+          if (kDebugMode) print('   Found ${withdrawals.length} withdrawals (nested paginate)');
+          return withdrawals;
+        } else if (responseData['results'] is List) {
+          final withdrawals = responseData['results'] as List;
+          if (kDebugMode) print('   Found ${withdrawals.length} withdrawals (results)');
           return withdrawals;
         }
-        if (data['results'] is List) {
-          final withdrawals = data['results'] as List;
-          if (kDebugMode) print('   Found ${withdrawals.length} withdrawals in data.data.results');
-          return withdrawals;
-        }
-      }
-      
-      // Handle direct list
-      if (responseData is List) {
-        if (kDebugMode) print('   Found ${responseData.length} withdrawals in direct list');
+      } else if (responseData is List) {
+        if (kDebugMode) print('   Found ${responseData.length} withdrawals (direct)');
         return responseData;
       }
-      
+
       if (kDebugMode) print('⚠️ [TransactionRepository] No withdrawals found - unexpected response structure');
       return [];
     } catch (e) {

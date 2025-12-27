@@ -16,15 +16,17 @@ class SubscriptionRepository {
       
       final responseData = response.data;
       
-      // Handle nested data structure: { data: [...] } or { results: [...] }
+      // Standardized parsing logic
       if (responseData is Map) {
         if (responseData['data'] is List) {
           return responseData['data'] as List;
+        } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+          return responseData['data']['results'] as List;
         } else if (responseData['results'] is List) {
           return responseData['results'] as List;
         }
       } else if (responseData is List) {
-        return responseData;
+        return responseData as List;
       }
       
       if (kDebugMode) print('⚠️ [SubscriptionRepository] No plans found in response');

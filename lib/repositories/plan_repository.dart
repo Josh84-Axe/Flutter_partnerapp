@@ -17,11 +17,17 @@ class PlanRepository {
       
       final responseData = response.data;
       
-      // API returns: {statusCode, error, message, data: [...], exception}
-      if (responseData is Map && responseData['data'] is List) {
-        final plans = responseData['data'] as List;
-        if (kDebugMode) print('✅ [PlanRepository] Found ${plans.length} plans');
-        return plans;
+      // API returns: {statusCode, error, message, data: [...], exception} or data: {results: [...]}
+      if (responseData is Map) {
+         if (responseData['data'] is List) {
+           final plans = responseData['data'] as List;
+           if (kDebugMode) print('✅ [PlanRepository] Found ${plans.length} plans');
+           return plans;
+         } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+           final plans = responseData['data']['results'] as List;
+           if (kDebugMode) print('✅ [PlanRepository] Found ${plans.length} plans');
+           return plans;
+         }
       }
       
       if (kDebugMode) print('⚠️ [PlanRepository] No plans found in response');

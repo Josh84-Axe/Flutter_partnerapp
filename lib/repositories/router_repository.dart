@@ -18,11 +18,17 @@ class RouterRepository {
       
       final responseData = response.data;
       
-      // API returns: {statusCode, error, message, data: [...], exception}
-      if (responseData is Map && responseData['data'] is List) {
-        final routers = responseData['data'] as List;
-        if (kDebugMode) print('✅ [RouterRepository] Found ${routers.length} routers');
-        return routers;
+      // API returns: {statusCode, error, message, data: [...], exception} or data: {results: [...]}
+      if (responseData is Map) {
+         if (responseData['data'] is List) {
+           final routers = responseData['data'] as List;
+           if (kDebugMode) print('✅ [RouterRepository] Found ${routers.length} routers');
+           return routers;
+         } else if (responseData['data'] is Map && responseData['data']['results'] is List) {
+           final routers = responseData['data']['results'] as List;
+           if (kDebugMode) print('✅ [RouterRepository] Found ${routers.length} routers');
+           return routers;
+         }
       }
       
       if (kDebugMode) print('⚠️ [RouterRepository] No routers found in response');

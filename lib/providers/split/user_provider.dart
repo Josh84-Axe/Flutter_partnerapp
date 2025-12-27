@@ -227,7 +227,14 @@ class UserProvider with ChangeNotifier {
     try {
       if (kDebugMode) print('📡 [UserProvider] Loading users from API...');
       
-      final activeSessions = await _customerRepository!.getActiveSessions();
+      List<String> activeSessions = [];
+      try {
+        activeSessions = await _customerRepository!.getActiveSessions();
+      } catch (e) {
+        if (kDebugMode) print('⚠️ [UserProvider] Failed to load active sessions: $e');
+        // Continue with empty active sessions
+      }
+
       final response = await _customerRepository!.fetchCustomers(page: 1, pageSize: 20);
       
       if (response != null) {
