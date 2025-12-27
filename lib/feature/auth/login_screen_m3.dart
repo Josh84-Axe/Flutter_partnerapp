@@ -22,7 +22,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
-  @override
+
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();

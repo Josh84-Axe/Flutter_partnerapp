@@ -180,7 +180,12 @@ void main() async {
                 transactionRepository: transactionRepository,
                 paymentMethodRepository: paymentMethodRepository,
               );
-              provider.update(partnerCountry: auth.partnerCountry);
+              provider.update(
+                walletRepository: walletRepository,
+                transactionRepository: transactionRepository,
+                paymentMethodRepository: paymentMethodRepository,
+                partnerCountry: auth.partnerCountry,
+              );
               return provider;
             },
           ),
@@ -203,7 +208,15 @@ void main() async {
                 partnerRepository: partnerRepository,
                 planRepository: planRepository,
               );
-              provider.update(authProvider: auth);
+              provider.update(
+                customerRepository: customerRepository,
+                collaboratorRepository: collaboratorRepository,
+                roleRepository: roleRepository,
+                subscriptionRepository: subscriptionRepository,
+                partnerRepository: partnerRepository,
+                planRepository: planRepository,
+                authProvider: auth,
+              );
               return provider;
             },
           ),
@@ -226,7 +239,15 @@ void main() async {
                 planConfigRepository: planConfigRepository,
                 planRepository: planRepository,
               );
-              provider.update(authProvider: auth);
+              provider.update(
+                routerRepository: routerRepository,
+                hotspotRepository: hotspotRepository,
+                sessionRepository: sessionRepository,
+                customerRepository: customerRepository,
+                planConfigRepository: planConfigRepository,
+                planRepository: planRepository,
+                authProvider: auth,
+              );
               return provider;
             },
           ),
