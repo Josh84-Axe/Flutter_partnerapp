@@ -409,6 +409,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Future<void> _refreshAll(BuildContext context) async {
     final networkProvider = context.read<NetworkProvider>();
     final userProvider = context.read<UserProvider>();
     final billingProvider = context.read<BillingProvider>();

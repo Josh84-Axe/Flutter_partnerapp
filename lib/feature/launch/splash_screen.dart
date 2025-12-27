@@ -19,6 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
     _navigateAfterDelay();
   }
 
+  Future<void> _navigateAfterDelay() async {
     // Check if user has completed onboarding first
     final prefs = await SharedPreferences.getInstance();
     final hasCompletedOnboarding = prefs.getBool('onboarding_completed') ?? false;
