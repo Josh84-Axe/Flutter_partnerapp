@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'token_storage.dart';
+import 'package:flutter/foundation.dart';
 
 /// Dio interceptor that handles JWT authentication and automatic token refresh
 class AuthInterceptor extends Interceptor {
