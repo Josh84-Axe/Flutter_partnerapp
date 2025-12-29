@@ -96,6 +96,16 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       return const Center(child: CircularProgressIndicator());
     }
 
+  Widget _buildPlanListTab(
+    UserProvider userProvider, 
+    NetworkProvider networkProvider, 
+    ColorScheme colorScheme, 
+    {required bool isAssigned}
+  ) {
+    if (userProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     // 1. Flatten all active sessions
     // NetworkProvider already flattens the list via SessionRepository
     final allActiveSessions = <Map<String, dynamic>>[];
@@ -119,20 +129,18 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
     }
 
     // 2. Filter sessions based on tab (Assigned vs Purchased)
-    // We check if the session's username exists in the respective provider list
+    // STRICT FILTERING: Determine if the user's *current active status* implies Assigned or Purchased
+    // We do this by finding the MOST RECENT plan transaction across both lists.
     final filteredSessions = allActiveSessions.where((session) {
       final sessionUsername = session['username']?.toString().toLowerCase() ?? '';
       if (sessionUsername.isEmpty) return false;
 
-      final targetList = isAssigned ? userProvider.assignedPlans : userProvider.purchasedPlans;
+      // Determine the category of this session
+      final bool sessionIsAssigned = _isAssignedUser(sessionUsername, userProvider);
       
-      // Check if this user exists in the target list (matched by username)
-      // We look for ANY plan record for this user in that category
-      return targetList.any((plan) => (plan['username']?.toString().toLowerCase() ?? '') == sessionUsername);
+      // Match with the current tab
+      return sessionIsAssigned == isAssigned;
     }).toList();
-
-    // 3. If searching, apply search filter
-    // (Optional: implement if searchController is used)
 
     if (filteredSessions.isEmpty) {
       return Center(
@@ -222,12 +230,59 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
             colorScheme: colorScheme,
             isAssigned: isAssigned,
             isBlocked: isBlocked,
-            customerName: customerName,
-            phoneNumber: phoneNumber,
+            customerName: customerName, // Pass explicitly
+            phoneNumber: phoneNumber,     // Pass explicitly
           );
         },
       ),
     );
+  }
+
+  /// Determines if a user belongs to 'Assigned' category based on most recent activity
+  bool _isAssignedUser(String username, UserProvider provider) {
+    if (username.isEmpty) return false;
+    final normalizedUser = username.toLowerCase();
+
+    // 1. Get latest Purchased Plan date
+    DateTime? lastPurchased;
+    try {
+      final purchased = provider.purchasedPlans.where(
+        (p) => (p['username']?.toString().toLowerCase() ?? '') == normalizedUser
+      ).toList();
+      if (purchased.isNotEmpty) {
+        // Sort by purchased_at or created_at
+        purchased.sort((a, b) {
+           final dateA = DateTime.tryParse(a['purchased_at']?.toString() ?? a['created_at']?.toString() ?? '') ?? DateTime(2000);
+           final dateB = DateTime.tryParse(b['purchased_at']?.toString() ?? b['created_at']?.toString() ?? '') ?? DateTime(2000);
+           return dateB.compareTo(dateA); // Descending
+        });
+        lastPurchased = DateTime.tryParse(purchased.first['purchased_at']?.toString() ?? purchased.first['created_at']?.toString() ?? '');
+      }
+    } catch (_) {}
+
+    // 2. Get latest Assigned Plan date
+    DateTime? lastAssigned;
+    try {
+      final assigned = provider.assignedPlans.where(
+        (p) => (p['username']?.toString().toLowerCase() ?? '') == normalizedUser
+      ).toList();
+      if (assigned.isNotEmpty) {
+        assigned.sort((a, b) {
+           final dateA = DateTime.tryParse(a['purchased_at']?.toString() ?? a['created_at']?.toString() ?? '') ?? DateTime(2000);
+           final dateB = DateTime.tryParse(b['purchased_at']?.toString() ?? b['created_at']?.toString() ?? '') ?? DateTime(2000);
+           return dateB.compareTo(dateA); // Descending
+        });
+        lastAssigned = DateTime.tryParse(assigned.first['purchased_at']?.toString() ?? assigned.first['created_at']?.toString() ?? '');
+      }
+    } catch (_) {}
+
+    // 3. Compare
+    if (lastAssigned == null && lastPurchased == null) return false; // Default
+    if (lastAssigned != null && lastPurchased == null) return true;
+    if (lastAssigned == null && lastPurchased != null) return false;
+
+    // Both exist: check which is newer
+    return lastAssigned!.isAfter(lastPurchased!) || lastAssigned.isAtSameMomentAs(lastPurchased);
   }
 
   Widget _buildUserCard({
