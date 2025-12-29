@@ -97,21 +97,11 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
     }
 
     // 1. Flatten all active sessions
+    // NetworkProvider already flattens the list via SessionRepository
     final allActiveSessions = <Map<String, dynamic>>[];
-    for (var router in networkProvider.activeSessions) {
-      if (router is Map && router['active_users'] is List) {
-        final routerName = router['router_dns_name'] ?? router['name'] ?? 'Unknown';
-        final routerIp = router['router_ip'] ?? router['ip_address'] ?? 'N/A';
-        
-        for (var session in router['active_users']) {
-          if (session is Map) {
-            allActiveSessions.add({
-              ...session as Map<String, dynamic>,
-              'router_name': routerName,
-              'router_ip': routerIp,
-            });
-          }
-        }
+    for (var session in networkProvider.activeSessions) {
+      if (session is Map) {
+        allActiveSessions.add(session as Map<String, dynamic>);
       }
     }
 
