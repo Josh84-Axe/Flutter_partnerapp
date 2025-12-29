@@ -96,15 +96,7 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       return const Center(child: CircularProgressIndicator());
     }
 
-  Widget _buildPlanListTab(
-    UserProvider userProvider, 
-    NetworkProvider networkProvider, 
-    ColorScheme colorScheme, 
-    {required bool isAssigned}
-  ) {
-    if (userProvider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+
 
     // 1. Flatten all active sessions
     // NetworkProvider already flattens the list via SessionRepository
