@@ -33,15 +33,23 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       networkProvider.loadActiveSessions(),
       userProvider.loadAssignedPlans(),
       userProvider.loadPurchasedPlans(),
-      userProvider.loadUsers(), // Load users to get blocked status
+      userProvider.loadUsers(),
     ]);
-  }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _searchController.dispose();
-    super.dispose();
+    // DEBUG: Inspect data structures
+    if (networkProvider.activeSessions.isNotEmpty) {
+      print('🔍 DEBUG: First Active Session: ${networkProvider.activeSessions.first}');
+    } else {
+      print('🔍 DEBUG: No Active Sessions found.');
+    }
+
+    if (userProvider.assignedPlans.isNotEmpty) {
+      print('🔍 DEBUG: First Assigned Plan: ${userProvider.assignedPlans.first}');
+    }
+
+    if (userProvider.purchasedPlans.isNotEmpty) {
+      print('🔍 DEBUG: First Purchased Plan: ${userProvider.purchasedPlans.first}');
+    }
   }
 
   @override
@@ -126,38 +134,86 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       }
     }
 
+    // Filter plans to ONLY those with an active session
+    final activePlans = plans.where((plan) {
+       final planUsername = plan['username']?.toString() ?? '';
+       final customerName = plan['customer_name']?.toString() ?? '';
+       
+       if (planUsername.isEmpty && customerName.isEmpty) return false;
+
+       // Check if this plan has a corresponding active session
+       return allActiveSessions.any((session) {
+          final sessionUser = session['username']?.toString().toLowerCase() ?? '';
+          
+          if (planUsername.isNotEmpty && sessionUser == planUsername.toLowerCase()) return true;
+          
+          if (customerName.isNotEmpty) {
+             final normalizedName = customerName.toLowerCase();
+             if (sessionUser == normalizedName) return true;
+             if (sessionUser.startsWith('${normalizedName}_')) return true;
+          }
+          return false;
+       });
+    }).toList();
+
+    if (activePlans.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.wifi_off, size: 64, color: colorScheme.outline),
+            const SizedBox(height: 16),
+            Text('no_active_sessions'.tr()),
+          ],
+        ),
+      );
+    }
+
     return RefreshIndicator(
       onRefresh: _loadData,
       child: ListView.builder(
-        itemCount: plans.length,
+        itemCount: activePlans.length,
         itemBuilder: (context, index) {
-          final plan = plans[index];
-          // Try to find matching fields
-          // API likely returns 'username', 'customer_name' (full name or first), 'phone_number'
+          final plan = activePlans[index];
+          
+          // Improved Data Mapping
           final planUsername = plan['username']?.toString() ?? '';
-          final customerName = plan['customer_name']?.toString() ?? plan['first_name']?.toString() ?? 'Unknown';
-          final phoneNumber = plan['phone_number']?.toString() ?? planUsername; // Fallback to username if phone missing
+          String customerName = plan['customer_name']?.toString() ?? '';
+          
+          if (customerName.isEmpty || customerName == 'null') {
+             final first = plan['first_name']?.toString() ?? '';
+             final last = plan['last_name']?.toString() ?? '';
+             if (first.isNotEmpty || last.isNotEmpty) {
+               customerName = '$first $last'.trim();
+             } else {
+               customerName = planUsername;
+             }
+          }
+          
+          final phoneNumber = plan['phone_number']?.toString() ?? plan['phone']?.toString() ?? 'No Phone'; 
 
-          // Match active session
+          // Match active session (Guaranteed to exist due to filter, but safely retrieved)
           Map<String, dynamic>? activeSession;
           try {
             activeSession = allActiveSessions.firstWhere((session) {
               final sessionUser = session['username']?.toString().toLowerCase() ?? '';
               if (planUsername.isNotEmpty && sessionUser == planUsername.toLowerCase()) return true;
+               if (customerName.isNotEmpty) {
+                 final normalizedName = customerName.toLowerCase();
+                 if (sessionUser == normalizedName) return true;
+                 if (sessionUser.startsWith('${normalizedName}_')) return true;
+              }
               return false; 
             });
           } catch (_) {}
 
           // Find full User object to check blocked status
-          // The plan object might not have is_blocked, so we look it up in userProvider.users
           bool isBlocked = false;
-           // If we have a username, check the full user list
           if (planUsername.isNotEmpty) {
              try {
                final user = userProvider.users.firstWhere((u) => (u.username ?? '').toLowerCase() == planUsername.toLowerCase());
                isBlocked = user.isBlocked ?? false;
              } catch (_) {
-               // If user not found in list (e.g. pagination), default to false or check plan object
                isBlocked = plan['is_blocked'] == true;
              }
           }

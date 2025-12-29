@@ -308,6 +308,7 @@ class NetworkProvider with ChangeNotifier {
     try {
       if (kDebugMode) print('📡 [NetworkProvider] Loading active sessions...');
       final sessions = await _sessionRepository!.fetchActiveSessions();
+      print('🔍 [NetworkProvider] Raw Active Sessions: $sessions');
       
       _activeSessions = sessions;
       
