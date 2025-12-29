@@ -78,7 +78,8 @@ class _AssignRoutersScreenState extends State<AssignRoutersScreen> {
     final filteredRouters = allRouters.where((router) {
       if (_searchQuery.isEmpty) return true;
       return router.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             router.macAddress.toLowerCase().contains(_searchQuery.toLowerCase());
+             (router.ipAddress?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
+             router.slug.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
@@ -266,13 +267,14 @@ class _AssignRoutersScreenState extends State<AssignRoutersScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 4),
-                              Text(
-                                'MAC: ${router.macAddress}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: colorScheme.onSurfaceVariant,
+                              if (router.ipAddress != null)
+                                Text(
+                                  'IP: ${router.ipAddress}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
-                              ),
                               const SizedBox(height: 2),
                               Text(
                                 '${router.connectedUsers} ${'users'.tr()} • ${router.dataUsageGB.toStringAsFixed(1)} GB',
@@ -283,8 +285,6 @@ class _AssignRoutersScreenState extends State<AssignRoutersScreen> {
                               ),
                             ],
                           ),
-                          activeColor: colorScheme.primary,
-                          checkColor: Colors.white,
                         ),
                       );
                     },
