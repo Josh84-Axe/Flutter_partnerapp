@@ -145,4 +145,31 @@ class PlanRepository {
       rethrow;
     }
   }
+
+  /// Fetch purchased plans
+  Future<List<dynamic>> fetchPurchasedPlans() async {
+    try {
+      if (kDebugMode) print('📋 [PlanRepository] Fetching purchased plans');
+      final response = await _dio.get('/partner/purchased-plans/');
+      final responseData = response.data;
+      
+      if (responseData is Map) {
+        final data = responseData['data'];
+        if (data is Map && data.containsKey('results')) {
+           final results = data['results'] as List;
+           if (kDebugMode) print('✅ [PlanRepository] Found ${results.length} purchased plans');
+           return results;
+        } else if (data is List) {
+           if (kDebugMode) print('✅ [PlanRepository] Found ${data.length} purchased plans');
+           return data;
+        }
+      }
+      
+      if (kDebugMode) print('⚠️ [PlanRepository] No purchased plans found');
+      return [];
+    } catch (e) {
+      if (kDebugMode) print('❌ [PlanRepository] Fetch purchased plans error: $e');
+      rethrow;
+    }
+  }
 }

@@ -26,9 +26,15 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
   }
 
   Future<void> _loadData() async {
-    await context.read<NetworkProvider>().loadActiveSessions();
-    await context.read<UserProvider>().loadAssignedPlans();
-    await context.read<UserProvider>().loadPurchasedPlans();
+    final networkProvider = context.read<NetworkProvider>();
+    final userProvider = context.read<UserProvider>();
+    
+    await Future.wait([
+      networkProvider.loadActiveSessions(),
+      userProvider.loadAssignedPlans(),
+      userProvider.loadPurchasedPlans(),
+      userProvider.loadUsers(), // Load users to get blocked status
+    ]);
   }
 
   @override
@@ -51,7 +57,7 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: 'online_users'.tr()),
+            Tab(text: 'online_purchased'.tr()), // Changed label for clarity
             Tab(text: 'assigned_users'.tr()),
           ],
         ),
@@ -65,33 +71,42 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildOnlineUsersTab(userProvider, networkProvider, colorScheme),
-          _buildAssignedUsersTab(userProvider, networkProvider, colorScheme),
+          _buildPlanListTab(userProvider, networkProvider, colorScheme, isAssigned: false),
+          _buildPlanListTab(userProvider, networkProvider, colorScheme, isAssigned: true),
         ],
       ),
     );
   }
 
-  Widget _buildOnlineUsersTab(UserProvider userProvider, NetworkProvider networkProvider, ColorScheme colorScheme) {
-    if (userProvider.isLoading && userProvider.purchasedPlans.isEmpty) {
+  Widget _buildPlanListTab(
+    UserProvider userProvider, 
+    NetworkProvider networkProvider, 
+    ColorScheme colorScheme, 
+    {required bool isAssigned}
+  ) {
+    if (userProvider.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (userProvider.purchasedPlans.isEmpty) {
+    final plans = isAssigned ? userProvider.assignedPlans : userProvider.purchasedPlans;
+    
+    if (plans.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.shopping_cart_outlined, size: 64, color: colorScheme.outline),
+            Icon(
+              isAssigned ? Icons.assignment_ind_outlined : Icons.shopping_cart_outlined, 
+              size: 64, 
+              color: colorScheme.outline
+            ),
             const SizedBox(height: 16),
-            Text('no_purchased_plans'.tr()),
+            Text(isAssigned ? 'no_assigned_users'.tr() : 'no_purchased_plans'.tr()),
           ],
         ),
       );
     }
 
-    final plans = userProvider.purchasedPlans;
-    
     // Flatten active sessions from all routers AND inject router details
     final allActiveSessions = <Map<String, dynamic>>[];
     for (var router in networkProvider.activeSessions) {
@@ -117,135 +132,59 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
         itemCount: plans.length,
         itemBuilder: (context, index) {
           final plan = plans[index];
-          final customerName = plan['customer_name']?.toString() ?? '';
-          final planUsername = plan['username']?.toString();
-          
-          // Match logic: 
-          // 1. Direct match on 'username' if available in plan
-          // 2. Fuzzy match: session username starts with customer_name (case-insensitive)
+          // Try to find matching fields
+          // API likely returns 'username', 'customer_name' (full name or first), 'phone_number'
+          final planUsername = plan['username']?.toString() ?? '';
+          final customerName = plan['customer_name']?.toString() ?? plan['first_name']?.toString() ?? 'Unknown';
+          final phoneNumber = plan['phone_number']?.toString() ?? planUsername; // Fallback to username if phone missing
+
+          // Match active session
           Map<String, dynamic>? activeSession;
-          
           try {
             activeSession = allActiveSessions.firstWhere((session) {
               final sessionUser = session['username']?.toString().toLowerCase() ?? '';
-              
-              // Direct ID match
-              if (planUsername != null && sessionUser == planUsername.toLowerCase()) {
-                return true;
-              }
-              
-              // Fuzzy name match (e.g. 'Win' matches 'win_5c3e...')
-              // We check if sessionUser starts with customerName + '_' OR just customerName if exact
-              if (customerName.isNotEmpty) {
-                final normalizedName = customerName.toLowerCase();
-                if (sessionUser == normalizedName) return true;
-                if (sessionUser.startsWith('${normalizedName}_')) return true;
-                // Fallback: simple startsWith for other patterns
-                if (sessionUser.startsWith(normalizedName) && sessionUser.length > normalizedName.length) return true;
-              }
-              
-              return false;
+              if (planUsername.isNotEmpty && sessionUser == planUsername.toLowerCase()) return true;
+              return false; 
             });
-          } catch (e) {
-            // No match found
-            activeSession = null;
+          } catch (_) {}
+
+          // Find full User object to check blocked status
+          // The plan object might not have is_blocked, so we look it up in userProvider.users
+          bool isBlocked = false;
+           // If we have a username, check the full user list
+          if (planUsername.isNotEmpty) {
+             try {
+               final user = userProvider.users.firstWhere((u) => u.username.toLowerCase() == planUsername.toLowerCase());
+               isBlocked = user.isBlocked;
+             } catch (_) {
+               // If user not found in list (e.g. pagination), default to false or check plan object
+               isBlocked = plan['is_blocked'] == true;
+             }
           }
-          
-          return _buildUserCard(plan, activeSession, colorScheme, isAssigned: false);
+
+          return _buildUserCard(
+            plan: plan,
+            activeSession: activeSession,
+            colorScheme: colorScheme,
+            isAssigned: isAssigned,
+            isBlocked: isBlocked,
+            customerName: customerName,
+            phoneNumber: phoneNumber,
+          );
         },
       ),
     );
   }
 
-  Widget _buildAssignedUsersTab(UserProvider userProvider, NetworkProvider networkProvider, ColorScheme colorScheme) {
-    if (userProvider.isLoading && userProvider.assignedPlans.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (userProvider.assignedPlans.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.assignment_ind_outlined, size: 64, color: colorScheme.outline),
-            const SizedBox(height: 16),
-            Text('no_assigned_users'.tr()),
-          ],
-        ),
-      );
-    }
-
-    final assignedPlans = userProvider.assignedPlans;
-    
-    // Flatten active sessions from all routers AND inject router details
-    final allActiveSessions = <Map<String, dynamic>>[];
-    for (var router in networkProvider.activeSessions) {
-      if (router is Map && router['active_users'] is List) {
-        final routerName = router['router_dns_name'] ?? router['name'] ?? 'Unknown';
-        final routerIp = router['router_ip'] ?? router['ip_address'] ?? 'N/A';
-        
-        for (var session in router['active_users']) {
-          if (session is Map) {
-            allActiveSessions.add({
-              ...session as Map<String, dynamic>,
-              'router_name': routerName,
-              'router_ip': routerIp,
-            });
-          }
-        }
-      }
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: ListView.builder(
-        itemCount: assignedPlans.length,
-        itemBuilder: (context, index) {
-          final plan = assignedPlans[index];
-          final customerName = plan['customer_name']?.toString() ?? '';
-          final planUsername = plan['username']?.toString();
-          
-          // Match logic: 
-          // 1. Direct match on 'username' if available in plan
-          // 2. Fuzzy match: session username starts with customer_name (case-insensitive)
-          Map<String, dynamic>? activeSession;
-          
-          try {
-            activeSession = allActiveSessions.firstWhere((session) {
-              final sessionUser = session['username']?.toString().toLowerCase() ?? '';
-              
-              // Direct ID match
-              if (planUsername != null && sessionUser == planUsername.toLowerCase()) {
-                return true;
-              }
-              
-              // Fuzzy name match (e.g. 'Win' matches 'win_5c3e...')
-              if (customerName.isNotEmpty) {
-                final normalizedName = customerName.toLowerCase();
-                if (sessionUser == normalizedName) return true;
-                if (sessionUser.startsWith('${normalizedName}_')) return true;
-                if (sessionUser.startsWith(normalizedName) && sessionUser.length > normalizedName.length) return true;
-              }
-              
-              return false;
-            });
-          } catch (e) {
-            activeSession = null;
-          }
-          
-          return _buildUserCard(plan, activeSession, colorScheme, isAssigned: true);
-        },
-      ),
-    );
-  }
-
-  Widget _buildUserCard(
-      Map<String, dynamic> plan, 
-      Map<String, dynamic>? activeSession, 
-      ColorScheme colorScheme,
-      {required bool isAssigned}
-  ) {
-    final username = plan['customer_name']?.toString() ?? 'Unknown User';
+  Widget _buildUserCard({
+      required Map<String, dynamic> plan, 
+      required Map<String, dynamic>? activeSession, 
+      required ColorScheme colorScheme,
+      required bool isAssigned,
+      required bool isBlocked,
+      required String customerName,
+      required String phoneNumber,
+  }) {
     final planName = plan['plan_name']?.toString() ?? 'Unknown Plan';
     final isOnline = activeSession != null;
     
@@ -264,39 +203,60 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header: User and Connection Status
+            // Header: User Info and Toggle
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        username,
+                        customerName,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
+                      const SizedBox(height: 4),
                       Text(
-                        planName,
+                        phoneNumber,
                         style: TextStyle(
-                          color: colorScheme.secondary,
-                          fontSize: 12,
+                          color: colorScheme.onSurfaceVariant,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: colorScheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          planName,
+                          style: TextStyle(
+                            color: colorScheme.onSecondaryContainer,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
                 
-                // Status Label and Disconnect Toggle
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
+                     // Connection Status
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
-                        color: isOnline ? Colors.green.withOpacity(0.1) : colorScheme.outline.withOpacity(0.1),
+                        color: isOnline 
+                            ? Colors.green.withOpacity(0.1) 
+                            : (isBlocked ? Colors.red.withOpacity(0.1) : Colors.grey.withOpacity(0.1)),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -305,35 +265,50 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
                           Icon(
                             Icons.circle,
                             size: 8,
-                            color: isOnline ? Colors.green : colorScheme.outline,
+                            color: isOnline ? Colors.green : (isBlocked ? Colors.red : Colors.grey),
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            isOnline ? 'online'.tr() : 'offline'.tr(),
+                            isOnline ? 'online'.tr() : (isBlocked ? 'blocked'.tr() : 'offline'.tr()),
                             style: TextStyle(
                               fontSize: 10,
-                              color: isOnline ? Colors.green : colorScheme.outline,
+                              color: isOnline ? Colors.green : (isBlocked ? Colors.red : Colors.grey),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    if (isOnline) ...[
-                      const SizedBox(width: 8),
-                      Transform.scale(
-                        scale: 0.8,
-                        child: Switch(
-                          value: true, 
-                          onChanged: (value) {
-                             // Pass false for shouldBlock since it's just a disconnect
-                             // Also need to handle session correctly - session is activeSession
-                             if (!value) _toggleUserBlock(activeSession!, false); 
-                          },
-                          activeColor: Colors.green,
+                    
+                    // Access Toggle
+                    Row(
+                      children: [
+                        Text(
+                          isBlocked ? 'Access Denied' : 'Access Allowed',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isBlocked ? Colors.red : Colors.green,
+                          ),
                         ),
-                      ),
-                    ],
+                        Transform.scale(
+                          scale: 0.8,
+                          child: Switch(
+                            value: !isBlocked, // ON means Access Allowed (Not Blocked)
+                            activeColor: Colors.green,
+                            inactiveTrackColor: Colors.red.withOpacity(0.3),
+                            inactiveThumbColor: Colors.red,
+                            onChanged: (allowed) {
+                               final username = plan['username']?.toString() ?? '';
+                               if (username.isNotEmpty) {
+                                 // If allowed == false, we want to BLOCK.
+                                 // If allowed == true, we want to UNBLOCK.
+                                 _handleBlockAction(username, activeSession, shouldBlock: !allowed);
+                               }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ],
@@ -404,52 +379,38 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
     return '${(b / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
-  Future<void> _handleSessionAction(Map<String, dynamic> session, {required bool block}) async {
-    final username = session['username'] ?? 'User';
-    
-    if (block) {
-      // Show confirmation before blocking
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('block_user'.tr()),
-          content: Text('block_user_confirmation'.tr(args: [username])),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text('cancel'.tr()),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text('block'.tr(), style: const TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
-      );
-
-      if (confirmed != true || !mounted) return;
-    }
-
+  Future<void> _handleBlockAction(String username, Map<String, dynamic>? session, {required bool shouldBlock}) async {
+    // Optimistic Update UI?
+    // Network calls
     try {
-      if (block) {
-        // Actually block the user using UserProvider - pass false as currentlyBlocked to trigger block
-        await context.read<UserProvider>().toggleUserBlock(username, false);
+      if (shouldBlock) {
+         // 1. Block User
+         await context.read<UserProvider>().toggleUserBlock(username, false); // false means 'not currently blocked', so block it.
+         
+         // 2. Disconnect if online
+         if (session != null) {
+            await context.read<NetworkProvider>().disconnectSession(session);
+         }
+         
+         if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(content: Text('user_blocked_disconnected'.tr(args: [username]))),
+           );
+         }
+      } else {
+         // Unblock
+         await context.read<UserProvider>().toggleUserBlock(username, true); // true means 'currently blocked', so unblock it.
+         
+         if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(content: Text('User unblocked')), // Add translation key if needed
+           );
+         }
       }
-
-      // Use disconnect endpoint
-      await context.read<NetworkProvider>().disconnectSession(session);
       
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(block 
-              ? 'user_blocked_disconnected'.tr(args: [username]) 
-              : 'user_disconnected'.tr(args: [username])),
-          ),
-        );
-        // Reload sessions to reflect changes
-        await _loadData();
-      }
+      // Reload to ensure sync
+      await _loadData();
+      
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -461,8 +422,4 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       }
     }
   }
-
-  // Legacy method name kept or updated in caller
-  Future<void> _toggleUserBlock(Map<String, dynamic> session, bool shouldBlock) => 
-      _handleSessionAction(session, block: shouldBlock);
 }
