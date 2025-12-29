@@ -154,8 +154,8 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
            // If we have a username, check the full user list
           if (planUsername.isNotEmpty) {
              try {
-               final user = userProvider.users.firstWhere((u) => u.username.toLowerCase() == planUsername.toLowerCase());
-               isBlocked = user.isBlocked;
+               final user = userProvider.users.firstWhere((u) => (u.username ?? '').toLowerCase() == planUsername.toLowerCase());
+               isBlocked = user.isBlocked ?? false;
              } catch (_) {
                // If user not found in list (e.g. pagination), default to false or check plan object
                isBlocked = plan['is_blocked'] == true;
