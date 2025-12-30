@@ -8,13 +8,13 @@ import 'dart:html' as html;
 import 'dart:ui_web' as ui_web;
 
 /// Screen for handling Paystack inline payment popup
-class PaymentGatewayScreen extends StatelessWidget {
+class PaymentGatewayScreen extends StatefulWidget {
   final String email;
   final double amount;
   final String planId;
   final String planName;
   final String currency;
-  final Map<String, dynamic>? userData; // Additional user data for specific gateways
+  final Map<String, dynamic>? userData;
 
   const PaymentGatewayScreen({
     super.key,
@@ -27,24 +27,38 @@ class PaymentGatewayScreen extends StatelessWidget {
   });
 
   @override
+  State<PaymentGatewayScreen> createState() => _PaymentGatewayScreenState();
+}
+
+class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
+  late String _transactionId;
+
+  @override
+  void initState() {
+    super.initState();
+    // Generate a stable transaction ID for the session
+    _transactionId = 'txn_${DateTime.now().millisecondsSinceEpoch}';
+  }
+
+  @override
   Widget build(BuildContext context) {
     // If currency is CFA (XOF or XAF), use CinetPay
-    if (currency == 'XOF' || currency == 'XAF' || currency == 'CFA') {
-       final fName = userData?['firstName'] ?? '';
-       final lName = userData?['lastName'] ?? '';
-       final addr = userData?['address'] ?? '';
-       final city = userData?['city'] ?? '';
-       final country = userData?['country'] ?? 'CI'; // Default or from userData
-       final phone = userData?['phone'] ?? '';
+    if (widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'CFA') {
+       final fName = widget.userData?['firstName'] ?? '';
+       final lName = widget.userData?['lastName'] ?? '';
+       final addr = widget.userData?['address'] ?? '';
+       final city = widget.userData?['city'] ?? '';
+       final country = widget.userData?['country'] ?? 'CI'; // Default or from userData
+       final phone = widget.userData?['phone'] ?? '';
 
        return PaymentGatewayCinetPayWeb(
-          apiKey: '297929662685d35c4021b02.21438964', // From User Request
-          siteId: '105899723', // From User Request
-          transactionId: 'txn_${DateTime.now().millisecondsSinceEpoch}',
-          amount: amount,
-          currency: currency == 'CFA' ? 'XOF' : currency,
-          description: 'Payment for $planName',
-          email: email,
+          apiKey: '297929662685d35c4021b02.21438964',
+          siteId: '105899723',
+          transactionId: _transactionId,
+          amount: widget.amount,
+          currency: widget.currency == 'CFA' ? 'XOF' : widget.currency,
+          description: 'Payment for ${widget.planName}',
+          email: widget.email,
           firstName: fName,
           lastName: lName,
           address: addr,
@@ -56,11 +70,11 @@ class PaymentGatewayScreen extends StatelessWidget {
 
     // Default to Paystack
     return PaymentGatewayPaystackWeb(
-      email: email,
-      amount: amount,
-      planId: planId,
-      planName: planName,
-      currency: currency,
+      email: widget.email,
+      amount: widget.amount,
+      planId: widget.planId,
+      planName: widget.planName,
+      currency: widget.currency,
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:async';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
@@ -143,17 +144,20 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
        };
 
        // We need to call window.CinetPay.setConfig(config) and window.CinetPay.getCheckout(paymentData)
-       // We can use helper method to inject a small js script to bridge this.
        
        final scriptContent = '''
           if (typeof CinetPay !== 'undefined') {
-            CinetPay.setConfig(${_jsonEncode(configData)});
+            var config = ${jsonEncode(configData)};
+            var payment = ${jsonEncode(paymentData)};
             
-            CinetPay.getCheckout(${_jsonEncode(paymentData)});
+            console.log("CinetPay Config:", config);
+            console.log("CinetPay Payment:", payment);
+            
+            CinetPay.setConfig(config);
+            CinetPay.getCheckout(payment);
             
             CinetPay.waitResponse(function(data) {
-              // On success or failure
-              // Send message back to Dart
+              console.log("CinetPay Response:", data);
               if (data.status == "ACCEPTED") {
                 window.parent.postMessage(JSON.stringify({'type': 'cinetpay_success', 'data': data}), "*");
               } else {
@@ -162,6 +166,7 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
             });
             
             CinetPay.onError(function(data) {
+               console.error("CinetPay Error:", data);
                window.parent.postMessage(JSON.stringify({'type': 'cinetpay_error', 'data': data}), "*");
             });
           } else {
@@ -192,33 +197,6 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
     } catch (e) {
       if (kDebugMode) print('Error triggering checkout: $e');
     }
-  }
-  
-  String _jsonEncode(Map<String, dynamic> map) {
-    // Simple helper to avoid import dart:convert if not needed, 
-    // but better to just use proper string interpolation for JS object 
-    // or use proper dart:convert.
-    // Let's rely on basic string construction for safety in this raw string context.
-    
-    // Actually, let's use standard JSON encoding.
-    // import 'dart:convert'; above would be cleaner.
-    // For now, I'll assume standard string keys and basic values.
-    
-    final buffer = StringBuffer();
-    buffer.write('{');
-    int i = 0;
-    for (final entry in map.entries) {
-      if (i > 0) buffer.write(',');
-      buffer.write('"${entry.key}": ');
-      if (entry.value is num) {
-        buffer.write(entry.value);
-      } else {
-        buffer.write('"${entry.value}"');
-      }
-      i++;
-    }
-    buffer.write('}');
-    return buffer.toString();
   }
 
   @override
