@@ -266,6 +266,9 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
             onPageFinished: (String url) {
               if (mounted) setState(() => _isLoading = false);
             },
+            onWebResourceError: (WebResourceError error) {
+              debugPrint('❌ [CinetPayMobile] WebView error: ${error.description}');
+            },
           ),
         )
         ..addJavaScriptChannel(
@@ -274,7 +277,8 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
              _handlePaymentResponse(message.message);
           },
         )
-        ..loadHtmlString(_buildCinetPayHTML());
+        // Set a valid base URL to avoid CORS/Origin issues with CinetPay
+        ..loadHtmlString(_buildCinetPayHTML(), baseUrl: 'https://cinetpay.com');
       
       if (mounted) {
         setState(() {

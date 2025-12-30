@@ -56,33 +56,12 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
     super.initState();
     // Unique ID for the IFrame view factory
     _viewId = 'cinetpay_gateway_${DateTime.now().millisecondsSinceEpoch}';
-    _registerViewFactory();
     _loadCinetPayScript();
   }
 
-  void _registerViewFactory() {
-    // Register a view factory that creates an IFrameElement
-    ui_web.platformViewRegistry.registerViewFactory(_viewId, (int viewId) {
-      final iframe = html.IFrameElement()
-        ..src = 'about:blank' // Start blank
-        ..style.border = 'none'
-        ..style.width = '100%'
-        ..style.height = '100%';
-        
-      // We will inject the CinetPay script and trigger content into this iframe 
-      // or actually just use the main window?
-      // CinetPay usually works as a popup or embedded script.
-      // The standard CinetPay seamless integration documentation suggests:
-      // <script src="https://cdn.cinetpay.com/seamless/main.js"></script>
-      // and then calling CinetPay.setConfig(...) and CinetPay.getCheckout(...).
-      
-      // Since CinetPay might manipulate the DOM, it's safer to keep it in the main window context 
-      // if it supports it, OR inside the iframe. 
-      // However, if we put it in an iframe, we need to make sure the popup/modal works.
-      
-      return iframe;
-    });
-  }
+      // View factory code removed as we use seamless integration via script injection
+      // ui_web.platformViewRegistry.registerViewFactory(_viewId, (int viewId) => html.IFrameElement()); // Method removed
+
   
   // Actually, for Flutter Web integrations of 3rd party JS libs that open modals,
   // it's often better to inject the script into the main document head 
@@ -140,7 +119,7 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
        final configData = {
          'apikey': widget.apiKey,
          'site_id': widget.siteId,
-         'notify_url': widget.notifyUrl,
+         'notify_url': widget.notifyUrl.isNotEmpty ? widget.notifyUrl : 'http://mondomaine.com/notify/',
          'mode': 'PRODUCTION', // or 'PRODUCTION'
        };
 
