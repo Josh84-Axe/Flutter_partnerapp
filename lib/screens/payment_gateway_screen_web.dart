@@ -1,11 +1,14 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
+import 'payment_gateway_cinetpay_web.dart';
 import 'dart:html' as html;
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:ui_web' as ui_web;
 
 /// Screen for handling Paystack inline payment popup
-class PaymentGatewayScreen extends StatefulWidget {
+class PaymentGatewayScreen extends StatelessWidget {
   final String email;
   final double amount;
   final String planId;
@@ -22,10 +25,52 @@ class PaymentGatewayScreen extends StatefulWidget {
   });
 
   @override
-  State<PaymentGatewayScreen> createState() => _PaymentGatewayScreenState();
+  Widget build(BuildContext context) {
+    // If currency is CFA (XOF or XAF), use CinetPay
+    if (currency == 'XOF' || currency == 'XAF' || currency == 'CFA') {
+       return PaymentGatewayCinetPayWeb(
+          apiKey: '297929662685d35c4021b02.21438964', // From User Request
+          siteId: '105899723', // From User Request
+          transactionId: 'txn_${DateTime.now().millisecondsSinceEpoch}',
+          amount: amount,
+          currency: currency == 'CFA' ? 'XOF' : currency,
+          description: 'Payment for $planName',
+          email: email,
+       );
+    }
+
+    // Default to Paystack
+    return PaymentGatewayPaystackWeb(
+      email: email,
+      amount: amount,
+      planId: planId,
+      planName: planName,
+      currency: currency,
+    );
+  }
 }
 
-class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
+class PaymentGatewayPaystackWeb extends StatefulWidget {
+  final String email;
+  final double amount;
+  final String planId;
+  final String planName;
+  final String currency;
+
+  const PaymentGatewayPaystackWeb({
+    super.key,
+    required this.email,
+    required this.amount,
+    required this.planId,
+    required this.planName,
+    required this.currency,
+  });
+
+  @override
+  State<PaymentGatewayPaystackWeb> createState() => _PaymentGatewayPaystackWebState();
+}
+
+class _PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
   final String _iframeId = 'paystack-payment-iframe-${DateTime.now().millisecondsSinceEpoch}';
   bool _isLoading = true;
 

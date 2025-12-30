@@ -105,6 +105,23 @@ class UserProvider with ChangeNotifier {
       case 'ghana': return 'GH₵';
       case 'kenya': return 'KSh';
       case 'nigeria': return '₦';
+      case 'côte d\'ivoire':
+      case 'ivory coast':
+      case 'senegal':
+      case 'mali':
+      case 'benin':
+      case 'togo':
+      case 'burkina faso':
+      case 'niger':
+      case 'guinea-bissau':
+        return 'XOF';
+      case 'cameroon':
+      case 'gabon':
+      case 'congo':
+      case 'chad':
+      case 'central african republic':
+      case 'equatorial guinea':
+        return 'XAF';
       default: return '₦';
     }
   }
@@ -130,13 +147,16 @@ class UserProvider with ChangeNotifier {
   }
 
   String _getCurrencyCodeForPayment() {
-    // Current mapping for Paystack supported currencies
-    switch (currencyCode) {
-      case 'GH₵': return 'GHS';
-      case 'KSh': return 'KES';
-      default: return 'NGN';
-    }
+  // Current mapping for Paystack and CinetPay supported currencies
+  switch (currencyCode) {
+    case 'GH₵': return 'GHS';
+    case 'KSh': return 'KES';
+    case 'FCFA': return 'XOF'; // Defaulting FCFA to XOF for CinetPay
+    case 'XOF': return 'XOF';
+    case 'XAF': return 'XAF';
+    default: return 'NGN';
   }
+}
 
 
   Future<void> loadAssignedPlans() async {
