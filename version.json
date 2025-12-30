@@ -1,6 +1,6 @@
 {
-    "latestVersion": "1.0.0+2",
-    "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.0.1/app-release.apk",
+    "latestVersion": "1.0.3",
+    "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.0.3/app-release.apk",
     "forceUpdate": false,
-    "releaseNotes": "• Bug fixes and performance enhancements."
+    "releaseNotes": "Automated update v1.0.3"
 }
