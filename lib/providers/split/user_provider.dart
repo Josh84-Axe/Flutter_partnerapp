@@ -88,7 +88,7 @@ class UserProvider with ChangeNotifier {
   String? get error => _error;
   SubscriptionModel? get subscription => _subscription;
   bool get isGuestMode => _isGuestMode;
-  String? get partnerCountry => _partnerCountry;
+  String? get partnerCountry => _partnerCountry ?? _authProvider?.partnerCountry;
   List<SubscriptionPlanModel> get availableSubscriptionPlans => _availableSubscriptionPlans;
   
   // Local notifications
