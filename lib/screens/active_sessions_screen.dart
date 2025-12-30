@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -485,13 +486,17 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
     // Network calls
     try {
       if (shouldBlock) {
-         // 1. Block User
-         await context.read<UserProvider>().toggleUserBlock(username, false); // false means 'not currently blocked', so block it.
-         
-         // 2. Disconnect if online
+         // 1. Disconnect Session (First, as requested by user to ensure session termination payload is sent)
          if (session != null) {
+            if (kDebugMode) print('🔌 [ActiveSessions] Disconnecting session for $username');
+            // User requested payload is handled in SessionRepository via NetworkProvider
             await context.read<NetworkProvider>().disconnectSession(session);
+         } else {
+            if (kDebugMode) print('⚠️ [ActiveSessions] active session data is null for $username, cannot disconnect session.');
          }
+
+          // 2. Block User Access (Prevent reconnection)
+         await context.read<UserProvider>().toggleUserBlock(username, false); // false means 'not currently blocked', so block it.
          
          if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(

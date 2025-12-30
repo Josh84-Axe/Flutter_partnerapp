@@ -1,0 +1,450 @@
+Resolving dependencies...
+Downloading packages...
+  animations 2.1.0 (2.1.1 available)
+  characters 1.4.0 (1.4.1 available)
+  crypto 3.0.6 (3.0.7 available)
+  dlibphonenumber 1.1.52 (1.1.54 available)
+  flutter_markdown 0.7.7+1 (discontinued replaced by flutter_markdown_plus)
+  flutter_secure_storage 9.2.4 (10.0.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.0 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.0.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.0 available)
+  flutter_secure_storage_windows 3.1.2 (4.1.0 available)
+  flutter_svg 2.2.1 (2.2.3 available)
+  golden_toolkit 0.15.0 (discontinued)
+  google_fonts 6.3.2 (6.3.3 available)
+  http 1.5.0 (1.6.0 available)
+  image 4.5.4 (4.7.2 available)
+  js 0.6.7 (0.7.2 available)
+  matcher 0.12.17 (0.12.18 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  package_info_plus 8.3.1 (9.0.0 available)
+  path_provider_android 2.2.20 (2.2.22 available)
+  path_provider_foundation 2.4.3 (2.5.1 available)
+  permission_handler 11.4.0 (12.0.1 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  protobuf 5.1.0 (6.0.0 available)
+  shared_preferences 2.5.3 (2.5.4 available)
+  shared_preferences_android 2.4.15 (2.4.18 available)
+  shared_preferences_foundation 2.5.5 (2.5.6 available)
+  test_api 0.7.7 (0.7.8 available)
+  url_launcher_android 6.3.24 (6.3.28 available)
+  url_launcher_ios 6.3.5 (6.3.6 available)
+  url_launcher_linux 3.2.1 (3.2.2 available)
+  url_launcher_macos 3.2.4 (3.2.5 available)
+  url_launcher_windows 3.1.4 (3.1.5 available)
+  webview_flutter_android 4.10.5 (4.10.11 available)
+  webview_flutter_wkwebview 3.23.1 (3.23.5 available)
+Got dependencies!
+2 packages are discontinued.
+34 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing Flutter_partnerapp...                                 
+
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:15:5 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:25:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:26:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:27:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:28:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:29:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:30:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:31:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:32:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:35:9 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:38:11 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:40:11 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:42:11 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:44:13 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:49:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:51:9 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:53:9 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:54:9 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:58:5 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:60:7 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:25:10 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:26:10 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:28:10 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:31:8 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:32:8 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:35:8 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:37:11 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:39:14 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:40:14 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:42:14 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:46:8 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:16:5 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:23:5 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:25:5 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:31:5 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:32:5 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:35:7 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:36:7 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:38:7 • avoid_print
+   info • The member 'dispose' overrides an inherited member but isn't annotated with '@override' • lib/feature/auth/login_screen_m3.dart:26:8 • annotate_overrides
+   info • Don't use 'BuildContext's across async gaps • lib/feature/auth/login_screen_m3.dart:71:30 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/feature/auth/login_screen_m3.dart:79:20 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/feature/auth/login_screen_m3.dart:238:38 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/feature/auth/login_screen_m3.dart:242:46 • use_build_context_synchronously
+warning • Unused import: '../../services/api/api_config.dart' • lib/providers/split/auth_provider.dart:5:8 • unused_import
+warning • The value of the field '_partnerCurrencyCode' isn't used • lib/providers/split/auth_provider.dart:27:11 • unused_field
+warning • The value of the field '_registrationOtpId' isn't used • lib/providers/split/auth_provider.dart:30:11 • unused_field
+warning • The value of the field '_passwordResetOtpId' isn't used • lib/providers/split/auth_provider.dart:31:11 • unused_field
+warning • The value of the field '_passwordResetToken' isn't used • lib/providers/split/auth_provider.dart:32:11 • unused_field
+warning • The value of the field '_paymentMethodOtpId' isn't used • lib/providers/split/auth_provider.dart:33:11 • unused_field
+warning • The value of the field '_guestCountryCode' isn't used • lib/providers/split/auth_provider.dart:38:11 • unused_field
+warning • Unused import: 'package:provider/provider.dart' • lib/providers/split/billing_provider.dart:3:8 • unused_import
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart' • lib/providers/split/network_provider.dart:3:8 • unnecessary_import
+warning • Unused import: '../../models/user_model.dart' • lib/providers/split/network_provider.dart:11:8 • unused_import
+   info • The private field _activeDataUsage could be 'final' • lib/providers/split/network_provider.dart:31:23 • prefer_final_fields
+   info • Don't invoke 'print' in production code • lib/providers/split/network_provider.dart:311:7 • avoid_print
+   info • The import of 'package:flutter/material.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart' • lib/providers/split/user_provider.dart:2:8 • unnecessary_import
+warning • Unused import: '../../models/plan_model.dart' • lib/providers/split/user_provider.dart:11:8 • unused_import
+warning • The value of the field '_partnerRepository' isn't used • lib/providers/split/user_provider.dart:25:22 • unused_field
+warning • Unnecessary cast • lib/repositories/additional_device_repository.dart:25:17 • unnecessary_cast
+warning • Unnecessary cast • lib/repositories/partner_repository.dart:88:16 • unnecessary_cast
+warning • Unnecessary cast • lib/repositories/partner_repository.dart:118:16 • unnecessary_cast
+warning • Unnecessary cast • lib/repositories/partner_repository.dart:194:16 • unnecessary_cast
+warning • Unnecessary cast • lib/repositories/payment_method_repository.dart:25:17 • unnecessary_cast
+   info • The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart' • lib/repositories/report_repository.dart:1:8 • unnecessary_import
+   info • 'Table.fromTextArray' is deprecated and shouldn't be used. Use TableHelper.fromTextArray() instead • lib/repositories/report_repository.dart:187:12 • deprecated_member_use
+warning • Unnecessary cast • lib/repositories/role_repository.dart:28:16 • unnecessary_cast
+warning • Unnecessary cast • lib/repositories/role_repository.dart:54:17 • unnecessary_cast
+   info • Don't invoke 'print' in production code • lib/repositories/session_repository.dart:39:15 • avoid_print
+warning • Unnecessary cast • lib/repositories/subscription_repository.dart:29:16 • unnecessary_cast
+warning • Unnecessary cast • lib/repositories/transaction_repository.dart:53:30 • unnecessary_cast
+warning • Unnecessary cast • lib/repositories/transaction_repository.dart:91:30 • unnecessary_cast
+warning • Unnecessary cast • lib/repositories/transaction_repository.dart:134:30 • unnecessary_cast
+warning • Unnecessary cast • lib/repositories/transaction_repository.dart:205:16 • unnecessary_cast
+warning • Unnecessary cast • lib/repositories/transaction_repository.dart:256:30 • unnecessary_cast
+warning • The value of the field '_searchController' isn't used • lib/screens/active_sessions_screen.dart:17:31 • unused_field
+   info • Don't invoke 'print' in production code • lib/screens/active_sessions_screen.dart:41:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/active_sessions_screen.dart:43:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/active_sessions_screen.dart:47:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/active_sessions_screen.dart:51:7 • avoid_print
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/active_sessions_screen.dart:359:44 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/active_sessions_screen.dart:360:55 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/active_sessions_screen.dart:360:86 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/screens/active_sessions_screen.dart:398:29 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/active_sessions_screen.dart:399:60 • deprecated_member_use
+  error • Undefined name 'kDebugMode' • lib/screens/active_sessions_screen.dart:490:17 • undefined_identifier
+   info • Don't invoke 'print' in production code • lib/screens/active_sessions_screen.dart:490:29 • avoid_print
+  error • Undefined name 'kDebugMode' • lib/screens/active_sessions_screen.dart:494:17 • undefined_identifier
+   info • Don't invoke 'print' in production code • lib/screens/active_sessions_screen.dart:494:29 • avoid_print
+   info • Don't use 'BuildContext's across async gaps • lib/screens/active_sessions_screen.dart:498:16 • use_build_context_synchronously
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/add_payout_method_screen.dart:45:11 • unused_local_variable
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/add_payout_method_screen.dart:392:13 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/add_payout_method_screen.dart:450:34 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/add_payout_method_screen.dart:456:27 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/add_payout_method_screen.dart:461:32 • use_build_context_synchronously
+warning • Unused import: '../utils/app_theme.dart' • lib/screens/assign_role_screen.dart:5:8 • unused_import
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/assign_role_screen.dart:28:11 • unused_local_variable
+warning • The value of the local variable 'isCurrent' isn't used • lib/screens/assign_role_screen.dart:192:27 • unused_local_variable
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/screens/assign_role_screen.dart:200:25 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/screens/assign_role_screen.dart:201:25 • deprecated_member_use
+warning • The declaration '_buildRoleOption' isn't referenced • lib/screens/assign_role_screen.dart:271:10 • unused_element
+warning • The declaration '_getStatusColor' isn't referenced • lib/screens/assigned_plans_list_screen.dart:72:10 • unused_element
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/assigned_plans_list_screen.dart:215:73 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/screens/collaborators_management_screen.dart:25:11 • use_build_context_synchronously
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/collaborators_management_screen.dart:60:19 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/screens/collaborators_management_screen.dart:97:28 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/collaborators_management_screen.dart:149:28 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:65:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:66:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:72:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:105:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:106:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:112:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:172:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:173:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:179:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/idle_time_config_screen.dart:54:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/idle_time_config_screen.dart:55:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/idle_time_config_screen.dart:61:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/idle_time_config_screen.dart:94:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/idle_time_config_screen.dart:95:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/idle_time_config_screen.dart:101:40 • use_build_context_synchronously
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/config/idle_time_config_screen.dart:119:11 • unused_local_variable
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:54:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:55:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:61:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:94:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:95:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:101:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:151:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:152:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:158:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/rate_limit_config_screen.dart:54:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/rate_limit_config_screen.dart:55:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/rate_limit_config_screen.dart:61:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/rate_limit_config_screen.dart:94:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/rate_limit_config_screen.dart:95:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/rate_limit_config_screen.dart:101:40 • use_build_context_synchronously
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/config/rate_limit_config_screen.dart:119:11 • unused_local_variable
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:65:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:66:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:72:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:105:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:106:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:112:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:175:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:176:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:182:42 • use_build_context_synchronously
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/configurations_screen.dart:9:11 • unused_local_variable
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/create_edit_internet_plan_screen.dart:109:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/create_edit_internet_plan_screen.dart:134:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/create_edit_internet_plan_screen.dart:159:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/create_edit_internet_plan_screen.dart:184:21 • deprecated_member_use
+warning • The value of the local variable 'billingProvider' isn't used • lib/screens/create_edit_plan_screen.dart:50:11 • unused_local_variable
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/create_edit_plan_screen.dart:51:11 • unused_local_variable
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/create_edit_plan_screen.dart:108:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/create_edit_plan_screen.dart:142:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/create_edit_plan_screen.dart:168:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/create_edit_plan_screen.dart:194:21 • deprecated_member_use
+warning • Unused import: '../utils/app_theme.dart' • lib/screens/create_edit_user_profile_screen.dart:8:8 • unused_import
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/create_edit_user_profile_screen.dart:124:23 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/create_edit_user_profile_screen.dart:148:23 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/create_edit_user_profile_screen.dart:172:23 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/create_edit_user_profile_screen.dart:330:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/create_edit_user_profile_screen.dart:331:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/create_edit_user_profile_screen.dart:341:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/create_edit_user_profile_screen.dart:344:49 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/dashboard_screen.dart:439:30 • use_build_context_synchronously
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/help_support_screen.dart:42:11 • unused_local_variable
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/hotspot_users_management_screen.dart:73:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/hotspot_users_management_screen.dart:169:21 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/screens/hotspot_users_management_screen.dart:307:15 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/internet_plan_screen.dart:164:80 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/internet_plan_screen.dart:167:49 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/screens/internet_plans_settings_screen.dart:57:7 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/internet_plans_settings_screen.dart:218:74 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/internet_plans_settings_screen.dart:229:65 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/login_screen.dart:440:40 • use_build_context_synchronously
+warning • Unused import: '../utils/app_theme.dart' • lib/screens/notification_center_screen.dart:5:8 • unused_import
+warning • Unused import: '../utils/app_theme.dart' • lib/screens/notification_router_screen.dart:6:8 • unused_import
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/screens/notification_settings_screen.dart:181:15 • deprecated_member_use
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/notifications_screen.dart:26:11 • unused_local_variable
+   info • The import of 'package:intl/intl.dart' is unnecessary because all of the used elements are also provided by the import of 'package:easy_localization/easy_localization.dart' • lib/screens/partner_profile_screen.dart:10:8 • unnecessary_import
+warning • The value of the local variable 'userProvider' isn't used • lib/screens/partner_profile_screen.dart:38:11 • unused_local_variable
+   info • Unnecessary use of string interpolation • lib/screens/partner_profile_screen.dart:86:25 • unnecessary_string_interpolations
+warning • The value of the local variable 'billingProvider' isn't used • lib/screens/partner_profile_screen.dart:125:11 • unused_local_variable
+warning • The declaration '_buildPaymentMethodCard' isn't referenced • lib/screens/partner_profile_screen.dart:352:10 • unused_element
+warning • The declaration '_addPaymentMethod' isn't referenced • lib/screens/partner_profile_screen.dart:464:8 • unused_element
+   info • 'dart:html' is deprecated and shouldn't be used. Use package:web and dart:js_interop instead • lib/screens/payment_gateway_screen_web.dart:3:1 • deprecated_member_use
+   info • Don't use web-only libraries outside Flutter web plugins • lib/screens/payment_gateway_screen_web.dart:3:1 • avoid_web_libraries_in_flutter
+   info • Don't use 'BuildContext's across async gaps • lib/screens/payment_methods_screen.dart:89:31 • use_build_context_synchronously
+warning • Unused import: '../utils/currency_utils.dart' • lib/screens/payout_history_screen.dart:5:8 • unused_import
+warning • Unused import: '../widgets/metric_card.dart' • lib/screens/payout_request_screen.dart:7:8 • unused_import
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/payout_request_screen.dart:378:36 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/payout_request_screen.dart:380:44 • use_build_context_synchronously
+warning • The declaration '_buildMethodButton' isn't referenced • lib/screens/payout_request_screen.dart:406:10 • unused_element
+warning • The value of the local variable 'billingProvider' isn't used • lib/screens/plan_assignment_screen.dart:67:11 • unused_local_variable
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/plan_assignment_screen.dart:105:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/plan_assignment_screen.dart:137:21 • deprecated_member_use
+warning • The value of the local variable 'currencySymbol' isn't used • lib/screens/plan_assignment_screen.dart:159:35 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/screens/registration_screen.dart:120:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/registration_screen.dart:123:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/registration_screen.dart:128:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/registration_screen.dart:138:7 • avoid_print
+   info • Don't use 'BuildContext's across async gaps • lib/screens/registration_screen.dart:172:24 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/registration_screen.dart:175:24 • use_build_context_synchronously
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/registration_screen.dart:356:31 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/registration_screen.dart:543:41 • deprecated_member_use
+warning • Unused import: '../utils/app_theme.dart' • lib/screens/reporting_screen.dart:5:8 • unused_import
+   info • Don't use 'BuildContext's across async gaps • lib/screens/reporting_screen.dart:127:30 • use_build_context_synchronously
+warning • Duplicate import • lib/screens/revenue_breakdown_screen.dart:4:8 • duplicate_import
+warning • Unused import: '../utils/currency_utils.dart' • lib/screens/revenue_breakdown_screen.dart:6:8 • unused_import
+warning • The declaration '_buildTransactionItem' isn't referenced • lib/screens/revenue_breakdown_screen.dart:154:10 • unused_element
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/router_details_screen.dart:15:11 • unused_local_variable
+   info • Unnecessary use of 'toList' in a spread • lib/screens/router_health_screen.dart:230:24 • unnecessary_to_list_in_spreads
+warning • Unused import: '../repositories/router_repository.dart' • lib/screens/router_resources_screen.dart:5:8 • unused_import
+warning • Unused import: 'verify_identity_dialog.dart' • lib/screens/security/password_and_2fa_screen.dart:6:8 • unused_import
+warning • The value of the field '_is2FAEnabled' isn't used • lib/screens/security/password_and_2fa_screen.dart:23:8 • unused_field
+   info • Don't use 'BuildContext's across async gaps • lib/screens/session_management_screen.dart:52:31 • use_build_context_synchronously
+warning • Unused import: 'package:shared_preferences/shared_preferences.dart' • lib/screens/settings_screen.dart:3:8 • unused_import
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/screens/settings_screen.dart:300:17 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/screens/settings_screen.dart:301:17 • deprecated_member_use
+warning • Unused import: '../models/subscription_model.dart' • lib/screens/subscription_management_screen.dart:7:8 • unused_import
+warning • The value of the local variable 'billingProvider' isn't used • lib/screens/subscription_management_screen.dart:45:11 • unused_local_variable
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/subscription_management_screen.dart:303:68 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/transaction_details_screen.dart:150:65 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/transaction_details_screen.dart:375:22 • deprecated_member_use
+warning • Unused import: '../utils/currency_utils.dart' • lib/screens/transaction_history_screen.dart:6:8 • unused_import
+warning • The value of the field '_assignedTransactions' isn't used • lib/screens/transaction_history_screen.dart:24:17 • unused_field
+warning • The value of the field '_walletTransactions' isn't used • lib/screens/transaction_history_screen.dart:25:17 • unused_field
+warning • Unused import: '../utils/app_theme.dart' • lib/screens/transactions_screen.dart:5:8 • unused_import
+warning • Unused import: '../utils/currency_utils.dart' • lib/screens/transactions_screen.dart:6:8 • unused_import
+warning • Unused import: '../widgets/metric_card.dart' • lib/screens/transactions_screen.dart:7:8 • unused_import
+warning • Unused import: '../models/user_model.dart' • lib/screens/users_screen.dart:9:8 • unused_import
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/users_screen.dart:121:21 • deprecated_member_use
+  error • The operator '[]' isn't defined for the type 'RouterModel' • lib/screens/users_screen.dart:127:40 • undefined_operator
+  error • The operator '[]' isn't defined for the type 'RouterModel' • lib/screens/users_screen.dart:127:68 • undefined_operator
+  error • The operator '[]' isn't defined for the type 'RouterModel' • lib/screens/users_screen.dart:128:42 • undefined_operator
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/users_screen.dart:796:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/screens/users_screen.dart:998:19 • deprecated_member_use
+warning • Unused import: '../utils/app_theme.dart' • lib/screens/wallet_overview_screen.dart:5:8 • unused_import
+warning • Unused import: '../widgets/metric_card.dart' • lib/screens/wallet_overview_screen.dart:6:8 • unused_import
+warning • The receiver can't be null, so the null-aware operator '?.' is unnecessary • lib/services/api/logging_interceptor.dart:109:59 • invalid_null_aware_operator
+warning • The '!' will have no effect because the receiver can't be null • lib/services/api/token_storage.dart:40:23 • unnecessary_non_null_assertion
+  error • The named parameter 'slug' is required, but there's no corresponding argument • lib/services/connectivity_service.dart:14:12 • missing_required_argument
+  error • The named parameter 'macAddress' isn't defined • lib/services/connectivity_service.dart:17:7 • undefined_named_parameter
+   info • Don't invoke 'print' in production code • lib/services/update_service.dart:86:14 • avoid_print
+warning • Unused import: 'package:provider/provider.dart' • lib/utils/currency_helper.dart:3:8 • unused_import
+warning • Unused import: 'package:flutter/material.dart' • lib/utils/currency_helper.dart:4:8 • unused_import
+warning • Unused import: 'currency_utils.dart' • lib/utils/currency_helper.dart:5:8 • unused_import
+warning • The value of the local variable 'formatter' isn't used • lib/utils/currency_utils.dart:91:11 • unused_local_variable
+   info • The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart' • lib/utils/file_handler/file_handler_io.dart:2:8 • unnecessary_import
+   info • 'dart:html' is deprecated and shouldn't be used. Use package:web and dart:js_interop instead • lib/utils/file_handler/file_handler_web.dart:1:1 • deprecated_member_use
+   info • Don't use web-only libraries outside Flutter web plugins • lib/utils/file_handler/file_handler_web.dart:1:1 • avoid_web_libraries_in_flutter
+   info • The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart' • lib/utils/file_handler/file_handler_web.dart:2:8 • unnecessary_import
+warning • The value of the local variable 'anchor' isn't used • lib/utils/file_handler/file_handler_web.dart:10:13 • unused_local_variable
+  error • The named parameter 'slug' is required, but there's no corresponding argument • lib/utils/guest_mode_helper.dart:31:7 • missing_required_argument
+  error • The named parameter 'macAddress' isn't defined • lib/utils/guest_mode_helper.dart:34:9 • undefined_named_parameter
+  error • The named parameter 'slug' is required, but there's no corresponding argument • lib/utils/guest_mode_helper.dart:41:7 • missing_required_argument
+  error • The named parameter 'macAddress' isn't defined • lib/utils/guest_mode_helper.dart:44:9 • undefined_named_parameter
+  error • The named parameter 'slug' is required, but there's no corresponding argument • lib/utils/guest_mode_helper.dart:51:7 • missing_required_argument
+  error • The named parameter 'macAddress' isn't defined • lib/utils/guest_mode_helper.dart:54:9 • undefined_named_parameter
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/widgets/create_worker_dialog.dart:216:17 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/guest_mode_banner.dart:39:33 • deprecated_member_use
+warning • Unused import: 'package:tiknet_api_client/src/deserialize.dart' • packages/tiknet_api_client/lib/src/api/radius_api.dart:9:8 • unused_import
+warning • Unused import: 'package:flutter/material.dart' • test/widget_test.dart:1:8 • unused_import
+   info • Don't invoke 'print' in production code • test_customers_endpoint.dart:10:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_customers_endpoint.dart:18:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_customers_endpoint.dart:20:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_customers_endpoint.dart:21:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_customers_endpoint.dart:22:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:27:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:31:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:38:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:46:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:49:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:52:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:54:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:58:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:66:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:67:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:70:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:74:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:78:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:81:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:94:14 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:98:18 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:100:18 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:104:22 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:107:25 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:108:35 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:110:22 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:113:25 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:114:35 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:116:22 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:119:25 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:120:35 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:125:10 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:131:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:13:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:26:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:29:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:30:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:32:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:33:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:37:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:40:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:42:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:44:13 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:47:15 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:49:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:50:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:56:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:58:13 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:59:13 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:66:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:68:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:17:5 • avoid_print
+   info • Use interpolation to compose strings and values • test_new_apis_probe.dart:17:11 • prefer_interpolation_to_compose_strings
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:18:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:19:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:24:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:30:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:31:37 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:35:18 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:36:42 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:38:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:39:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:42:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:45:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:48:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:49:37 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:51:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:66:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:68:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:88:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:89:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:91:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:123:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:11:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:14:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:15:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:16:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:22:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:25:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:26:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:29:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:34:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:37:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:38:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:42:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:47:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:50:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:51:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:58:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:59:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:60:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:63:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:64:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:65:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:68:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:79:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:13:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:26:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:30:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:31:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:35:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:38:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:41:13 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:43:15 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:44:15 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:48:13 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:50:15 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:51:15 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:57:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:59:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:64:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:65:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:66:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:69:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:70:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:73:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:74:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:76:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:79:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:81:7 • avoid_print
+warning • Unused import: 'package:flutter/foundation.dart' • test_sessions_api.dart:2:8 • unused_import
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:17:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:21:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:22:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:23:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:27:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:30:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:31:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:33:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:35:13 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:39:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:43:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:45:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:46:7 • avoid_print
+

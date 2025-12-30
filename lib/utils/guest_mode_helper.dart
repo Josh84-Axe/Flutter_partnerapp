@@ -31,7 +31,7 @@ class GuestModeHelper {
       RouterModel(
         id: 'demo-router-1',
         name: 'Main Office Router',
-        macAddress: '00:11:22:33:44:55',
+        slug: 'main-office-router',
         status: 'online',
         connectedUsers: 12,
         dataUsageGB: 45.8,
@@ -41,7 +41,7 @@ class GuestModeHelper {
       RouterModel(
         id: 'demo-router-2',
         name: 'Branch Router',
-        macAddress: '00:11:22:33:44:66',
+        slug: 'branch-router',
         status: 'issues',
         connectedUsers: 5,
         dataUsageGB: 23.4,
@@ -51,7 +51,7 @@ class GuestModeHelper {
       RouterModel(
         id: 'demo-router-3',
         name: 'Backup Router',
-        macAddress: '00:11:22:33:44:77',
+        slug: 'backup-router',
         status: 'offline',
         connectedUsers: 0,
         dataUsageGB: 0.0,

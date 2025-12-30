@@ -14,7 +14,7 @@ class ConnectivityService {
     return RouterModel(
       id: 'router_${DateTime.now().millisecondsSinceEpoch}',
       name: routerData['name'],
-      macAddress: routerData['macAddress'],
+      slug: routerData['name'].toString().toLowerCase().replaceAll(' ', '-'),
       status: 'online',
       connectedUsers: 0,
       dataUsageGB: 0,

@@ -80,8 +80,13 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
       );
       return;
     }
+    
+    // Ensure routers are loaded for the dropdown
+    context.read<NetworkProvider>().loadRouters();
+
     final firstNameController = TextEditingController(text: userData?['first_name'] ?? userData?['name']);
     final phoneController = TextEditingController(text: userData?['phone']);
+    String? selectedRouterId = userData?['router_id']; // Handle if editing existing (though router_id usually for new users)
 
     showDialog(
       context: context,
@@ -101,6 +106,37 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 decoration: InputDecoration(labelText: 'phone'.tr()),
                 keyboardType: TextInputType.phone,
               ),
+              const SizedBox(height: 12),
+              // Router Selection Dropdown
+              Consumer<NetworkProvider>(
+                builder: (context, networkProvider, child) {
+                  if (networkProvider.isLoading) {
+                    return const LinearProgressIndicator();
+                  }
+                  final routers = networkProvider.routers;
+                  if (routers.isEmpty) {
+                    return Text('no_routers_available'.tr(), style: const TextStyle(color: Colors.grey));
+                  }
+                  return DropdownButtonFormField<String>(
+                    value: selectedRouterId,
+                    decoration: InputDecoration(
+                      labelText: 'Select Router',
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: routers.map<DropdownMenuItem<String>>((router) {
+                      final id = router.id;
+                      final name = router.name;
+                      return DropdownMenuItem(
+                        value: id,
+                        child: Text(name),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      selectedRouterId = value;
+                    },
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -111,9 +147,19 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           ),
           FilledButton(
             onPressed: () {
+              final routerId = selectedRouterId;
+              
+              if (routerId == null && userData == null) { // Require router only for new users or logical requirement
+                 ScaffoldMessenger.of(context).showSnackBar(
+                   const SnackBar(content: Text('Please select a router')),
+                 );
+                 return;
+              }
+
               final data = {
                 'first_name': firstNameController.text,
                 'phone': phoneController.text,
+                if (routerId != null) 'router_id': routerId,
               };
 
               if (userData == null) {
