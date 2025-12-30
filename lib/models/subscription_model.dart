@@ -72,6 +72,7 @@ class SubscriptionPlanModel {
   final String description;
   final double price;
   final List<String> features;
+  final String? currency;
   final bool isPopular;
 
   SubscriptionPlanModel({
@@ -80,6 +81,7 @@ class SubscriptionPlanModel {
     required this.description,
     required this.price,
     required this.features,
+    this.currency,
     this.isPopular = false,
   });
 
@@ -112,6 +114,7 @@ class SubscriptionPlanModel {
       price: parseDouble(json['price']),
       features: parsedFeatures,
       isPopular: json['is_popular'] == true || json['isPopular'] == true,
+      currency: json['currency']?.toString() ?? json['currency_code']?.toString(),
     );
   }
 

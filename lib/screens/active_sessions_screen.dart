@@ -124,6 +124,31 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
     // 2. Filter sessions based on tab (Assigned vs Purchased)
     // STRICT FILTERING: Determine if the user's *current active status* implies Assigned or Purchased
     // We do this by finding the MOST RECENT plan transaction across both lists.
+    
+    // 2a. Get Blocked Users
+    final blockedUsers = userProvider.users.where((u) => u.isBlocked == true).toList();
+    
+    // 2b. Merge blocked users (who might be offline) into the list
+    // We create a "phantom" session for them if they are not already in allActiveSessions
+    for (var blockedUser in blockedUsers) {
+      final username = blockedUser.username;
+      if (username != null && username.isNotEmpty) {
+        // Check if already present in active sessions
+        final isActive = allActiveSessions.any((s) => s['username']?.toString().toLowerCase() == username.toLowerCase());
+        
+        if (!isActive) {
+           // Create a placeholder session for the blocked user so they show up
+           allActiveSessions.add({
+             'username': username,
+             'customer_name': '${blockedUser.firstName ?? ''} ${blockedUser.lastName ?? ''}'.trim(),
+             'customer_phone': blockedUser.phone,
+             'is_offline_blocked': true, // Flag to indicate this is a virtual session
+             // Add other fields as needed for display
+           });
+        }
+      }
+    }
+
     final filteredSessions = allActiveSessions.where((session) {
       final sessionUsername = session['username']?.toString().toLowerCase() ?? '';
       if (sessionUsername.isEmpty) return false;

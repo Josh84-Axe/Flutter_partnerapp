@@ -9,6 +9,7 @@ class PaymentGatewayScreen extends StatefulWidget {
   final String planId;
   final String planName;
   final String currency;
+  final Map<String, dynamic>? userData;
 
   const PaymentGatewayScreen({
     super.key,
@@ -17,6 +18,7 @@ class PaymentGatewayScreen extends StatefulWidget {
     required this.planId,
     required this.planName,
     required this.currency,
+    this.userData,
   });
 
   @override
@@ -24,6 +26,54 @@ class PaymentGatewayScreen extends StatefulWidget {
 }
 
 class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
+  @override
+  Widget build(BuildContext context) {
+    // Conditional routing based on currency
+    if (widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'CFA') {
+       return _PaymentGatewayCinetPayMobile(
+          apiKey: '297929662685d35c4021b02.21438964',
+          siteId: '105899723',
+          transactionId: 'txn_${DateTime.now().millisecondsSinceEpoch}',
+          amount: widget.amount,
+          currency: widget.currency == 'CFA' ? 'XOF' : widget.currency,
+          description: 'Payment for ${widget.planName}',
+          email: widget.email,
+          userData: widget.userData,
+       );
+    }
+    
+    return _PaymentGatewayPaystackMobile(
+      email: widget.email,
+      amount: widget.amount,
+      planId: widget.planId,
+      planName: widget.planName,
+      currency: widget.currency,
+    );
+  }
+}
+
+// ================== PAYSTACK IMPLEMENTATION ==================
+
+class _PaymentGatewayPaystackMobile extends StatefulWidget {
+  final String email;
+  final double amount;
+  final String planId;
+  final String planName;
+  final String currency;
+
+  const _PaymentGatewayPaystackMobile({
+    required this.email,
+    required this.amount,
+    required this.planId,
+    required this.planName,
+    required this.currency,
+  });
+
+  @override
+  State<_PaymentGatewayPaystackMobile> createState() => _PaymentGatewayPaystackMobileState();
+}
+
+class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMobile> {
   WebViewController? _controller;
   bool _isLoading = true;
 
@@ -39,29 +89,26 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
 
   void _initializeWebView() {
     try {
-      debugPrint('🚀 [PaymentGateway] Initializing WebView for mobile...');
+      debugPrint('🚀 [PaystackMobile] Initializing WebView...');
       
       final controller = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setNavigationDelegate(
           NavigationDelegate(
             onPageStarted: (String url) {
-              debugPrint('🌐 [PaymentGateway] Page started: $url');
               if (mounted) setState(() => _isLoading = true);
             },
             onPageFinished: (String url) {
-              debugPrint('✅ [PaymentGateway] Page finished: $url');
               if (mounted) setState(() => _isLoading = false);
             },
             onWebResourceError: (WebResourceError error) {
-              debugPrint('❌ [PaymentGateway] WebView error: ${error.description}');
+              debugPrint('❌ [PaystackMobile] WebView error: ${error.description}');
             },
           ),
         )
         ..addJavaScriptChannel(
           'PaystackFlutter',
           onMessageReceived: (JavaScriptMessage message) {
-            debugPrint('💬 [PaymentGateway] Message from JS: ${message.message}');
             _handlePaymentResponse(message.message);
           },
         )
@@ -72,11 +119,8 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
           _controller = controller;
         });
       }
-      
-      debugPrint('✅ [PaymentGateway] WebView initialized successfully');
-    } catch (e, stackTrace) {
-      debugPrint('❌ [PaymentGateway] Error initializing WebView: $e');
-      debugPrint('   Stack trace: $stackTrace');
+    } catch (e) {
+      debugPrint('❌ [PaystackMobile] Error: $e');
     }
   }
 
@@ -89,145 +133,42 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment</title>
     <script src="https://js.paystack.co/v1/inline.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .payment-container {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-        }
-        .plan-name {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1a202c;
-            margin-bottom: 8px;
-        }
-        .amount {
-            font-size: 36px;
-            font-weight: bold;
-            color: #667eea;
-            margin: 16px 0;
-        }
-        .currency {
-            font-size: 14px;
-            color: #718096;
-            margin-bottom: 24px;
-        }
-        .pay-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s ease;
-        }
-        .pay-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-        }
-        .pay-button:active {
-            transform: translateY(0);
-        }
-        .info {
-            margin-top: 16px;
-            font-size: 12px;
-            color: #718096;
-        }
-    </style>
+    <style>body{display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif;background:#f0f2f5}</style>
 </head>
 <body>
-    <div class="payment-container">
-        <div class="plan-name">${widget.planName}</div>
-        <div class="amount">${widget.currency} ${widget.amount.toInt()}</div>
-        <div class="currency">Subscription Plan</div>
-        <button class="pay-button" onclick="payWithPaystack()">
-            Pay Now
-        </button>
-        <div class="info">
-            Secure payment powered by Paystack
-        </div>
-    </div>
-
     <script>
-        console.log('🚀 Payment page loaded');
-        
         function payWithPaystack() {
-            console.log('💳 Initiating payment...');
-            
-            try {
-                var handler = PaystackPop.setup({
-                    key: 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
-                    email: '${widget.email}',
-                    amount: $amountInKobo,
-                    currency: '${widget.currency}',
-                    ref: 'PSK_' + Math.floor((Math.random() * 1000000000) + 1),
-                    metadata: {
-                        plan_id: '${widget.planId}',
-                        plan_name: '${widget.planName}',
-                    },
-                    callback: function(response) {
-                        console.log('✅ Payment successful:', response);
-                        
-                        // Send success message to Flutter
-                        if (window.PaystackFlutter) {
-                            window.PaystackFlutter.postMessage(JSON.stringify({
-                                success: true,
-                                reference: response.reference,
-                                message: 'Payment successful'
-                            }));
-                        }
-                    },
-                    onClose: function() {
-                        console.log('⚠️ Payment popup closed');
-                        
-                        // Send cancellation message to Flutter
-                        if (window.PaystackFlutter) {
-                            window.PaystackFlutter.postMessage(JSON.stringify({
-                                success: false,
-                                message: 'Payment cancelled'
-                            }));
-                        }
+            var handler = PaystackPop.setup({
+                key: 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
+                email: '${widget.email}',
+                amount: $amountInKobo,
+                currency: '${widget.currency}',
+                ref: 'PSK_' + Math.floor((Math.random() * 1000000000) + 1),
+                metadata: {
+                    plan_id: '${widget.planId}',
+                    plan_name: '${widget.planName}',
+                },
+                callback: function(response) {
+                    if (window.PaystackFlutter) {
+                        window.PaystackFlutter.postMessage(JSON.stringify({
+                            success: true,
+                            reference: response.reference
+                        }));
                     }
-                });
-                
-                console.log('🎯 Opening Paystack iframe...');
-                handler.openIframe();
-            } catch (error) {
-                console.error('❌ Error in payWithPaystack:', error);
-                alert('Error: ' + error.message);
-            }
+                },
+                onClose: function() {
+                    if (window.PaystackFlutter) {
+                        window.PaystackFlutter.postMessage(JSON.stringify({
+                            success: false,
+                            message: 'Payment cancelled'
+                        }));
+                    }
+                }
+            });
+            handler.openIframe();
         }
-        
-        // Auto-trigger payment on page load
-        window.onload = function() {
-            console.log('📄 Window loaded, triggering payment in 1 second...');
-            setTimeout(function() {
-                payWithPaystack();
-            }, 1000);
-        };
+        window.onload = function() { setTimeout(payWithPaystack, 500); };
     </script>
 </body>
 </html>
@@ -236,32 +177,17 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
 
   void _handlePaymentResponse(String message) {
     try {
-      debugPrint('💬 [PaymentGateway] Processing payment response: $message');
-      
       if (message.contains('"success":true')) {
         final referenceMatch = RegExp(r'"reference":"([^"]+)"').firstMatch(message);
         final reference = referenceMatch?.group(1);
-        
         if (reference != null) {
-          debugPrint('✅ [PaymentGateway] Payment successful with reference: $reference');
-          Navigator.pop(context, {
-            'success': true,
-            'reference': reference,
-          });
+          Navigator.pop(context, {'success': true, 'reference': reference});
         }
       } else {
-        debugPrint('⚠️ [PaymentGateway] Payment cancelled or failed');
-        Navigator.pop(context, {
-          'success': false,
-          'message': 'Payment cancelled',
-        });
+        Navigator.pop(context, {'success': false, 'message': 'Payment cancelled'});
       }
     } catch (e) {
-      debugPrint('❌ [PaymentGateway] Error parsing payment response: $e');
-      Navigator.pop(context, {
-        'success': false,
-        'message': 'Error processing payment',
-      });
+      Navigator.pop(context, {'success': false, 'message': 'Error processing payment'});
     }
   }
 
@@ -272,31 +198,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
         title: Text('payment'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text('cancel_payment'.tr()),
-                content: const Text('Are you sure you want to cancel this payment?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text('no'.tr()),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      Navigator.pop(context, {
-                        'success': false,
-                        'message': 'Payment cancelled by user',
-                      });
-                    },
-                    child: Text('yes'.tr(), style: const TextStyle(color: Colors.red)),
-                  ),
-                ],
-              ),
-            );
-          },
+          onPressed: () => Navigator.pop(context, {'success': false, 'message': 'Cancelled'}),
         ),
       ),
       body: _controller == null
@@ -304,14 +206,200 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
           : Stack(
               children: [
                 WebViewWidget(controller: _controller!),
-                
-                if (_isLoading)
-                  Container(
-                    color: Colors.white,
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
+                if (_isLoading) const Center(child: CircularProgressIndicator()),
+              ],
+            ),
+    );
+  }
+}
+
+// ================== CINETPAY IMPLEMENTATION ==================
+
+class _PaymentGatewayCinetPayMobile extends StatefulWidget {
+  final String apiKey;
+  final String siteId;
+  final String transactionId;
+  final double amount;
+  final String currency;
+  final String description;
+  final String email;
+  final Map<String, dynamic>? userData;
+
+  const _PaymentGatewayCinetPayMobile({
+    required this.apiKey,
+    required this.siteId,
+    required this.transactionId,
+    required this.amount,
+    required this.currency,
+    required this.description,
+    required this.email,
+    this.userData,
+  });
+
+  @override
+  State<_PaymentGatewayCinetPayMobile> createState() => _PaymentGatewayCinetPayMobileState();
+}
+
+class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMobile> {
+  WebViewController? _controller;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _initializeWebView();
+    });
+  }
+
+  void _initializeWebView() {
+    try {
+      debugPrint('🚀 [CinetPayMobile] Initializing WebView...');
+      
+      final controller = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageStarted: (String url) {
+              if (mounted) setState(() => _isLoading = true);
+            },
+            onPageFinished: (String url) {
+              if (mounted) setState(() => _isLoading = false);
+            },
+          ),
+        )
+        ..addJavaScriptChannel(
+          'CinetPayFlutter',
+          onMessageReceived: (JavaScriptMessage message) {
+             _handlePaymentResponse(message.message);
+          },
+        )
+        ..loadHtmlString(_buildCinetPayHTML());
+      
+      if (mounted) {
+        setState(() {
+          _controller = controller;
+        });
+      }
+    } catch (e) {
+      debugPrint('❌ [CinetPayMobile] Error: $e');
+    }
+  }
+
+  String _buildCinetPayHTML() {
+    // Extract user data with fallbacks
+    final fName = widget.userData?['firstName'] ?? '';
+    final lName = widget.userData?['lastName'] ?? '';
+    final addr = widget.userData?['address'] ?? 'Abidjan';
+    final city = widget.userData?['city'] ?? 'Abidjan';
+    final country = widget.userData?['country'] ?? 'CI';
+    final phone = widget.userData?['phone'] ?? '';
+    final zip = '00000';
+
+    return '''
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.cinetpay.com/seamless/main.js"></script>
+    <style>body{display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif;background:#f0f2f5}</style>
+</head>
+<body>
+    <script>
+        function checkout() {
+            var transId = '${widget.transactionId}';
+            
+            CinetPay.setConfig({
+                apikey: '${widget.apiKey}',
+                site_id: '${widget.siteId}',
+                notify_url: 'http://mondomaine.com/notify/',
+                mode: 'PRODUCTION' // or 'PRODUCTION'
+            });
+            
+            CinetPay.getCheckout({
+                transaction_id: transId,
+                amount: ${widget.amount.toInt()},
+                currency: '${widget.currency}',
+                channels: 'ALL',
+                description: '${widget.description}',
+                // Customer data
+                customer_name: '$fName',
+                customer_surname: '$lName',
+                customer_email: '${widget.email}',
+                customer_phone_number: '$phone',
+                customer_address: '$addr',
+                customer_city: '$city',
+                customer_country: '$country',
+                customer_state: '$country',
+                customer_zip_code: '$zip',
+            });
+            
+            CinetPay.waitResponse(function(data) {
+                if (window.CinetPayFlutter) {
+                    if (data.status == "ACCEPTED") {
+                         window.CinetPayFlutter.postMessage(JSON.stringify({
+                            success: true,
+                            reference: data.operator_id || transId, // CinetPay uses operator_id
+                            message: 'Payment verified'
+                        }));
+                    } else {
+                         window.CinetPayFlutter.postMessage(JSON.stringify({
+                            success: false,
+                            message: 'Payment failed status: ' + data.status
+                        }));
+                    }
+                }
+            });
+            
+            CinetPay.onError(function(data) {
+                if (window.CinetPayFlutter) {
+                    window.CinetPayFlutter.postMessage(JSON.stringify({
+                        success: false,
+                        message: 'Error: ' + data.description
+                    }));
+                }
+            });
+        }
+        
+        window.onload = function() { setTimeout(checkout, 1000); };
+    </script>
+</body>
+</html>
+    ''';
+  }
+
+  void _handlePaymentResponse(String message) {
+    try {
+      debugPrint('CinetPay Response: $message');
+      if (message.contains('"success":true')) {
+         final referenceMatch = RegExp(r'"reference":"([^"]+)"').firstMatch(message);
+         final reference = referenceMatch?.group(1) ?? widget.transactionId;
+         Navigator.pop(context, {'success': true, 'reference': reference});
+      } else {
+         Navigator.pop(context, {'success': false, 'message': 'Payment failed'});
+      }
+    } catch (e) {
+       Navigator.pop(context, {'success': false, 'message': 'Error processing payment'});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('payment'.tr()),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.pop(context, {'success': false, 'message': 'Cancelled'}),
+        ),
+      ),
+      body: _controller == null
+          ? const Center(child: CircularProgressIndicator())
+          : Stack(
+              children: [
+                WebViewWidget(controller: _controller!),
+                if (_isLoading) const Center(child: CircularProgressIndicator()),
               ],
             ),
     );

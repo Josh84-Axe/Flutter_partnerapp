@@ -80,9 +80,26 @@ class CurrencyUtils {
   /// - Ghana: GHS 2,500
   /// - Ivory Coast: 1.000 CFA
   /// - USA: $2,500
-  static String formatPrice(double price, String? country) {
-    final code = getCurrencyCode(country);
-    final symbol = getCurrencySymbol(country);
+  static String formatPrice(double price, String? country, {String? currencyCode}) {
+    // If currencyCode is provided, use it directly (e.g. from API)
+    // Otherwise fallback to country-based lookup
+    final code = currencyCode ?? getCurrencyCode(country);
+    
+    // Determine symbol based on code
+    String symbol;
+    switch (code) {
+      case 'GHS': symbol = 'GHS'; break;
+      case 'XOF': 
+      case 'XAF': symbol = 'CFA'; break;
+      case 'NGN': symbol = '₦'; break;
+      case 'KES': symbol = 'KSh'; break;
+      case 'UGX': symbol = 'USh'; break;
+      case 'TZS': symbol = 'TSh'; break;
+      case 'RWF': symbol = 'RF'; break;
+      case 'ZAR': symbol = 'R'; break;
+      case 'USD': symbol = '\$'; break;
+      default: symbol = code; break;
+    }
     
     // Round to nearest integer (no decimals)
     final int amount = price.round();
@@ -94,11 +111,6 @@ class CurrencyUtils {
     );
     
     // Format the number part
-    // Note: NumberFormat automatically handles thousands separators
-    // For CFA regions (French locale-ish), they often use dots for thousands, 
-    // but standard English locale uses commas. 
-    // The user requested "1.000 CFA" for CFA, which implies dot separator.
-    
     String formattedNumber;
     
     if (code == 'XOF' || code == 'XAF') {

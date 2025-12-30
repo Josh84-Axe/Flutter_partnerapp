@@ -14,6 +14,7 @@ class PaymentGatewayScreen extends StatelessWidget {
   final String planId;
   final String planName;
   final String currency;
+  final Map<String, dynamic>? userData; // Additional user data for specific gateways
 
   const PaymentGatewayScreen({
     super.key,
@@ -22,12 +23,20 @@ class PaymentGatewayScreen extends StatelessWidget {
     required this.planId,
     required this.planName,
     required this.currency,
+    this.userData,
   });
 
   @override
   Widget build(BuildContext context) {
     // If currency is CFA (XOF or XAF), use CinetPay
     if (currency == 'XOF' || currency == 'XAF' || currency == 'CFA') {
+       final fName = userData?['firstName'] ?? '';
+       final lName = userData?['lastName'] ?? '';
+       final addr = userData?['address'] ?? '';
+       final city = userData?['city'] ?? '';
+       final country = userData?['country'] ?? 'CI'; // Default or from userData
+       final phone = userData?['phone'] ?? '';
+
        return PaymentGatewayCinetPayWeb(
           apiKey: '297929662685d35c4021b02.21438964', // From User Request
           siteId: '105899723', // From User Request
@@ -36,6 +45,12 @@ class PaymentGatewayScreen extends StatelessWidget {
           currency: currency == 'CFA' ? 'XOF' : currency,
           description: 'Payment for $planName',
           email: email,
+          firstName: fName,
+          lastName: lName,
+          address: addr,
+          city: city,
+          country: country,
+          phoneNumber: phone,
        );
     }
 

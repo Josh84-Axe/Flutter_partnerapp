@@ -118,7 +118,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                               context,
                               Icons.payments_outlined,
                               'monthly_fee'.tr(),
-                              CurrencyUtils.formatPrice(subscription.monthlyFee, userProvider.partnerCountry),
+                              CurrencyUtils.formatPrice(subscription.monthlyFee, userProvider.partnerCountry, currencyCode: null), // Subscription model doesn't store currency yet, fallback to country
                             ),
                             const SizedBox(height: 8),
                             _buildInfoRow(
@@ -235,7 +235,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                 ],
                                 const SizedBox(height: 16),
                                 Text(
-                                  '${CurrencyUtils.formatPrice(plan.price, userProvider.partnerCountry)} / ${'month'.tr()}',
+                                  '${CurrencyUtils.formatPrice(plan.price, userProvider.partnerCountry, currencyCode: plan.currency)} / ${'month'.tr()}',
                                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: colorScheme.primary,
@@ -271,7 +271,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton.icon(
-                                      onPressed: () => _purchasePlan(plan.id, plan.name, plan.price),
+                                      onPressed: () => _purchasePlan(plan.id, plan.name, plan.price, plan.currency),
                                       icon: const Icon(Icons.check_circle_outline, size: 20),
                                       label: Text(
                                         subscription != null ? 'upgrade_to_plan'.tr() : 'subscribe'.tr(),
@@ -358,7 +358,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
     );
   }
 
-  Future<void> _purchasePlan(String planId, String planName, double amount) async {
+  Future<void> _purchasePlan(String planId, String planName, double amount, String? currencyCode) async {
     final userProvider = context.read<UserProvider>();
     
     final confirmed = await showDialog<bool>(
@@ -377,7 +377,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             ),
             const SizedBox(height: 8),
             Text(
-              CurrencyUtils.formatPrice(amount, userProvider.partnerCountry),
+              CurrencyUtils.formatPrice(amount, userProvider.partnerCountry, currencyCode: currencyCode),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
@@ -411,6 +411,12 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
         amount: amount,
       );
       
+      // Override currency if provided by plan
+      if (currencyCode != null) {
+        paymentDetails['currency'] = currencyCode;
+      }
+      
+      
       // Open Paystack inline popup
       final paymentResult = await Navigator.push<Map<String, dynamic>>(
         context,
@@ -421,6 +427,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             planId: paymentDetails['planId'],
             planName: paymentDetails['planName'],
             currency: paymentDetails['currency'],
+            userData: paymentDetails['userData'],
           ),
         ),
       );

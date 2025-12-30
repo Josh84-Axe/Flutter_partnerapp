@@ -20,6 +20,8 @@ class PaymentGatewayCinetPayWeb extends StatefulWidget {
   final String firstName;
   final String lastName;
   final String notifyUrl;
+  final String postalCode;
+  final String phoneNumber;
 
   const PaymentGatewayCinetPayWeb({
     super.key,
@@ -27,15 +29,16 @@ class PaymentGatewayCinetPayWeb extends StatefulWidget {
     required this.siteId,
     required this.transactionId,
     required this.amount,
-    this.currency = 'XOF', // Default to XOF
+    required this.currency,
     required this.description,
-    this.email = '',
-    this.phone = '',
-    this.address = '',
-    this.city = '',
-    this.country = 'CI',
-    this.firstName = '',
-    this.lastName = '',
+    required this.email,
+    required this.firstName,
+    required this.lastName,
+    required this.address,
+    required this.city,
+    required this.country,
+    this.postalCode = '00000',
+    this.phoneNumber = '',
     this.notifyUrl = '',
   });
 
@@ -152,12 +155,12 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
          'customer_name': widget.firstName,
          'customer_surname': widget.lastName,
          'customer_email': widget.email, 
-         'customer_phone_number': widget.phone,
-         'customer_address': widget.address,
-         'customer_city': widget.city,
+         'customer_phone_number': widget.phoneNumber,
+         'customer_address': widget.address.isEmpty ? "Abidjan" : widget.address, // Fallback if empty to avoid error
+         'customer_city': widget.city.isEmpty ? "Abidjan" : widget.city, // Fallback
          'customer_country': widget.country,
-         'customer_state': 'CI', 
-         'customer_zip_code': '00225', 
+         'customer_state': widget.country, // Using country code as state for simplicity if unknown, or default
+         'customer_zip_code': widget.postalCode,
        };
 
        // We need to call window.CinetPay.setConfig(config) and window.CinetPay.getCheckout(paymentData)

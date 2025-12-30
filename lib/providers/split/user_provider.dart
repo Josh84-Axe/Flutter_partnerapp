@@ -143,6 +143,14 @@ class UserProvider with ChangeNotifier {
       'planId': planId,
       'planName': planName,
       'currency': _getCurrencyCodeForPayment(),
+      'userData': {
+        'firstName': _currentUser?.firstName,
+        'lastName': _currentUser?.lastName,
+        'address': _currentUser?.address,
+        'city': _currentUser?.city,
+        'country': _getIsoCountryCode(_partnerCountry) ?? 'CI', 
+        'phone': _currentUser?.phone,
+      },
     };
   }
 
@@ -602,6 +610,29 @@ class UserProvider with ChangeNotifier {
       return false;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  String? _getIsoCountryCode(String? countryName) {
+    if (countryName == null) return null;
+    switch (countryName.toLowerCase()) {
+      case 'côte d\'ivoire':
+      case 'cote d\'ivoire':
+      case 'ivory coast': return 'CI';
+      case 'senegal': return 'SN';
+      case 'mali': return 'ML';
+      case 'benin': return 'BJ';
+      case 'togo': return 'TG';
+      case 'burkina faso': return 'BF';
+      case 'niger': return 'NE';
+      case 'cameroon': return 'CM';
+      case 'gabon': return 'GA';
+      case 'congo': return 'CG';
+      case 'chad': return 'TD';
+      case 'nigeria': return 'NG';
+      case 'ghana': return 'GH';
+      case 'kenya': return 'KE';
+      default: return 'CI'; // Default fallback
     }
   }
 }
