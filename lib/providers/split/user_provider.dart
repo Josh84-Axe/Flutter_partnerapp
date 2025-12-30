@@ -144,12 +144,12 @@ class UserProvider with ChangeNotifier {
       'planName': planName,
       'currency': _getCurrencyCodeForPayment(),
       'userData': {
-        'firstName': _currentUser?.firstName,
-        'lastName': _currentUser?.lastName,
-        'address': _currentUser?.address,
-        'city': _currentUser?.city,
+        'firstName': _authProvider?.currentUser?.firstName,
+        'lastName': _authProvider?.currentUser?.lastName,
+        'address': _authProvider?.currentUser?.address,
+        'city': _authProvider?.currentUser?.city,
         'country': _getIsoCountryCode(_partnerCountry) ?? 'CI', 
-        'phone': _currentUser?.phone,
+        'phone': _authProvider?.currentUser?.phone,
       },
     };
   }

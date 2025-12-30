@@ -13,7 +13,7 @@ class PaymentGatewayCinetPayWeb extends StatefulWidget {
   final String currency;
   final String description;
   final String email;
-  final String phone;
+  // final String phone; // Removed as we use phoneNumber
   final String address;
   final String city;
   final String country;
