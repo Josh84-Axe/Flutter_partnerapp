@@ -373,7 +373,7 @@ class AuthRepository {
         '/partner/password-reset/verify-otp/',
         data: {
             'email': email, 
-            'otp': otp,
+            'code': otp,
             'otp_id': otpId,
         },
       );
