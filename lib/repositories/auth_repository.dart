@@ -398,7 +398,7 @@ class AuthRepository {
         '/partner/password-reset/update-password/',
         data: {
           'email': email,
-          'otp': otp,
+          'code': otp,
           'otp_id': otpId,
           'new_password': newPassword,
         },
