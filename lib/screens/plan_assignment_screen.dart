@@ -82,6 +82,19 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
         print('⚠️ [PlanAssignment] Selected plan has no profile ID');
       }
 
+      if (routerId == null) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: Could not determine router for this plan. Please contact support or choose another plan.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        setState(() => _isLoading = false);
+        return;
+      }
+
       await userProvider.assignPlan(_selectedUser!, _selectedPlan!, routerId: routerId);
 
       if (mounted) {
