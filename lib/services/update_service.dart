@@ -125,11 +125,6 @@ class UpdateService {
       }
       rethrow;
     }
-      if (kDebugMode) {
-        print('❌ [UpdateService] Error performing update: $e');
-      }
-      rethrow;
-    }
   }
 
   /// Compares two version strings (e.g., "1.0.1" vs "1.0.0").
