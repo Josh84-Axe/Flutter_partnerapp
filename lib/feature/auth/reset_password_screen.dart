@@ -8,11 +8,13 @@ import '../../providers/split/auth_provider.dart';
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
   final String otp;
+  final String otpId;
 
   const ResetPasswordScreen({
     super.key,
     required this.email,
     required this.otp,
+    this.otpId = '',
   });
 
   @override
@@ -66,6 +68,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       final success = await context.read<AuthProvider>().confirmPasswordReset(
             email: widget.email,
             otp: widget.otp,
+            otpId: widget.otpId,
             newPassword: _passwordController.text,
           );
 

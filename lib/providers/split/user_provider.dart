@@ -593,16 +593,16 @@ class UserProvider with ChangeNotifier {
 
 
   /// Assign a plan to a user
-  Future<bool> assignPlan(String userId, String planId, {String? routerDnsName}) async {
+  Future<bool> assignPlan(String userId, String planId, {String? routerId}) async {
     if (_planRepository == null) return false;
     _setLoading(true);
     try {
-      if (kDebugMode) print('📡 [UserProvider] Assigning plan $planId to user $userId${routerDnsName != null ? ' on router $routerDnsName' : ''}');
+      if (kDebugMode) print('📡 [UserProvider] Assigning plan $planId to user $userId${routerId != null ? ' on router $routerId' : ''}');
       
       final data = {
         'customer_id': int.tryParse(userId) ?? userId,
         'plan_id': int.tryParse(planId) ?? planId,
-        if (routerDnsName != null) 'router_dns_name': routerDnsName,
+        if (routerId != null) 'router_id': int.tryParse(routerId) ?? routerId, // API might expect int or string, usually safe to send what we have if it's an ID
       };
 
       await _planRepository!.assignPlan(data);

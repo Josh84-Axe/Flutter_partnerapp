@@ -314,24 +314,25 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> requestPasswordReset(String email) async {
+  Future<Map<String, dynamic>?> requestPasswordReset(String email) async {
     _setLoading(true);
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
-      final success = await _authRepository!.requestPasswordReset(email);
+      final result = await _authRepository!.requestPasswordReset(email);
       _passwordResetOtpId = null; // Clear any previous
       _setLoading(false);
-      return success;
+      return result;
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
-      return false;
+      return null;
     }
   }
 
   Future<bool> confirmPasswordReset({
     required String email,
     required String otp,
+    required String otpId,
     required String newPassword,
   }) async {
     _setLoading(true);
@@ -340,6 +341,7 @@ class AuthProvider with ChangeNotifier {
       final success = await _authRepository!.confirmPasswordReset(
         email: email,
         otp: otp,
+        otpId: otpId,
         newPassword: newPassword,
       );
       _setLoading(false);
@@ -351,6 +353,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // Not strictly used by forgot password flow but good to keep consistent if needed
   Future<bool> verifyEmailOtp(String email, String otp, String otpId) async {
     _setLoading(true);
     try {
@@ -362,7 +365,6 @@ class AuthProvider with ChangeNotifier {
       );
       _setLoading(false);
       if (success) {
-        // Refresh profile to update status
         await checkAuthStatus();
       }
       return success;
@@ -378,11 +380,6 @@ class AuthProvider with ChangeNotifier {
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
       final response = await _authRepository!.confirmRegistration(email, otp);
-      if (response != null) {
-        // After confirmation, we might want to log the user in or just return true
-        // depending on the API flow. Often confirmRegistration returns a token or just success.
-        // If it returns success, the user can then login.
-      }
       _setLoading(false);
       return response != null;
     } catch (e) {
@@ -406,25 +403,25 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> resendPasswordResetOtp(String email) async {
+  Future<Map<String, dynamic>?> resendPasswordResetOtp(String email) async {
     _setLoading(true);
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
-      final success = await _authRepository!.resendPasswordResetOtp(email);
+      final result = await _authRepository!.resendPasswordResetOtp(email);
       _setLoading(false);
-      return success;
+      return result;
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
-      return false;
+      return null;
     }
   }
 
-  Future<bool> verifyPasswordResetOtp(String email, String otp) async {
+  Future<bool> verifyPasswordResetOtp(String email, String otp, String otpId) async {
     _setLoading(true);
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
-      final response = await _authRepository!.verifyPasswordResetOtp(email.trim(), otp.trim());
+      final response = await _authRepository!.verifyPasswordResetOtp(email.trim(), otp.trim(), otpId);
       _setLoading(false);
       return response != null;
     } catch (e) {

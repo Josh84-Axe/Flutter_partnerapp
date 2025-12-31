@@ -7,10 +7,12 @@ import '../../providers/split/auth_provider.dart';
 /// OTP Verification screen - Step 2: Verify OTP code
 class VerifyPasswordResetOtpScreen extends StatefulWidget {
   final String email;
+  final String otpId;
 
   const VerifyPasswordResetOtpScreen({
     super.key,
     required this.email,
+    this.otpId = '',
   });
 
   @override
@@ -46,6 +48,7 @@ class _VerifyPasswordResetOtpScreenState
       final success = await context.read<AuthProvider>().verifyPasswordResetOtp(
             widget.email,
             _otpController.text,
+            widget.otpId,
           );
 
       if (!mounted) return;
@@ -57,6 +60,7 @@ class _VerifyPasswordResetOtpScreenState
           arguments: {
             'email': widget.email,
             'otp': _otpController.text,
+            'otp_id': widget.otpId,
           },
         );
       } else {
@@ -87,13 +91,13 @@ class _VerifyPasswordResetOtpScreenState
     });
 
     try {
-      final success = await context.read<AuthProvider>().requestPasswordReset(
+      final result = await context.read<AuthProvider>().requestPasswordReset(
             widget.email,
           );
 
       if (!mounted) return;
 
-      if (success) {
+      if (result != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Verification code sent successfully'),

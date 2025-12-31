@@ -43,17 +43,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     });
 
     try {
-      final success = await context.read<AuthProvider>().requestPasswordReset(
+      final result = await context.read<AuthProvider>().requestPasswordReset(
             _emailController.text,
           );
 
       if (!mounted) return;
 
-      if (success) {
+      if (result != null) {
         // Navigate to OTP verification screen
         Navigator.of(context).pushNamed(
           '/verify-password-reset-otp',
-          arguments: _emailController.text,
+          arguments: {
+             'email': _emailController.text,
+             'otp_id': result['otp_id'],
+          }
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
