@@ -61,6 +61,9 @@ class HotspotProfileModel {
           dnsName: dns,
         );
       }).toList();
+    } else if (json['routers'] != null && json['routers'] is List) {
+      // Fallback: if routers_detail is missing but routers (list of IDs) exists
+      routers = (json['routers'] as List).map((e) => e.toString()).toList();
     }
 
     return HotspotProfileModel(

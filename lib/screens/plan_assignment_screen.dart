@@ -55,6 +55,9 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                  orElse: () => profile.routerDetails.first
              );
              routerId = router.id;
+          } else if (profile.routerIds.isNotEmpty) {
+             // Fallback to routerIds if details are missing
+             routerId = profile.routerIds.first;
           }
         } catch (e) {
            print('Error resolving router from profile: $e');
