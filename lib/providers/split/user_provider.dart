@@ -593,21 +593,30 @@ class UserProvider with ChangeNotifier {
 
 
   /// Assign a plan to a user
-  Future<bool> assignPlan(String userId, String planId) async {
+  Future<bool> assignPlan(String userId, String planId, {String? routerId}) async {
     if (_planRepository == null) return false;
     _setLoading(true);
     try {
-      if (kDebugMode) print('📡 [UserProvider] Assigning plan $planId to user $userId');
-      final success = await _planRepository!.assignPlan({
-        'customer_id': userId,
+      if (kDebugMode) print('📡 [UserProvider] Assigning plan $planId to user $userId${routerId != null ? ' on router $routerId' : ''}');
+      
+      final data = {
+        'user_id': userId,
         'plan_id': planId,
-      });
-      _error = null;
-      return success != null;
+        if (routerId != null) 'router_id': routerId,
+      };
+
+      await _planRepository!.assignPlan(data);
+      
+      if (kDebugMode) print('✅ [UserProvider] Plan assigned successfully');
+      
+      // Refresh data
+      await loadSubscription();
+      await loadActiveSessions(); // If applicable
+      return true;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error assigning plan: $e');
+      if (kDebugMode) print('❌ [UserProvider] Assign plan error: $e');
       _error = e.toString();
-      return false;
+      rethrow;
     } finally {
       _setLoading(false);
     }

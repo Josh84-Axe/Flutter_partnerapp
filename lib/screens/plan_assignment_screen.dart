@@ -32,8 +32,32 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
     });
 
     try {
+      final networkProvider = context.read<NetworkProvider>();
       final userProvider = context.read<UserProvider>();
-      await userProvider.assignPlan(_selectedUser!, _selectedPlan!);
+      
+      // Logic to find the router ID associated with the plan
+      String? routerId;
+      
+      // 1. Find the plan object
+      final selectedPlanObj = networkProvider.plans.firstWhere((p) => p.id.toString() == _selectedPlan, orElse: () => networkProvider.plans.first);
+      
+      // 2. Get profile ID
+      if (selectedPlanObj.profileId != null) {
+        // 3. Find URL/Profile
+        try {
+          final profile = networkProvider.hotspotProfiles.firstWhere((p) => int.tryParse(p.id) == selectedPlanObj.profileId || p.id == selectedPlanObj.profileId.toString());
+          
+          if (profile.routerIds.isNotEmpty) {
+            routerId = profile.routerIds.first;
+             // If multiple routers, we currently default to the first one. 
+             // We could prompt user if needed, but per requirements "pick that router id the plan is linked to", automatic selection of the primary link is standard.
+          }
+        } catch (e) {
+           print('Error resolving router from profile: $e');
+        }
+      }
+
+      await userProvider.assignPlan(_selectedUser!, _selectedPlan!, routerId: routerId);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
