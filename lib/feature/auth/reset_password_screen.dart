@@ -7,14 +7,12 @@ import '../../providers/split/auth_provider.dart';
 /// Reset Password screen - Step 3: Set new password
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
-  final String otp;
-  final String otpId;
+  final String token;
 
   const ResetPasswordScreen({
     super.key,
     required this.email,
-    required this.otp,
-    this.otpId = '',
+    required this.token,
   });
 
   @override
@@ -66,9 +64,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     try {
       final success = await context.read<AuthProvider>().confirmPasswordReset(
-            email: widget.email,
-            otp: widget.otp,
-            otpId: widget.otpId,
+            token: widget.token,
             newPassword: _passwordController.text,
           );
 

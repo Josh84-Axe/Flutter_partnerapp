@@ -387,19 +387,15 @@ class AuthRepository {
 
   /// Confirm password reset with OTP
   Future<bool> confirmPasswordReset({
-    required String email,
-    required String otp,
-    required String otpId,
+    required String token,
     required String newPassword,
   }) async {
     try {
-      if (kDebugMode) print('🔑 [AuthRepository] Confirm password reset for: $email (ID: $otpId)');
+      if (kDebugMode) print('🔑 [AuthRepository] Confirm password reset with token');
       final response = await _dio.post(
         '/partner/password-reset/update-password/',
         data: {
-          'email': email,
-          'code': otp,
-          'otp_id': otpId,
+          'token': token,
           'new_password': newPassword,
         },
       );

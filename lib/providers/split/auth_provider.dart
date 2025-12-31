@@ -330,22 +330,18 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<bool> confirmPasswordReset({
-    required String email,
-    required String otp,
-    required String otpId,
+    required String token,
     required String newPassword,
   }) async {
     _setLoading(true);
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
-      final success = await _authRepository!.confirmPasswordReset(
-        email: email,
-        otp: otp,
-        otpId: otpId,
+      final result = await _authRepository!.confirmPasswordReset(
+        token: token,
         newPassword: newPassword,
       );
       _setLoading(false);
-      return success;
+      return result;
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
@@ -417,17 +413,29 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> verifyPasswordResetOtp(String email, String otp, String otpId) async {
+  Future<String?> verifyPasswordResetOtp(String email, String otp, String otpId) async {
     _setLoading(true);
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
       final response = await _authRepository!.verifyPasswordResetOtp(email.trim(), otp.trim(), otpId);
       _setLoading(false);
-      return response != null;
+      
+      if (response != null && response.containsKey('token')) {
+        return response['token'];
+      }
+      // Check if data is nested
+      if (response != null && response.containsKey('data')) {
+         final data = response['data'];
+         if (data is Map && data.containsKey('token')) {
+            return data['token'];
+         }
+      }
+      
+      return null;
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
-      return false;
+      return null;
     }
   }
 
