@@ -45,7 +45,7 @@ class _VerifyPasswordResetOtpScreenState
 
     try {
       // Verify OTP with backend first
-      final success = await context.read<AuthProvider>().verifyPasswordResetOtp(
+      final token = await context.read<AuthProvider>().verifyPasswordResetOtp(
             widget.email,
             _otpController.text,
             widget.otpId,
@@ -53,14 +53,13 @@ class _VerifyPasswordResetOtpScreenState
 
       if (!mounted) return;
 
-      if (success) {
-        // Navigate to reset password screen with email and OTP
+      if (token != null) {
+        // Navigate to reset password screen with email and token
         Navigator.of(context).pushReplacementNamed(
           '/reset-password',
           arguments: {
             'email': widget.email,
-            'otp': _otpController.text,
-            'otp_id': widget.otpId,
+            'token': token,
           },
         );
       } else {

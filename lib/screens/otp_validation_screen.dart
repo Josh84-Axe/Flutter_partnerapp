@@ -60,18 +60,17 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
 
          try {
            // We verify using the OTP ID we have
-           final success = await authProvider.verifyPasswordResetOtp(email, code, otpId);
+           final token = await authProvider.verifyPasswordResetOtp(email, code, otpId);
            
            if (mounted) Navigator.of(context).pop(); // Close loading
            
-           if (success) {
+           if (token != null) {
               if (mounted) {
                 Navigator.of(context).pushReplacementNamed(
                   '/set-new-password',
                   arguments: {
                     'email': email,
-                    'otp': code,
-                    'otp_id': otpId,
+                    'token': token,
                   },
                 );
               }

@@ -110,13 +110,9 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
             content: Text('Error assigning plan. Router ID: $routerId. Error: $e'),
             backgroundColor: AppTheme.errorRed,
             duration: const Duration(seconds: 10),
-          ),
-        );
           ),
         );
       }
