@@ -40,13 +40,25 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
       
       // 1. Find the plan object
       final selectedPlanObj = networkProvider.plans.firstWhere((p) => p.id.toString() == _selectedPlan, orElse: () => networkProvider.plans.first);
+      print('🔍 [PlanAssignment] Selected Plan: ${selectedPlanObj.name} (ID: ${selectedPlanObj.id})');
+      print('🔍 [PlanAssignment] Plan Profile ID: ${selectedPlanObj.profileId}');
       
       // 2. Get profile ID
       if (selectedPlanObj.profileId != null) {
         // 3. Find URL/Profile
         try {
-          final profile = networkProvider.hotspotProfiles.firstWhere((p) => int.tryParse(p.id) == selectedPlanObj.profileId || p.id == selectedPlanObj.profileId.toString());
+          final profile = networkProvider.hotspotProfiles.firstWhere(
+            (p) => int.tryParse(p.id) == selectedPlanObj.profileId || p.id == selectedPlanObj.profileId.toString(),
+            orElse: () {
+              print('❌ [PlanAssignment] Profile not found for ID: ${selectedPlanObj.profileId}');
+              throw Exception('Profile not found');
+            }
+          );
           
+          print('✅ [PlanAssignment] Found Profile: ${profile.name} (ID: ${profile.id})');
+          print('🔍 [PlanAssignment] Profile Router Details: ${profile.routerDetails.length}');
+          print('🔍 [PlanAssignment] Profile Router IDs: ${profile.routerIds.length}');
+
           if (profile.routerDetails.isNotEmpty) {
              // Prefer to find first router? Or just take the first one if list exists?
              // Assuming one router per profile for now or picking first valid ID
@@ -55,13 +67,19 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                  orElse: () => profile.routerDetails.first
              );
              routerId = router.id;
+             print('✅ [PlanAssignment] Resolved Router ID from Details: $routerId');
           } else if (profile.routerIds.isNotEmpty) {
              // Fallback to routerIds if details are missing
              routerId = profile.routerIds.first;
+             print('✅ [PlanAssignment] Resolved Router ID from IDs list: $routerId');
+          } else {
+             print('⚠️ [PlanAssignment] No router info found in profile');
           }
         } catch (e) {
            print('Error resolving router from profile: $e');
         }
+      } else {
+        print('⚠️ [PlanAssignment] Selected plan has no profile ID');
       }
 
       await userProvider.assignPlan(_selectedUser!, _selectedPlan!, routerId: routerId);
