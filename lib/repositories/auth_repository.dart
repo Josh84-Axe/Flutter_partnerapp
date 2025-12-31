@@ -324,7 +324,7 @@ class AuthRepository {
   }
 
   /// Request password reset
-  Future<bool> requestPasswordReset(String email) async {
+  Future<Map<String, dynamic>?> requestPasswordReset(String email) async {
     try {
       if (kDebugMode) print('🔑 [AuthRepository] Request password reset for: $email');
       final response = await _dio.post(
@@ -332,15 +332,21 @@ class AuthRepository {
         data: {'email': email},
       );
       if (kDebugMode) print('✅ [AuthRepository] Password reset request response: ${response.data}');
-      return true;
+      
+      final responseData = response.data;
+      if (responseData is Map<String, dynamic>) {
+         // Return the whole data object or specifically look for otp_id
+         return responseData['data'] as Map<String, dynamic>? ?? responseData;
+      }
+      return null;
     } catch (e) {
       if (kDebugMode) print('❌ [AuthRepository] Request password reset error: $e');
-      return false;
+      return null;
     }
   }
 
   /// Resend password reset OTP
-  Future<bool> resendPasswordResetOtp(String email) async {
+  Future<Map<String, dynamic>?> resendPasswordResetOtp(String email) async {
     try {
       if (kDebugMode) print('🔑 [AuthRepository] Resend password reset OTP for: $email');
       final response = await _dio.post(
@@ -348,20 +354,28 @@ class AuthRepository {
         data: {'email': email},
       );
       if (kDebugMode) print('✅ [AuthRepository] Resend password reset OTP response: ${response.data}');
-      return true;
+      final responseData = response.data;
+      if (responseData is Map<String, dynamic>) {
+         return responseData['data'] as Map<String, dynamic>? ?? responseData;
+      }
+      return null;
     } catch (e) {
       if (kDebugMode) print('❌ [AuthRepository] Resend password reset OTP error: $e');
-      return false;
+      return null;
     }
   }
   
   /// Verify password reset OTP
-  Future<Map<String, dynamic>?> verifyPasswordResetOtp(String email, String otp) async {
+  Future<Map<String, dynamic>?> verifyPasswordResetOtp(String email, String otp, String otpId) async {
     try {
-      if (kDebugMode) print('🔑 [AuthRepository] Verify password reset OTP for: $email');
+      if (kDebugMode) print('🔑 [AuthRepository] Verify password reset OTP for: $email (ID: $otpId)');
       final response = await _dio.post(
         '/partner/password-reset/verify-otp/',
-        data: {'email': email, 'otp': otp},
+        data: {
+            'email': email, 
+            'otp': otp,
+            'otp_id': otpId,
+        },
       );
       if (kDebugMode) print('✅ [AuthRepository] Verify password reset OTP response: ${response.data}');
       return response.data as Map<String, dynamic>?;
@@ -375,15 +389,17 @@ class AuthRepository {
   Future<bool> confirmPasswordReset({
     required String email,
     required String otp,
+    required String otpId,
     required String newPassword,
   }) async {
     try {
-      if (kDebugMode) print('🔑 [AuthRepository] Confirm password reset for: $email');
+      if (kDebugMode) print('🔑 [AuthRepository] Confirm password reset for: $email (ID: $otpId)');
       final response = await _dio.post(
         '/partner/password-reset/update-password/',
         data: {
           'email': email,
           'otp': otp,
+          'otp_id': otpId,
           'new_password': newPassword,
         },
       );

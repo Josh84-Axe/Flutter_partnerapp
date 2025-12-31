@@ -50,6 +50,7 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
       if (type == 'password_reset' && email != null) {
         // Verify OTP with backend before navigating
          final authProvider = context.read<AuthProvider>();
+         final otpId = args?['otp_id'] as String? ?? '';
          
          showDialog(
             context: context,
@@ -58,7 +59,8 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
          );
 
          try {
-           final success = await authProvider.verifyPasswordResetOtp(email, code);
+           // We verify using the OTP ID we have
+           final success = await authProvider.verifyPasswordResetOtp(email, code, otpId);
            
            if (mounted) Navigator.of(context).pop(); // Close loading
            
@@ -69,6 +71,7 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
                   arguments: {
                     'email': email,
                     'otp': code,
+                    'otp_id': otpId,
                   },
                 );
               }
