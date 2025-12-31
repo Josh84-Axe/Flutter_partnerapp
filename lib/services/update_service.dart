@@ -9,7 +9,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../config/update_config.dart';
 
 class UpdateService {
-  final Dio _dio = Dio();
+  final Dio _dio = Dio(BaseOptions(
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(minutes: 5), // Allow 5 minutes for slow downloads
+    sendTimeout: const Duration(minutes: 5),
+  ));
 
   /// Checks if a new update is available.
   /// Returns a Map with update details if available, or null if no update.
@@ -74,16 +78,34 @@ class UpdateService {
        final dir = await getTemporaryDirectory();
        final fileName = 'update_${DateTime.now().millisecondsSinceEpoch}.apk';
        final filePath = '${dir.path}/$fileName';
+       
+       // Clean up old update files
+       final dirFiles = dir.listSync();
+       for (var file in dirFiles) {
+         if (file.path.endsWith('.apk') && file.path.contains('update_')) {
+           try {
+             file.deleteSync();
+           } catch (e) {
+             print('⚠️ Could not delete old update file: $e');
+           }
+         }
+       }
 
        if (kDebugMode) print('⬇️ [UpdateService] Downloading to: $filePath');
 
        // 3. Download APK
+       // Use deleteOnError to ensure partial files aren't kept if connection drops
        await _dio.download(
          url, 
          filePath,
+         deleteOnError: true,
          onReceiveProgress: (received, total) {
            if (kDebugMode && total != -1) {
-             print('⬇️ [UpdateService] Progress: ${((received / total) * 100).toStringAsFixed(0)}%');
+             // Print progress every 10%
+             final progress = ((received / total) * 100).toInt();
+             if (progress % 10 == 0) {
+                print('⬇️ [UpdateService] Progress: $progress%');
+             }
            }
          },
        );
@@ -98,6 +120,11 @@ class UpdateService {
        }
 
     } catch (e) {
+      if (kDebugMode) {
+        print('❌ [UpdateService] Error performing update: $e');
+      }
+      rethrow;
+    }
       if (kDebugMode) {
         print('❌ [UpdateService] Error performing update: $e');
       }
