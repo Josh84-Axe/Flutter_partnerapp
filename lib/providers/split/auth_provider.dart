@@ -406,6 +406,20 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> resendPasswordResetOtp(String email) async {
+    _setLoading(true);
+    try {
+      if (_authRepository == null) throw Exception('AuthRepository not initialized');
+      final success = await _authRepository!.resendPasswordResetOtp(email);
+      _setLoading(false);
+      return success;
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
+
   Future<bool> verifyPasswordResetOtp(String email, String otp) async {
     _setLoading(true);
     try {

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../providers/split/auth_provider.dart';
 import '../utils/app_theme.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class OtpValidationScreen extends StatefulWidget {
   const OtpValidationScreen({super.key});
@@ -37,7 +40,7 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
     }
   }
 
-  void _verifyCode() {
+  Future<void> _verifyCode() async {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final code = _controllers.map((c) => c.text).join();
     final type = args?['type'] as String?;
@@ -45,16 +48,54 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
     
     if (code.length == 6) {
       if (type == 'password_reset' && email != null) {
-        // Navigate to SetNewPasswordScreen with email and OTP
-        Navigator.of(context).pushReplacementNamed(
-          '/set-new-password',
-          arguments: {
-            'email': email,
-            'otp': code,
-          },
-        );
+        // Verify OTP with backend before navigating
+         final authProvider = context.read<AuthProvider>();
+         
+         showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const Center(child: CircularProgressIndicator()),
+         );
+
+         try {
+           final success = await authProvider.verifyPasswordResetOtp(email, code);
+           
+           if (mounted) Navigator.of(context).pop(); // Close loading
+           
+           if (success) {
+              if (mounted) {
+                Navigator.of(context).pushReplacementNamed(
+                  '/set-new-password',
+                  arguments: {
+                    'email': email,
+                    'otp': code,
+                  },
+                );
+              }
+           } else {
+             if (mounted) {
+               ScaffoldMessenger.of(context).showSnackBar(
+                 SnackBar(
+                   content: Text('invalid_verification_code'.tr()),
+                   backgroundColor: AppTheme.errorRed,
+                 ),
+               );
+             }
+           }
+         } catch (e) {
+           if (mounted) Navigator.of(context).pop();
+           if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                 SnackBar(
+                   content: Text('error_occurred'.tr()),
+                   backgroundColor: AppTheme.errorRed,
+                 ),
+               );
+           }
+         }
       } else {
         // Original behavior for other OTP types
+        // Note: Ideally other flows should also verify_otp here or pass a callback
         Navigator.of(context).pop();
         if (args != null && args['onVerified'] != null) {
           args['onVerified']();
@@ -167,10 +208,24 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
             ),
             const SizedBox(height: 16),
             TextButton(
-              onPressed: () {},
-              child: const Text(
-                'Resend Code',
-                style: TextStyle(fontSize: 14),
+              onPressed: () async {
+                 final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+                 final type = args?['type'] as String?;
+                 final email = args?['email'] as String?;
+                 
+                 if (type == 'password_reset' && email != null) {
+                    final authProvider = context.read<AuthProvider>();
+                    await authProvider.resendPasswordResetOtp(email);
+                    if (context.mounted) {
+                       ScaffoldMessenger.of(context).showSnackBar(
+                         SnackBar(content: Text('code_resent'.tr())),
+                       );
+                    }
+                 }
+              },
+              child: Text(
+                'resend_code'.tr(),
+                style: const TextStyle(fontSize: 14),
               ),
             ),
           ],

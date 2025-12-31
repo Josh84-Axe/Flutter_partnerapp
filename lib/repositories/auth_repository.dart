@@ -328,7 +328,7 @@ class AuthRepository {
     try {
       if (kDebugMode) print('🔑 [AuthRepository] Request password reset for: $email');
       final response = await _dio.post(
-        '/partner/password-reset/',
+        '/partner/password-reset/request-otp/',
         data: {'email': email},
       );
       if (kDebugMode) print('✅ [AuthRepository] Password reset request response: ${response.data}');
@@ -338,13 +338,29 @@ class AuthRepository {
       return false;
     }
   }
+
+  /// Resend password reset OTP
+  Future<bool> resendPasswordResetOtp(String email) async {
+    try {
+      if (kDebugMode) print('🔑 [AuthRepository] Resend password reset OTP for: $email');
+      final response = await _dio.post(
+        '/partner/password-reset/resend-request-otp/',
+        data: {'email': email},
+      );
+      if (kDebugMode) print('✅ [AuthRepository] Resend password reset OTP response: ${response.data}');
+      return true;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AuthRepository] Resend password reset OTP error: $e');
+      return false;
+    }
+  }
   
   /// Verify password reset OTP
   Future<Map<String, dynamic>?> verifyPasswordResetOtp(String email, String otp) async {
     try {
       if (kDebugMode) print('🔑 [AuthRepository] Verify password reset OTP for: $email');
       final response = await _dio.post(
-        '/partner/password-reset-verify-otp/', // Guessing endpoint, or logic?
+        '/partner/password-reset/verify-otp/',
         data: {'email': email, 'otp': otp},
       );
       if (kDebugMode) print('✅ [AuthRepository] Verify password reset OTP response: ${response.data}');
@@ -364,7 +380,7 @@ class AuthRepository {
     try {
       if (kDebugMode) print('🔑 [AuthRepository] Confirm password reset for: $email');
       final response = await _dio.post(
-        '/partner/password-reset-confirm/',
+        '/partner/password-reset/update-password/',
         data: {
           'email': email,
           'otp': otp,
