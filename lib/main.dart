@@ -402,9 +402,12 @@ class HotspotPartnerApp extends StatelessWidget {
           );
         }
         if (settings.name == '/verify-password-reset-otp') {
-          final email = settings.arguments as String;
+          final args = settings.arguments as Map<String, dynamic>;
           return MaterialPageRoute(
-            builder: (context) => VerifyPasswordResetOtpScreen(email: email),
+            builder: (context) => VerifyPasswordResetOtpScreen(
+              email: args['email'] as String,
+              otpId: args['otp_id'] as String? ?? '',
+            ),
           );
         }
         if (settings.name == '/reset-password') {
@@ -413,6 +416,7 @@ class HotspotPartnerApp extends StatelessWidget {
             builder: (context) => ResetPasswordScreen(
               email: args['email'] as String,
               otp: args['otp'] as String,
+              otpId: args['otp_id'] as String? ?? '',
             ),
           );
         }
