@@ -1,5 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 
+class SimpleRouter {
+  final String id;
+  final String dnsName;
+  
+  SimpleRouter({required this.id, required this.dnsName});
+}
+
 class HotspotProfileModel {
   final String id;
   final String slug; // URL-friendly identifier for API endpoints
@@ -8,6 +15,7 @@ class HotspotProfileModel {
   final int uploadSpeedMbps;
   final String idleTimeout;
   final List<String> routerIds;
+  final List<SimpleRouter> routerDetails;
   final bool isPromo;
   final bool isActive;
 
@@ -19,6 +27,7 @@ class HotspotProfileModel {
     required this.uploadSpeedMbps,
     required this.idleTimeout,
     this.routerIds = const [],
+    this.routerDetails = const [],
     this.isPromo = false,
     this.isActive = true,
   });
@@ -34,11 +43,24 @@ class HotspotProfileModel {
     
     // Parse routers
     List<String> routers = [];
+    List<SimpleRouter> routerDetailsList = [];
+    
     if (json['routers_detail'] != null && json['routers_detail'] is List) {
-      routers = (json['routers_detail'] as List)
+      final details = json['routers_detail'] as List;
+      
+      routers = details
           .map((r) => r['id']?.toString() ?? '')
           .where((id) => id.isNotEmpty)
           .toList();
+          
+      routerDetailsList = details.map((r) {
+        // Try to find dns_name, fallback to slug, then name
+        final dns = r['dns_name']?.toString() ?? r['slug']?.toString() ?? r['name']?.toString() ?? '';
+        return SimpleRouter(
+          id: r['id']?.toString() ?? '',
+          dnsName: dns,
+        );
+      }).toList();
     }
 
     return HotspotProfileModel(
@@ -49,6 +71,7 @@ class HotspotProfileModel {
       uploadSpeedMbps: uploadSpeed,
       idleTimeout: json['idle_timeout_value']?.toString() ?? json['idle_timeout']?.toString() ?? '0m',
       routerIds: routers,
+      routerDetails: routerDetailsList,
       isPromo: json['is_for_promo'] ?? false,
       isActive: json['is_active'] ?? true,
     );
