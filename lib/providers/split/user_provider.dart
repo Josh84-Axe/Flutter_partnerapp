@@ -611,7 +611,6 @@ class UserProvider with ChangeNotifier {
       
       // Refresh data
       await loadSubscription();
-      await loadActiveSessions(); // If applicable
       return true;
     } catch (e) {
       if (kDebugMode) print('❌ [UserProvider] Assign plan error: $e');
