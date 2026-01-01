@@ -31,12 +31,13 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
       _isLoading = true;
     });
 
+    String? routerId;
+
     try {
       final networkProvider = context.read<NetworkProvider>();
       final userProvider = context.read<UserProvider>();
       
       // Logic to find the router ID associated with the plan
-      String? routerId;
       
       // 1. Find the plan object
       final selectedPlanObj = networkProvider.plans.firstWhere((p) => p.id.toString() == _selectedPlan, orElse: () => networkProvider.plans.first);

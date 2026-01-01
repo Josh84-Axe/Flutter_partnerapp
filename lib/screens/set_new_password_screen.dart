@@ -69,7 +69,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      
       final token = args?['token'] as String? ?? '';
 
       try {
