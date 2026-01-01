@@ -372,9 +372,8 @@ class AuthRepository {
       final response = await _dio.post(
         '/partner/password-reset/verify-otp/',
         data: {
-            'email': email, 
-            'otp': otp, // Changed from 'code' to 'otp' based on debugging
-            'otp_id': int.tryParse(otpId) ?? otpId, // Ensure we send int if possible, fallback to string
+            'otp_id': int.tryParse(otpId.toString()) ?? otpId,
+            'code': otp,
         },
       );
       if (kDebugMode) print('✅ [AuthRepository] Verify password reset OTP response: ${response.data}');
