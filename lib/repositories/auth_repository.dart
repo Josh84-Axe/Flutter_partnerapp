@@ -373,15 +373,33 @@ class AuthRepository {
         '/partner/password-reset/verify-otp/',
         data: {
             'email': email, 
-            'code': otp,
-            'otp_id': otpId,
+            'otp': otp, // Changed from 'code' to 'otp' based on debugging
+            'otp_id': int.tryParse(otpId) ?? otpId, // Ensure we send int if possible, fallback to string
         },
       );
       if (kDebugMode) print('✅ [AuthRepository] Verify password reset OTP response: ${response.data}');
-      return response.data as Map<String, dynamic>?;
+      
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+         // Normalize success response
+         if (data['data'] != null) {
+            return {'success': true, 'data': data['data']};
+         }
+         // Handle flat response if any
+         return {'success': true, 'data': data};
+      }
+      return {'success': false, 'message': 'Unknown response format'};
+
+    } on DioException catch (e) {
+      if (kDebugMode) print('❌ [AuthRepository] Verify password reset OTP error: ${e.response?.data}');
+      String message = 'invalid_verification_code'.tr();
+      if (e.response?.data is Map) {
+         message = e.response?.data['message'] ?? message;
+      }
+      return {'success': false, 'message': message};
     } catch (e) {
-      if (kDebugMode) print('❌ [AuthRepository] Verify password reset OTP error: $e');
-      return null;
+       if (kDebugMode) print('❌ [AuthRepository] Verify password reset OTP error: $e');
+       return {'success': false, 'message': e.toString()};
     }
   }
 

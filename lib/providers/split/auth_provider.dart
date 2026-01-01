@@ -413,29 +413,17 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<String?> verifyPasswordResetOtp(String email, String otp, String otpId) async {
+  Future<Map<String, dynamic>?> verifyPasswordResetOtp(String email, String otp, String otpId) async {
     _setLoading(true);
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
-      final response = await _authRepository!.verifyPasswordResetOtp(email.trim(), otp.trim(), otpId);
+      final result = await _authRepository!.verifyPasswordResetOtp(email.trim(), otp.trim(), otpId);
       _setLoading(false);
-      
-      if (response != null && response.containsKey('token')) {
-        return response['token'];
-      }
-      // Check if data is nested
-      if (response != null && response.containsKey('data')) {
-         final data = response['data'];
-         if (data is Map && data.containsKey('token')) {
-            return data['token'];
-         }
-      }
-      
-      return null;
+      return result;
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
-      return null;
+      return {'success': false, 'message': e.toString()};
     }
   }
 

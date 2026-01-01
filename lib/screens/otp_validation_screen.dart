@@ -50,7 +50,8 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
       if (type == 'password_reset' && email != null) {
         // Verify OTP with backend before navigating
          final authProvider = context.read<AuthProvider>();
-         final otpId = args?['otp_id'] as String? ?? '';
+         // Safely handle otp_id whether it's int or String
+         final otpId = args?['otp_id']?.toString() ?? '';
          
          showDialog(
             context: context,
@@ -60,25 +61,27 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
 
          try {
            // We verify using the OTP ID we have
-           final token = await authProvider.verifyPasswordResetOtp(email, code, otpId);
+           final response = await authProvider.verifyPasswordResetOtp(email, code, otpId);
            
            if (mounted) Navigator.of(context).pop(); // Close loading
            
-           if (token != null) {
+           if (response != null && response['success'] == true) {
               if (mounted) {
                 Navigator.of(context).pushReplacementNamed(
                   '/set-new-password',
                   arguments: {
                     'email': email,
-                    'token': token,
+                    'token': response['data']['token'] ?? response['token'], // Handle variable response structure
                   },
                 );
               }
            } else {
+             // Handle specific error from backend if available
+             final errorMessage = response?['message'] ?? 'invalid_verification_code'.tr();
              if (mounted) {
                ScaffoldMessenger.of(context).showSnackBar(
                  SnackBar(
-                   content: Text('invalid_verification_code'.tr()),
+                   content: Text(errorMessage),
                    backgroundColor: AppTheme.errorRed,
                  ),
                );
