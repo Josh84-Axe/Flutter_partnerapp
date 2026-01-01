@@ -42,45 +42,35 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
       // 1. Find the plan object
       final selectedPlanObj = networkProvider.plans.firstWhere((p) => p.id.toString() == _selectedPlan, orElse: () => networkProvider.plans.first);
       print('🔍 [PlanAssignment] Selected Plan: ${selectedPlanObj.name} (ID: ${selectedPlanObj.id})');
-      print('🔍 [PlanAssignment] Plan Profile ID: ${selectedPlanObj.profileId}');
       
-      // 2. Get profile ID
-      if (selectedPlanObj.profileId != null) {
-        // 3. Find URL/Profile
-        try {
-          final profile = networkProvider.hotspotProfiles.firstWhere(
-            (p) => int.tryParse(p.id) == selectedPlanObj.profileId || p.id == selectedPlanObj.profileId.toString(),
-            orElse: () {
-              print('❌ [PlanAssignment] Profile not found for ID: ${selectedPlanObj.profileId}');
-              throw Exception('Profile not found');
-            }
-          );
-          
-          print('✅ [PlanAssignment] Found Profile: ${profile.name} (ID: ${profile.id})');
-          print('🔍 [PlanAssignment] Profile Router Details: ${profile.routerDetails.length}');
-          print('🔍 [PlanAssignment] Profile Router IDs: ${profile.routerIds.length}');
-
-          if (profile.routerDetails.isNotEmpty) {
-             // Prefer to find first router? Or just take the first one if list exists?
-             // Assuming one router per profile for now or picking first valid ID
-             final router = profile.routerDetails.firstWhere(
-                 (r) => r.id.isNotEmpty, 
-                 orElse: () => profile.routerDetails.first
-             );
-             routerId = router.id;
-             print('✅ [PlanAssignment] Resolved Router ID from Details: $routerId');
-          } else if (profile.routerIds.isNotEmpty) {
-             // Fallback to routerIds if details are missing
-             routerId = profile.routerIds.first;
-             print('✅ [PlanAssignment] Resolved Router ID from IDs list: $routerId');
-          } else {
-             print('⚠️ [PlanAssignment] No router info found in profile');
-          }
-        } catch (e) {
-           print('Error resolving router from profile: $e');
-        }
+      // 2. Direct Router Resolution from Plan
+      if (selectedPlanObj.routers.isNotEmpty) {
+        routerId = selectedPlanObj.routers.first.id.toString();
+        print('✅ [PlanAssignment] Resolved Router ID from Plan: $routerId');
       } else {
-        print('⚠️ [PlanAssignment] Selected plan has no profile ID');
+        print('⚠️ [PlanAssignment] Plan has no routers attached. Trying profile fallback (legacy).');
+        
+        // Legacy/Fallback logic (keep if needed, or remove)
+        if (selectedPlanObj.profileId != null) {
+             // ... existing profile lookup logic could go here if we still trusted it ...
+             // But since API gives us routers directly now, we might rely on that.
+             // Let's keep a minimal fallback or just error out cleanly.
+             
+             // Try to find profile just in case
+            try {
+               final profile = networkProvider.hotspotProfiles.firstWhere(
+                 (p) => int.tryParse(p.id) == selectedPlanObj.profileId || p.id == selectedPlanObj.profileId.toString(),
+                 orElse: () => throw Exception('Profile not found')
+               );
+               if (profile.routerDetails.isNotEmpty) {
+                  routerId = profile.routerDetails.first.id;
+               } else if (profile.routerIds.isNotEmpty) {
+                  routerId = profile.routerIds.first;
+               }
+            } catch (e) {
+               print('❌ [PlanAssignment] Fallback profile lookup failed: $e');
+            }
+        }
       }
 
       if (routerId == null) {
