@@ -69,14 +69,12 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
-      
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final token = args?['token'] as String? ?? '';
+
       try {
         final success = await authProvider.confirmPasswordReset(
-          token: widget.data['token'] as String? ?? '', // Assuming argument passing was updated or 'otp' serves as token placeholder if not refactored fully. 
-          // Wait, 'otp' arg in this file context was likely the code. But confirmPasswordReset NOW needs 'token'. 
-          // I should assume the argument passed to this screen was updated to 'token' in the previous step.
-          // Let's use 'token' and fall back to empty string if missing. 
-          // The previous screen passed 'token'.
+          token: token,
           newPassword: _passwordController.text.trim(),
         );
         
