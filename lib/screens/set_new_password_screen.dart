@@ -48,10 +48,8 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
     if (_formKey.currentState!.validate()) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       final email = args?['email'] as String?;
-      final otp = args?['otp'] as String?;
-      final otpId = args?['otp_id'] as String?;
       
-      if (email == null || otp == null || otpId == null) {
+      if (email == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('error_occurred'.tr()),

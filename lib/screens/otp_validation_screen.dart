@@ -65,13 +65,21 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
            
            if (mounted) Navigator.of(context).pop(); // Close loading
            
-           if (response != null && response['success'] == true) {
+            if (response != null && response['success'] == true) {
+              // Safe extraction of token
+              String? token;
+              if (response['data'] is Map) {
+                 token = response['data']['token'];
+              } else if (response['token'] != null) {
+                 token = response['token'];
+              }
+
               if (mounted) {
                 Navigator.of(context).pushReplacementNamed(
                   '/set-new-password',
                   arguments: {
                     'email': email,
-                    'token': response['data']['token'] ?? response['token'], // Handle variable response structure
+                    'token': token ?? '',
                   },
                 );
               }
