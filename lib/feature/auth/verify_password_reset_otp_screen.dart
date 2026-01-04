@@ -45,7 +45,7 @@ class _VerifyPasswordResetOtpScreenState
 
     try {
       // Verify OTP with backend first
-      final token = await context.read<AuthProvider>().verifyPasswordResetOtp(
+      final response = await context.read<AuthProvider>().verifyPasswordResetOtp(
             widget.email,
             _otpController.text,
             widget.otpId,
@@ -53,20 +53,28 @@ class _VerifyPasswordResetOtpScreenState
 
       if (!mounted) return;
 
-      if (token != null) {
-        // Navigate to reset password screen with email and token
-        Navigator.of(context).pushReplacementNamed(
-          '/reset-password',
-          arguments: {
-            'email': widget.email,
-            'token': token,
-          },
-        );
+      if (response != null && response['success'] == true) {
+        // Safe extraction of token
+        String? token;
+        if (response['data'] is Map) {
+          token = response['data']['token'];
+        } else if (response['token'] != null) {
+          token = response['token'];
+        }
+
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed(
+            '/reset-password',
+            arguments: {
+              'email': widget.email,
+              'token': token ?? '',
+            },
+          );
+        }
       } else {
+        final errorMessage = response?['message'] ?? 'Invalid verification code. Please try again.';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid verification code. Please try again.'),
-          ),
+           SnackBar(content: Text(errorMessage)),
         );
       }
     } catch (e) {
