@@ -26,10 +26,13 @@ class AuthProvider with ChangeNotifier {
   String? _partnerCurrencyCode;
   String? _partnerCurrencySymbol;
   String? _registrationEmail;
+  String? _registrationOtpId;
+  String? _passwordResetOtpId;
   String? _passwordResetToken;
   
   // Guest mode
   bool _isGuestMode = false;
+  String? _guestCountryCode;
 
   AuthProvider({
     AuthRepository? authRepository,

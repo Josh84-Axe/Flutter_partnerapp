@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/split/user_provider.dart';
-import '../providers/split/billing_provider.dart';
 import '../utils/currency_utils.dart';
 import 'payment_gateway_screen.dart';
 
@@ -413,6 +412,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                     }),
                 ],
               ),
+            ),
       ),
     );
   }
