@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import '../../repositories/auth_repository.dart';
 import '../../repositories/partner_repository.dart';
 import '../../services/api/token_storage.dart';
-import '../../services/api/api_config.dart';
 import '../../services/cache_service.dart';
 import '../../services/local_notification_service.dart';
 import '../../models/user_model.dart';
@@ -27,15 +26,10 @@ class AuthProvider with ChangeNotifier {
   String? _partnerCurrencyCode;
   String? _partnerCurrencySymbol;
   String? _registrationEmail;
-  String? _registrationOtpId;
-  String? _passwordResetOtpId;
   String? _passwordResetToken;
-  String? _paymentMethodOtpId; // Kept here as it's OTP related? Actually BillingProvider might need this? 
-  // No, payment method OTP is for BillingProvider. Removing it from here.
   
   // Guest mode
   bool _isGuestMode = false;
-  String? _guestCountryCode;
 
   AuthProvider({
     AuthRepository? authRepository,
@@ -63,6 +57,7 @@ class AuthProvider with ChangeNotifier {
   String get currencySymbol => _partnerCurrencySymbol ?? '\$';
   bool get isGuestMode => _isGuestMode;
   String? get registrationEmail => _registrationEmail;
+  String? get passwordResetToken => _passwordResetToken;
   
   void _setLoading(bool value) {
     _isLoading = value;
@@ -418,6 +413,17 @@ class AuthProvider with ChangeNotifier {
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
       final result = await _authRepository!.verifyPasswordResetOtp(email.trim(), otp.trim(), otpId);
+      
+      // Extraction for local state
+      if (result != null && result['success'] == true) {
+        final data = result['data'];
+        if (data is Map) {
+          _passwordResetToken = data['token']?.toString() ?? data['access']?.toString() ?? data['password_reset_token']?.toString();
+        } else if (data is String) {
+          _passwordResetToken = data;
+        }
+      }
+
       _setLoading(false);
       return result;
     } catch (e) {

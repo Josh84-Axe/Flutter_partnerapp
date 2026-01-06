@@ -4,11 +4,15 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/split/user_provider.dart';
 import '../providers/split/billing_provider.dart';
 import '../utils/currency_utils.dart';
-import '../models/subscription_model.dart';
 import 'payment_gateway_screen.dart';
 
 class SubscriptionManagementScreen extends StatefulWidget {
-  const SubscriptionManagementScreen({super.key});
+  final bool canDismiss;
+
+  const SubscriptionManagementScreen({
+    super.key,
+    this.canDismiss = true,
+  });
 
   @override
   State<SubscriptionManagementScreen> createState() => _SubscriptionManagementScreenState();
@@ -49,22 +53,32 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
-    final billingProvider = context.watch<BillingProvider>();
     final subscription = userProvider.subscription;
     final availablePlans = userProvider.availableSubscriptionPlans;
     final filteredPlans = availablePlans.where((p) => p.duration == _selectedDuration).toList();
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('subscription_management'.tr()),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadData,
-          ),
-        ],
-      ),
+    return PopScope(
+      canPop: widget.canDismiss,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('subscription_management'.tr()),
+          automaticallyImplyLeading: widget.canDismiss,
+          actions: [
+            if (widget.canDismiss && subscription == null) 
+              TextButton(
+                onPressed: () {
+                   userProvider.skipSubscriptionCheck();
+                   Navigator.of(context).pushReplacementNamed('/home');
+                },
+                child: Text('skip'.tr(), style: TextStyle(color: colorScheme.primary)),
+              ),
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _loadData,
+            ),
+          ],
+        ),
       body: _isLoading || userProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -399,7 +413,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                     }),
                 ],
               ),
-            ),
+      ),
     );
   }
 

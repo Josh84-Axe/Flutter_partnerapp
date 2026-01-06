@@ -474,14 +474,62 @@ class _AuthWrapperState extends State<AuthWrapper> {
       return const OnboardingScreen();
     }
 
-    final currentUser = context.watch<AuthProvider>().currentUser;
+    final authProvider = context.watch<AuthProvider>();
+    final currentUser = authProvider.currentUser;
 
     if (currentUser == null) {
       // Show new M3 login screen
       return const LoginScreenM3();
-    } else {
-      return const HomeScreen();
     }
+
+    final userProvider = context.watch<UserProvider>();
+    
+    // Trigger subscription load if not already loaded
+    if (!userProvider.isSubscriptionLoaded && !userProvider.isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        userProvider.loadSubscription();
+      });
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // Wait for subscription check completion
+    if (!userProvider.isSubscriptionLoaded) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final subscription = userProvider.subscription;
+    
+    // Check if subscription is expired
+    bool needsSubscription = subscription == null || !subscription.isActive;
+    
+    if (needsSubscription) {
+      // Calculate grace period
+      int daysSinceExpiration = 0;
+      if (subscription != null) {
+        daysSinceExpiration = DateTime.now().difference(subscription.renewalDate).inDays;
+      } else {
+        // If subscription is null, we assume it's a new user who needs to subscribe
+        // Actually, if it's null, we might want to check if they have any purchased plans
+        // But for simplicity, we treat null as expired with 0 days grace.
+        daysSinceExpiration = 0;
+      }
+
+      bool isGracePeriod = daysSinceExpiration <= 5;
+      
+      if (!isGracePeriod) {
+        // Persistent redirection
+        return const SubscriptionManagementScreen(canDismiss: false);
+      } else if (!userProvider.hasSkippedSubscriptionCheck) {
+        // Grace period redirection (one-time per session prompt)
+        return const SubscriptionManagementScreen(canDismiss: true);
+      }
+    }
+
+    return const HomeScreen();
   }
 }
 

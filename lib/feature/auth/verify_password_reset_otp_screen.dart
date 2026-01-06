@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../motion/m3_motion.dart';
@@ -54,12 +55,30 @@ class _VerifyPasswordResetOtpScreenState
       if (!mounted) return;
 
       if (response != null && response['success'] == true) {
-        // Safe extraction of token
+        final authProvider = context.read<AuthProvider>();
+        
+        // Safe extraction of token from multiple possible locations
         String? token;
-        if (response['data'] is Map) {
-          token = response['data']['token'];
-        } else if (response['token'] != null) {
-          token = response['token'];
+        final responseData = response['data'];
+        
+        if (responseData is Map) {
+          token = responseData['token']?.toString() ?? 
+                  responseData['access']?.toString() ?? 
+                  responseData['password_reset_token']?.toString();
+        } else if (responseData is String) {
+          token = responseData;
+        }
+        
+        // Check if token is in the flat response
+        token ??= response['token']?.toString() ?? 
+                  response['access']?.toString() ?? 
+                  response['password_reset_token']?.toString();
+                  
+        // Final fallback to provider if it was captured there
+        token ??= authProvider.passwordResetToken;
+
+        if (kDebugMode && token != null) {
+          print('🔑 [VerifyPasswordResetOtpScreen] Token captured: ${token.substring(0, 8)}...');
         }
 
         if (mounted) {
