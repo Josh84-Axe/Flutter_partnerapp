@@ -1,3 +1,11 @@
+// Helper to parse double from string or num
+double parseDouble(dynamic value) {
+  if (value == null) return 0.0;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0.0;
+  return 0.0;
+}
+
 class SubscriptionModel {
   final String id;
   final String tier;
@@ -31,14 +39,6 @@ class SubscriptionModel {
         }
         return '';
       }).where((s) => s.isNotEmpty).cast<String>().toList();
-    }
-
-    // Helper to parse double from string or num
-    double parseDouble(dynamic value) {
-      if (value == null) return 0.0;
-      if (value is num) return value.toDouble();
-      if (value is String) return double.tryParse(value) ?? 0.0;
-      return 0.0;
     }
 
     return SubscriptionModel(
