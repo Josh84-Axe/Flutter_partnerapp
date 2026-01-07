@@ -57,6 +57,10 @@ class _VerifyPasswordResetOtpScreenState
       if (response != null && response['success'] == true) {
         final authProvider = context.read<AuthProvider>();
         
+        if (kDebugMode) {
+          print('🔍 [VerifyPasswordResetOtpScreen] Full response: $response');
+        }
+        
         // Safe extraction of token from multiple possible locations
         String? token;
         final responseData = response['data'];

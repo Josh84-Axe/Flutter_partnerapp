@@ -63,8 +63,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     });
 
     try {
+      String tokenToUse = widget.token;
+      if (tokenToUse.isEmpty) {
+        if (kDebugMode) print('⚠️ [ResetPasswordScreen] Token is empty, attempting fallback to AuthProvider');
+        tokenToUse = context.read<AuthProvider>().passwordResetToken ?? '';
+      }
+      
+      if (kDebugMode) print('🔑 [ResetPasswordScreen] Using token: ${tokenToUse.isNotEmpty ? "${tokenToUse.substring(0, 8)}..." : "EMPTY"}');
+
       final success = await context.read<AuthProvider>().confirmPasswordReset(
-            token: widget.token,
+            token: tokenToUse,
             newPassword: _passwordController.text,
           );
 

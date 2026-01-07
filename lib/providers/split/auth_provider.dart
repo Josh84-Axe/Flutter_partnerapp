@@ -421,10 +421,14 @@ class AuthProvider with ChangeNotifier {
       if (result != null && result['success'] == true) {
         final data = result['data'];
         if (data is Map) {
-          _passwordResetToken = data['token']?.toString() ?? data['access']?.toString() ?? data['password_reset_token']?.toString();
+          _passwordResetToken = data['token']?.toString() ?? 
+                                data['access']?.toString() ?? 
+                                data['access_token']?.toString() ??
+                                data['password_reset_token']?.toString();
         } else if (data is String) {
           _passwordResetToken = data;
         }
+        if (kDebugMode) print('🔑 [AuthProvider] Token stored locally: ${_passwordResetToken?.substring(0, 10)}...');
       }
 
       _setLoading(false);
