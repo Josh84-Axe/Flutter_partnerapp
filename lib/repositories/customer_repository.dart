@@ -59,9 +59,9 @@ class CustomerRepository {
   /// Create a new customer
   Future<Map<String, dynamic>> createCustomer(Map<String, dynamic> customerData) async {
     try {
-      if (kDebugMode) print('➕ [CustomerRepository] Creating customer: ${customerData['email']}');
+      if (kDebugMode) print('➕ [CustomerRepository] Creating customer with payload: $customerData');
       final response = await _dio.post(
-        '/partner/customers/',
+        '/partner/customers/create/',
         data: customerData,
       );
       if (kDebugMode) print('✅ [CustomerRepository] Customer created successfully');
