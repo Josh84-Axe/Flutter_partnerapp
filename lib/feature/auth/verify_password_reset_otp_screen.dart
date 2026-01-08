@@ -85,6 +85,15 @@ class _VerifyPasswordResetOtpScreenState
           print('🔑 [VerifyPasswordResetOtpScreen] Token captured: ${token.substring(0, 8)}...');
         }
 
+        if ((token == null || token.isEmpty) && kDebugMode) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Debug: Token missing in success response. Data: $responseData'),
+              duration: const Duration(seconds: 10),
+            ),
+           );
+        }
+
         if (mounted) {
           Navigator.of(context).pushReplacementNamed(
             '/reset-password',
@@ -95,10 +104,20 @@ class _VerifyPasswordResetOtpScreenState
           );
         }
       } else {
-        final errorMessage = response?['message'] ?? 'Invalid verification code. Please try again.';
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(errorMessage)),
-        );
+        final errorMessage = response?['message'] ?? 'Invalid verification code.';
+        // DEBUG: Show full structure if failed
+        if (kDebugMode) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Debug Failure: $errorMessage\nFull: $response'),
+              duration: const Duration(seconds: 10),
+            ),
+           );
+        } else {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage)),
+           );
+        }
       }
     } catch (e) {
       if (!mounted) return;

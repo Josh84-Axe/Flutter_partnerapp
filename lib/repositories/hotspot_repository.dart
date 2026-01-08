@@ -132,7 +132,7 @@ class HotspotRepository {
     try {
       if (kDebugMode) print('➕ [HotspotRepository] Creating hotspot user');
       final response = await _dio.post(
-        '/partner/customers/create/',
+        '/partner/hotspot/users/create/',
         data: userData,
       );
       if (kDebugMode) print('✅ [HotspotRepository] User created successfully');
