@@ -32,8 +32,9 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
   }
 
   void _showCreateUserDialog() {
-    final usernameController = TextEditingController();
-    final passwordController = TextEditingController();
+    // DEBUG: Pre-filled for testing
+    final usernameController = TextEditingController(text: 'ketiglo15@gmail.com');
+    final passwordController = TextEditingController(text: 'MyStr0ng!Pass2024');
     String? selectedProfile;
     final formKey = GlobalKey<FormState>();
 
