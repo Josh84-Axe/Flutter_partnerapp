@@ -31,9 +31,62 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
       _isLoading = true;
     });
 
+    String? routerId;
+
     try {
+      final networkProvider = context.read<NetworkProvider>();
       final userProvider = context.read<UserProvider>();
-      await userProvider.assignPlan(_selectedUser!, _selectedPlan!);
+      
+      // Logic to find the router ID associated with the plan
+      
+      // 1. Find the plan object
+      final selectedPlanObj = networkProvider.plans.firstWhere((p) => p.id.toString() == _selectedPlan, orElse: () => networkProvider.plans.first);
+      print('🔍 [PlanAssignment] Selected Plan: ${selectedPlanObj.name} (ID: ${selectedPlanObj.id})');
+      
+      // 2. Direct Router Resolution from Plan
+      if (selectedPlanObj.routers.isNotEmpty) {
+        routerId = selectedPlanObj.routers.first.id.toString();
+        print('✅ [PlanAssignment] Resolved Router ID from Plan: $routerId');
+      } else {
+        print('⚠️ [PlanAssignment] Plan has no routers attached. Trying profile fallback (legacy).');
+        
+        // Legacy/Fallback logic (keep if needed, or remove)
+        if (selectedPlanObj.profileId != null) {
+             // ... existing profile lookup logic could go here if we still trusted it ...
+             // But since API gives us routers directly now, we might rely on that.
+             // Let's keep a minimal fallback or just error out cleanly.
+             
+             // Try to find profile just in case
+            try {
+               final profile = networkProvider.hotspotProfiles.firstWhere(
+                 (p) => int.tryParse(p.id) == selectedPlanObj.profileId || p.id == selectedPlanObj.profileId.toString(),
+                 orElse: () => throw Exception('Profile not found')
+               );
+               if (profile.routerDetails.isNotEmpty) {
+                  routerId = profile.routerDetails.first.id;
+               } else if (profile.routerIds.isNotEmpty) {
+                  routerId = profile.routerIds.first;
+               }
+            } catch (e) {
+               print('❌ [PlanAssignment] Fallback profile lookup failed: $e');
+            }
+        }
+      }
+
+      if (routerId == null) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: Could not determine router for this plan. Please contact support or choose another plan.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      await userProvider.assignPlan(_selectedUser!, _selectedPlan!, routerId: routerId);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -48,8 +101,9 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('error_assigning_plan'.tr()),
+            content: Text('Error assigning plan. Router ID: $routerId. Error: $e'),
             backgroundColor: AppTheme.errorRed,
+            duration: const Duration(seconds: 10),
           ),
         );
       }

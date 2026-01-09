@@ -32,12 +32,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       );
       
       try {
-        final success = await authProvider.requestPasswordReset(_emailController.text.trim());
+        final result = await authProvider.requestPasswordReset(_emailController.text.trim());
         
         // Close loading dialog
         if (mounted) Navigator.of(context).pop();
         
-        if (success) {
+        if (result != null) {
           // Navigate to OTP validation screen
           if (mounted) {
             Navigator.of(context).pushReplacementNamed(
@@ -45,6 +45,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               arguments: {
                 'email': _emailController.text.trim(),
                 'type': 'password_reset',
+                'otp_id': result['otp_id'],
               },
             );
           }

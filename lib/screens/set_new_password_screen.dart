@@ -48,9 +48,8 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
     if (_formKey.currentState!.validate()) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       final email = args?['email'] as String?;
-      final otp = args?['otp'] as String?;
       
-      if (email == null || otp == null) {
+      if (email == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('error_occurred'.tr()),
@@ -69,10 +68,11 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
       
+      final token = args?['token'] as String? ?? '';
+
       try {
         final success = await authProvider.confirmPasswordReset(
-          email: email,
-          otp: otp,
+          token: token,
           newPassword: _passwordController.text.trim(),
         );
         

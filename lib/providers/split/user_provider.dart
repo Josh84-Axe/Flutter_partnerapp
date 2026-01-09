@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import '../../repositories/customer_repository.dart';
 import '../../repositories/collaborator_repository.dart';
 import '../../repositories/role_repository.dart';
@@ -8,7 +7,6 @@ import '../../repositories/plan_repository.dart';
 import '../../models/user_model.dart';
 import '../../models/worker_model.dart';
 import '../../models/role_model.dart';
-import '../../models/plan_model.dart';
 import '../../models/subscription_model.dart';
 import '../../models/local_notification_model.dart';
 import '../../repositories/subscription_repository.dart';
@@ -35,6 +33,8 @@ class UserProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   SubscriptionModel? _subscription;
+  bool _isSubscriptionLoaded = false;
+  bool _hasSkippedSubscriptionCheck = false;
   bool _isGuestMode = false;
   String? _partnerCountry;
   List<SubscriptionPlanModel> _availableSubscriptionPlans = [];
@@ -52,7 +52,9 @@ class UserProvider with ChangeNotifier {
        _collaboratorRepository = collaboratorRepository,
        _roleRepository = roleRepository,
        _authProvider = authProvider,
-       _subscriptionRepository = subscriptionRepository;
+       _subscriptionRepository = subscriptionRepository,
+       _partnerRepository = partnerRepository,
+       _planRepository = planRepository;
 
   void update({
     CustomerRepository? customerRepository,
@@ -71,7 +73,11 @@ class UserProvider with ChangeNotifier {
     _partnerRepository = partnerRepository;
     _planRepository = planRepository;
 
-    // _currentUser = currentUser; // Handled by AuthProvider
+    if (authProvider?.currentUser == null) {
+      _subscription = null;
+      _isSubscriptionLoaded = false;
+      _hasSkippedSubscriptionCheck = false;
+    }
   }
 
   List<dynamic> _assignedPlans = [];
@@ -87,6 +93,8 @@ class UserProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   SubscriptionModel? get subscription => _subscription;
+  bool get isSubscriptionLoaded => _isSubscriptionLoaded;
+  bool get hasSkippedSubscriptionCheck => _hasSkippedSubscriptionCheck;
   bool get isGuestMode => _isGuestMode;
   String? get partnerCountry => _partnerCountry ?? _authProvider?.partnerCountry;
   List<SubscriptionPlanModel> get availableSubscriptionPlans => _availableSubscriptionPlans;
@@ -490,9 +498,11 @@ class UserProvider with ChangeNotifier {
         _subscription = null;
       }
       _error = null;
+      _isSubscriptionLoaded = true;
     } catch (e) {
       if (kDebugMode) print('❌ [UserProvider] Error loading subscription: $e');
       _error = e.toString();
+      _isSubscriptionLoaded = true; // Still marked as loaded even on error to stop infinite loading
     } finally {
       notifyListeners();
     }
@@ -553,6 +563,11 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void skipSubscriptionCheck() {
+    _hasSkippedSubscriptionCheck = true;
+    notifyListeners();
+  }
+
   // ==================== Local Notifications ====================
   
   void markNotificationAsRead(String id) {
@@ -593,21 +608,29 @@ class UserProvider with ChangeNotifier {
 
 
   /// Assign a plan to a user
-  Future<bool> assignPlan(String userId, String planId) async {
+  Future<bool> assignPlan(String userId, String planId, {String? routerId}) async {
     if (_planRepository == null) return false;
     _setLoading(true);
     try {
-      if (kDebugMode) print('📡 [UserProvider] Assigning plan $planId to user $userId');
-      final success = await _planRepository!.assignPlan({
-        'customer_id': userId,
-        'plan_id': planId,
-      });
-      _error = null;
-      return success != null;
+      if (kDebugMode) print('📡 [UserProvider] Assigning plan $planId to user $userId${routerId != null ? ' on router $routerId' : ''}');
+      
+      final data = {
+        'customer_id': int.tryParse(userId) ?? userId,
+        'plan_id': int.tryParse(planId) ?? planId,
+        if (routerId != null) 'router_id': int.tryParse(routerId) ?? routerId, // API might expect int or string, usually safe to send what we have if it's an ID
+      };
+
+      await _planRepository!.assignPlan(data);
+      
+      if (kDebugMode) print('✅ [UserProvider] Plan assigned successfully');
+      
+      // Refresh data
+      await loadSubscription();
+      return true;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error assigning plan: $e');
+      if (kDebugMode) print('❌ [UserProvider] Assign plan error: $e');
       _error = e.toString();
-      return false;
+      rethrow;
     } finally {
       _setLoading(false);
     }

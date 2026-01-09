@@ -1,19 +1,40 @@
+class PlanRouter {
+  final int id;
+  final String name;
+  final String dnsName;
+
+  PlanRouter({
+    required this.id, 
+    required this.name,
+    required this.dnsName,
+  });
+
+  factory PlanRouter.fromJson(Map<String, dynamic> json) {
+    return PlanRouter(
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      name: json['name'] ?? '',
+      dnsName: json['dns_name'] ?? '',
+    );
+  }
+}
+
 class PlanModel {
-  final int id; // Changed from String to int based on API
+  final int id;
   final String slug;
   final String name;
-  final String price; // API returns string "10.00"
-  final String priceDisplay; // API returns "10 GHS"
-  final int? dataLimit; // Nullable for unlimited
-  final int validity; // This seems to be an ID or raw value
-  final String formattedValidity; // "30 Minutes", "1 Day"
-  final String validityValue; // "30m", "1d"
+  final String price;
+  final String priceDisplay;
+  final int? dataLimit;
+  final int validity;
+  final String formattedValidity;
+  final String validityValue;
   final bool isActive;
-  final int sharedUsers; // Renamed from deviceAllowed
-  final String sharedUsersLabel; // "1 device"
+  final int sharedUsers;
+  final String sharedUsersLabel;
   final String? description;
   final String? profileName;
   final int? profileId;
+  final List<PlanRouter> routers;
 
   // Computed property for backward compatibility or convenience
   double get priceValue => double.tryParse(price) ?? 0.0;
@@ -35,9 +56,17 @@ class PlanModel {
     this.description,
     this.profileName,
     this.profileId,
+    this.routers = const [],
   });
 
   factory PlanModel.fromJson(Map<String, dynamic> json) {
+    var routersList = <PlanRouter>[];
+    if (json['routers'] != null && json['routers'] is List) {
+      routersList = (json['routers'] as List)
+          .map((r) => PlanRouter.fromJson(r))
+          .toList();
+    }
+
     return PlanModel(
       id: json['id'],
       slug: json['slug'] ?? '',
@@ -54,6 +83,7 @@ class PlanModel {
       description: json['description'],
       profileName: json['profile_name'],
       profileId: json['profile'],
+      routers: routersList,
     );
   }
 
@@ -74,6 +104,7 @@ class PlanModel {
       'description': description,
       'profile_name': profileName,
       'profile': profileId,
+      'routers': routers.map((r) => {'id': r.id, 'name': r.name, 'dns_name': r.dnsName}).toList(),
     };
   }
 }

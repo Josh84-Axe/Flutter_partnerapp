@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/split/user_provider.dart';
-import '../providers/split/billing_provider.dart';
 import '../utils/currency_utils.dart';
-import '../models/subscription_model.dart';
 import 'payment_gateway_screen.dart';
 
 class SubscriptionManagementScreen extends StatefulWidget {
-  const SubscriptionManagementScreen({super.key});
+  final bool canDismiss;
+
+  const SubscriptionManagementScreen({
+    super.key,
+    this.canDismiss = true,
+  });
 
   @override
   State<SubscriptionManagementScreen> createState() => _SubscriptionManagementScreenState();
@@ -16,6 +19,13 @@ class SubscriptionManagementScreen extends StatefulWidget {
 
 class _SubscriptionManagementScreenState extends State<SubscriptionManagementScreen> {
   bool _isLoading = false;
+  String _selectedDuration = 'monthly';
+
+  final List<Map<String, String>> _durations = [
+    {'id': 'monthly', 'label': 'monthly'},
+    {'id': 'quarterly', 'label': 'quarterly'},
+    {'id': 'yearly', 'label': 'yearly'},
+  ];
 
   @override
   void initState() {
@@ -42,21 +52,32 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
-    final billingProvider = context.watch<BillingProvider>();
     final subscription = userProvider.subscription;
     final availablePlans = userProvider.availableSubscriptionPlans;
+    final filteredPlans = availablePlans.where((p) => p.duration == _selectedDuration).toList();
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('subscription_management'.tr()),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadData,
-          ),
-        ],
-      ),
+    return PopScope(
+      canPop: widget.canDismiss,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('subscription_management'.tr()),
+          automaticallyImplyLeading: widget.canDismiss,
+          actions: [
+            if (widget.canDismiss && subscription == null) 
+              TextButton(
+                onPressed: () {
+                   userProvider.skipSubscriptionCheck();
+                   Navigator.of(context).pushReplacementNamed('/home');
+                },
+                child: Text('skip'.tr(), style: TextStyle(color: colorScheme.primary)),
+              ),
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _loadData,
+            ),
+          ],
+        ),
       body: _isLoading || userProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -141,9 +162,51 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   
-                  if (availablePlans.isEmpty)
+                  // Duration Toggle
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: _durations.map((d) {
+                          final isSelected = _selectedDuration == d['id'];
+                          return GestureDetector(
+                            onTap: () => setState(() => _selectedDuration = d['id']!),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: isSelected ? colorScheme.primary : Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: isSelected ? [
+                                  BoxShadow(
+                                    color: colorScheme.primary.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  )
+                                ] : null,
+                              ),
+                              child: Text(
+                                d['label']!.tr(),
+                                style: TextStyle(
+                                  color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  if (filteredPlans.isEmpty)
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(32.0),
@@ -162,169 +225,186 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                       ),
                     )
                   else
-                    ...availablePlans.map((plan) {
+                    ...filteredPlans.map((plan) {
                       final isCurrentPlan = subscription?.id == plan.id;
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16.0),
                         child: Card(
                           elevation: isCurrentPlan ? 4 : 2,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                             side: isCurrentPlan 
                                 ? BorderSide(color: colorScheme.primary, width: 2) 
-                                : BorderSide.none,
+                                : BorderSide(color: colorScheme.outline.withOpacity(0.1), width: 1),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        plan.name,
-                                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    if (isCurrentPlan)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: colorScheme.primaryContainer,
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: Text(
-                                          'current'.tr(),
-                                          style: TextStyle(
-                                            color: colorScheme.primary,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                    if (plan.isPopular && !isCurrentPlan)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: Colors.orange.shade100,
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: Text(
-                                          'popular'.tr(),
-                                          style: TextStyle(
-                                            color: Colors.orange.shade900,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                if (plan.description.isNotEmpty) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    plan.description,
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              gradient: isCurrentPlan ? LinearGradient(
+                                colors: [
+                                  colorScheme.primaryContainer.withOpacity(0.3),
+                                  colorScheme.surface,
                                 ],
-                                const SizedBox(height: 16),
-                                Text(
-                                  '${CurrencyUtils.formatPrice(plan.price, userProvider.partnerCountry, currencyCode: plan.currency)} / ${'month'.tr()}',
-                                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: colorScheme.primary,
-                                  ),
-                                ),
-                                if (plan.features.isNotEmpty) ...[
-                                  const SizedBox(height: 16),
-                                  const Divider(),
-                                  const SizedBox(height: 12),
-                                  ...plan.features.map((feature) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.check_circle, 
-                                            color: colorScheme.primary, 
-                                            size: 20
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ) : null,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              plan.name,
+                                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                color: isCurrentPlan ? colorScheme.primary : null,
+                                              ),
+                                            ),
+                                            if (plan.description.isNotEmpty) ...[
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                plan.description,
+                                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                      if (isCurrentPlan)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: colorScheme.primary,
+                                            borderRadius: BorderRadius.circular(20),
                                           ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Text(
-                                              feature,
-                                              style: Theme.of(context).textTheme.bodyMedium,
+                                          child: Text(
+                                            'current'.tr(),
+                                            style: TextStyle(
+                                              color: colorScheme.onPrimary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 10,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                                ],
-                                if (!isCurrentPlan) ...[
-                                  const SizedBox(height: 24),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton.icon(
-                                      onPressed: () => _purchasePlan(plan.id, plan.name, plan.price, plan.currency),
-                                      icon: const Icon(Icons.check_circle_outline, size: 20),
-                                      label: Text(
-                                        subscription != null ? 'upgrade_to_plan'.tr() : 'subscribe'.tr(),
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
                                         ),
-                                      ),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: colorScheme.primary,
-                                        foregroundColor: colorScheme.onPrimary,
-                                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                                        elevation: 2,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ] else ...[
-                                  const SizedBox(height: 24),
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.surfaceContainerHighest,
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: colorScheme.outline.withOpacity(0.3),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.check_circle,
-                                          color: colorScheme.primary,
-                                          size: 20,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'your_current_plan'.tr(),
-                                          style: TextStyle(
-                                            color: colorScheme.onSurface,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
+                                      if (plan.isPopular && !isCurrentPlan)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: Colors.orange.shade100,
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: Text(
+                                            'popular'.tr(),
+                                            style: TextStyle(
+                                              color: Colors.orange.shade900,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 10,
+                                            ),
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                    ],
                                   ),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                                    textBaseline: TextBaseline.alphabetic,
+                                    children: [
+                                      Text(
+                                        plan.priceDisplay ?? CurrencyUtils.formatPrice(plan.price, userProvider.partnerCountry, currencyCode: plan.currency),
+                                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                          fontWeight: FontWeight.w900,
+                                          color: colorScheme.primary,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '/ ${plan.duration.tr()}',
+                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (plan.features.isNotEmpty) ...[
+                                    const SizedBox(height: 20),
+                                    ...plan.features.take(4).map((feature) {
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.check_circle_rounded, 
+                                              color: colorScheme.primary.withOpacity(0.7), 
+                                              size: 18
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Text(
+                                                feature,
+                                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                  height: 1.2,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }),
+                                  ],
+                                  const SizedBox(height: 24),
+                                  if (!isCurrentPlan)
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: FilledButton(
+                                        onPressed: () => _purchasePlan(plan.id, plan.name, plan.price, plan.currency),
+                                        style: FilledButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(vertical: 16),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          elevation: 2,
+                                        ),
+                                        child: Text(
+                                          subscription != null ? 'upgrade_to_plan'.tr() : 'subscribe'.tr(),
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed: null,
+                                        style: OutlinedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(vertical: 16),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          side: BorderSide(color: colorScheme.primary.withOpacity(0.5)),
+                                        ),
+                                        child: Text(
+                                          'your_current_plan'.tr(),
+                                          style: TextStyle(
+                                            color: colorScheme.primary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                 ],
-                              ],
+                              ),
                             ),
                           ),
                         ),
@@ -333,6 +413,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                 ],
               ),
             ),
+      ),
     );
   }
 

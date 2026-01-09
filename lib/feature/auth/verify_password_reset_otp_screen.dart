@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../motion/m3_motion.dart';
@@ -7,10 +8,12 @@ import '../../providers/split/auth_provider.dart';
 /// OTP Verification screen - Step 2: Verify OTP code
 class VerifyPasswordResetOtpScreen extends StatefulWidget {
   final String email;
+  final String otpId;
 
   const VerifyPasswordResetOtpScreen({
     super.key,
     required this.email,
+    this.otpId = '',
   });
 
   @override
@@ -43,28 +46,81 @@ class _VerifyPasswordResetOtpScreenState
 
     try {
       // Verify OTP with backend first
-      final success = await context.read<AuthProvider>().verifyPasswordResetOtp(
+      final response = await context.read<AuthProvider>().verifyPasswordResetOtp(
             widget.email,
             _otpController.text,
+            widget.otpId,
           );
 
       if (!mounted) return;
 
-      if (success) {
-        // Navigate to reset password screen with email and OTP
-        Navigator.of(context).pushReplacementNamed(
-          '/reset-password',
-          arguments: {
-            'email': widget.email,
-            'otp': _otpController.text,
-          },
-        );
+      if (response != null && response['success'] == true) {
+        final authProvider = context.read<AuthProvider>();
+        
+        if (kDebugMode) {
+          print('🔍 [VerifyPasswordResetOtpScreen] Full response: $response');
+        }
+        
+        // Safe extraction of token from multiple possible locations
+        String? token;
+        final responseData = response['data'];
+        
+        if (responseData is Map) {
+          token = responseData['token']?.toString() ?? 
+                  responseData['access']?.toString() ?? 
+                  responseData['reset_token']?.toString() ?? // Added correct key
+                  responseData['password_reset_token']?.toString();
+        } else if (responseData is String) {
+          token = responseData;
+        }
+        
+        // Check if token is in the flat response
+        token ??= response['token']?.toString() ?? 
+                  response['access']?.toString() ?? 
+                  response['reset_token']?.toString() ?? // Added correct key
+                  response['password_reset_token']?.toString();
+                  
+        // Final fallback to provider if it was captured there
+        token ??= authProvider.passwordResetToken;
+
+        if (kDebugMode && token != null) {
+          print('🔑 [VerifyPasswordResetOtpScreen] Token captured: ${token.substring(0, 8)}...');
+        }
+
+        if (mounted) {
+          if (token != null && token.isNotEmpty) {
+            Navigator.of(context).pushReplacementNamed(
+              '/reset-password',
+              arguments: {
+                'email': widget.email,
+                'token': token,
+              },
+            );
+          } else {
+             // Fallback error if still missing (shouldn't happen now)
+             ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: Token missing in response. Please contact support.\nData: $responseData'),
+                duration: const Duration(seconds: 5),
+              ),
+             );
+          }
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid verification code. Please try again.'),
-          ),
-        );
+        final errorMessage = response?['message'] ?? 'Invalid verification code.';
+        // DEBUG: Show full structure if failed
+        if (kDebugMode) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Debug Failure: $errorMessage\nFull: $response'),
+              duration: const Duration(seconds: 10),
+            ),
+           );
+        } else {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage)),
+           );
+        }
       }
     } catch (e) {
       if (!mounted) return;
@@ -87,13 +143,13 @@ class _VerifyPasswordResetOtpScreenState
     });
 
     try {
-      final success = await context.read<AuthProvider>().requestPasswordReset(
+      final result = await context.read<AuthProvider>().requestPasswordReset(
             widget.email,
           );
 
       if (!mounted) return;
 
-      if (success) {
+      if (result != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Verification code sent successfully'),

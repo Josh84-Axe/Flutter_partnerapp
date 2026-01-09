@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import '../../repositories/auth_repository.dart';
 import '../../repositories/partner_repository.dart';
 import '../../services/api/token_storage.dart';
-import '../../services/api/api_config.dart';
 import '../../services/cache_service.dart';
 import '../../services/local_notification_service.dart';
 import '../../models/user_model.dart';
@@ -30,8 +29,6 @@ class AuthProvider with ChangeNotifier {
   String? _registrationOtpId;
   String? _passwordResetOtpId;
   String? _passwordResetToken;
-  String? _paymentMethodOtpId; // Kept here as it's OTP related? Actually BillingProvider might need this? 
-  // No, payment method OTP is for BillingProvider. Removing it from here.
   
   // Guest mode
   bool _isGuestMode = false;
@@ -63,6 +60,7 @@ class AuthProvider with ChangeNotifier {
   String get currencySymbol => _partnerCurrencySymbol ?? '\$';
   bool get isGuestMode => _isGuestMode;
   String? get registrationEmail => _registrationEmail;
+  String? get passwordResetToken => _passwordResetToken;
   
   void _setLoading(bool value) {
     _isLoading = value;
@@ -314,36 +312,34 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> requestPasswordReset(String email) async {
+  Future<Map<String, dynamic>?> requestPasswordReset(String email) async {
     _setLoading(true);
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
-      final success = await _authRepository!.requestPasswordReset(email);
+      final result = await _authRepository!.requestPasswordReset(email);
       _passwordResetOtpId = null; // Clear any previous
       _setLoading(false);
-      return success;
+      return result;
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
-      return false;
+      return null;
     }
   }
 
   Future<bool> confirmPasswordReset({
-    required String email,
-    required String otp,
+    required String token,
     required String newPassword,
   }) async {
     _setLoading(true);
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
-      final success = await _authRepository!.confirmPasswordReset(
-        email: email,
-        otp: otp,
+      final result = await _authRepository!.confirmPasswordReset(
+        token: token,
         newPassword: newPassword,
       );
       _setLoading(false);
-      return success;
+      return result;
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
@@ -351,6 +347,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // Not strictly used by forgot password flow but good to keep consistent if needed
   Future<bool> verifyEmailOtp(String email, String otp, String otpId) async {
     _setLoading(true);
     try {
@@ -362,7 +359,6 @@ class AuthProvider with ChangeNotifier {
       );
       _setLoading(false);
       if (success) {
-        // Refresh profile to update status
         await checkAuthStatus();
       }
       return success;
@@ -378,11 +374,6 @@ class AuthProvider with ChangeNotifier {
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
       final response = await _authRepository!.confirmRegistration(email, otp);
-      if (response != null) {
-        // After confirmation, we might want to log the user in or just return true
-        // depending on the API flow. Often confirmRegistration returns a token or just success.
-        // If it returns success, the user can then login.
-      }
       _setLoading(false);
       return response != null;
     } catch (e) {
@@ -406,17 +397,47 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> verifyPasswordResetOtp(String email, String otp) async {
+  Future<Map<String, dynamic>?> resendPasswordResetOtp(String email) async {
     _setLoading(true);
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
-      final response = await _authRepository!.verifyPasswordResetOtp(email.trim(), otp.trim());
+      final result = await _authRepository!.resendPasswordResetOtp(email);
       _setLoading(false);
-      return response != null;
+      return result;
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
-      return false;
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> verifyPasswordResetOtp(String email, String otp, String otpId) async {
+    _setLoading(true);
+    try {
+      if (_authRepository == null) throw Exception('AuthRepository not initialized');
+      final result = await _authRepository!.verifyPasswordResetOtp(email.trim(), otp.trim(), otpId);
+      
+      // Extraction for local state
+      if (result != null && result['success'] == true) {
+        final data = result['data'];
+        if (data is Map) {
+          _passwordResetToken = data['token']?.toString() ?? 
+                                data['access']?.toString() ?? 
+                                data['access_token']?.toString() ??
+                                data['reset_token']?.toString() ?? // Added correct key
+                                data['password_reset_token']?.toString();
+        } else if (data is String) {
+          _passwordResetToken = data;
+        }
+        if (kDebugMode) print('🔑 [AuthProvider] Token stored locally: ${_passwordResetToken?.substring(0, 10)}...');
+      }
+
+      _setLoading(false);
+      return result;
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      return {'success': false, 'message': e.toString()};
     }
   }
 

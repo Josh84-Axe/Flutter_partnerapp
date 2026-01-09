@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/split/user_provider.dart';
+import '../providers/split/network_provider.dart';
 import '../utils/app_theme.dart';
 
 class AssignUserScreen extends StatefulWidget {
@@ -146,7 +147,26 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
 
   void _showConfirmation() {
     final userProvider = context.read<UserProvider>();
+    final networkProvider = context.read<NetworkProvider>();
     final user = userProvider.users.firstWhere((u) => u.id == _selectedUserId);
+    
+    // Resolve routerId from plan
+    String? routerId;
+    try {
+      final plan = networkProvider.plans.firstWhere((p) => p.id.toString() == widget.planId);
+      if (plan.routers.isNotEmpty) {
+        routerId = plan.routers.first.id.toString();
+      }
+    } catch (e) {
+      print('⚠️ Error resolving router ID for plan ${widget.planId}: $e');
+    }
+
+    if (routerId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(content: Text('error_router_not_found'.tr()), backgroundColor: Colors.red),
+      );
+      return;
+    }
 
     showDialog(
       context: context,
@@ -185,7 +205,7 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
           ),
           FilledButton(
             onPressed: () {
-              userProvider.assignPlan(_selectedUserId!, widget.planId);
+              userProvider.assignPlan(_selectedUserId!, widget.planId, routerId: routerId);
               Navigator.pop(context);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(

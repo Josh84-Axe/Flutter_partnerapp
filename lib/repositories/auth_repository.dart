@@ -324,50 +324,95 @@ class AuthRepository {
   }
 
   /// Request password reset
-  Future<bool> requestPasswordReset(String email) async {
+  Future<Map<String, dynamic>?> requestPasswordReset(String email) async {
     try {
       if (kDebugMode) print('🔑 [AuthRepository] Request password reset for: $email');
       final response = await _dio.post(
-        '/partner/password-reset/',
+        '/partner/password-reset/request-otp/',
         data: {'email': email},
       );
       if (kDebugMode) print('✅ [AuthRepository] Password reset request response: ${response.data}');
-      return true;
+      
+      final responseData = response.data;
+      if (responseData is Map<String, dynamic>) {
+         // Return the whole data object or specifically look for otp_id
+         return responseData['data'] as Map<String, dynamic>? ?? responseData;
+      }
+      return null;
     } catch (e) {
       if (kDebugMode) print('❌ [AuthRepository] Request password reset error: $e');
-      return false;
+      return null;
+    }
+  }
+
+  /// Resend password reset OTP
+  Future<Map<String, dynamic>?> resendPasswordResetOtp(String email) async {
+    try {
+      if (kDebugMode) print('🔑 [AuthRepository] Resend password reset OTP for: $email');
+      final response = await _dio.post(
+        '/partner/password-reset/resend-request-otp/',
+        data: {'email': email},
+      );
+      if (kDebugMode) print('✅ [AuthRepository] Resend password reset OTP response: ${response.data}');
+      final responseData = response.data;
+      if (responseData is Map<String, dynamic>) {
+         return responseData['data'] as Map<String, dynamic>? ?? responseData;
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) print('❌ [AuthRepository] Resend password reset OTP error: $e');
+      return null;
     }
   }
   
   /// Verify password reset OTP
-  Future<Map<String, dynamic>?> verifyPasswordResetOtp(String email, String otp) async {
+  Future<Map<String, dynamic>?> verifyPasswordResetOtp(String email, String otp, String otpId) async {
     try {
-      if (kDebugMode) print('🔑 [AuthRepository] Verify password reset OTP for: $email');
+      if (kDebugMode) print('🔑 [AuthRepository] Verify password reset OTP for: $email (ID: $otpId)');
       final response = await _dio.post(
-        '/partner/password-reset-verify-otp/', // Guessing endpoint, or logic?
-        data: {'email': email, 'otp': otp},
+        '/partner/password-reset/verify-otp/',
+        data: {
+            'otp_id': int.tryParse(otpId.toString()) ?? otpId,
+            'code': otp,
+        },
       );
       if (kDebugMode) print('✅ [AuthRepository] Verify password reset OTP response: ${response.data}');
-      return response.data as Map<String, dynamic>?;
+      
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+         // Normalize success response
+         if (data['data'] != null) {
+            return {'success': true, 'data': data['data']};
+         }
+         // Handle flat response if any
+         return {'success': true, 'data': data};
+      }
+      return {'success': false, 'message': 'Unknown response format'};
+
+    } on DioException catch (e) {
+      if (kDebugMode) print('❌ [AuthRepository] Verify password reset OTP error: ${e.response?.data}');
+      String message = 'invalid_verification_code'.tr();
+      if (e.response?.data is Map) {
+         message = e.response?.data['message'] ?? message;
+      }
+      return {'success': false, 'message': message};
     } catch (e) {
-      if (kDebugMode) print('❌ [AuthRepository] Verify password reset OTP error: $e');
-      return null;
+       if (kDebugMode) print('❌ [AuthRepository] Verify password reset OTP error: $e');
+       return {'success': false, 'message': e.toString()};
     }
   }
 
   /// Confirm password reset with OTP
   Future<bool> confirmPasswordReset({
-    required String email,
-    required String otp,
+    required String token,
     required String newPassword,
   }) async {
     try {
-      if (kDebugMode) print('🔑 [AuthRepository] Confirm password reset for: $email');
+      if (kDebugMode) print('🔑 [AuthRepository] Confirm password reset with token');
       final response = await _dio.post(
-        '/partner/password-reset-confirm/',
+        '/partner/password-reset/update-password/',
         data: {
-          'email': email,
-          'otp': otp,
+          'token': token,
           'new_password': newPassword,
         },
       );
