@@ -424,6 +424,7 @@ class AuthProvider with ChangeNotifier {
           _passwordResetToken = data['token']?.toString() ?? 
                                 data['access']?.toString() ?? 
                                 data['access_token']?.toString() ??
+                                data['reset_token']?.toString() ?? // Added correct key
                                 data['password_reset_token']?.toString();
         } else if (data is String) {
           _passwordResetToken = data;

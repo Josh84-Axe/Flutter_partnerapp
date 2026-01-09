@@ -68,6 +68,7 @@ class _VerifyPasswordResetOtpScreenState
         if (responseData is Map) {
           token = responseData['token']?.toString() ?? 
                   responseData['access']?.toString() ?? 
+                  responseData['reset_token']?.toString() ?? // Added correct key
                   responseData['password_reset_token']?.toString();
         } else if (responseData is String) {
           token = responseData;
@@ -76,6 +77,7 @@ class _VerifyPasswordResetOtpScreenState
         // Check if token is in the flat response
         token ??= response['token']?.toString() ?? 
                   response['access']?.toString() ?? 
+                  response['reset_token']?.toString() ?? // Added correct key
                   response['password_reset_token']?.toString();
                   
         // Final fallback to provider if it was captured there
@@ -85,23 +87,24 @@ class _VerifyPasswordResetOtpScreenState
           print('🔑 [VerifyPasswordResetOtpScreen] Token captured: ${token.substring(0, 8)}...');
         }
 
-        if ((token == null || token.isEmpty) && kDebugMode) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Debug: Token missing in success response. Data: $responseData'),
-              duration: const Duration(seconds: 10),
-            ),
-           );
-        }
-
         if (mounted) {
-          Navigator.of(context).pushReplacementNamed(
-            '/reset-password',
-            arguments: {
-              'email': widget.email,
-              'token': token ?? '',
-            },
-          );
+          if (token != null && token.isNotEmpty) {
+            Navigator.of(context).pushReplacementNamed(
+              '/reset-password',
+              arguments: {
+                'email': widget.email,
+                'token': token,
+              },
+            );
+          } else {
+             // Fallback error if still missing (shouldn't happen now)
+             ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: Token missing in response. Please contact support.\nData: $responseData'),
+                duration: const Duration(seconds: 5),
+              ),
+             );
+          }
         }
       } else {
         final errorMessage = response?['message'] ?? 'Invalid verification code.';
