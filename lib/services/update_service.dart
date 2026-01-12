@@ -61,7 +61,8 @@ class UpdateService {
   }
 
   /// Triggers the OTA update process: Download -> Install.
-  Future<void> performUpdate(String url) async {
+  /// [onProgress] callback returns bytes received and total bytes.
+  Future<void> performUpdate(String url, {Function(int received, int total)? onProgress}) async {
     try {
        // 1. Request permissions
        if (Platform.isAndroid) {
@@ -100,6 +101,9 @@ class UpdateService {
          filePath,
          deleteOnError: true,
          onReceiveProgress: (received, total) {
+           if (onProgress != null) {
+             onProgress(received, total);
+           }
            if (kDebugMode && total != -1) {
              // Print progress every 10%
              final progress = ((received / total) * 100).toInt();

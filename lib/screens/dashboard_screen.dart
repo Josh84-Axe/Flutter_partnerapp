@@ -45,66 +45,122 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 
   void _showUpdateDialog(Map<String, dynamic> updateInfo) {
-    final bool forceUpdate = updateInfo['forceUpdate'] == true;
+    // Force update logic remains the same for initial check
+    final bool isForceUpdate = updateInfo['forceUpdate'] == true;
     final String downloadUrl = updateInfo['downloadUrl'];
+    
+    // Dialog state
+    double downloadProgress = 0.0;
+    bool isDownloading = false;
+    String? errorMessage;
     
     showDialog(
       context: context,
-      barrierDismissible: !forceUpdate,
-      builder: (context) {
-        return PopScope(
-          canPop: !forceUpdate,
-          child: AlertDialog(
-            title: Text('New Update Available'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('A new version (${updateInfo['latestVersion']}) is available.'),
-                const SizedBox(height: 8),
-                Text('Release Notes:'),
-                Text(updateInfo['releaseNotes'] ?? '', style: TextStyle(fontStyle: FontStyle.italic)),
-              ],
-            ),
-            actions: [
-              if (!forceUpdate)
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('Later'),
+      barrierDismissible: !isForceUpdate, // Temporarily false, will be controlled by logic below
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            
+            // Function to handle the actual update logic inside the dialog
+            Future<void> startUpdate() async {
+              setState(() {
+                isDownloading = true;
+                errorMessage = null;
+              });
+
+              try {
+                final updateService = UpdateService();
+                await updateService.performUpdate(
+                  downloadUrl,
+                  onProgress: (received, total) {
+                    if (total != -1) {
+                      setState(() {
+                        downloadProgress = received / total;
+                      });
+                    }
+                  },
+                );
+                // Install triggered automatically by performUpdate
+                // We typically don't close the dialog here as the OS installer takes over, 
+                // but we can if we want to reset state. 
+                // For now, let's keep it open or close it knowing the app might pause.
+                 if (mounted) Navigator.pop(dialogContext);
+
+              } catch (e) {
+                if (mounted) {
+                   setState(() {
+                     isDownloading = false;
+                     errorMessage = 'Update failed: ${e.toString()}';
+                     downloadProgress = 0.0;
+                   });
+                }
+              }
+            }
+
+            return PopScope(
+              // Prevent closing update is forced OR if downloading is in progress
+              canPop: !isForceUpdate && !isDownloading,
+              onPopInvokedWithResult: (didPop, result) {
+                 if (!didPop && isDownloading) {
+                   // Optional: Show toast "Please wait for update to finish"
+                 }
+              },
+              child: AlertDialog(
+                title: Text(isDownloading ? 'Downloading Update...' : 'New Update Available'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (!isDownloading) ...[
+                      Text('A new version (${updateInfo['latestVersion']}) is available.'),
+                      const SizedBox(height: 8),
+                      const Text('Release Notes:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Container(
+                        constraints: const BoxConstraints(maxHeight: 100),
+                        child: SingleChildScrollView(
+                          child: Text(updateInfo['releaseNotes'] ?? '', style: const TextStyle(fontStyle: FontStyle.italic)),
+                        ),
+                      ),
+                    ],
+                    
+                    if (isDownloading) ...[
+                      const SizedBox(height: 16),
+                      LinearProgressIndicator(value: downloadProgress),
+                      const SizedBox(height: 8),
+                      Text('${(downloadProgress * 100).toInt()}%', style: Theme.of(context).textTheme.bodySmall),
+                      const SizedBox(height: 8),
+                      const Text('Please do not close the app.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    ],
+
+                    if (errorMessage != null) ...[
+                      const SizedBox(height: 16),
+                      Text(errorMessage!, style: const TextStyle(color: Colors.red)),
+                    ],
+                  ],
                 ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Close dialog
-                  _performUpdate(downloadUrl);
-                },
-                child: Text('Update Now'),
+                actions: [
+                  if (!isDownloading && !isForceUpdate)
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text('Later'),
+                    ),
+                  
+                  if (!isDownloading)
+                    ElevatedButton(
+                      onPressed: startUpdate,
+                      child: const Text('Update Now'),
+                    ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  void _performUpdate(String url) async {
-    if (!mounted) return;
-    
-    // Show a snackbar to indicate start
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Starting download... Check your notification panel.'))
-    );
-    
-    try {
-      final updateService = UpdateService();
-      await updateService.performUpdate(url);
-    } catch (error) {
-       if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Update failed: $error'))
-         );
-       }
-    }
-  }
+  // _performUpdate is now integrated into the dialog logic above to share state.
+  // Method removed to avoid duplication.
 
   @override
   Widget build(BuildContext context) {
