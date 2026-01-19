@@ -9,7 +9,7 @@ double parseDouble(dynamic value) {
 class SubscriptionModel {
   final String id;
   final String tier;
-  final DateTime renewalDate;
+  final DateTime? renewalDate;
   final bool isActive;
   final double monthlyFee;
   final List<String> features;
@@ -17,7 +17,7 @@ class SubscriptionModel {
   SubscriptionModel({
     required this.id,
     required this.tier,
-    required this.renewalDate,
+    this.renewalDate,
     required this.isActive,
     required this.monthlyFee,
     required this.features,
@@ -41,12 +41,18 @@ class SubscriptionModel {
       }).where((s) => s.isNotEmpty).cast<String>().toList();
     }
 
+    // Parse date safely
+    DateTime? parseDate(dynamic value) {
+      if (value == null) return null;
+      if (value is DateTime) return value;
+      if (value is String) return DateTime.tryParse(value);
+      return null;
+    }
+
     return SubscriptionModel(
       id: plan?['id']?.toString() ?? json['id']?.toString() ?? '',
       tier: plan?['name']?.toString() ?? json['tier']?.toString() ?? 'Unknown',
-      renewalDate: json['end_date'] != null 
-          ? DateTime.parse(json['end_date']) 
-          : (json['renewalDate'] != null ? DateTime.parse(json['renewalDate']) : DateTime.now()),
+      renewalDate: parseDate(json['end_date']) ?? parseDate(json['renewalDate']),
       isActive: json['active'] ?? json['isActive'] ?? false,
       monthlyFee: parseDouble(plan?['price_info']?['price'] ?? plan?['price'] ?? json['monthlyFee']),
       features: parsedFeatures,
@@ -57,7 +63,7 @@ class SubscriptionModel {
     return {
       'id': id,
       'tier': tier,
-      'renewalDate': renewalDate.toIso8601String(),
+      'renewalDate': renewalDate?.toIso8601String(),
       'isActive': isActive,
       'monthlyFee': monthlyFee,
       'features': features,

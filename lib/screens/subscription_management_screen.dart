@@ -146,7 +146,9 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                               context,
                               Icons.calendar_today_outlined,
                               'renewal_date'.tr(),
-                              DateFormat('MMM d, yyyy').format(subscription.renewalDate),
+                              subscription.renewalDate != null 
+                                  ? DateFormat('MMM d, yyyy').format(subscription.renewalDate!)
+                                  : 'lifetime'.tr(),
                             ),
                           ],
                         ),

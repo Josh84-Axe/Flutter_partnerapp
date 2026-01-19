@@ -255,7 +255,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             // Subscription Plan Card - load from API
             SubscriptionPlanCard(
               planName: userProvider.subscription?.tier ?? 'Free Plan',
-              renewalDate: userProvider.subscription?.renewalDate ?? DateTime.now().add(const Duration(days: 30)),
+              renewalDate: userProvider.subscription?.renewalDate,
               isLoading: userProvider.isLoading || networkProvider.isLoading || billingProvider.isLoading,
             ),
             const SizedBox(height: 16),

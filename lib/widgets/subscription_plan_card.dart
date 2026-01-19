@@ -5,13 +5,13 @@ import 'dart:async';
 
 class SubscriptionPlanCard extends StatefulWidget {
   final String planName;
-  final DateTime renewalDate;
+  final DateTime? renewalDate;
   final bool isLoading;
 
   const SubscriptionPlanCard({
     super.key,
     required this.planName,
-    required this.renewalDate,
+    this.renewalDate,
     this.isLoading = false,
   });
 
@@ -21,7 +21,7 @@ class SubscriptionPlanCard extends StatefulWidget {
 
 class _SubscriptionPlanCardState extends State<SubscriptionPlanCard> {
   late Timer _timer;
-  late Duration _timeLeft;
+  Duration _timeLeft = Duration.zero;
 
   @override
   void initState() {
@@ -33,10 +33,12 @@ class _SubscriptionPlanCardState extends State<SubscriptionPlanCard> {
   }
 
   void _calculateTimeLeft() {
+    if (widget.renewalDate == null) return;
+    
     final now = DateTime.now();
-    if (widget.renewalDate.isAfter(now)) {
+    if (widget.renewalDate!.isAfter(now)) {
       setState(() {
-        _timeLeft = widget.renewalDate.difference(now);
+        _timeLeft = widget.renewalDate!.difference(now);
       });
     } else {
       setState(() {
@@ -54,6 +56,7 @@ class _SubscriptionPlanCardState extends State<SubscriptionPlanCard> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isLifetime = widget.renewalDate == null;
     
     return Card(
       elevation: 2,
@@ -82,28 +85,34 @@ class _SubscriptionPlanCardState extends State<SubscriptionPlanCard> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: _timeLeft.inDays < 3 
-                          ? colorScheme.errorContainer 
-                          : colorScheme.primaryContainer,
+                      color: isLifetime 
+                          ? colorScheme.primaryContainer 
+                          : (_timeLeft.inDays < 3 
+                              ? colorScheme.errorContainer 
+                              : colorScheme.primaryContainer),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.timer_outlined,
+                          isLifetime ? Icons.all_inclusive : Icons.timer_outlined,
                           size: 16,
-                          color: _timeLeft.inDays < 3 
-                              ? colorScheme.onErrorContainer 
-                              : colorScheme.onPrimaryContainer,
+                          color: isLifetime 
+                              ? colorScheme.onPrimaryContainer
+                              : (_timeLeft.inDays < 3 
+                                  ? colorScheme.onErrorContainer 
+                                  : colorScheme.onPrimaryContainer),
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          _formatTimeLeft(),
+                          isLifetime ? 'lifetime'.tr() : _formatTimeLeft(),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: _timeLeft.inDays < 3 
-                                ? colorScheme.onErrorContainer 
-                                : colorScheme.onPrimaryContainer,
+                            color: isLifetime 
+                                ? colorScheme.onPrimaryContainer
+                                : (_timeLeft.inDays < 3 
+                                    ? colorScheme.onErrorContainer 
+                                    : colorScheme.onPrimaryContainer),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -111,14 +120,15 @@ class _SubscriptionPlanCardState extends State<SubscriptionPlanCard> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'renews'.tr(namedArgs: {
-                      'date': DateFormat('MMM d, yyyy').format(widget.renewalDate)
-                    }),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                  if (!isLifetime)
+                    Text(
+                      'renews'.tr(namedArgs: {
+                        'date': DateFormat('MMM d, yyyy').format(widget.renewalDate!)
+                      }),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

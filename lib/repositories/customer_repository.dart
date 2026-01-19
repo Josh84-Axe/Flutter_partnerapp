@@ -156,7 +156,12 @@ class CustomerRepository {
         for (var router in routers) {
           if (router is Map && router['active_users'] is List) {
             final users = router['active_users'] as List;
-            activeUsernames.addAll(users.map((u) => u.toString()));
+            activeUsernames.addAll(users.map((u) {
+              if (u is Map) {
+                return u['username']?.toString() ?? '';
+              }
+              return u.toString();
+            }).where((s) => s.isNotEmpty));
           }
         }
       }

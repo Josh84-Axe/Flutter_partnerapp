@@ -513,7 +513,9 @@ class UserProvider with ChangeNotifier {
     if (_subscriptionRepository == null) return;
     try {
       if (kDebugMode) print('📋 [UserProvider] Loading available subscription plans');
-      final plansData = await _subscriptionRepository!.fetchSubscriptionPlans();
+      final plansData = await _subscriptionRepository!.fetchSubscriptionPlans(
+        country: _partnerCountry ?? _authProvider?.partnerCountry,
+      );
       
       _availableSubscriptionPlans = plansData
           .map<SubscriptionPlanModel>((data) => SubscriptionPlanModel.fromJson(data))

@@ -8,10 +8,17 @@ class SubscriptionRepository {
   SubscriptionRepository({required Dio dio}) : _dio = dio;
 
   /// Fetch list of available subscription plans
-  Future<List<dynamic>> fetchSubscriptionPlans() async {
+  Future<List<dynamic>> fetchSubscriptionPlans({String? country}) async {
     try {
-      if (kDebugMode) print('📋 [SubscriptionRepository] Fetching subscription plans');
-      final response = await _dio.get('/partner/subscription-plans/list/');
+      if (kDebugMode) print('📋 [SubscriptionRepository] Fetching subscription plans${country != null ? ' for $country' : ''}');
+      
+      final queryParams = <String, dynamic>{};
+      if (country != null) queryParams['country'] = country;
+
+      final response = await _dio.get(
+        '/partner/subscription-plans/list/',
+        queryParameters: queryParams,
+      );
       if (kDebugMode) print('✅ [SubscriptionRepository] Response: ${response.data}');
       
       final responseData = response.data;

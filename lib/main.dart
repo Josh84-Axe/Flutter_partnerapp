@@ -510,7 +510,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
       // Calculate grace period
       int daysSinceExpiration = 0;
       if (subscription != null) {
-        daysSinceExpiration = DateTime.now().difference(subscription.renewalDate).inDays;
+        daysSinceExpiration = DateTime.now().difference(subscription.renewalDate ?? DateTime.now()).inDays;
       } else {
         // If subscription is null, we assume it's a new user who needs to subscribe
         // Actually, if it's null, we might want to check if they have any purchased plans
