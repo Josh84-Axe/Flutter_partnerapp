@@ -52,7 +52,10 @@ class SubscriptionModel {
     return SubscriptionModel(
       id: plan?['id']?.toString() ?? json['id']?.toString() ?? '',
       tier: plan?['name']?.toString() ?? json['tier']?.toString() ?? 'Unknown',
-      renewalDate: parseDate(json['end_date']) ?? parseDate(json['renewalDate']),
+      renewalDate: parseDate(json['end_date']) ?? _calculateRenewalDate(
+        parseDate(json['start_date']),
+        plan?['duration'] ?? json['duration']
+      ),
       isActive: json['active'] ?? json['isActive'] ?? false,
       monthlyFee: parseDouble(plan?['price_info']?['price'] ?? plan?['price'] ?? json['monthlyFee']),
       features: parsedFeatures,
@@ -68,6 +71,23 @@ class SubscriptionModel {
       'monthlyFee': monthlyFee,
       'features': features,
     };
+  }
+  static DateTime? _calculateRenewalDate(DateTime? startDate, String? duration) {
+    if (startDate == null || duration == null) return null;
+    
+    switch (duration.toLowerCase()) {
+      case 'monthly':
+      case 'mois':
+        return DateTime(startDate.year, startDate.month + 1, startDate.day);
+      case 'quarterly':
+      case 'trimestriel':
+        return DateTime(startDate.year, startDate.month + 3, startDate.day);
+      case 'yearly':
+      case 'annuel':
+        return DateTime(startDate.year + 1, startDate.month, startDate.day);
+      default:
+        return null;
+    }
   }
 }
 

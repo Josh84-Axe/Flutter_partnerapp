@@ -516,9 +516,38 @@ class UserProvider with ChangeNotifier {
       final plansData = await _subscriptionRepository!.fetchSubscriptionPlans(
         country: _partnerCountry ?? _authProvider?.partnerCountry,
       );
+      List<SubscriptionPlanModel> allPlans = [];
       
-      _availableSubscriptionPlans = plansData
-          .map<SubscriptionPlanModel>((data) => SubscriptionPlanModel.fromJson(data))
+      for (var planData in plansData) {
+        if (planData is! Map<String, dynamic>) continue;
+        
+        final priceInfoList = planData['price_info'];
+        if (priceInfoList is List && priceInfoList.isNotEmpty) {
+          // Create a plan model for each price option (duration)
+          for (var priceInfo in priceInfoList) {
+             if (priceInfo is Map<String, dynamic>) {
+               // Merge base plan data with specific price info
+               final mergedData = Map<String, dynamic>.from(planData);
+               mergedData['price_info'] = priceInfo; // Override with single price info map for parsing
+               // Also override top-level duration/price for easier consumption if needed
+               mergedData['duration'] = priceInfo['duration'];
+               mergedData['price'] = priceInfo['price'];
+               
+               allPlans.add(SubscriptionPlanModel.fromJson(mergedData));
+             }
+          }
+        } else {
+           // Fallback for plans without price_info list (e.g. legacy or simple structure)
+           // But based on new API, we might want to skip or try parse as is
+           // If 'price' exists at top level, we include it, otherwise skip
+           if (planData['price'] != null) {
+              allPlans.add(SubscriptionPlanModel.fromJson(planData));
+           }
+        }
+      }
+
+      _availableSubscriptionPlans = allPlans
+          .where((plan) => plan.price > 0 || plan.name == "Free Access") // Keep valid paid plans OR free plans (price might comprise 0 or 1)
           .toList();
       
       if (kDebugMode) print('✅ [UserProvider] Loaded ${_availableSubscriptionPlans.length} subscription plans');
