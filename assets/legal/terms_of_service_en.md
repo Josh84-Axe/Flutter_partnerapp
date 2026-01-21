@@ -1,6 +1,6 @@
 # Terms of Service
 
-**Last Updated: December 10, 2024**
+**Last Updated: December 10, 2025**
 
 ## 1. Acceptance of Terms
 
@@ -55,16 +55,16 @@ We reserve the right to suspend or terminate accounts that:
 
 ### Billing and Payments
 - Subscription fees are billed monthly in advance
-- Payments are processed through Paystack
+- Payments are processed through Paystack, CinetPay
 - All fees are non-refundable except as required by law
 - Prices may change with 30 days' notice
 - Failed payments may result in service suspension
 
-### Automatic Renewal
-- Subscriptions automatically renew unless canceled
-- Cancel anytime before the next billing cycle
-- Cancellation takes effect at the end of the current period
-- No refunds for partial months
+### Pre‑Paid Subscription
+- Payment is made upfront for the chosen period
+- Subscription continues until the prepaid term ends
+- You may cancel anytime, but service remains active until the end of the prepaid term
+- No refunds or credits for unused time within the prepaid period
 
 ## 6. Partner Responsibilities
 
@@ -107,7 +107,7 @@ You may not:
 - Revenue is tracked in your wallet
 
 ### Payout Requests
-- Minimum payout threshold: [Amount] [Currency]
+- Minimum payout threshold: $50.00 (Equivalent)
 - Payouts processed within 3-7 business days
 - Valid payment method required
 - We may verify identity before processing payouts
@@ -247,7 +247,7 @@ For questions about these Terms:
 
 **Email**: assist@tiknetafrica.com  
 **Support**: assist@tiknetafrica.com  
-**Address**: South-West Mc Carthy, MA309 Weija Junction, Accra, Ghana  
+**Address**: South-West Mc Carthy Hill, MA309 Weija Junction, Accra, Ghana  
 **Phone**: +233 55 343 9010
 
 ## 18. Updates to Terms
@@ -260,6 +260,6 @@ Your continued use after changes constitutes acceptance. If you do not agree to 
 
 ---
 
-**Effective Date**: December 10, 2024
+**Effective Date**: December 10, 2025
 
 **By using Tiknet Partner, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.**

@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last Updated: December 10, 2024**
+**Last Updated: December 10, 2025**
 
 ## Introduction
 
@@ -105,7 +105,7 @@ Depending on your location, you may have the right to:
 - **Restriction**: Request limitation of processing
 - **Withdraw Consent**: Opt-out of marketing communications
 
-To exercise these rights, contact us at privacy@tiknet.com
+To exercise these rights, contact us at assist@tiknetafrica.com
 
 ## Children's Privacy
 
@@ -142,7 +142,7 @@ Your continued use after changes constitutes acceptance of the updated policy.
 If you have questions or concerns about this Privacy Policy:
 
 **Email**: assist@tiknetafrica.com  
-**Address**: South-West Mc Carthy, MA309 Weija Junction, Accra, Ghana  
+**Address**: South-West Mc Carthy Hill, MA309 Weija Junction, Accra, Ghana  
 **Phone**: +233 55 343 9010
 
 ## Regional Provisions
@@ -168,6 +168,6 @@ We comply with applicable data protection laws in Ghana, Nigeria, Kenya, South A
 
 ---
 
-**Effective Date**: December 10, 2024
+**Effective Date**: December 10, 2025
 
 By using Tiknet Partner, you acknowledge that you have read and understood this Privacy Policy.

@@ -63,71 +63,90 @@ class UpdateService {
   /// Triggers the OTA update process: Download -> Install.
   /// [onProgress] callback returns bytes received and total bytes.
   Future<void> performUpdate(String url, {Function(int received, int total)? onProgress}) async {
-    try {
-       // 1. Request permissions
-       if (Platform.isAndroid) {
-         final status = await Permission.requestInstallPackages.status;
-         if (!status.isGranted) {
-           final result = await Permission.requestInstallPackages.request();
-           if (!result.isGranted) {
-             throw Exception('Install permission denied.');
-           }
-         }
-       }
+    int maxRetries = 3;
+    int attempt = 0;
 
-       // 2. Prepare destination
-       final dir = await getTemporaryDirectory();
-       final fileName = 'update_${DateTime.now().millisecondsSinceEpoch}.apk';
-       final filePath = '${dir.path}/$fileName';
-       
-       // Clean up old update files
-       final dirFiles = dir.listSync();
-       for (var file in dirFiles) {
-         if (file.path.endsWith('.apk') && file.path.contains('update_')) {
-           try {
-             file.deleteSync();
-           } catch (e) {
-             print('⚠️ Could not delete old update file: $e');
-           }
-         }
-       }
-
-       if (kDebugMode) print('⬇️ [UpdateService] Downloading to: $filePath');
-
-       // 3. Download APK
-       // Use deleteOnError to ensure partial files aren't kept if connection drops
-       await _dio.download(
-         url, 
-         filePath,
-         deleteOnError: true,
-         onReceiveProgress: (received, total) {
-           if (onProgress != null) {
-             onProgress(received, total);
-           }
-           if (kDebugMode && total != -1) {
-             // Print progress every 10%
-             final progress = ((received / total) * 100).toInt();
-             if (progress % 10 == 0) {
-                print('⬇️ [UpdateService] Progress: $progress%');
-             }
-           }
-         },
-       );
-       
-       if (kDebugMode) print('✅ [UpdateService] Download complete. Opening...');
-
-       // 4. Open/Install APK
-       final result = await OpenFile.open(filePath);
-       
-       if (result.type != ResultType.done) {
-         throw Exception('Error opening APK: ${result.message}');
-       }
-
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ [UpdateService] Error performing update: $e');
+    // 1. Request permissions
+    if (Platform.isAndroid) {
+      final status = await Permission.requestInstallPackages.status;
+      if (!status.isGranted) {
+        final result = await Permission.requestInstallPackages.request();
+        if (!result.isGranted) {
+          throw Exception('Install permission denied.');
+        }
       }
-      rethrow;
+    }
+
+    // 2. Prepare destination
+    final dir = await getTemporaryDirectory();
+    final fileName = 'update_${DateTime.now().millisecondsSinceEpoch}.apk';
+    final filePath = '${dir.path}/$fileName';
+    
+    // Clean up old update files
+    try {
+      final dirFiles = dir.listSync();
+      for (var file in dirFiles) {
+        if (file.path.endsWith('.apk') && file.path.contains('update_')) {
+          try {
+            file.deleteSync();
+          } catch (e) {
+            if (kDebugMode) print('⚠️ Could not delete old update file: $e');
+          }
+        }
+      }
+    } catch (e) {
+       // Ignore listSync errors
+    }
+
+    while (attempt < maxRetries) {
+      try {
+        attempt++;
+        if (kDebugMode) print('⬇️ [UpdateService] Attempt $attempt/$maxRetries: Downloading to $filePath');
+
+        // 3. Download APK
+        await _dio.download(
+          url, 
+          filePath,
+          deleteOnError: true,
+          options: Options(
+            receiveTimeout: const Duration(minutes: 10), // Increased timeout
+          ),
+          onReceiveProgress: (received, total) {
+            if (onProgress != null) {
+              onProgress(received, total);
+            }
+            if (kDebugMode && total != -1) {
+               final progress = ((received / total) * 100).toInt();
+               if (progress % 10 == 0) {
+                  print('⬇️ [UpdateService] Progress: $progress%');
+               }
+            }
+          },
+        );
+        
+        if (kDebugMode) print('✅ [UpdateService] Download complete. Opening...');
+
+        // 4. Open/Install APK
+        final result = await OpenFile.open(filePath);
+        
+        if (result.type != ResultType.done) {
+          throw Exception('Error opening APK: ${result.message}');
+        }
+        
+        // If successful, break the loop
+        return;
+
+      } catch (e) {
+        if (kDebugMode) print('❌ [UpdateService] Attempt $attempt failed: $e');
+        
+        // If we exhausted retries, rethrow the last error
+        if (attempt >= maxRetries) {
+          rethrow;
+        }
+
+        // Wait before retrying (exponential backoff: 1s, 2s, 4s...)
+        await Future.delayed(Duration(seconds: 2 * attempt));
+      }
     }
   }
 

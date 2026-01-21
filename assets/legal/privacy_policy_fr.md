@@ -1,6 +1,6 @@
 # Politique de Confidentialité
 
-**Dernière mise à jour : 10 décembre 2024**
+**Dernière mise à jour : 10 décembre 2025**
 
 ## Introduction
 
@@ -142,7 +142,7 @@ Votre utilisation continue après les modifications constitue une acceptation de
 Si vous avez des questions ou des préoccupations concernant cette Politique de Confidentialité :
 
 **E-mail** : assist@tiknetafrica.com  
-**Adresse** : South-West Mc Carthy, MA309 Weija Junction, Accra, Ghana  
+**Adresse** : South-West Mc Carthy Hill, MA309 Weija Junction, Accra, Ghana  
 **Téléphone** : +233 55 343 9010
 
 ## Dispositions Régionales

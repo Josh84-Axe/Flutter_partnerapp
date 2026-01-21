@@ -1,6 +1,6 @@
 # Conditions d'Utilisation
 
-**Dernière mise à jour : 10 décembre 2024**
+**Dernière mise à jour : 10 décembre 2025**
 
 ## 1. Acceptation des Conditions
 
@@ -55,7 +55,7 @@ Nous nous réservons le droit de suspendre ou de résilier les comptes qui :
 
 ### Facturation et Paiements
 - Les frais d'abonnement sont facturés mensuellement à l'avance
-- Les paiements sont traités via Paystack
+- Les paiements sont traités via Paystack, CinetPay
 - Tous les frais ne sont pas remboursables sauf si requis par la loi
 - Les prix peuvent changer avec un préavis de 30 jours
 - Les paiements échoués peuvent entraîner une suspension du service
@@ -107,7 +107,7 @@ Vous ne pouvez pas :
 - Les revenus sont suivis dans votre portefeuille
 
 ### Demandes de Paiement
-- Seuil minimum de paiement : [Montant] [Devise]
+- Seuil minimum de paiement : $50.00 (Equivalent)
 - Paiements traités dans les 3-7 jours ouvrables
 - Méthode de paiement valide requise
 - Nous pouvons vérifier l'identité avant de traiter les paiements
@@ -247,7 +247,7 @@ Pour toute question concernant ces Conditions :
 
 **E-mail** : assist@tiknetafrica.com  
 **Support** : assist@tiknetafrica.com  
-**Adresse** : South-West Mc Carthy, MA309 Weija Junction, Accra, Ghana  
+**Adresse** : South-West Mc Carthy Hill, MA309 Weija Junction, Accra, Ghana  
 **Téléphone** : +233 55 343 9010
 
 ## 18. Mises à Jour des Conditions
