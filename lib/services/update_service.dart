@@ -126,11 +126,20 @@ class UpdateService {
         
         if (kDebugMode) print('✅ [UpdateService] Download complete. Opening...');
 
+        final file = File(filePath);
+        if (!file.existsSync()) {
+           throw Exception('Downloaded file does not exist at $filePath');
+        }
+        
         // 4. Open/Install APK
-        final result = await OpenFile.open(filePath);
+        // Explicitly specifying the MIME type is critical for Android to properly handle the Intent
+        final result = await OpenFile.open(
+          filePath, 
+          type: 'application/vnd.android.package-archive',
+        );
         
         if (result.type != ResultType.done) {
-          throw Exception('Error opening APK: ${result.message}');
+          throw Exception('Error opening APK: ${result.message} (Type: ${result.type})');
         }
         
         // If successful, break the loop
