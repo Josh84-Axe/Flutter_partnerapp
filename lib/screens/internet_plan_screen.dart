@@ -186,23 +186,23 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  '${plan.dataLimit != null ? '${plan.dataLimit} GB' : 'unlimited'.tr()} | ${plan.formattedValidity}',
+                                  '${plan.dataLimit != null ? '${plan.dataLimit} ${'data_unit'.tr()}' : 'unlimited'.tr()} | ${plan.formattedValidity}',
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
-                                  Text(
-                                    plan.priceDisplay.isNotEmpty 
-                                        ? plan.priceDisplay 
-                                        : '${plan.price} ${userProvider.currencyCode}',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.primary,
-                                    ),
+                                Text(
+                                  plan.priceDisplay.isNotEmpty 
+                                      ? plan.priceDisplay 
+                                      : '${plan.price} ${userProvider.currencyCode}',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.primary,
                                   ),
+                                ),
                               ],
                             ),
                           ),

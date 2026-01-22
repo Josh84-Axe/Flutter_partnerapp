@@ -67,11 +67,19 @@ class PlanModel {
           .toList();
     }
 
+    String rawPrice = json['price']?.toString() ?? '0';
+    // Remove .00 or .0 decimals if it's a whole number
+    if (rawPrice.endsWith('.00')) {
+      rawPrice = rawPrice.substring(0, rawPrice.length - 3);
+    } else if (rawPrice.endsWith('.0')) {
+      rawPrice = rawPrice.substring(0, rawPrice.length - 2);
+    }
+
     return PlanModel(
       id: json['id'],
       slug: json['slug'] ?? '',
       name: json['name'] ?? '',
-      price: json['price']?.toString() ?? '0.00',
+      price: rawPrice,
       priceDisplay: json['price_display'] ?? '',
       dataLimit: json['data_limit'],
       validity: json['validity'] ?? 0,

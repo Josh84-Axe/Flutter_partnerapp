@@ -29,6 +29,9 @@ class NetworkProvider with ChangeNotifier {
   List<PlanModel> _plans = [];
   List<dynamic> _activeSessions = [];
   Map<String, double> _activeDataUsage = {'total_bytes': 0, 'limit_bytes': 0};
+  double _totalAccumulatedBytes = 0;
+  double _lastRefreshTotalBytes = 0;
+  bool _isFirstUsageLoad = true;
   
   List<dynamic> _hotspotUsers = [];
   List<HotspotProfileModel> _hotspotProfiles = [];
@@ -59,6 +62,7 @@ class NetworkProvider with ChangeNotifier {
        _planRepository = planRepository,
        _authProvider = authProvider {
     loadRouterAssignments();
+    _loadAccumulatedUsage();
   }
 
   void update({
@@ -318,6 +322,18 @@ class NetworkProvider with ChangeNotifier {
       }
       _activeDataUsage['total_bytes'] = totalBytes;
       
+      // Calculate delta since last refresh to accumulate usage persistantly
+      if (!_isFirstUsageLoad) {
+        if (totalBytes > _lastRefreshTotalBytes) {
+          double delta = totalBytes - _lastRefreshTotalBytes;
+          _totalAccumulatedBytes += delta;
+          _saveAccumulatedUsage();
+        }
+      } else {
+        _isFirstUsageLoad = false;
+      }
+      _lastRefreshTotalBytes = totalBytes;
+      
       _error = null;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error loading sessions: $e');
@@ -520,6 +536,10 @@ class NetworkProvider with ChangeNotifier {
     return _activeDataUsage['limit_bytes'] ?? 0;
   }
 
+  double get totalAccumulatedGB {
+    return _totalAccumulatedBytes / (1024 * 1024 * 1024);
+  }
+
   // ==================== Router Assignments ====================
 
   List<String> getAssignedRouters(String username) {
@@ -554,6 +574,25 @@ class NetworkProvider with ChangeNotifier {
       await prefs.setString('router_assignments', json.encode(_routerAssignments));
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error saving router assignments: $e');
+    }
+  }
+
+  Future<void> _loadAccumulatedUsage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _totalAccumulatedBytes = prefs.getDouble('total_accumulated_usage_bytes') ?? 0;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) print('❌ [NetworkProvider] Error loading usage: $e');
+    }
+  }
+
+  Future<void> _saveAccumulatedUsage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('total_accumulated_usage_bytes', _totalAccumulatedBytes);
+    } catch (e) {
+      if (kDebugMode) print('❌ [NetworkProvider] Error saving usage: $e');
     }
   }
 

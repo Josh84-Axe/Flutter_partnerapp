@@ -329,8 +329,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 600),
                 child: DataUsageCard(
-                  usedGB: networkProvider.aggregateActiveDataUsage,
-                  totalGB: networkProvider.aggregateTotalDataLimit,
+                  usedGB: networkProvider.totalAccumulatedGB,
+                  totalGB: 200.0,
                   isLoading: networkProvider.isLoading,
                 ),
               ),

@@ -203,7 +203,7 @@ Gérez les paramètres techniques comme les Limites de Vitesse et Délais d'Inac
 - **Notifications**: Historique des alertes avec recherche.
 - **Langue**: Basculer Anglais / Français (Mise à jour instantanée).
 - **Thème**: Mode Sombre / Clair / Système.
-- **Aide & Support**: Coordonnées de contact (Email, WhatsApp).
+- **Aide & Support**: Créez des tickets d'assistance directement dans l'application (Intégration CRM).
 
 ---
 **Fin du Manuel**

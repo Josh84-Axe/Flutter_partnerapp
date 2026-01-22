@@ -203,7 +203,7 @@ Manage technical parameters like Rate Limits (Speed) and Idle Timeouts.
 - **Notifications**: Searchable history of alerts.
 - **Language**: Toggle English / French (Instant UI update).
 - **Theme**: Toggle Dark / Light mode (or System Default).
-- **Help & Support**: Contact details (Email, WhatsApp).
+- **Help & Support**: Create support tickets directly in the app (CRM Integration).
 
 ---
 **End of Manual**

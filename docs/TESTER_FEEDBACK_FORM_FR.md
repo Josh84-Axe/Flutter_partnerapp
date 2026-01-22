@@ -74,6 +74,12 @@ Veuillez cocher **Succès (S)** ou **Échec (E)** pour chaque scénario défini 
 | **CONF-02** | Changer Langue | [ ] | |
 | **CONF-03** | Mode Sombre | [ ] | |
 
+### H. CRM & Support
+| ID | Scénario | Statut (S/E) | Note # |
+|:---|:---|:---:|:---:|
+| **SUPP-01** | Créer un Ticket | [ ] | |
+| **SUPP-02** | Validation Ticket | [ ] | |
+
 ---
 
 ## 3. Notes & Rapports de Bugs

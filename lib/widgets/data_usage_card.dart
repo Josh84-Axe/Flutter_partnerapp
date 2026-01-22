@@ -68,7 +68,7 @@ class DataUsageCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${usedGB.toStringAsFixed(1)} / ${totalGB.toStringAsFixed(0)} GB',
+                  '${usedGB.toStringAsFixed(1)} / ${totalGB.toStringAsFixed(0)} ${'data_unit'.tr()}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 11,

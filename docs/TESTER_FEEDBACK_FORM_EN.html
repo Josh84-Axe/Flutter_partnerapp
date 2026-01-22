@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TESTER FEEDBACK FORM EN</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292f;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        h1, h2, h3 { border-bottom: 1px solid #eaecef; padding-bottom: .3em; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 16px; }
+        th, td { padding: 6px 13px; border: 1px solid #dfe2e5; }
+        tr:nth-child(2n) { background-color: #f6f8fa; }
+        code { background-color: rgba(27,31,35,.05); padding: .2em .4em; border-radius: 3px; font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace; }
+        blockquote { border-left: .25em solid #dfe2e5; color: #6a737d; padding: 0 1em; margin: 0; }
+        img { max-width: 100%; box-sizing: content-box; background-color: #fff; }
+    </style>
+</head>
+<body>
+    <div id="content"></div>
+    <script>
+        function b64ToUtf8(str) {
+            const binString = atob(str);
+            const bytes = new Uint8Array(binString.length);
+            for (let i = 0; i < binString.length; i++) {
+                bytes[i] = binString.charCodeAt(i);
+            }
+            return new TextDecoder().decode(bytes);
+        }
+        
+        const b64_content = "IyBQYXJ0bmVyIEFwcCAtIFRlc3RlciBGZWVkYmFjayBGb3JtCgoqKlB1cnBvc2UqKjogVGhpcyBkb2N1bWVudCBpcyB0byBiZSBmaWxsZWQgb3V0IGJ5IGFueSB0ZXN0ZXIgb3IgdXNlciB2YWxpZGF0aW5nIHRoZSBQYXJ0bmVyIEFwcC4gUGxlYXNlIGZvbGxvdyB0aGUgKipUZXN0IFNjZW5hcmlvcyoqIHByb3ZpZGVkIGFuZCBsb2cgeW91ciByZXN1bHRzIGJlbG93LgoKLS0tCgojIyAxLiBUZXN0ZXIgSW5mb3JtYXRpb24KCnwgRmllbGQgfCBEZXRhaWwgfAp8Oi0tLXw6LS0tfAp8ICoqVGVzdGVyIE5hbWUqKiB8IF9fX19fX19fX19fX19fX19fX19fX19fX19fX18gfAp8ICoqRGF0ZSoqIHwgX19fX19fX19fX19fX19fX19fX19fX19fX19fXyB8CnwgKipEZXZpY2UgTW9kZWwqKiB8IF9fX19fX19fX19fX19fX19fX19fX19fX19fX18gfAp8ICoqT1MgVmVyc2lvbioqIHwgX19fX19fX19fX19fX19fX19fX19fX19fX19fXyB8CnwgKipBcHAgVmVyc2lvbioqIHwgX19fX19fX19fX19fX19fX19fX19fX19fX19fXyB8CgotLS0KCiMjIDIuIFRlc3QgRXhlY3V0aW9uIExvZwoKUGxlYXNlIG1hcmsgKipQYXNzIChQKSoqIG9yICoqRmFpbCAoRikqKiBmb3IgZWFjaCBzY2VuYXJpbyBkZWZpbmVkIGluIGBURVNUX1NDRU5BUklPU19FTi5tZGAuIElmIGEgdGVzdCBmYWlscyBvciB5b3UgaGF2ZSBvYnNlcnZhdGlvbnMsIHBsZWFzZSBhZGQgYSBub3RlIG51bWJlciBhbmQgZGV0YWlsIGl0IGluIHRoZSAiTm90ZXMiIHNlY3Rpb24uCgojIyMgQS4gQXV0aGVudGljYXRpb24KfCBJRCB8IFNjZW5hcmlvIHwgU3RhdHVzIChQL0YpIHwgTm90ZSAjIHwKfDotLS18Oi0tLXw6LS0tOnw6LS0tOnwKfCAqKkFVVEgtMDEqKiB8IFZhbGlkIExvZ2luIHwgWyBdIHwgfAp8ICoqQVVUSC0wMioqIHwgSW52YWxpZCBQYXNzd29yZCB8IFsgXSB8IHwKfCAqKkFVVEgtMDMqKiB8IFJlZ2lzdHJhdGlvbiBWYWxpZGF0aW9uIHwgWyBdIHwgfAp8ICoqQVVUSC0wNCoqIHwgU3VjY2Vzc2Z1bCBSZWdpc3RyYXRpb24gfCBbIF0gfCB8CnwgKipBVVRILTA1KiogfCBJUCBEZXRlY3Rpb24gfCBbIF0gfCB8CgojIyMgQi4gRGFzaGJvYXJkCnwgSUQgfCBTY2VuYXJpbyB8IFN0YXR1cyAoUC9GKSB8IE5vdGUgIyB8Cnw6LS0tfDotLS18Oi0tLTp8Oi0tLTp8CnwgKipEQVNILTAxKiogfCBEYXRhIFJlZnJlc2ggfCBbIF0gfCB8CnwgKipEQVNILTAyKiogfCBOYXZpZ2F0aW9uIEZsb3cgfCBbIF0gfCB8CnwgKipEQVNILTAzKiogfCBEYXRhIFVzYWdlIEJhciB8IFsgXSB8IHwKCiMjIyBDLiBVc2VyIE1hbmFnZW1lbnQKfCBJRCB8IFNjZW5hcmlvIHwgU3RhdHVzIChQL0YpIHwgTm90ZSAjIHwKfDotLS18Oi0tLXw6LS0tOnw6LS0tOnwKfCAqKlVTRVItMDEqKiB8IFNlYXJjaCBieSBOYW1lIHwgWyBdIHwgfAp8ICoqVVNFUi0wMioqIHwgU2VhcmNoIGJ5IFBob25lIHwgWyBdIHwgfAp8ICoqVVNFUi0wMyoqIHwgQmxvY2sgVXNlciB8IFsgXSB8IHwKfCAqKlVTRVItMDQqKiB8IFVuYmxvY2sgVXNlciB8IFsgXSB8IHwKfCAqKlVTRVItMDUqKiB8IEFzc2lnbiBSb3V0ZXIgfCBbIF0gfCB8CgojIyMgRC4gSW50ZXJuZXQgUGxhbnMKfCBJRCB8IFNjZW5hcmlvIHwgU3RhdHVzIChQL0YpIHwgTm90ZSAjIHwKfDotLS18Oi0tLXw6LS0tOnw6LS0tOnwKfCAqKlBMQU4tMDEqKiB8IENyZWF0ZSBVbmxpbWl0ZWQgUGxhbiB8IFsgXSB8IHwKfCAqKlBMQU4tMDIqKiB8IENyZWF0ZSBDYXBwZWQgUGxhbiB8IFsgXSB8IHwKfCAqKlBMQU4tMDMqKiB8IEVkaXQgUHJpY2UgfCBbIF0gfCB8CnwgKipQTEFOLTA0KiogfCBEZWxldGUgQWN0aXZlIFBsYW4gKEZhaWwpIHwgWyBdIHwgfAoKIyMjIEUuIEFjdGl2ZSBTZXNzaW9ucwp8IElEIHwgU2NlbmFyaW8gfCBTdGF0dXMgKFAvRikgfCBOb3RlICMgfAp8Oi0tLXw6LS0tfDotLS06fDotLS06fAp8ICoqU0VTUy0wMSoqIHwgRmllbGQgVmVyaWZpY2F0aW9uIHwgWyBdIHwgfAp8ICoqU0VTUy0wMioqIHwgRGlzY29ubmVjdCBVc2VyIHwgWyBdIHwgfAoKIyMjIEYuIEZpbmFuY2lhbHMKfCBJRCB8IFNjZW5hcmlvIHwgU3RhdHVzIChQL0YpIHwgTm90ZSAjIHwKfDotLS18Oi0tLXw6LS0tOnw6LS0tOnwKfCAqKlBBWS0wMSoqIHwgRmVlIExvZ2ljIChNb01vKSB8IFsgXSB8IHwKfCAqKlBBWS0wMioqIHwgRmVlIExvZ2ljIChCYW5rKSB8IFsgXSB8IHwKfCAqKlBBWS0wMyoqIHwgTWF4IEJ1dHRvbiB8IFsgXSB8IHwKfCAqKlBBWS0wNCoqIHwgQWRkIFBheW1lbnQgTWV0aG9kIHwgWyBdIHwgfAoKIyMjIEcuIFNldHRpbmdzCnwgSUQgfCBTY2VuYXJpbyB8IFN0YXR1cyAoUC9GKSB8IE5vdGUgIyB8Cnw6LS0tfDotLS18Oi0tLTp8Oi0tLTp8CnwgKipDT05GLTAxKiogfCBIb3RzcG90IFByb2ZpbGUgfCBbIF0gfCB8CnwgKipDT05GLTAyKiogfCBMYW5ndWFnZSBTd2l0Y2ggfCBbIF0gfCB8CnwgKipDT05GLTAzKiogfCBEYXJrIE1vZGUgfCBbIF0gfCB8CgojIyMgSC4gQ1JNICYgU3VwcG9ydAp8IElEIHwgU2NlbmFyaW8gfCBTdGF0dXMgKFAvRikgfCBOb3RlICMgfAp8Oi0tLXw6LS0tfDotLS06fDotLS06fAp8ICoqU1VQUC0wMSoqIHwgQ3JlYXRlIFRpY2tldCB8IFsgXSB8IHwKfCAqKlNVUFAtMDIqKiB8IFRpY2tldCBWYWxpZGF0aW9uIHwgWyBdIHwgfAoKLS0tCgojIyAzLiBOb3RlcyAmIEJ1ZyBSZXBvcnRzCgpVc2UgdGhpcyBzZWN0aW9uIHRvIGRldGFpbCBhbnkgKipGYWlscyoqIG9yICoqVW5leHBlY3RlZCBCZWhhdmlvcnMqKi4KCnwgTm90ZSAjIHwgVGVzdCBJRCB8IERlc2NyaXB0aW9uIG9mIElzc3VlIC8gT2JzZXJ2YXRpb24gfAp8Oi0tLTp8Oi0tLXw6LS0tfAp8IDEgfCB8IHwKfCAyIHwgfCB8CnwgMyB8IHwgfAp8IDQgfCB8IHwKCi0tLQoKIyMgNC4gT3ZlcmFsbCBGZWVkYmFjawoKKioxLiBVc2FiaWxpdHkqKjogSG93IGVhc3kgd2FzIHRoZSBhcHAgdG8gbmF2aWdhdGU/ICgxID0gVmVyeSBIYXJkLCA1ID0gVmVyeSBFYXN5KQoqKlJhdGluZyoqOiBbIDEgXSBbIDIgXSBbIDMgXSBbIDQgXSBbIDUgXQoKKioyLiBWaXN1YWwgQXBwZWFsKio6IEhvdyB3b3VsZCB5b3UgcmF0ZSB0aGUgZGVzaWduL2Flc3RoZXRpY3M/CioqUmF0aW5nKio6IFsgMSBdIFsgMiBdIFsgMyBdIFsgNCBdIFsgNSBdCgoqKjMuIEdlbmVyYWwgQ29tbWVudHMgLyBTdWdnZXN0aW9ucyoqOgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwoKLS0tCioqVGVzdGVyIFNpZ25hdHVyZSoqOiBfX19fX19fX19fX19fX19fX19fX19fX18K";
+        document.getElementById('content').innerHTML = marked.parse(b64ToUtf8(b64_content));
+    </script>
+</body>
+</html>

@@ -754,6 +754,7 @@
   "msg_report_generated_success": "Report generated successfully",
   "msg_failed_generate_report": "Failed to generate report: {}",
   "aggregated_usage": "Aggregated Usage (All Users)",
+  "data_unit": "GB",
   "online_users": "Online Users",
   "assigned_users": "Assigned Users",
   "block_user": "Block User",

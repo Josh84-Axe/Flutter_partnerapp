@@ -74,6 +74,12 @@ Please mark **Pass (P)** or **Fail (F)** for each scenario defined in `TEST_SCEN
 | **CONF-02** | Language Switch | [ ] | |
 | **CONF-03** | Dark Mode | [ ] | |
 
+### H. CRM & Support
+| ID | Scenario | Status (P/F) | Note # |
+|:---|:---|:---:|:---:|
+| **SUPP-01** | Create Ticket | [ ] | |
+| **SUPP-02** | Ticket Validation | [ ] | |
+
 ---
 
 ## 3. Notes & Bug Reports
