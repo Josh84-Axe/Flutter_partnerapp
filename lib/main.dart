@@ -31,6 +31,8 @@ import 'repositories/hotspot_repository.dart';
 import 'repositories/session_repository.dart';
 import 'repositories/plan_config_repository.dart';
 import 'repositories/subscription_repository.dart';
+import 'repositories/ticket_repository.dart';
+import 'providers/ticket_provider.dart';
 
 // Screens
 import 'screens/login_screen.dart';
@@ -150,6 +152,7 @@ void main() async {
   final hotspotRepository = HotspotRepository(dio: dio);
   final sessionRepository = SessionRepository(dio: dio);
   final planConfigRepository = PlanConfigRepository(dio: dio);
+  final ticketRepository = TicketRepository(dio: dio);
   
   runApp(
     EasyLocalization(
@@ -221,7 +224,7 @@ void main() async {
             },
           ),
           
-          ChangeNotifierProxyProvider<AuthProvider, NetworkProvider>(
+            ChangeNotifierProxyProvider<AuthProvider, NetworkProvider>(
             create: (_) => NetworkProvider(
               routerRepository: routerRepository,
               hotspotRepository: hotspotRepository,
@@ -250,6 +253,10 @@ void main() async {
               );
               return provider;
             },
+          ),
+
+          ChangeNotifierProvider(
+            create: (_) => TicketProvider(ticketRepository: ticketRepository),
           ),
         ],
         child: const HotspotPartnerApp(),

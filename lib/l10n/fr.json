@@ -747,5 +747,14 @@
   "block_user_confirmation": "Êtes-vous sûr de vouloir bloquer {0} ? Ils seront déconnectés immédiatement.",
   "user_blocked_disconnected": "L'utilisateur {0} a été bloqué et déconnecté.",
   "user_disconnected": "L'utilisateur {0} a été déconnecté.",
-  "no_purchased_plans": "Aucun plan acheté trouvé."
+  "no_purchased_plans": "Aucun plan acheté trouvé.",
+  "create_ticket": "Créer un Ticket",
+  "ticket_created_success": "Ticket créé avec succès",
+  "ticket_creation_failed": "Échec de la création du ticket",
+  "brief_summary_issue": "Bref résumé du problème",
+  "detailed_explanation": "Explication détaillée du problème",
+  "field_required": "Ce champ est requis",
+  "category": "Catégorie",
+  "priority": "Priorité",
+  "submit": "Soumettre"
 }

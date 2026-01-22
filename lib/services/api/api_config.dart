@@ -14,4 +14,7 @@ class ApiConfig {
   /// Set to false to use mock data during development/testing
   /// TEMPORARY: Hardcoded to true for web builds (bool.fromEnvironment doesn't work reliably on web)
   static const bool useRemoteApi = true; // bool.fromEnvironment('USE_REMOTE_API', defaultValue: true);
+
+  /// CRM Tickets endpoint
+  static const String ticketsUrl = 'https://crm.wifi-4u.net/api/tickets';
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/app_theme.dart';
+import '../widgets/create_ticket_dialog.dart';
 
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
@@ -37,6 +38,13 @@ class HelpSupportScreen extends StatelessWidget {
         .join('&');
   }
 
+  void _showCreateTicketDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => const CreateTicketDialog(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -66,11 +74,11 @@ class HelpSupportScreen extends StatelessWidget {
               Expanded(
                 child: _buildContactCard(
                   context,
-                  icon: Icons.email_outlined,
-                  title: 'email_us'.tr(),
+                  icon: Icons.confirmation_number_outlined,
+                  title: 'create_ticket'.tr(),
                   subtitle: 'response_time_msg'.tr(),
                   color: Colors.blue,
-                  onTap: _launchEmail,
+                  onTap: () => _showCreateTicketDialog(context),
                 ),
               ),
               const SizedBox(width: 16),
