@@ -26,12 +26,19 @@ class AuthInterceptor extends Interceptor {
         options.path.contains('password-reset/');
 
     if (!isAuthEndpoint) {
-      final accessToken = await _tokenStorage.getAccessToken();
-      if (accessToken != null) {
-        if (kDebugMode) print('🔑 [AuthInterceptor] Adding token to request: ${options.path}');
-        options.headers['Authorization'] = 'Bearer $accessToken';
+      // Check if the request is going to our main API base URL
+      final isMainApiRequest = options.uri.toString().startsWith(_baseUrl);
+      
+      if (isMainApiRequest) {
+        final accessToken = await _tokenStorage.getAccessToken();
+        if (accessToken != null) {
+          if (kDebugMode) print('🔑 [AuthInterceptor] Adding token to request: ${options.path}');
+          options.headers['Authorization'] = 'Bearer $accessToken';
+        } else {
+          if (kDebugMode) print('⚠️ [AuthInterceptor] No access token found for request: ${options.path}');
+        }
       } else {
-        if (kDebugMode) print('⚠️ [AuthInterceptor] No access token found for request: ${options.path}');
+        if (kDebugMode) print('🌐 [AuthInterceptor] Skipping token for external request: ${options.uri}');
       }
     }
 

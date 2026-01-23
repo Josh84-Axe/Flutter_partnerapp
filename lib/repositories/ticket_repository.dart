@@ -29,6 +29,11 @@ class TicketRepository {
       if (kDebugMode) {
         print('❌ [TicketRepository] Error creating ticket: ${e.response?.data ?? e.message}');
       }
+      
+      if (e.response?.statusCode == 530) {
+        throw Exception('CRM Server configuration error (530). Please try again later or contact support.');
+      }
+      
       throw Exception('Failed to create ticket: ${e.response?.data['message'] ?? e.message}');
     } catch (e) {
        if (kDebugMode) {
