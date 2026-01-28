@@ -161,16 +161,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           print('ℹ️ [RegistrationScreen] Current User: ${authProvider.currentUser?.email} (Active: ${authProvider.currentUser?.isActive})');
         }
 
-        // Show success message
-        await SuccessAlert.show(
-          context,
-          title: 'registration_successful'.tr(),
-          message: authProvider.currentUser != null && !authProvider.currentUser!.isActive
-              ? 'email_verification_sent'.tr()
-              : 'welcome_message'.tr(),
-          buttonText: 'continue'.tr(),
-        );
-        
         if (!mounted) return;
 
         // Navigate based on verification status

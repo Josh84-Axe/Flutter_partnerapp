@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/split/auth_provider.dart';
 import '../utils/app_theme.dart';
+import '../widgets/alerts/success_alert.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class OtpValidationScreen extends StatefulWidget {
@@ -123,10 +124,13 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
 
           if (success) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Verification successful!')),
+              await SuccessAlert.show(
+                context,
+                title: 'registration_successful'.tr(),
+                message: 'welcome_message'.tr(),
+                buttonText: 'continue'.tr(),
               );
-              Navigator.of(context).pushReplacementNamed('/home');
+              if (mounted) Navigator.of(context).pushReplacementNamed('/home');
             }
           } else {
             if (mounted) {
@@ -219,6 +223,7 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
+                      color: AppTheme.textDark, // Explicitly set color for visibility
                     ),
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
