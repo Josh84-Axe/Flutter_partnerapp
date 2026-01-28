@@ -136,6 +136,20 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (success && mounted) {
+      if (!_isLogin) {
+        final needsVerification = authProvider.currentUser == null || !authProvider.currentUser!.isActive;
+        if (needsVerification) {
+          Navigator.of(context).pushReplacementNamed(
+            '/otp-validation',
+            arguments: {
+              'type': 'registration',
+              'email': _emailController.text.trim(),
+              'otp_id': authProvider.registrationOtpId,
+            },
+          );
+          return;
+        }
+      }
       Navigator.of(context).pushReplacementNamed('/home');
     }
   }

@@ -60,6 +60,7 @@ class AuthProvider with ChangeNotifier {
   String get currencySymbol => _partnerCurrencySymbol ?? '\$';
   bool get isGuestMode => _isGuestMode;
   String? get registrationEmail => _registrationEmail;
+  String? get registrationOtpId => _registrationOtpId;
   String? get passwordResetToken => _passwordResetToken;
   
   void _setLoading(bool value) {
@@ -374,6 +375,24 @@ class AuthProvider with ChangeNotifier {
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
       final response = await _authRepository!.confirmRegistration(email, otp);
+      
+      if (response != null && response['data'] != null) {
+        final data = response['data'] is Map ? response['data'] : response;
+        final accessToken = data['access']?.toString() ?? data['access_token']?.toString();
+        final refreshToken = data['refresh']?.toString() ?? data['refresh_token']?.toString();
+
+        if (accessToken != null && refreshToken != null && _tokenStorage != null) {
+          await _tokenStorage!.saveTokens(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+          );
+          // Load profile if we have tokens
+          await checkAuthStatus();
+        }
+        _setLoading(false);
+        return true;
+      }
+      
       _setLoading(false);
       return response != null;
     } catch (e) {

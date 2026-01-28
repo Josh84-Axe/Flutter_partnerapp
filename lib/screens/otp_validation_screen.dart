@@ -106,6 +106,49 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
                );
            }
          }
+      } else if (type == 'registration' && email != null) {
+        // Handle registration verification
+        final authProvider = context.read<AuthProvider>();
+        final otpId = args?['otp_id']?.toString() ?? '';
+
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(child: CircularProgressIndicator()),
+        );
+
+        try {
+          final success = await authProvider.confirmRegistration(email, code);
+          if (mounted) Navigator.of(context).pop(); // Close loading
+
+          if (success) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Verification successful!')),
+              );
+              Navigator.of(context).pushReplacementNamed('/home');
+            }
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(authProvider.error ?? 'Verification failed'),
+                  backgroundColor: AppTheme.errorRed,
+                ),
+              );
+            }
+          }
+        } catch (e) {
+          if (mounted) Navigator.of(context).pop();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: $e'),
+                backgroundColor: AppTheme.errorRed,
+              ),
+            );
+          }
+        }
       } else {
         // Original behavior for other OTP types
         // Note: Ideally other flows should also verify_otp here or pass a callback
@@ -229,6 +272,14 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
                  if (type == 'password_reset' && email != null) {
                     final authProvider = context.read<AuthProvider>();
                     await authProvider.resendPasswordResetOtp(email);
+                    if (context.mounted) {
+                       ScaffoldMessenger.of(context).showSnackBar(
+                         SnackBar(content: Text('code_resent'.tr())),
+                       );
+                    }
+                 } else if (type == 'registration' && email != null) {
+                    final authProvider = context.read<AuthProvider>();
+                    await authProvider.resendVerifyEmailOtp(email);
                     if (context.mounted) {
                        ScaffoldMessenger.of(context).showSnackBar(
                          SnackBar(content: Text('code_resent'.tr())),

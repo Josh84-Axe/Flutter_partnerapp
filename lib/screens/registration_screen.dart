@@ -167,9 +167,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         );
         
         // Navigate based on verification status
-        if (authProvider.currentUser != null && !authProvider.currentUser!.isActive) {
-          if (kDebugMode) print('ℹ️ [RegistrationScreen] Email verification required, navigating to verify-email');
-          Navigator.of(context).pushReplacementNamed('/email-verification');
+        final needsVerification = authProvider.currentUser == null || !authProvider.currentUser!.isActive;
+        
+        if (needsVerification) {
+          if (kDebugMode) print('ℹ️ [RegistrationScreen] Email verification required, navigating to otp-validation');
+          Navigator.of(context).pushReplacementNamed(
+            '/otp-validation',
+            arguments: {
+              'type': 'registration',
+              'email': _emailController.text.trim(),
+              'otp_id': authProvider.registrationOtpId,
+            },
+          );
         } else {
           if (kDebugMode) print('✅ [RegistrationScreen] Registration complete, navigating to home');
           Navigator.of(context).pushReplacementNamed('/home');
