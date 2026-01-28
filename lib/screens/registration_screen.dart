@@ -156,6 +156,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       );
 
       if (success && mounted) {
+        if (kDebugMode) {
+          print('✅ [RegistrationScreen] Registration success: $success');
+          print('ℹ️ [RegistrationScreen] Current User: ${authProvider.currentUser?.email} (Active: ${authProvider.currentUser?.isActive})');
+        }
+
         // Show success message
         await SuccessAlert.show(
           context,
@@ -166,11 +171,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           buttonText: 'continue'.tr(),
         );
         
+        if (!mounted) return;
+
         // Navigate based on verification status
         final needsVerification = authProvider.currentUser == null || !authProvider.currentUser!.isActive;
+        if (kDebugMode) print('ℹ️ [RegistrationScreen] Needs verification: $needsVerification');
         
         if (needsVerification) {
-          if (kDebugMode) print('ℹ️ [RegistrationScreen] Email verification required, navigating to otp-validation');
+          if (kDebugMode) print('ℹ️ [RegistrationScreen] Navigating to otp-validation with email: ${_emailController.text.trim()}');
           Navigator.of(context).pushReplacementNamed(
             '/otp-validation',
             arguments: {
@@ -180,10 +188,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             },
           );
         } else {
-          if (kDebugMode) print('✅ [RegistrationScreen] Registration complete, navigating to home');
+          if (kDebugMode) print('✅ [RegistrationScreen] Navigating to home');
           Navigator.of(context).pushReplacementNamed('/home');
         }
+      } else if (mounted) {
+        // Show error message if registration failed
+        if (kDebugMode) print('❌ [RegistrationScreen] Registration failed with message: ${authProvider.error}');
+        await ActionFailedAlert.show(
+          context,
+          title: 'registration_failed'.tr(),
+          message: authProvider.error ?? 'Registration failed. Please try again.',
+        );
       }
+    } catch (e, stackTrace) {
     } catch (e, stackTrace) {
       if (kDebugMode) {
         print('❌ [RegistrationScreen] Error in _submit: $e');
