@@ -9,7 +9,6 @@ import '../models/worker_model.dart';
 import '../models/user_model.dart'; // Added by instruction
 import '../providers/split/network_provider.dart';
 import '../utils/app_theme.dart';
-import 'assign_routers_screen.dart'; // Added by instruction
 import '../widgets/search_bar_widget.dart';
 import '../widgets/create_worker_dialog.dart';
 import '../utils/permissions.dart';
@@ -719,26 +718,6 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                   _showEditWorkerDialog(context, worker);
                 },
               ),
-            // Assign Routers
-            if (Permissions.canAssignRouters(currentUser.role))
-              ListTile(
-                leading: const Icon(Icons.router),
-                title: Text('assign_router'.tr()),
-                onTap: () async {
-                  Navigator.pop(context);
-                  // Navigate to assign routers screen
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AssignRoutersScreen(worker: worker),
-                    ),
-                  );
-                  // Refresh if changes were made
-                    if (result == true && context.mounted) {
-                      context.read<UserProvider>().loadWorkers();
-                    }
-                },
-              ),
             // Assign/Change Role
             ListTile(
               leading: Icon(Icons.badge, color: Theme.of(context).colorScheme.primary),
@@ -748,16 +727,6 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 _showAssignRoleDialog(context, worker);
               },
             ),
-            // Assign Router
-            if (Permissions.canAssignRouters(currentUser.role))
-              ListTile(
-                leading: Icon(Icons.router, color: Theme.of(context).colorScheme.secondary),
-                title: Text('assign_router'.tr()),
-                onTap: () {
-                  Navigator.pop(context);
-                  _showAssignRouterDialog(context, worker);
-                },
-              ),
             // Delete Worker
             if (Permissions.canDeleteUsers(currentUser.role, currentUser.permissions))
               ListTile(
@@ -1016,78 +985,6 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     );
   }
 
-  void _showAssignRouterDialog(BuildContext context, WorkerModel worker) {
-    final networkProvider = context.read<NetworkProvider>();
-    final routers = networkProvider.routers; // Assuming routers getter exists
-    String? selectedRouter;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('Assign Router to ${worker.fullName}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (routers.isEmpty)
-                const Text('No routers available')
-              else
-                DropdownButtonFormField<String>(
-                  value: selectedRouter,
-                  decoration: const InputDecoration(
-                    labelText: 'Select Router',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: routers.map((router) {
-                    return DropdownMenuItem(
-                      value: router.id,
-                      child: Text(router.name),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedRouter = value;
-                    });
-                  },
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('cancel'.tr()),
-            ),
-            FilledButton(
-              onPressed: selectedRouter == null
-                  ? null
-                  : () async {
-                      try {
-                        await context.read<UserProvider>().assignRouterToWorker(worker.email, selectedRouter!);
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Router assigned successfully')),
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(ErrorMessageHelper.getUserFriendlyMessage(e)),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      }
-                    },
-              child: const Text('Assign'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
 
 }
