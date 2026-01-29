@@ -236,7 +236,7 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
                   size: 44,
                   color: AppTheme.brandGreen,
                 ),
-              ).animate().scale(duration: 400.ms, curve: Curves.backOut).fadeIn(),
+              ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack).fadeIn(),
 
               const SizedBox(height: 32),
               
