@@ -372,29 +372,43 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> confirmRegistration(String email, String otp) async {
     _setLoading(true);
+    _setError(null);
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
       final response = await _authRepository!.confirmRegistration(email, otp);
       
-      if (response != null && response['data'] != null) {
-        final data = response['data'] is Map ? response['data'] : response;
-        final accessToken = data['access']?.toString() ?? data['access_token']?.toString();
-        final refreshToken = data['refresh']?.toString() ?? data['refresh_token']?.toString();
+      if (response == null) {
+        _setError('No response from server');
+        _setLoading(false);
+        return false;
+      }
 
-        if (accessToken != null && refreshToken != null && _tokenStorage != null) {
-          await _tokenStorage!.saveTokens(
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-          );
-          // Load profile if we have tokens
-          await checkAuthStatus();
+      final statusCode = response['statusCode'];
+      final isError = response['error'] == true;
+      final message = response['message']?.toString();
+
+      if (statusCode == 200 && !isError) {
+        final data = response['data'] as Map<String, dynamic>?;
+        if (data != null) {
+          final accessToken = data['access']?.toString() ?? data['access_token']?.toString();
+          final refreshToken = data['refresh']?.toString() ?? data['refresh_token']?.toString();
+
+          if (accessToken != null && refreshToken != null && _tokenStorage != null) {
+            await _tokenStorage!.saveTokens(
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+            );
+            // Load profile if we have tokens
+            await checkAuthStatus();
+          }
         }
         _setLoading(false);
         return true;
+      } else {
+        _setError(message ?? 'Verification failed');
+        _setLoading(false);
+        return false;
       }
-      
-      _setLoading(false);
-      return response != null;
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);
