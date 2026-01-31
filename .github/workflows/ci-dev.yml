@@ -38,7 +38,7 @@ jobs:
           projectName: wifi-4u-partner
           directory: build/web
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: fix-token-storage-windows
+          branch: fix/token-storage-windows
           wranglerVersion: '3'
 
       # --- ANDROID BUILD ---
