@@ -171,7 +171,17 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
               message: 'welcome_message'.tr(),
               buttonText: 'continue'.tr(),
             );
-            if (mounted) Navigator.of(context).pushReplacementNamed('/home');
+            if (mounted) {
+              // Redirect to Login if no tokens were returned
+              if (authProvider.currentUser != null) {
+                Navigator.of(context).pushReplacementNamed('/home');
+              } else {
+                Navigator.of(context).pushReplacementNamed(
+                  '/login',
+                  arguments: {'email': email},
+                );
+              }
+            }
           }
         } else {
           _handleError(authProvider.error ?? 'Verification failed');

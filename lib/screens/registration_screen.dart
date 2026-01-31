@@ -191,7 +191,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         );
       }
     } catch (e, stackTrace) {
-    } catch (e, stackTrace) {
       if (kDebugMode) {
         print('❌ [RegistrationScreen] Error in _submit: $e');
         print('❌ [RegistrationScreen] Stack trace: $stackTrace');
