@@ -18,17 +18,20 @@ class TicketProvider with ChangeNotifier {
     required String description,
     required String category,
     required String priority,
+    required String email,
+    required String name,
   }) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      await _ticketRepository.createTicket(
+      await _ticketRepository.createCrmTicket(
         subject: subject,
         description: description,
-        category: category,
-        priority: priority,
+        email: email,
+        name: name,
+        priority: priority.toUpperCase(),
       );
       _isLoading = false;
       notifyListeners();

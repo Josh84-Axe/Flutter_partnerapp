@@ -17,4 +17,8 @@ class ApiConfig {
 
   /// CRM Tickets endpoint
   static const String ticketsUrl = 'https://crm.wifi-4u.net/api/tickets';
+
+  /// External CRM API Configuration
+  static const String crmBaseUrl = 'http://crm-os.com:8002/api/cases/external/';
+  static const String crmApiKey = '3iyeIjYSmiqLro0uLwhxu5gyxGfMEv0AU7DfqEQqny0';
 }

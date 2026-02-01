@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/ticket_provider.dart';
+import '../providers/split/auth_provider.dart';
 
 class CreateTicketDialog extends StatefulWidget {
   const CreateTicketDialog({super.key});
@@ -30,11 +31,16 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
 
   Future<void> _submitTicket() async {
     if (_formKey.currentState!.validate()) {
+      final authProvider = context.read<AuthProvider>();
+      final currentUser = authProvider.currentUser;
+
       final success = await context.read<TicketProvider>().createTicket(
         subject: _subjectController.text.trim(),
         description: _descriptionController.text.trim(),
         category: _selectedCategory,
         priority: _selectedPriority,
+        email: currentUser?.email ?? 'guest@tiknetafrica.com',
+        name: currentUser?.name ?? 'Guest Partner',
       );
 
       if (mounted) {
