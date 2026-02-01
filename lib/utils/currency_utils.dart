@@ -40,6 +40,9 @@ class CurrencyUtils {
         return 'RWF';
       case 'south africa':
         return 'ZAR';
+      case 'guinea':
+      case 'guinée':
+        return 'GNF';
       default:
         return 'USD';
     }
@@ -58,6 +61,7 @@ class CurrencyUtils {
       case 'TZS': return 'TSh';
       case 'RWF': return 'RF';
       case 'ZAR': return 'R';
+      case 'GNF': return 'FG';
       case 'USD': return '\$';
       default: return code;
     }
@@ -79,6 +83,7 @@ class CurrencyUtils {
   /// Examples:
   /// - Ghana: GHS 2,500
   /// - Ivory Coast: 1.000 CFA
+  /// - Guinea: 25.000 FG
   /// - USA: $2,500
   static String formatPrice(double price, String? country, {String? currencyCode}) {
     // If currencyCode is provided, use it directly (e.g. from API)
@@ -91,6 +96,7 @@ class CurrencyUtils {
       case 'GHS': symbol = 'GHS'; break;
       case 'XOF': 
       case 'XAF': symbol = 'CFA'; break;
+      case 'GNF': symbol = 'FG'; break;
       case 'NGN': symbol = '₦'; break;
       case 'KES': symbol = 'KSh'; break;
       case 'UGX': symbol = 'USh'; break;
@@ -113,10 +119,10 @@ class CurrencyUtils {
     // Format the number part
     String formattedNumber;
     
-    if (code == 'XOF' || code == 'XAF') {
-      // Use custom formatting for CFA to match "1.000" style (dot separator)
+    if (code == 'XOF' || code == 'XAF' || code == 'GNF') {
+      // Use custom formatting for CFA/GNF to match "1.000" style (dot separator)
       formattedNumber = NumberFormat.decimalPattern('de_DE').format(amount);
-      return '$formattedNumber $symbol'; // Suffix: 1.000 CFA
+      return '$formattedNumber $symbol'; // Suffix: 1.000 CFA or 25.000 FG
     } else {
       // Standard formatting (comma separator)
       formattedNumber = NumberFormat.decimalPattern('en_US').format(amount);

@@ -32,7 +32,9 @@ import 'repositories/session_repository.dart';
 import 'repositories/plan_config_repository.dart';
 import 'repositories/subscription_repository.dart';
 import 'repositories/ticket_repository.dart';
+import 'repositories/voucher_repository.dart';
 import 'providers/ticket_provider.dart';
+import 'providers/voucher_provider.dart';
 
 // Screens
 import 'screens/login_screen.dart';
@@ -111,6 +113,7 @@ import 'screens/payout_history_screen.dart';
 import 'screens/transaction_details_screen.dart';
 import 'screens/add_payout_method_screen.dart';
 import 'screens/assign_router_screen.dart';
+import 'screens/voucher_list_screen.dart';
 
 import 'screens/hotspot_users_management_screen.dart';
 import 'screens/plan_assignment_screen.dart';
@@ -153,6 +156,7 @@ void main() async {
   final sessionRepository = SessionRepository(dio: dio);
   final planConfigRepository = PlanConfigRepository(dio: dio);
   final ticketRepository = TicketRepository(dio: dio);
+  final voucherRepository = VoucherRepository(dio: dio);
   
   runApp(
     EasyLocalization(
@@ -257,6 +261,9 @@ void main() async {
 
           ChangeNotifierProvider(
             create: (_) => TicketProvider(ticketRepository: ticketRepository),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => VoucherProvider(repository: voucherRepository),
           ),
         ],
         child: const HotspotPartnerApp(),
@@ -423,6 +430,15 @@ class HotspotPartnerApp extends StatelessWidget {
             builder: (context) => ResetPasswordScreen(
               email: args['email'] as String,
               token: args['token'] as String,
+            ),
+          );
+        }
+        if (settings.name == '/vouchers') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => VoucherListScreen(
+              planId: args['planId'] as String,
+              planName: args['planName'] as String,
             ),
           );
         }

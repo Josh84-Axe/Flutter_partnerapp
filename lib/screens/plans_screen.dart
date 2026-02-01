@@ -162,27 +162,49 @@ class _PlansScreenState extends State<PlansScreen> {
                                   ),
                                   const SizedBox(height: 16),
                                   
-                                  // Assign button
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: FilledButton.icon(
-                                      onPressed: () {
-                                        Navigator.of(context).pushNamed(
-                                          '/assign-user',
-                                          arguments: {'planId': plan.id.toString(), 'planName': plan.name},
-                                        );
-                                      },
-                                      icon: const Icon(Icons.person_add, size: 18),
-                                      label: Text('assign_to_user'.tr()),
-                                      style: FilledButton.styleFrom(
-                                        backgroundColor: colorScheme.primary,
-                                        foregroundColor: colorScheme.onPrimary,
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                  // Actions row
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: FilledButton.icon(
+                                          onPressed: () {
+                                            Navigator.of(context).pushNamed(
+                                              '/assign-user',
+                                              arguments: {'planId': plan.id.toString(), 'planName': plan.name},
+                                            );
+                                          },
+                                          icon: const Icon(Icons.person_add, size: 18),
+                                          label: Text('assign'.tr()),
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: colorScheme.primary,
+                                            foregroundColor: colorScheme.onPrimary,
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () {
+                                            Navigator.of(context).pushNamed(
+                                              '/vouchers',
+                                              arguments: {'planId': plan.id.toString(), 'planName': plan.name},
+                                            );
+                                          },
+                                          icon: const Icon(Icons.vpn_key, size: 18),
+                                          label: Text('vouchers'.tr()),
+                                          style: OutlinedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

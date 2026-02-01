@@ -757,5 +757,16 @@
   "field_required": "Ce champ est requis",
   "category": "Catégorie",
   "priority": "Priorité",
-  "submit": "Soumettre"
+  "submit": "Soumettre",
+  "vouchers": "Coupons",
+  "show_used_vouchers": "Afficher les coupons utilisés",
+  "created": "Créé le",
+  "generate_vouchers": "Générer des Coupons",
+  "how_many_vouchers": "Combien de coupons souhaitez-vous générer ?",
+  "codes": "codes",
+  "export_pdf": "Exporter en PDF",
+  "export_csv": "Exporter en CSV",
+  "could_not_launch_export": "Impossible de lancer l'URL d'exportation",
+  "no_active_vouchers": "Aucun coupon actif disponible",
+  "no_vouchers_found": "Aucun coupon trouvé pour ce forfait"
 }

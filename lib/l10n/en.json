@@ -770,5 +770,16 @@
   "field_required": "This field is required",
   "category": "Category",
   "priority": "Priority",
-  "submit": "Submit"
+  "submit": "Submit",
+  "vouchers": "Vouchers",
+  "show_used_vouchers": "Show used vouchers",
+  "created": "Created",
+  "generate_vouchers": "Generate Vouchers",
+  "how_many_vouchers": "How many vouchers would you like to generate?",
+  "codes": "codes",
+  "export_pdf": "Export PDF",
+  "export_csv": "Export CSV",
+  "could_not_launch_export": "Could not launch export URL",
+  "no_active_vouchers": "No active vouchers available",
+  "no_vouchers_found": "No vouchers found for this plan"
 }
