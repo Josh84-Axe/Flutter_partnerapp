@@ -172,10 +172,11 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
               buttonText: 'continue'.tr(),
             );
             if (mounted) {
-              // Redirect to Login if no tokens were returned
-              if (authProvider.currentUser != null) {
+              // Redirect to Home only if fully authenticated (tokens + user loaded)
+              if (authProvider.isAuthenticated) {
                 Navigator.of(context).pushReplacementNamed('/home');
               } else {
+                // Return to login so user can sign in with their new credentials
                 Navigator.of(context).pushReplacementNamed(
                   '/login',
                   arguments: {'email': email},

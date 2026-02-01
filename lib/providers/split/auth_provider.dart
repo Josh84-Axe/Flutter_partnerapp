@@ -54,6 +54,7 @@ class AuthProvider with ChangeNotifier {
 
   // Getters
   UserModel? get currentUser => _currentUser;
+  bool get isAuthenticated => _currentUser != null && _currentUser!.id != 'guest';
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get partnerCountry => _partnerCountry;
@@ -247,10 +248,13 @@ class AuthProvider with ChangeNotifier {
       // Store OTP ID if email verification is required
       if (otpId != null) {
         _registrationOtpId = otpId;
+        // If we need verification, don't try to fetch profile or set current user yet
+        _currentUser = null;
+        _setLoading(false);
+        return success;
       }
       
-      // Try to load profile to get user data if possible (auto-login scenario)
-      // If registration requires email verification, this might fail or be skipped
+      // Try to load profile only if registration was successful and no verification is needed
       if (_partnerRepository != null) {
         try {
           final profileData = await _partnerRepository!.fetchProfile();
@@ -259,8 +263,7 @@ class AuthProvider with ChangeNotifier {
             await _mapUserData(userData, email);
           }
         } catch (e) {
-             // Verification likely required
-             if (kDebugMode) print('ℹ️ [AuthProvider] Could not fetch profile after register (verification likely needed): $e');
+             if (kDebugMode) print('ℹ️ [AuthProvider] Could not fetch profile after register: $e');
         }
       }
       

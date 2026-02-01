@@ -51,11 +51,20 @@ class AuthInterceptor extends Interceptor {
     if (err.response?.statusCode == 401 && !_isRefreshRequest(err.requestOptions)) {
       if (kDebugMode) print('🔄 [AuthInterceptor] 401 detected on ${err.requestOptions.path}, attempting token refresh...');
       try {
+        final refreshToken = await _tokenStorage.getRefreshToken();
+        if (refreshToken == null) {
+          if (kDebugMode) print('ℹ️ [AuthInterceptor] No refresh token available, clearing session.');
+          await _tokenStorage.clearTokens();
+          return handler.next(err); // Let it fail normally
+        }
+
         // Wait for refresh if already in progress
         await _queueRefresh();
 
         // Retry the original request with new token
         final accessToken = await _tokenStorage.getAccessToken();
+        if (accessToken == null) throw Exception('Refresh failed to provide new token');
+        
         final requestOptions = err.requestOptions;
         requestOptions.headers['Authorization'] = 'Bearer $accessToken';
 
@@ -66,10 +75,10 @@ class AuthInterceptor extends Interceptor {
         
         return handler.resolve(response);
       } catch (refreshError) {
-        if (kDebugMode) print('❌ [AuthInterceptor] Token refresh failed: $refreshError');
+        if (kDebugMode) print('❌ [AuthInterceptor] Token refresh failed or aborted: $refreshError');
         // Refresh failed, clear tokens and let the error propagate
         await _tokenStorage.clearTokens();
-        return handler.reject(err);
+        return handler.next(err);
       }
     }
 

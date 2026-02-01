@@ -164,7 +164,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         if (!mounted) return;
 
         // Navigate based on verification status
-        final needsVerification = authProvider.currentUser == null || !authProvider.currentUser!.isActive;
+        final needsVerification = !authProvider.isAuthenticated;
         if (kDebugMode) print('ℹ️ [RegistrationScreen] Needs verification: $needsVerification');
         
         if (needsVerification) {
