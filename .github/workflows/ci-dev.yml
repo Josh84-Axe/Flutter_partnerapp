@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - fix/token-storage-windows
+      - fix-token-storage-windows
 
 jobs:
   build-and-deploy:
