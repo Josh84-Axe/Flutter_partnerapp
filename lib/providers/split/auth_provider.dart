@@ -155,6 +155,7 @@ class AuthProvider with ChangeNotifier {
         permissions: mappedPermissions,
         isActive: true,
         createdAt: DateTime.now(),
+        isVoucherEnabled: userData['enable_smart_vouchers'] ?? false,
       );
       
       // Extract country and set currency info

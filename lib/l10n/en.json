@@ -1,5 +1,8 @@
 {
   "app_title": "Tiknet Partner",
+  "install_app_title": "Install Mobile App",
+  "install_app_subtitle": "Add Tiknet Partner to your home screen for a better experience",
+  "install": "Install",
   "dashboard_title": "Dashboard",
   "total_revenue": "Total Revenue",
   "connected_users": "Connected Users",

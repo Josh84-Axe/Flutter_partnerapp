@@ -12,6 +12,7 @@ import 'providers/theme_provider.dart';
 import 'theme/tiknet_themes.dart';
 
 // Services
+import 'services/pwa_service.dart';
 import 'services/api/api_client_factory.dart';
 import 'services/api/token_storage.dart';
 import 'services/api/api_config.dart';
@@ -158,6 +159,9 @@ void main() async {
   final ticketRepository = TicketRepository(dio: dio);
   final voucherRepository = VoucherRepository(dio: dio);
   
+  // Initialize PWA service
+  PwaService().init();
+
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('fr')],

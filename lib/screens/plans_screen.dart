@@ -187,19 +187,29 @@ class _PlansScreenState extends State<PlansScreen> {
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
-                                        child: OutlinedButton.icon(
-                                          onPressed: () {
-                                            Navigator.of(context).pushNamed(
-                                              '/vouchers',
-                                              arguments: {'planId': plan.id.toString(), 'planName': plan.name},
-                                            );
-                                          },
-                                          icon: const Icon(Icons.vpn_key, size: 18),
-                                          label: Text('vouchers'.tr()),
-                                          style: OutlinedButton.styleFrom(
-                                            padding: const EdgeInsets.symmetric(vertical: 12),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
+                                        child: Opacity(
+                                          opacity: authProvider.currentUser?.isVoucherEnabled == true ? 1.0 : 0.5,
+                                          child: OutlinedButton.icon(
+                                            onPressed: authProvider.currentUser?.isVoucherEnabled == true 
+                                              ? () {
+                                                Navigator.of(context).pushNamed(
+                                                  '/vouchers',
+                                                  arguments: {'planId': plan.id.toString(), 'planName': plan.name},
+                                                );
+                                              }
+                                              : null,
+                                            icon: const Icon(Icons.vpn_key, size: 18),
+                                            label: Text('vouchers'.tr()),
+                                            style: OutlinedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              side: BorderSide(
+                                                color: authProvider.currentUser?.isVoucherEnabled == true 
+                                                  ? colorScheme.primary 
+                                                  : colorScheme.outline,
+                                              ),
                                             ),
                                           ),
                                         ),

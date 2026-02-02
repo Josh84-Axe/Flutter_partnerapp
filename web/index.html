@@ -33,6 +33,37 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <script>
+    window.deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      window.deferredPrompt = e;
+      
+      // Notify Flutter that the prompt is available
+      if (window.onAppInstallable) {
+        window.onAppInstallable();
+      }
+    });
+
+    window.isAppInstallable = function() {
+      return window.deferredPrompt !== null;
+    };
+
+    window.promptAppInstall = async function() {
+      const promptEvent = window.deferredPrompt;
+      if (!promptEvent) return false;
+      
+      promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
+      console.log(`User response to the install prompt: ${outcome}`);
+      
+      window.deferredPrompt = null;
+      return outcome === 'accepted';
+    };
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

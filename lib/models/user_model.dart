@@ -21,6 +21,7 @@ class UserModel {
   final int? totalSessions;
   final String? acquisitionType;
   final String? planName;
+  final bool isVoucherEnabled;
 
   UserModel({
     required this.id,
@@ -43,6 +44,7 @@ class UserModel {
     this.totalSessions,
     this.acquisitionType,
     this.planName,
+    this.isVoucherEnabled = false,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json, {bool? isConnected}) {
@@ -72,6 +74,7 @@ class UserModel {
         totalSessions: null,
         acquisitionType: json['acquisition_type'],
         planName: json['plan_name'],
+        isVoucherEnabled: json['enable_smart_vouchers'] ?? false,
       );
     } else {
       // Legacy format
@@ -102,6 +105,7 @@ class UserModel {
         totalSessions: json['totalSessions'],
         acquisitionType: json['acquisitionType'],
         planName: json['planName'],
+        isVoucherEnabled: json['enableSmartVouchers'] ?? false,
       );
     }
   }
@@ -131,6 +135,7 @@ class UserModel {
     int? totalSessions,
     String? acquisitionType,
     String? planName,
+    bool? isVoucherEnabled,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -153,6 +158,7 @@ class UserModel {
       totalSessions: totalSessions ?? this.totalSessions,
       acquisitionType: acquisitionType ?? this.acquisitionType,
       planName: planName ?? this.planName,
+      isVoucherEnabled: isVoucherEnabled ?? this.isVoucherEnabled,
     );
   }
 
@@ -178,6 +184,7 @@ class UserModel {
       'totalSessions': totalSessions,
       'acquisitionType': acquisitionType,
       'planName': planName,
+      'enableSmartVouchers': isVoucherEnabled,
     };
   }
 }

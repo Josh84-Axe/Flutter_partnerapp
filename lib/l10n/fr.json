@@ -1,5 +1,8 @@
 {
   "app_title": "Partenaire Tiknet",
+  "install_app_title": "Installer l'application mobile",
+  "install_app_subtitle": "Ajoutez Partenaire Tiknet à votre écran d'accueil pour une meilleure expérience",
+  "install": "Installer",
   "dashboard_title": "Accueil",
   "total_revenue": "Recette Totale",
   "connected_users": "Utilisateurs Connectés",
