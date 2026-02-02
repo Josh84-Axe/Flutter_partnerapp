@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/split/network_provider.dart';
 import '../providers/split/user_provider.dart';
+import '../providers/split/auth_provider.dart';
 import 'create_edit_plan_screen.dart';
 
 class PlansScreen extends StatefulWidget {
@@ -37,6 +38,7 @@ class _PlansScreenState extends State<PlansScreen> {
   Widget build(BuildContext context) {
     final networkProvider = context.watch<NetworkProvider>();
     final userProvider = context.watch<UserProvider>();
+    final authProvider = context.watch<AuthProvider>();
     final filteredPlans = networkProvider.plans.where((plan) {
       if (_searchQuery.isEmpty) return true;
       return plan.name.toLowerCase().contains(_searchQuery.toLowerCase());

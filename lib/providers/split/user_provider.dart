@@ -11,6 +11,7 @@ import '../../models/subscription_model.dart';
 import '../../models/local_notification_model.dart';
 import '../../repositories/subscription_repository.dart';
 import '../../services/local_notification_service.dart';
+import '../../utils/currency_utils.dart';
 
 import 'auth_provider.dart';
 
@@ -105,33 +106,7 @@ class UserProvider with ChangeNotifier {
   Stream<LocalNotification> get localNotificationStream => _localNotificationService.notificationStream;
 
   String get currencyCode {
-    final country = _partnerCountry ?? _authProvider?.partnerCountry;
-    if (country == null || country.isEmpty) return '₦';
-    
-    // Mapping from country name/code to currency symbol
-    switch (country.toLowerCase()) {
-      case 'ghana': return 'GH₵';
-      case 'kenya': return 'KSh';
-      case 'nigeria': return '₦';
-      case 'côte d\'ivoire':
-      case 'ivory coast':
-      case 'senegal':
-      case 'mali':
-      case 'benin':
-      case 'togo':
-      case 'burkina faso':
-      case 'niger':
-      case 'guinea-bissau':
-        return 'XOF';
-      case 'cameroon':
-      case 'gabon':
-      case 'congo':
-      case 'chad':
-      case 'central african republic':
-      case 'equatorial guinea':
-        return 'XAF';
-      default: return '₦';
-    }
+    return CurrencyUtils.getCurrencySymbol(_partnerCountry ?? _authProvider?.partnerCountry);
   }
 
   /// Get payment details for Paystack inline popup
