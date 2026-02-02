@@ -13,6 +13,8 @@ class CurrencyUtils {
       case 'ivory coast':
       case 'cote d\'ivoire':
       case 'côte d\'ivoire':
+      case 'ci':
+      case 'civ':
       case 'benin':
       case 'burkina faso':
       case 'guinea-bissau':
@@ -42,6 +44,8 @@ class CurrencyUtils {
         return 'ZAR';
       case 'guinea':
       case 'guinée':
+      case 'gn':
+      case 'gin':
         return 'GNF';
       default:
         return 'USD';
@@ -109,12 +113,6 @@ class CurrencyUtils {
     
     // Round to nearest integer (no decimals)
     final int amount = price.round();
-    
-    // Create formatter with no decimal digits
-    final formatter = NumberFormat.currency(
-      symbol: '', // We'll add symbol manually to control placement
-      decimalDigits: 0,
-    );
     
     // Format the number part
     String formattedNumber;

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
 import '../../repositories/wallet_repository.dart';
 import '../../repositories/transaction_repository.dart';
 import '../../repositories/payment_method_repository.dart';
@@ -64,6 +63,7 @@ class BillingProvider with ChangeNotifier {
       _reportRepository = ReportRepository(transactionRepository: transactionRepository);
     }
     _partnerCountry = partnerCountry;
+    notifyListeners();
   }
 
   // Getters

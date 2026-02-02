@@ -21,7 +21,6 @@ class UserProvider with ChangeNotifier {
   CollaboratorRepository? _collaboratorRepository;
   RoleRepository? _roleRepository;
   SubscriptionRepository? _subscriptionRepository;
-  PartnerRepository? _partnerRepository;
   PlanRepository? _planRepository;
   final LocalNotificationService _localNotificationService = LocalNotificationService();
   
@@ -79,6 +78,7 @@ class UserProvider with ChangeNotifier {
       _isSubscriptionLoaded = false;
       _hasSkippedSubscriptionCheck = false;
     }
+    notifyListeners();
   }
 
   List<dynamic> _assignedPlans = [];
