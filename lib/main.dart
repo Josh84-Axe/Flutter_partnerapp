@@ -207,7 +207,6 @@ void main() async {
               collaboratorRepository: collaboratorRepository,
               roleRepository: roleRepository,
               subscriptionRepository: subscriptionRepository,
-              partnerRepository: partnerRepository,
               planRepository: planRepository,
             ),
             update: (context, auth, prev) {
@@ -216,7 +215,6 @@ void main() async {
                 collaboratorRepository: collaboratorRepository,
                 roleRepository: roleRepository,
                 subscriptionRepository: subscriptionRepository,
-                partnerRepository: partnerRepository,
                 planRepository: planRepository,
               );
               provider.update(
@@ -224,7 +222,6 @@ void main() async {
                 collaboratorRepository: collaboratorRepository,
                 roleRepository: roleRepository,
                 subscriptionRepository: subscriptionRepository,
-                partnerRepository: partnerRepository,
                 planRepository: planRepository,
                 authProvider: auth,
               );

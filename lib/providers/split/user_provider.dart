@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import '../../repositories/customer_repository.dart';
 import '../../repositories/collaborator_repository.dart';
 import '../../repositories/role_repository.dart';
-import '../../repositories/partner_repository.dart';
 import '../../repositories/plan_repository.dart';
 import '../../models/user_model.dart';
 import '../../models/worker_model.dart';
@@ -46,14 +45,12 @@ class UserProvider with ChangeNotifier {
 
     AuthProvider? authProvider,
     SubscriptionRepository? subscriptionRepository,
-    PartnerRepository? partnerRepository,
     PlanRepository? planRepository,
   }) : _customerRepository = customerRepository,
        _collaboratorRepository = collaboratorRepository,
        _roleRepository = roleRepository,
        _authProvider = authProvider,
        _subscriptionRepository = subscriptionRepository,
-       _partnerRepository = partnerRepository,
        _planRepository = planRepository;
 
   void update({
@@ -61,7 +58,6 @@ class UserProvider with ChangeNotifier {
     CollaboratorRepository? collaboratorRepository,
     RoleRepository? roleRepository,
     SubscriptionRepository? subscriptionRepository,
-    PartnerRepository? partnerRepository,
     PlanRepository? planRepository,
     AuthProvider? authProvider,
   }) {
@@ -70,7 +66,6 @@ class UserProvider with ChangeNotifier {
     _collaboratorRepository = collaboratorRepository;
     _roleRepository = roleRepository;
     _subscriptionRepository = subscriptionRepository;
-    _partnerRepository = partnerRepository;
     _planRepository = planRepository;
 
     if (authProvider?.currentUser == null) {
