@@ -73,6 +73,7 @@ class BillingProvider with ChangeNotifier {
   double get onlineRevenue => _onlineRevenue;
   double get assignedRevenue => _assignedRevenue;
   double get assignedWalletBalance => _assignedWalletBalance;
+  String? get partnerCountry => _partnerCountry;
   
   // Helpers
   String get currencySymbol => CurrencyUtils.getCurrencySymbol(_partnerCountry);

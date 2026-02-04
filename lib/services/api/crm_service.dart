@@ -7,7 +7,7 @@ class CrmService {
 
   CrmService() {
     _dio = Dio(BaseOptions(
-      baseUrl: ApiConfig.crmBaseUrl,
+      baseUrl: ApiConfig.apiHost, // Use apiHost as base for the new endpoint
       headers: {
         'X-API-KEY': ApiConfig.crmApiKey,
         'Content-Type': 'application/json',
@@ -37,12 +37,12 @@ class CrmService {
     try {
       if (kDebugMode) print('📨 [CrmService] Submitting ticket to CRM: $subject');
       
-      final response = await _dio.post('cases/', data: {
-        'subject': subject,
-        'description': description,
+      // Use the new endpoint relative to apiHost
+      final response = await _dio.post('api/comms/external/messages/', data: {
         'contact_email': email,
         'contact_name': name,
-        'priority': priority,
+        'content': 'Subject: $subject\n\n$description',
+        // Note: priority is not expected by the new endpoint but kept in the method signature for compatibility
       });
 
       if (kDebugMode) print('✅ [CrmService] Ticket created: ${response.statusCode}');

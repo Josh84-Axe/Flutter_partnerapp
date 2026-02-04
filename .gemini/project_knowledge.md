@@ -9,6 +9,7 @@ The Flutter Partner App is a comprehensive management tool for internet service 
 - **API Client**: `tiknet_api_client` (local package) and direct `Dio` configuration in `AppState`/`ApiClientFactory`.
 - **Navigation**: Named routes defined in `main.dart`.
 - **Localization**: `easy_localization` for English (`en.json`) and French (`fr.json`).
+- **Currency Utilities**: Centralized `CurrencyUtils` in `lib/utils/currency_utils.dart` handles dynamic symbol mapping and formatting (e.g., FG for Guinea, CFA for West Africa).
 
 ## Key Features
 
@@ -94,3 +95,8 @@ sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-
     # OR
     flutter run -d chrome # Run in browser
     ```
+
+## CI/CD Pipeline (GitHub Actions)
+- **Dev Workflow**: `.github/workflows/ci-dev.yml` triggers on `fix/token-storage-windows`, `fix-token-storage-windows`, and `fix/*` branches. Builds Web (Cloudflare Pages) and Android APK.
+- **Prod Workflow**: `.github/workflows/ci-prod.yml` triggers on `main`. Handles versioning and GitHub Releases.
+- **Flutter Version**: Aligned to `3.38.5` across all environments.

@@ -15,10 +15,13 @@ class ApiConfig {
   /// TEMPORARY: Hardcoded to true for web builds (bool.fromEnvironment doesn't work reliably on web)
   static const bool useRemoteApi = true; // bool.fromEnvironment('USE_REMOTE_API', defaultValue: true);
 
-  /// CRM Tickets endpoint
+  /// CRM Tickets endpoint (Legacy)
   static const String ticketsUrl = 'https://crm.wifi-4u.net/api/tickets';
 
   /// External CRM API Configuration
   static const String crmBaseUrl = 'http://crm-os.com:8002/api/cases/external/';
-  static const String crmApiKey = '3iyeIjYSmiqLro0uLwhxu5gyxGfMEv0AU7DfqEQqny0';
+  static const String crmApiKey = 'aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE';
+  
+  /// New CRM Message endpoint
+  static String get crmMessageUrl => '$apiHost/api/comms/external/messages/';
 }

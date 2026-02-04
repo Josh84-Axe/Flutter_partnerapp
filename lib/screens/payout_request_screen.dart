@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/billing_provider.dart';
+import '../utils/currency_utils.dart';
 import '../utils/app_theme.dart';
 import '../widgets/metric_card.dart';
 
@@ -152,7 +153,9 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                         ],
                         decoration: InputDecoration(
                           prefixText: '${billingProvider.currencySymbol} ',
-                          hintText: '0.00',
+                          hintText: CurrencyUtils.getCurrencyCode(context.read<BillingProvider>().partnerCountry) == 'GNF' || 
+                                    CurrencyUtils.getCurrencyCode(context.read<BillingProvider>().partnerCountry) == 'XOF' 
+                                    ? '0' : '0.00',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -166,7 +169,14 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                     const SizedBox(width: 12),
                     FilledButton(
                       onPressed: () {
-                        _amountController.text = billingProvider.totalBalance.toStringAsFixed(2);
+                        final code = CurrencyUtils.getCurrencyCode(billingProvider.partnerCountry);
+                        const zeroDecimalCodes = {'XOF', 'XAF', 'GNF', 'UGX', 'RWF', 'TZS'};
+                        
+                        if (zeroDecimalCodes.contains(code)) {
+                          _amountController.text = billingProvider.totalBalance.round().toString();
+                        } else {
+                          _amountController.text = billingProvider.totalBalance.toStringAsFixed(2);
+                        }
                       },
                       style: FilledButton.styleFrom(
                         backgroundColor: colorScheme.primary,

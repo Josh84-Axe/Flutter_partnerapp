@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:easy_localization/easy_localization.dart';
 
 // Providers
@@ -485,6 +486,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -573,6 +575,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const PlansScreen(),
     const WalletOverviewScreen(),
   ];
+
 
   @override
   Widget build(BuildContext context) {
