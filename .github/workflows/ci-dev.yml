@@ -3,9 +3,12 @@ name: Dev CI/CD (Web & Android)
 on:
   push:
     branches:
-      - fix/token-storage-windows
-      - fix-token-storage-windows
+      - 'fix/token-storage-windows'
+      - 'fix-token-storage-windows'
+      - 'fix/*'
   workflow_dispatch:
+
+# Dummy comment to force trigger: 2026-02-04
 
 jobs:
   build-and-deploy:
