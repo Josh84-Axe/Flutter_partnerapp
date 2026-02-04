@@ -5,9 +5,11 @@ class CurrencyUtils {
   
   /// Get currency code for a given country
   static String getCurrencyCode(String? country) {
-    if (country == null) return 'USD';
+    if (country == null || country.isEmpty) return 'USD';
     
-    switch (country.toLowerCase()) {
+    final normalized = country.trim().toLowerCase();
+    
+    switch (normalized) {
       case 'ghana':
         return 'GHS';
       case 'ivory coast':
@@ -44,6 +46,7 @@ class CurrencyUtils {
         return 'ZAR';
       case 'guinea':
       case 'guinée':
+      case 'guinee':
       case 'gn':
       case 'gin':
         return 'GNF';
