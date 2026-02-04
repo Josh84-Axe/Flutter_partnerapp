@@ -83,18 +83,29 @@ class CurrencyUtils {
     final code = currencyCode ?? getCurrencyCode(country);
     
     // Determine symbol based on code
-    final symbol = getCurrencySymbol(country); // This already uses getCurrencyCode internally
+    final symbol = getCurrencySymbol(country);
 
     // Currencies with no decimals
     const zeroDecimalCodes = {'XOF', 'XAF', 'GNF', 'UGX', 'RWF', 'TZS'};
     
     if (zeroDecimalCodes.contains(code)) {
       final amount = price.round();
-      final formattedNumber = NumberFormat.decimalPattern('de_DE').format(amount);
+      // Manually format with dot thousands separator to avoid dependency on 'de_DE' locale data on Web
+      final String raw = amount.toString();
+      final StringBuffer buffer = StringBuffer();
+      for (int i = 0; i < raw.length; i++) {
+        if (i > 0 && (raw.length - i) % 3 == 0) {
+          buffer.write('.');
+        }
+        buffer.write(raw[i]);
+      }
+      final formattedNumber = buffer.toString();
       return '$formattedNumber $symbol'; // Suffix: 1.000 CFA or 25.000 FG
     } else {
       // Standard 2-decimal formatting (comma separator)
+      // Use 'en_US' explicitly to ensure consistent decimal/thousands separators
       final formatter = NumberFormat.currency(
+        locale: 'en_US',
         symbol: '',
         decimalDigits: 2,
       );
