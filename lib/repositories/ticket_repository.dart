@@ -16,36 +16,26 @@ class TicketRepository {
   Future<Map<String, dynamic>> createTicket({
     required String subject,
     required String description,
+    required String email,
+    required String name,
     String category = 'general',
     String priority = 'medium',
   }) async {
     try {
-      final response = await _dio.post(
-        ApiConfig.ticketsUrl,
-        data: {
-          'subject': subject,
-          'description': description,
-          'category': category,
-          'priority': priority,
-        },
+      final success = await createCrmTicket(
+        subject: subject,
+        description: description,
+        email: email,
+        name: name,
+        priority: priority.toUpperCase(),
       );
       
-      return response.data;
-    } on DioException catch (e) {
-      if (kDebugMode) {
-        print('❌ [TicketRepository] Error creating ticket: ${e.response?.data ?? e.message}');
-      }
-      
-      if (e.response?.statusCode == 530) {
-        throw Exception('CRM Server configuration error (530). Please try again later or contact support.');
-      }
-      
-      throw Exception('Failed to create ticket: ${e.response?.data['message'] ?? e.message}');
+      return {'success': success};
     } catch (e) {
       if (kDebugMode) {
-        print('❌ [TicketRepository] Unknown error: $e');
+        print('❌ [TicketRepository] Error creating ticket: $e');
       }
-      throw Exception('An unexpected error occurred while creating the ticket.');
+      throw Exception('Failed to create ticket: $e');
     }
   }
 
