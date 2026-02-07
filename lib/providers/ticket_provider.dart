@@ -1,17 +1,20 @@
 import 'package:flutter/foundation.dart';
 import '../repositories/ticket_repository.dart';
+import '../models/crm_ticket_model.dart';
 
 class TicketProvider with ChangeNotifier {
   final TicketRepository _ticketRepository;
 
   bool _isLoading = false;
   String? _error;
+  List<CrmMessage> _messages = [];
 
   TicketProvider({required TicketRepository ticketRepository})
       : _ticketRepository = ticketRepository;
 
   bool get isLoading => _isLoading;
   String? get error => _error;
+  List<CrmMessage> get messages => _messages;
 
   Future<bool> createTicket({
     required String subject,
@@ -36,6 +39,44 @@ class TicketProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return true;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> fetchMessages(String caseId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _messages = await _ticketRepository.fetchTicketMessages(caseId);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  Future<bool> replyToTicket(String caseId, String content) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final success = await _ticketRepository.replyToTicket(caseId, content);
+      if (success) {
+        // Refresh messages after successful reply
+        await fetchMessages(caseId);
+      }
+      _isLoading = false;
+      notifyListeners();
+      return success;
     } catch (e) {
       _isLoading = false;
       _error = e.toString();

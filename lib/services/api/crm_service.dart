@@ -4,16 +4,17 @@ import 'api_config.dart';
 
 class CrmService {
   late final Dio _dio;
+  Dio get dio => _dio;
 
   CrmService() {
     _dio = Dio(BaseOptions(
-      baseUrl: ApiConfig.apiHost, // Use apiHost as base for the new endpoint
+      baseUrl: ApiConfig.crmBaseUrl,
       headers: {
         'X-API-KEY': ApiConfig.crmApiKey,
         'Content-Type': 'application/json',
       },
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
     ));
 
     // Optional: Add logging if in debug mode
@@ -27,6 +28,80 @@ class CrmService {
     }
   }
 
+  /// Create a new ticket in Coleah CRM
+  Future<Response> createTicket({
+    required String subject,
+    required String description,
+    required String email,
+    required String name,
+    String priority = 'LOW',
+  }) async {
+    try {
+      if (kDebugMode) print('📨 [CrmService] Creating ticket in Coleah CRM: $subject');
+      
+      final response = await _dio.post('', data: {
+        'subject': subject,
+        'description': description,
+        'contact_email': email,
+        'contact_name': name,
+        'priority': priority,
+      });
+
+      if (kDebugMode) print('✅ [CrmService] Ticket created: ${response.statusCode}');
+      return response;
+    } on DioException catch (e) {
+      _handleDioError(e, 'Creating Ticket');
+      rethrow;
+    }
+  }
+
+  /// Fetch message history for a specific case
+  Future<Response> fetchMessages(String caseId) async {
+    try {
+      if (kDebugMode) print('📨 [CrmService] Fetching messages for case: $caseId');
+      
+      final response = await _dio.get('$caseId/messages/');
+      
+      if (kDebugMode) print('✅ [CrmService] Messages fetched: ${response.statusCode}');
+      return response;
+    } on DioException catch (e) {
+      _handleDioError(e, 'Fetching Messages');
+      rethrow;
+    }
+  }
+
+  /// Reply to an existing ticket
+  Future<Response> replyToTicket(String caseId, String content) async {
+    try {
+      if (kDebugMode) print('📨 [CrmService] Replying to case: $caseId');
+      
+      final response = await _dio.post('$caseId/reply/', data: {
+        'content': content,
+      });
+
+      if (kDebugMode) print('✅ [CrmService] Reply sent: ${response.statusCode}');
+      return response;
+    } on DioException catch (e) {
+      _handleDioError(e, 'Replying to Ticket');
+      rethrow;
+    }
+  }
+
+  /// Centralized error handling for CRM API
+  void _handleDioError(DioException e, String action) {
+    if (e.response?.statusCode == 401) {
+      if (kDebugMode) print('❌ [CrmService] 401 Unauthorized: Invalid CRM API Key');
+      // Potential to notify AuthProvider or similar if centralized session management is needed
+    } else if (e.response?.statusCode == 400) {
+      if (kDebugMode) print('❌ [CrmService] 400 Bad Request: Invalid payload format during $action');
+    } else {
+      if (kDebugMode) {
+        print('❌ [CrmService] Error during $action: ${e.response?.data ?? e.message}');
+      }
+    }
+  }
+
+  /// Legacy method kept for compatibility if needed during transition
   Future<Response> submitSupportTicket({
     required String subject,
     required String description,
@@ -34,24 +109,12 @@ class CrmService {
     required String name,
     String priority = 'HIGH',
   }) async {
-    try {
-      if (kDebugMode) print('📨 [CrmService] Submitting ticket to CRM: $subject');
-      
-      // Use the new endpoint relative to apiHost
-      final response = await _dio.post('api/comms/external/messages/', data: {
-        'contact_email': email,
-        'contact_name': name,
-        'content': 'Subject: $subject\n\n$description',
-        // Note: priority is not expected by the new endpoint but kept in the method signature for compatibility
-      });
-
-      if (kDebugMode) print('✅ [CrmService] Ticket created: ${response.statusCode}');
-      return response;
-    } on DioException catch (e) {
-      if (kDebugMode) {
-        print('❌ [CrmService] Error submitting ticket: ${e.response?.data ?? e.message}');
-      }
-      rethrow;
-    }
+    return createTicket(
+      subject: subject,
+      description: description,
+      email: email,
+      name: name,
+      priority: priority,
+    );
   }
 }
