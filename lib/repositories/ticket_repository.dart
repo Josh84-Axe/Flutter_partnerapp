@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../services/api/api_config.dart';
 import '../services/api/crm_service.dart';
+import '../models/crm_ticket_model.dart';
 
 class TicketRepository {
   final Dio _dio;
