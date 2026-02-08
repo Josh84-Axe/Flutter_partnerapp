@@ -33,7 +33,7 @@ jobs:
         
       # --- WEB DEPLOYMENT ---
       - name: Build Web
-        run: flutter build web --release --build-name=${{ env.VERSION }} --build-number=${{ github.run_number }}
+        run: flutter build web --release --build-name=${{ env.VERSION }} --build-number=${{ github.run_number }} --dart-define=API_HOST=https://api.tiknetafrica.com --dart-define=CRM_API_KEY=aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE --dart-define=USE_REMOTE_API=true
       
       - name: Deploy to Cloudflare Pages (Production)
         uses: cloudflare/pages-action@v1
