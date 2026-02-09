@@ -36,15 +36,11 @@ jobs:
         run: flutter build web --release --dart-define=API_HOST=https://api.tiknetafrica.com --dart-define=CRM_API_KEY=aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE --dart-define=USE_REMOTE_API=true
       
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: wifi-4u-partner
-          directory: build/web
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: fix/token-storage-windows
-          wranglerVersion: '3'
+          command: pages deploy build/web --project-name=wifi-4u-partner --branch=${{ github.ref_name }}
 
       # --- ANDROID BUILD ---
       - name: Build Android APK

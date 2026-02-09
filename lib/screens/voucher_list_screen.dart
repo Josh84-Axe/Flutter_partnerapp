@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../providers/voucher_provider.dart';
 import '../models/voucher_model.dart';
 import '../services/api/api_config.dart';
+import '../services/voucher_export_service.dart';
 
 class VoucherListScreen extends StatefulWidget {
   final String planId;
@@ -53,6 +54,9 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
             itemBuilder: (context) => [
               PopupMenuItem(value: 'pdf', child: Text('export_pdf'.tr())),
               PopupMenuItem(value: 'csv', child: Text('export_csv'.tr())),
+              const PopupMenuDivider(),
+              PopupMenuItem(value: 'local_pdf', child: Text('Download PDF (Local)')),
+              PopupMenuItem(value: 'local_csv', child: Text('Download CSV (Local)')),
             ],
             icon: const Icon(Icons.download),
           ),
@@ -193,6 +197,18 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
   }
 
   Future<void> _handleExport(String format, VoucherProvider provider) async {
+    final vouchers = provider.getVouchersForPlan(widget.planId);
+    
+    if (format == 'local_pdf') {
+      await VoucherExportService.exportToPDF(vouchers, widget.planName);
+      return;
+    }
+    
+    if (format == 'local_csv') {
+      await VoucherExportService.exportToCSV(vouchers, widget.planName);
+      return;
+    }
+
     final path = provider.getExportUrl(widget.planId, format: format);
     final url = '${ApiConfig.baseUrl}$path';
     final uri = Uri.parse(url);

@@ -15,13 +15,18 @@ class VoucherRepository {
       
       final response = await _dio.get(
         '/partner/plans/tickets/',
-        queryParameters: planId != null ? {'plan': planId} : null,
+        queryParameters: planId != null ? {'plan': int.tryParse(planId) ?? planId} : null,
       );
       
       final responseData = response.data;
+      if (kDebugMode) print('🎫 [VoucherRepository] Raw response data: $responseData');
       if (responseData is Map && responseData['data'] is List) {
         final List list = responseData['data'];
-        return list.map((json) => VoucherModel.fromJson(json)).toList();
+        return list.map((json) {
+          final model = VoucherModel.fromJson(json);
+          if (kDebugMode) print('🎫 [VoucherRepository] Parsed ticket: ${model.code} (Plan: ${model.planId})');
+          return model;
+        }).toList();
       }
       return [];
     } catch (e) {
@@ -37,12 +42,13 @@ class VoucherRepository {
       final response = await _dio.post(
         '/partner/plans/tickets/generate/',
         data: {
-          'plan': planId,
+          'plan': int.tryParse(planId) ?? planId,
           'count': quantity, // New API uses 'count'
         },
       );
       
       final responseData = response.data;
+      if (kDebugMode) print('🎫 [VoucherRepository] Raw generation response: $responseData');
       if (responseData is Map && responseData['data'] is List) {
         final List list = responseData['data'];
         return list.map((json) => VoucherModel.fromJson(json)).toList();

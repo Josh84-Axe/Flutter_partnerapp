@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../models/voucher_model.dart';
 import '../repositories/voucher_repository.dart';
 
@@ -23,7 +24,10 @@ class VoucherProvider with ChangeNotifier {
 
     try {
       final vouchers = await _repository.fetchVouchers(planId);
-      _planVouchers[planId] = vouchers;
+      // Safeguard: Filter by planId on frontend in case backend returns unfiltered list
+      final filtered = vouchers.where((v) => v.planId == planId).toList();
+      if (kDebugMode) print('🎫 [VoucherProvider] Loaded ${vouchers.length} vouchers, ${filtered.length} matched plan $planId');
+      _planVouchers[planId] = filtered;
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -39,8 +43,12 @@ class VoucherProvider with ChangeNotifier {
 
     try {
       final newVouchers = await _repository.generateVouchers(planId, quantity);
+      // Safeguard: Also filter new vouchers to ensure they belong to this plan
+      final filteredNew = newVouchers.where((v) => v.planId == planId).toList();
+      if (kDebugMode) print('🎫 [VoucherProvider] Generated ${newVouchers.length} vouchers, ${filteredNew.length} matched plan $planId');
+      
       final currentVouchers = _planVouchers[planId] ?? [];
-      _planVouchers[planId] = [...newVouchers, ...currentVouchers];
+      _planVouchers[planId] = [...filteredNew, ...currentVouchers];
     } catch (e) {
       _error = e.toString();
     } finally {
