@@ -74,15 +74,20 @@ class UserModel {
         totalSessions: null,
         acquisitionType: json['acquisition_type'],
         planName: json['plan_name'],
-        isVoucherEnabled: json['enable_smart_vouchers'] ?? false,
+        isVoucherEnabled: json['enable_smart_vouchers'] == true || json['enableSmartVouchers'] == true,
       );
     } else {
       // Legacy format
+      final userRole = json['role'] is Map ? (json['role']['name']?.toString() ?? '') : (json['role']?.toString() ?? '');
+      final isVouchers = json['enable_smart_vouchers'] == true || 
+                        json['enableSmartVouchers'] == true ||
+                        (userRole == 'Administrator' || userRole == 'Partner');
+
       return UserModel(
         id: json['id']?.toString() ?? '',
         name: json['name'] ?? '',
         email: json['email'] ?? '',
-        role: json['role'] ?? '',
+        role: userRole,
         phone: json['phone'],
         isActive: json['isActive'] ?? true,
         createdAt: json['createdAt'] != null
@@ -105,7 +110,7 @@ class UserModel {
         totalSessions: json['totalSessions'],
         acquisitionType: json['acquisitionType'],
         planName: json['planName'],
-        isVoucherEnabled: json['enableSmartVouchers'] ?? false,
+        isVoucherEnabled: isVouchers,
       );
     }
   }

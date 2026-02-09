@@ -292,7 +292,7 @@ class HotspotPartnerApp extends StatelessWidget {
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
-      home: const SplashScreen(),
+      home: const AuthWrapper(),
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
@@ -555,7 +555,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
       }
     }
 
-    return const HomeScreen();
+    return const PlansScreen();
   }
 }
 
@@ -567,7 +567,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
+  int _currentIndex = 2;
 
   final List<Widget> _screens = [
     const DashboardScreen(),
