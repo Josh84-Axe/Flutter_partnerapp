@@ -41,6 +41,13 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy build/web --project-name=wifi-4u-partner --branch=${{ github.ref_name }}
+  
+      - name: Purge Cache (Optional)
+        continue-on-error: true
+        uses: jakejarvis/cloudflare-purge-action@master
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_AUTH_KEY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       # --- ANDROID BUILD ---
       - name: Build Android APK
