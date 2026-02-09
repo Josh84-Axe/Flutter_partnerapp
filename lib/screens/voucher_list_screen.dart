@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/voucher_provider.dart';
 import '../models/voucher_model.dart';
+import '../services/api/api_config.dart';
 
 class VoucherListScreen extends StatefulWidget {
   final String planId;
@@ -137,10 +138,10 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
                                 border: Border.all(color: _getStatusColor(voucher.status)),
                               ),
                               child: Text(
-                                voucher.status.toUpperCase(),
+                                (voucher.isAssigned ? 'assigned' : voucher.status).toUpperCase(),
                                 style: TextStyle(
                                   fontSize: 10,
-                                  color: _getStatusColor(voucher.status),
+                                  color: _getStatusColor(voucher.isAssigned ? 'assigned' : voucher.status),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -186,12 +187,14 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
       case 'active': return Colors.green;
       case 'used': return Colors.orange;
       case 'expired': return Colors.red;
+      case 'assigned': return Colors.blue;
       default: return Colors.grey;
     }
   }
 
   Future<void> _handleExport(String format, VoucherProvider provider) async {
-    final url = provider.getExportUrl(widget.planId, format: format);
+    final path = provider.getExportUrl(widget.planId, format: format);
+    final url = '${ApiConfig.baseUrl}$path';
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
