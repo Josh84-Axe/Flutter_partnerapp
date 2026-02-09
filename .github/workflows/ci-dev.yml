@@ -38,7 +38,7 @@ jobs:
       - name: Verify Build Output
         run: |
           echo "Checking index.html content..."
-          grep "VERSION 1.0.9" build/web/index.html
+          grep "VERSION 1.0.10" build/web/index.html
           if [ $? -eq 0 ]; then
             echo "✅ VERIFICATION SUCCESS: New index.html generated correctly."
           else
