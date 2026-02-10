@@ -139,14 +139,12 @@ void main() async {
   late final Dio dio;
 
   try {
-    print('🚀 [Main] Initializing Dependency Injection...');
     tokenStorage = TokenStorage();
     apiClientFactory = ApiClientFactory(
       tokenStorage: tokenStorage,
       baseUrl: ApiConfig.baseUrl, 
     );
     dio = apiClientFactory.createDio();
-    print('✅ [Main] DI Initialized');
   } catch (e, stack) {
     print('❌ [Main] DI Initialization Error: $e\n$stack');
     rethrow;
@@ -171,7 +169,6 @@ void main() async {
   late final VoucherRepository voucherRepository;
 
   try {
-    print('🚀 [Main] Initializing Repositories...');
     authRepository = AuthRepository(dio: dio, tokenStorage: tokenStorage);
     partnerRepository = PartnerRepository(dio: dio);
   
@@ -192,20 +189,16 @@ void main() async {
     planConfigRepository = PlanConfigRepository(dio: dio);
     ticketRepository = TicketRepository(dio: dio);
     voucherRepository = VoucherRepository(dio: dio);
-    print('✅ [Main] Repositories Initialized');
   } catch (e, stack) {
     print('❌ [Main] Repository Initialization Error: $e\n$stack');
-    // Rethrow to stop execution but we logged it
     rethrow;
   }
   
   // Initialize PWA service
   try {
-    print('🚀 [Main] Initializing PWA Service...');
     PwaService().init();
-    print('✅ [Main] PWA Service Initialized');
-  } catch (e, stack) {
-    print('❌ [Main] PWA Service Error: $e\n$stack');
+  } catch (e) {
+    if (kDebugMode) print('❌ [Main] PWA Service Error: $e');
   }
 
   runApp(

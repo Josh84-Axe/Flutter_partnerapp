@@ -66,12 +66,8 @@
     });
   </script>
 
-  <div id="debug-banner"
-    style="position: fixed; top: 0; left: 0; width: 100%; background-color: #FFA500; color: black; text-align: center; padding: 10px; z-index: 9999; font-weight: bold;">
-    FRESH DEPLOYMENT: v1.1.5 (DEBUG)
-  </div>
   <script>
-    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.5 - TIMESTAMP: ' + new Date().toISOString());
+    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.6 - TIMESTAMP: ' + new Date().toISOString());
     window.deferredPrompt = null;
 
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -91,7 +87,7 @@
     };
 
     window.promptAppInstall = async function () {
-      console.log('🚀 Loading Flutter App v1.1.5-fresh...');
+      console.log('🚀 Loading Flutter App v1.1.6-fresh...');
       const promptEvent = window.deferredPrompt;
       if (!promptEvent) return false;
 
@@ -114,7 +110,7 @@
       });
     }
   </script>
-  <script src="flutter_bootstrap.js?v=1.1.5-fresh" async></script>
+  <script src="flutter_bootstrap.js?v=1.1.6-fresh" async></script>
 </body>
 
 </html>
