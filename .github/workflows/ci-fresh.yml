@@ -1,0 +1,53 @@
+name: Deploy Web App (FRESH)
+
+on:
+  push:
+    branches:
+      - dev-fresh
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+          channel: 'stable'
+          cache: false
+      
+      - name: Clean Build
+        run: flutter clean
+
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Build Web
+        run: flutter build web --release --dart-define=API_HOST=https://api.tiknetafrica.com --dart-define=CRM_API_KEY=aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE --dart-define=USE_REMOTE_API=true
+      
+      - name: Verify Build Output
+        run: |
+          echo "Checking index.html content..."
+          grep "FRESH DEPLOYMENT: v1.1.0" build/web/index.html
+          if [ $? -eq 0 ]; then
+            echo "✅ VERIFICATION SUCCESS: New index.html generated correctly."
+          else
+            echo "❌ VERIFICATION FAILED: Fresh index.html content missing!"
+            exit 1
+          fi
+      
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy build/web --project-name=wifi-4u-partner --branch=dev-fresh
+
+      - name: Purge Cache (Optional)
+        continue-on-error: true
+        uses: jakejarvis/cloudflare-purge-action@master
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_AUTH_KEY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
