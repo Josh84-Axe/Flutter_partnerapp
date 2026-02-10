@@ -127,7 +127,7 @@ import 'screens/active_sessions_screen.dart';
 import 'screens/help_support_screen.dart';
 
 void main() async {
-  print('🚀 WIFI-4U PARTNER APP - FLUTTER RUN v1.1.0 (dev-fresh)');
+  print('🚀 WIFI-4U PARTNER APP - FLUTTER RUN v1.1.1 (dev-fresh)');
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   
