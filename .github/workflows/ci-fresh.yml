@@ -30,7 +30,8 @@ jobs:
       - name: Verify Build Output
         run: |
           echo "Checking index.html content..."
-          grep "FRESH DEPLOYMENT: v1\.1\.[0-9]" build/web/index.html
+          # Check for console log version string
+          grep "WIFI-4U PARTNER APP - BUILD v1\.1\.[0-9]" build/web/index.html
           if [ $? -eq 0 ]; then
             echo "✅ VERIFICATION SUCCESS: New index.html generated correctly."
           else
