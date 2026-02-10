@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/voucher_provider.dart';
+import '../providers/split/network_provider.dart';
 import '../models/voucher_model.dart';
 import '../services/api/api_config.dart';
 import '../services/voucher_export_service.dart';
+import '../widgets/voucher_ticket_card.dart';
 
 class VoucherListScreen extends StatefulWidget {
   final String planId;
@@ -29,12 +31,25 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<VoucherProvider>().loadVouchers(widget.planId);
+      // Ensure plans are loaded to display features on tickets
+      final networkProvider = context.read<NetworkProvider>();
+      if (networkProvider.plans.isEmpty) {
+        networkProvider.loadPlans();
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<VoucherProvider>();
+    final networkProvider = context.watch<NetworkProvider>();
+    
+    // Find the full plan model to get features (data limit, devices, etc.)
+    final planModel = networkProvider.plans.cast<dynamic>().firstWhere(
+      (p) => p.id.toString() == widget.planId || p.slug == widget.planId,
+      orElse: () => null,
+    );
+
     final vouchers = provider.getVouchersForPlan(widget.planId).where((v) {
       return _showUsed ? true : v.isActive;
     }).toList();
@@ -52,9 +67,6 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
           PopupMenuButton<String>(
             onSelected: (value) => _handleExport(value, provider),
             itemBuilder: (context) => [
-              PopupMenuItem(value: 'pdf', child: Text('export_pdf'.tr())),
-              PopupMenuItem(value: 'csv', child: Text('export_csv'.tr())),
-              const PopupMenuDivider(),
               PopupMenuItem(value: 'local_pdf', child: Text('Download PDF (Local)')),
               PopupMenuItem(value: 'local_csv', child: Text('Download CSV (Local)')),
             ],
@@ -113,43 +125,15 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
                         itemCount: vouchers.length,
                         itemBuilder: (context, index) {
                           final voucher = vouchers[index];
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: voucher.isActive 
-                                  ? Colors.green.withValues(alpha: 0.1) 
-                                  : Colors.grey.withValues(alpha: 0.1),
-                              child: Icon(
-                                Icons.vpn_key,
-                                color: voucher.isActive ? Colors.green : Colors.grey,
-                              ),
-                            ),
-                            title: Text(
-                              voucher.code,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.2,
-                                fontSize: 16,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '${'created'.tr()}: ${DateFormat('yyyy-MM-dd HH:mm').format(voucher.createdAt)}',
-                            ),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: _getStatusColor(voucher.status).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: _getStatusColor(voucher.status)),
-                              ),
-                              child: Text(
-                                (voucher.isAssigned ? 'assigned' : voucher.status).toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: _getStatusColor(voucher.isAssigned ? 'assigned' : voucher.status),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+                          return VoucherTicketCard(
+                            voucher: voucher,
+                            plan: planModel,
+                            onMessage: (msg) {
+                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(msg), duration: const Duration(seconds: 1)),
+                              );
+                            },
                           );
                         },
                       ),
@@ -186,16 +170,6 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'active': return Colors.green;
-      case 'used': return Colors.orange;
-      case 'expired': return Colors.red;
-      case 'assigned': return Colors.blue;
-      default: return Colors.grey;
-    }
-  }
-
   Future<void> _handleExport(String format, VoucherProvider provider) async {
     final vouchers = provider.getVouchersForPlan(widget.planId);
     
@@ -207,19 +181,6 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
     if (format == 'local_csv') {
       await VoucherExportService.exportToCSV(vouchers, widget.planName);
       return;
-    }
-
-    final path = provider.getExportUrl(widget.planId, format: format);
-    final url = '${ApiConfig.baseUrl}$path';
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('could_not_launch_export'.tr())),
-        );
-      }
     }
   }
 
@@ -263,9 +224,39 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(provider.error!)),
                 );
+              } else if (mounted) {
+                _showSuccessDialog(quantity);
               }
             },
             child: Text('generate'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _showSuccessDialog(int quantity) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.check_circle, color: Colors.green, size: 48),
+        title: const Text('Success!'),
+        content: Text(
+          '$quantity vouchers have been generated successfully.\n\nWould you like to download them now?',
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Later'),
+          ),
+          FilledButton.icon(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _handleExport('local_pdf', context.read<VoucherProvider>());
+            },
+            icon: const Icon(Icons.picture_as_pdf),
+            label: const Text('Download PDF'),
           ),
         ],
       ),
