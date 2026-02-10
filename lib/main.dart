@@ -128,42 +128,84 @@ import 'screens/active_sessions_screen.dart';
 import 'screens/help_support_screen.dart';
 
 void main() async {
-  print('🚀 WIFI-4U PARTNER APP - FLUTTER RUN v1.1.1 (dev-fresh)');
+  print('🚀 WIFI-4U PARTNER APP - FLUTTER RUN v1.1.5 (dev-fresh-debug)');
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   
   // Dependency Injection Setup
-  final tokenStorage = TokenStorage();
-  final apiClientFactory = ApiClientFactory(
-    tokenStorage: tokenStorage,
-    baseUrl: ApiConfig.baseUrl, 
-  );
-  final dio = apiClientFactory.createDio();
+  late final TokenStorage tokenStorage;
+  late final ApiClientFactory apiClientFactory;
+  late final Dio dio;
+
+  try {
+    print('🚀 [Main] Initializing Dependency Injection...');
+    tokenStorage = TokenStorage();
+    apiClientFactory = ApiClientFactory(
+      tokenStorage: tokenStorage,
+      baseUrl: ApiConfig.baseUrl, 
+    );
+    dio = apiClientFactory.createDio();
+    print('✅ [Main] DI Initialized');
+  } catch (e, stack) {
+    print('❌ [Main] DI Initialization Error: $e\n$stack');
+    rethrow;
+  }
 
   // Core Repositories
-  final authRepository = AuthRepository(dio: dio, tokenStorage: tokenStorage);
-  final partnerRepository = PartnerRepository(dio: dio);
+  late final AuthRepository authRepository;
+  late final PartnerRepository partnerRepository;
+  late final WalletRepository walletRepository;
+  late final TransactionRepository transactionRepository;
+  late final PaymentMethodRepository paymentMethodRepository;
+  late final CustomerRepository customerRepository;
+  late final CollaboratorRepository collaboratorRepository;
+  late final RoleRepository roleRepository;
+  late final SubscriptionRepository subscriptionRepository;
+  late final PlanRepository planRepository;
+  late final RouterRepository routerRepository;
+  late final HotspotRepository hotspotRepository;
+  late final SessionRepository sessionRepository;
+  late final PlanConfigRepository planConfigRepository;
+  late final TicketRepository ticketRepository;
+  late final VoucherRepository voucherRepository;
+
+  try {
+    print('🚀 [Main] Initializing Repositories...');
+    authRepository = AuthRepository(dio: dio, tokenStorage: tokenStorage);
+    partnerRepository = PartnerRepository(dio: dio);
   
-  // Feature Repositories
-  final walletRepository = WalletRepository(dio: dio);
-  final transactionRepository = TransactionRepository(dio: dio);
-  final paymentMethodRepository = PaymentMethodRepository(dio: dio);
+    // Feature Repositories
+    walletRepository = WalletRepository(dio: dio);
+    transactionRepository = TransactionRepository(dio: dio);
+    paymentMethodRepository = PaymentMethodRepository(dio: dio);
   
-  final customerRepository = CustomerRepository(dio: dio);
-  final collaboratorRepository = CollaboratorRepository(dio: dio);
-  final roleRepository = RoleRepository(dio: dio);
-  final subscriptionRepository = SubscriptionRepository(dio: dio);
-  final planRepository = PlanRepository(dio: dio);
+    customerRepository = CustomerRepository(dio: dio);
+    collaboratorRepository = CollaboratorRepository(dio: dio);
+    roleRepository = RoleRepository(dio: dio);
+    subscriptionRepository = SubscriptionRepository(dio: dio);
+    planRepository = PlanRepository(dio: dio);
   
-  final routerRepository = RouterRepository(dio: dio);
-  final hotspotRepository = HotspotRepository(dio: dio);
-  final sessionRepository = SessionRepository(dio: dio);
-  final planConfigRepository = PlanConfigRepository(dio: dio);
-  final ticketRepository = TicketRepository(dio: dio);
-  final voucherRepository = VoucherRepository(dio: dio);
+    routerRepository = RouterRepository(dio: dio);
+    hotspotRepository = HotspotRepository(dio: dio);
+    sessionRepository = SessionRepository(dio: dio);
+    planConfigRepository = PlanConfigRepository(dio: dio);
+    ticketRepository = TicketRepository(dio: dio);
+    voucherRepository = VoucherRepository(dio: dio);
+    print('✅ [Main] Repositories Initialized');
+  } catch (e, stack) {
+    print('❌ [Main] Repository Initialization Error: $e\n$stack');
+    // Rethrow to stop execution but we logged it
+    rethrow;
+  }
   
   // Initialize PWA service
-  PwaService().init();
+  try {
+    print('🚀 [Main] Initializing PWA Service...');
+    PwaService().init();
+    print('✅ [Main] PWA Service Initialized');
+  } catch (e, stack) {
+    print('❌ [Main] PWA Service Error: $e\n$stack');
+  }
 
   runApp(
     EasyLocalization(
