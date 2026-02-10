@@ -35,9 +35,40 @@
 </head>
 
 <body>
+  <!-- ERROR OVERLAY (Added for debugging v1.1.2) -->
+  <div id="error-overlay"
+    style="display: none; position: fixed; top: 50px; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); z-index: 10000; overflow: auto; padding: 20px; box-sizing: border-box;">
+    <h2 style="color: red;">Application Error</h2>
+    <p>The application encountered a critical error and could not load.</p>
+    <pre id="error-message"
+      style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc; color: #333; white-space: pre-wrap; word-wrap: break-word;"></pre>
+    <button onclick="window.location.reload()"
+      style="padding: 10px 20px; font-size: 16px; margin-top: 20px; cursor: pointer;">Reload Application</button>
+  </div>
+  <script>
+    window.onerror = function (message, source, lineno, colno, error) {
+      var overlay = document.getElementById('error-overlay');
+      var msgElement = document.getElementById('error-message');
+      if (overlay && msgElement) {
+        overlay.style.display = 'block';
+        msgElement.textContent = "Error: " + message + "\nSource: " + source + ":" + lineno + ":" + colno + "\nStack: " + (error ? error.stack : 'N/A');
+      }
+      return false; // Let default handler run too
+    };
+
+    window.addEventListener('unhandledrejection', function (event) {
+      var overlay = document.getElementById('error-overlay');
+      var msgElement = document.getElementById('error-message');
+      if (overlay && msgElement) {
+        overlay.style.display = 'block';
+        msgElement.textContent = "Unhandled Promise Rejection: " + event.reason;
+      }
+    });
+  </script>
+
   <div id="debug-banner"
-    style="position: fixed; top: 0; left: 0; width: 100%; background-color: #0000FF; color: white; text-align: center; padding: 10px; z-index: 9999; font-weight: bold;">
-    FRESH DEPLOYMENT: v1.1.1 (dev-fresh-fixed)
+    style="position: fixed; top: 0; left: 0; width: 100%; background-color: #008000; color: white; text-align: center; padding: 10px; z-index: 9999; font-weight: bold;">
+    FRESH DEPLOYMENT: v1.1.2 (dev-fresh-fixed-v2)
   </div>
   <script>
     console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.0.8 - TIMESTAMP: ' + new Date().toISOString());
@@ -60,6 +91,7 @@
     };
 
     window.promptAppInstall = async function () {
+      console.log('🚀 Loading Flutter App v1.1.2-fresh...');
       const promptEvent = window.deferredPrompt;
       if (!promptEvent) return false;
 

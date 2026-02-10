@@ -30,7 +30,7 @@ jobs:
       - name: Verify Build Output
         run: |
           echo "Checking index.html content..."
-          grep "FRESH DEPLOYMENT: v1.1.1" build/web/index.html
+          grep "FRESH DEPLOYMENT: v1.1.2" build/web/index.html
           if [ $? -eq 0 ]; then
             echo "✅ VERIFICATION SUCCESS: New index.html generated correctly."
           else
