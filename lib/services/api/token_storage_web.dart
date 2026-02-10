@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'token_storage_stub.dart';
 
-class TokenStorageImpl implements TokenStorage {
+class TokenStorage {
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
   
   SharedPreferences? _prefs;
 
-  TokenStorageImpl({dynamic storage}); // Ignore storage arg on web
+  TokenStorage({dynamic storage}); // Ignore storage arg on web
 
   Future<void> _ensurePrefsInitialized() async {
     if (_prefs == null) {
@@ -17,7 +16,6 @@ class TokenStorageImpl implements TokenStorage {
     }
   }
 
-  @override
   Future<void> saveTokens({required String accessToken, required String refreshToken}) async {
     if (kDebugMode) print('TokenStorage (Web): Saving tokens');
     await _ensurePrefsInitialized();
@@ -27,19 +25,16 @@ class TokenStorageImpl implements TokenStorage {
     ]);
   }
 
-  @override
   Future<String?> getAccessToken() async {
     await _ensurePrefsInitialized();
     return _prefs!.getString(_accessTokenKey);
   }
 
-  @override
   Future<String?> getRefreshToken() async {
     await _ensurePrefsInitialized();
     return _prefs!.getString(_refreshTokenKey);
   }
 
-  @override
   Future<bool> hasTokens() async {
     await _ensurePrefsInitialized();
     final access = _prefs!.getString(_accessTokenKey);
@@ -47,7 +42,6 @@ class TokenStorageImpl implements TokenStorage {
     return access != null && refresh != null;
   }
 
-  @override
   Future<void> clearTokens() async {
     await _ensurePrefsInitialized();
     await Future.wait([
