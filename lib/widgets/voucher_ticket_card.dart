@@ -162,8 +162,8 @@ class _VoucherTicketCardState extends State<VoucherTicketCard> {
 
                   const SizedBox(height: 12),
 
-                  // Bottom Section: Features OR Used By Info
-                  if (isUsed && widget.voucher.usedBy != null) ...[
+                  // Bottom Section: Features (Shelved 'Used By' for now as per user request)
+                  /* if (isUsed && widget.voucher.usedBy != null) ...[
                     const Divider(),
                     Row(
                       children: [
@@ -193,7 +193,7 @@ class _VoucherTicketCardState extends State<VoucherTicketCard> {
                           ),
                       ],
                     ),
-                  ] else if (widget.plan != null) ...[
+                  ] else */ if (widget.plan != null) ...[
                     Row(
                       children: [
                         if (widget.plan?.dataLimit != null)

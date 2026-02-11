@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../providers/ticket_provider.dart';
+import '../services/support_ticket_service.dart';
 import '../providers/split/auth_provider.dart';
 
 class CreateTicketDialog extends StatefulWidget {
@@ -16,11 +16,16 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
   final _subjectController = TextEditingController();
   final _descriptionController = TextEditingController();
   
+  // Note: API spec asks for 'priority', but UI had 'category' too. 
+  // We'll keep both for UI but map as needed or include in description if API doesn't support category.
   String _selectedCategory = 'technical';
-  String _selectedPriority = 'medium';
+  String _selectedPriority = 'MEDIUM'; // API expects uppercase: LOW, MEDIUM, HIGH, URGENT
 
   final List<String> _categories = ['general', 'sales', 'partnership', 'technical'];
-  final List<String> _priorities = ['low', 'medium', 'high', 'critical'];
+  // Updated to match API requirements
+  final List<String> _priorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -31,32 +36,55 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
 
   Future<void> _submitTicket() async {
     if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+
+      // Get current user details
+      // Assuming AuthProvider has the latest user info.
+      // If AuthProvider is not available or doesn't have user, we might fail or use defaults.
       final authProvider = context.read<AuthProvider>();
       final currentUser = authProvider.currentUser;
 
-      final success = await context.read<TicketProvider>().createTicket(
-        subject: _subjectController.text.trim(),
-        description: _descriptionController.text.trim(),
-        category: _selectedCategory,
-        priority: _selectedPriority,
-        email: currentUser?.email ?? 'guest@tiknetafrica.com',
-        name: currentUser?.name ?? 'Guest Partner',
-      );
+      if (currentUser == null) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: User not found. Please log in.')),
+        );
+        return;
+      }
 
-      if (mounted) {
-        if (success) {
-          Navigator.of(context).pop();
+      final service = SupportTicketService();
+      // Combining category into description if API doesn't support it directly
+      final fullDescription = '[Category: ${_selectedCategory.toUpperCase()}]\n\n${_descriptionController.text.trim()}';
+
+      try {
+        final success = await service.createTicket(
+          subject: _subjectController.text.trim(),
+          description: fullDescription,
+          contactName: currentUser.name ?? 'Valued Partner',
+          contactEmail: currentUser.email,
+          priority: _selectedPriority,
+        );
+
+        if (mounted) {
+          setState(() => _isLoading = false);
+          if (success) {
+            Navigator.of(context).pop();
+            _showSuccessDialog();
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('ticket_creation_failed'.tr()),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('ticket_created_success'.tr()),
-              backgroundColor: Colors.green,
-            ),
-          );
-        } else {
-          final error = context.read<TicketProvider>().error;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(error ?? 'ticket_creation_failed'.tr()),
+              content: Text('Error: $e'),
               backgroundColor: Colors.red,
             ),
           );
@@ -65,18 +93,34 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
     }
   }
 
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green),
+            const SizedBox(width: 8),
+            Text('success'.tr()),
+          ],
+        ),
+        content: const Text('Your ticket has been created successfully.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('ok'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isLoading = context.watch<TicketProvider>().isLoading;
     final theme = Theme.of(context);
 
-    // Fallback translations if keys don't exist yet
-    // 'ticket_create_title': 'Create Support Ticket',
-    // 'ticket_subject_label': 'Subject',
-    // 'ticket_desc_label': 'Description',
-    // 'ticket_category_label': 'Category',
-    // 'ticket_priority_label': 'Priority',
-    // 'ticket_submit_btn': 'Submit Ticket',
+    // Fallback translations check
+    // Ensure you have these keys in your localization files or provide defaults.
     
     return AlertDialog(
       title: Text('create_ticket'.tr()),
@@ -134,7 +178,7 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
                 items: _priorities.map((prio) {
                   return DropdownMenuItem(
                     value: prio,
-                    child: Text(prio.toUpperCase()),
+                    child: Text(prio),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -169,12 +213,12 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: isLoading ? null : () => Navigator.of(context).pop(),
+          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
           child: Text('cancel'.tr()),
         ),
         FilledButton(
-          onPressed: isLoading ? null : _submitTicket,
-          child: isLoading 
+          onPressed: _isLoading ? null : _submitTicket,
+          child: _isLoading 
               ? const SizedBox(
                   width: 20, 
                   height: 20, 

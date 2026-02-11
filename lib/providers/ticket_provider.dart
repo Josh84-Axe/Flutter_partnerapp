@@ -7,6 +7,7 @@ class TicketProvider with ChangeNotifier {
 
   bool _isLoading = false;
   String? _error;
+  List<CrmTicket> _tickets = [];
   List<CrmMessage> _messages = [];
 
   TicketProvider({required TicketRepository ticketRepository})
@@ -14,6 +15,7 @@ class TicketProvider with ChangeNotifier {
 
   bool get isLoading => _isLoading;
   String? get error => _error;
+  List<CrmTicket> get tickets => _tickets;
   List<CrmMessage> get messages => _messages;
 
   Future<bool> createTicket({
@@ -44,6 +46,22 @@ class TicketProvider with ChangeNotifier {
       _error = e.toString();
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<void> fetchTickets(String email) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _tickets = await _ticketRepository.fetchTickets(email);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
     }
   }
 

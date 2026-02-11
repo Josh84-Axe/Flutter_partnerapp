@@ -28,6 +28,23 @@ class CrmService {
     }
   }
 
+  /// List tickets for a specific contact email
+  Future<Response> fetchTickets(String email) async {
+    try {
+      if (kDebugMode) print('📨 [CrmService] Fetching tickets for: $email');
+      
+      final response = await _dio.get('', queryParameters: {
+        'contact_email': email,
+      });
+
+      if (kDebugMode) print('✅ [CrmService] Tickets fetched: ${response.statusCode}');
+      return response;
+    } on DioException catch (e) {
+      _handleDioError(e, 'Fetching Tickets');
+      rethrow;
+    }
+  }
+
   /// Create a new ticket in Coleah CRM
   Future<Response> createTicket({
     required String subject,

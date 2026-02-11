@@ -66,6 +66,23 @@ class TicketRepository {
     }
   }
 
+  /// Fetches all tickets for a specific email
+  Future<List<CrmTicket>> fetchTickets(String email) async {
+    try {
+      final response = await _crmService.fetchTickets(email);
+      if (response.statusCode == 200 && response.data != null) {
+        final List<dynamic> data = response.data as List<dynamic>;
+        return data.map((json) => CrmTicket.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ [TicketRepository] Error fetching tickets: $e');
+      }
+      rethrow;
+    }
+  }
+
   /// Fetches conversation history for a specific ticket
   Future<List<CrmMessage>> fetchTicketMessages(String caseId) async {
     try {

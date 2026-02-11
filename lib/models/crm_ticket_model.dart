@@ -53,22 +53,28 @@ class CrmTicket {
 class CrmMessage {
   final String id;
   final String content;
-  final String senderType; // 'user' or 'agent'
-  final DateTime? createdAt;
+  final String direction; // 'INBOUND' or 'OUTBOUND'
+  final String senderName;
+  final DateTime? sentAt;
+  final bool isInternal;
 
   CrmMessage({
     required this.id,
     required this.content,
-    required this.senderType,
-    this.createdAt,
+    required this.direction,
+    required this.senderName,
+    this.sentAt,
+    this.isInternal = false,
   });
 
   factory CrmMessage.fromJson(Map<String, dynamic> json) {
     return CrmMessage(
       id: json['id']?.toString() ?? '',
       content: json['content'] ?? '',
-      senderType: json['sender_type'] ?? 'agent',
-      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
+      direction: json['direction'] ?? 'OUTBOUND',
+      senderName: json['sender_name'] ?? 'Agent',
+      sentAt: json['sent_at'] != null ? DateTime.tryParse(json['sent_at']) : null,
+      isInternal: json['is_internal'] ?? false,
     );
   }
 
@@ -76,10 +82,14 @@ class CrmMessage {
     return {
       'id': id,
       'content': content,
-      'sender_type': senderType,
-      'created_at': createdAt?.toIso8601String(),
+      'direction': direction,
+      'sender_name': senderName,
+      'sent_at': sentAt?.toIso8601String(),
+      'is_internal': isInternal,
     };
   }
+
+  bool get isFromUser => direction == 'INBOUND';
 }
 
 class CrmTicketPayload {
