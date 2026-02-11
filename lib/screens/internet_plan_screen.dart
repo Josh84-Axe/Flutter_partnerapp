@@ -128,7 +128,14 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          tooltip: kIsWeb ? 'dashboard_title'.tr() : 'back_to_dashboard'.tr(),
+          onPressed: () {
+            if (kIsWeb || !Navigator.canPop(context)) {
+              Navigator.pushReplacementNamed(context, '/home');
+            } else {
+              Navigator.pop(context);
+            }
+          },
         ),
         title: Text('internet_plans'.tr()),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,

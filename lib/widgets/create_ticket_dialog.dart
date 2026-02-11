@@ -69,7 +69,12 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
           setState(() => _isLoading = false);
           if (success) {
             Navigator.of(context).pop();
-            _showSuccessDialog();
+            _showStatusDialog(
+              title: 'success'.tr(),
+              message: 'ticket_created_detail'.tr(),
+              icon: Icons.check_circle,
+              iconColor: Colors.green,
+            );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -82,33 +87,65 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
       } catch (e) {
         if (mounted) {
           setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          final errorMsg = e.toString();
+          
+          // Special handling for CORS/Network error where ticket might actually be created
+          if (errorMsg.contains('CORS') || errorMsg.contains('XMLHttpRequest') || errorMsg.contains('onError callback')) {
+            Navigator.of(context).pop();
+            _showStatusDialog(
+              title: 'ticket_likely_created_title'.tr(),
+              message: 'ticket_likely_created_detail'.tr(),
+              icon: Icons.info_outline,
+              iconColor: Colors.orange,
+              isLikelyCreated: true,
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(errorMsg.replaceFirst('Exception: ', '')),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       }
     }
   }
 
-  void _showSuccessDialog() {
+  void _showStatusDialog({
+    required String title,
+    required String message,
+    required IconData icon,
+    required Color iconColor,
+    bool isLikelyCreated = false,
+  }) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Row(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Column(
           children: [
-            const Icon(Icons.check_circle, color: Colors.green),
-            const SizedBox(width: 8),
-            Text('success'.tr()),
+            Icon(icon, color: iconColor, size: 48),
+            const SizedBox(height: 16),
+            Text(title, textAlign: TextAlign.center),
           ],
         ),
-        content: const Text('Your ticket has been created successfully.'),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 15),
+        ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('ok'.tr()),
+          Center(
+            child: FilledButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(isLikelyCreated ? 'check_crm'.tr() : 'ok'.tr()),
+            ),
           ),
         ],
       ),
