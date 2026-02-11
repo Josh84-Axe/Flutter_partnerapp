@@ -47,8 +47,10 @@ class SupportTicketService {
       }
     } on DioException catch (e) {
       String errorMessage = e.message ?? 'Unknown error';
-      if (kIsWeb && e.type == DioExceptionType.unknown && e.error.toString().contains('XMLHttpRequest error')) {
-        errorMessage = 'Network Error (CORS): The request was blocked by the browser. Please check server CORS configuration.';
+      if (kIsWeb && e.type == DioExceptionType.unknown && 
+          (e.error.toString().contains('XMLHttpRequest error') || 
+           e.error.toString().contains('onError callback'))) {
+        errorMessage = 'Network Error (CORS): The request was blocked by the browser. Please check server CORS configuration for api.coleah.com.';
       }
       if (kDebugMode) print('❌ Dio Error creating ticket: $errorMessage');
       throw Exception(errorMessage);

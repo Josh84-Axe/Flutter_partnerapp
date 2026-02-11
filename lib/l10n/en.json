@@ -768,6 +768,7 @@
   "create_ticket": "Create Ticket",
   "ticket_created_success": "Ticket created successfully",
   "ticket_creation_failed": "Failed to create ticket. Please check your connection or try again later.",
+  "network_error_cors": "Network Error (CORS): The request was blocked by the browser. Please check server CORS configuration for api.coleah.com.",
   "brief_summary_issue": "Brief summary of the issue",
   "detailed_explanation": "Detailed explanation of the issue...",
   "field_required": "This field is required",
