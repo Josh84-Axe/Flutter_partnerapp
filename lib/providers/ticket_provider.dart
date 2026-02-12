@@ -25,6 +25,7 @@ class TicketProvider with ChangeNotifier {
     required String priority,
     required String email,
     required String name,
+    required String? country,
   }) async {
     _isLoading = true;
     _error = null;
@@ -37,6 +38,7 @@ class TicketProvider with ChangeNotifier {
         email: email,
         name: name,
         priority: priority.toUpperCase(),
+        country: country,
       );
       _isLoading = false;
       notifyListeners();

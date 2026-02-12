@@ -130,8 +130,8 @@ class SupportTicketService {
   }
 
   // Convert country names to ISO 3166-1 alpha-2 codes
-  String? _getCountryIsoCode(String? countryName) {
-    if (countryName == null || countryName.isEmpty) return null;
+  String _getCountryIsoCode(String? countryName) {
+    if (countryName == null || countryName.isEmpty) return 'SN'; // Default to Senegal
     
     // If it's already 2 chars, assume it's correct (e.g. NG, KE)
     if (countryName.length == 2) return countryName.toUpperCase();

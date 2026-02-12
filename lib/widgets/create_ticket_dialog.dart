@@ -62,6 +62,7 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
           priority: _selectedPriority,
           email: currentUser.email,
           name: currentUser.name ?? 'Valued Partner',
+          country: currentUser.country,
         );
 
         if (mounted) {

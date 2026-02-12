@@ -157,6 +157,7 @@ class AuthProvider with ChangeNotifier {
         createdAt: DateTime.now(),
         isVoucherEnabled: userData['enable_smart_vouchers'] == true || 
                          (userRole == 'Administrator' || userRole == 'Partner'),
+        country: userData['country']?.toString(),
       );
       
       // Extract country and set currency info

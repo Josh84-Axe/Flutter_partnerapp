@@ -44,6 +44,7 @@ class TicketRepository {
     required String email,
     required String name,
     String priority = 'LOW',
+    String? country,
   }) async {
     try {
       return await _ticketService.createTicket(
@@ -52,7 +53,7 @@ class TicketRepository {
         contactEmail: email,
         contactName: name,
         priority: priority,
-        partnerCountry: null, // Optional
+        partnerCountry: country,
       );
     } catch (e) {
       if (kDebugMode) {
