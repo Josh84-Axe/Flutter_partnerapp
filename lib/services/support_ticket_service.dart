@@ -16,6 +16,7 @@ class SupportTicketService {
     required String description,
     required String contactName,
     required String contactEmail,
+    required String? partnerCountry,
     String priority = 'MEDIUM',
   }) async {
     try {
@@ -33,6 +34,7 @@ class SupportTicketService {
           'description': description,
           'contact_name': contactName,
           'contact_email': contactEmail,
+          'partner_country': partnerCountry,
           'priority': priority,
         },
       );

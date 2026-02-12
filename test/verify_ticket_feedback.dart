@@ -20,6 +20,7 @@ void main() {
         description: 'Verifying that the API returns a Ticket ID and success message.',
         contactName: testName,
         contactEmail: testEmail,
+        partnerCountry: 'Guinea-Bissau', // Test routing
         priority: 'LOW',
       );
 
@@ -45,6 +46,7 @@ void main() {
         description: 'This should fail validation.',
         contactName: testName,
         contactEmail: testEmail,
+        partnerCountry: 'Guinea-Bissau',
       );
 
       print('Result: success=$success');

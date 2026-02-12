@@ -160,6 +160,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
         description: _descriptionController.text.trim(),
         contactName: user.name ?? 'Valued Partner',
         contactEmail: user.email,
+        partnerCountry: user.country,
         priority: _priority,
       );
 
