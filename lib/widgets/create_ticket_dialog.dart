@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../services/support_ticket_service.dart';
 import '../providers/split/auth_provider.dart';
+import '../providers/ticket_provider.dart';
+import '../screens/support_ticket_list_screen.dart';
 
 class CreateTicketDialog extends StatefulWidget {
   const CreateTicketDialog({super.key});
@@ -38,9 +40,6 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      // Get current user details
-      // Assuming AuthProvider has the latest user info.
-      // If AuthProvider is not available or doesn't have user, we might fail or use defaults.
       final authProvider = context.read<AuthProvider>();
       final currentUser = authProvider.currentUser;
 
@@ -52,30 +51,24 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
         return;
       }
 
-      final service = SupportTicketService();
-      // Combining category into description if API doesn't support it directly
+      final ticketProvider = context.read<TicketProvider>();
       final fullDescription = '[Category: ${_selectedCategory.toUpperCase()}]\n\n${_descriptionController.text.trim()}';
 
       try {
-        final (success, msg, ticketId) = await service.createTicket(
+        final (success, msg, ticketId) = await ticketProvider.createTicket(
           subject: _subjectController.text.trim(),
           description: fullDescription,
-          contactName: currentUser.name ?? 'Valued Partner',
-          contactEmail: currentUser.email,
-          partnerCountry: currentUser.country,
+          category: _selectedCategory,
           priority: _selectedPriority,
+          email: currentUser.email,
+          name: currentUser.name ?? 'Valued Partner',
         );
 
         if (mounted) {
           setState(() => _isLoading = false);
           if (success) {
-            Navigator.of(context).pop();
-            _showStatusDialog(
-              title: 'success'.tr(),
-              message: msg,
-              icon: Icons.check_circle,
-              iconColor: Colors.green,
-            );
+            Navigator.of(context).pop(); // Close creation dialog
+            _showSuccessFeedback(ticketId ?? 'ID-Unknown');
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -90,16 +83,9 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
           setState(() => _isLoading = false);
           final errorMsg = e.toString();
           
-          // Special handling for CORS/Network error where ticket might actually be created
           if (errorMsg.contains('CORS') || errorMsg.contains('XMLHttpRequest') || errorMsg.contains('onError callback')) {
             Navigator.of(context).pop();
-            _showStatusDialog(
-              title: 'ticket_likely_created_title'.tr(),
-              message: 'ticket_likely_created_detail'.tr(),
-              icon: Icons.info_outline,
-              iconColor: Colors.orange,
-              isLikelyCreated: true,
-            );
+            _showSuccessFeedback('Likely Created (CORS)'); // Use the new feedback UI
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -113,53 +99,94 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
     }
   }
 
-  void _showStatusDialog({
-    required String title,
-    required String message,
-    required IconData icon,
-    required Color iconColor,
-    bool isLikelyCreated = false,
-  }) {
+  void _showSuccessFeedback(String ticketId) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Column(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: iconColor, size: 48),
             const SizedBox(height: 16),
-            Text(title, textAlign: TextAlign.center),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check_circle_rounded, color: Colors.green, size: 64),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'ticket_created_success'.tr(),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Ticket #$ticketId',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'ticket_created_detail'.tr(),
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[700], fontSize: 14),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text('close'.tr()),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.pushNamed(context, '/support');
+                      // If already on support, we might need to push the list screen specifically
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SupportTicketListScreen()),
+                      );
+                    },
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text('view'.tr()),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
-        content: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 15),
-        ),
-        actions: [
-          Center(
-            child: FilledButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: Text(isLikelyCreated ? 'check_crm'.tr() : 'ok'.tr()),
-            ),
-          ),
-        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    // Fallback translations check
-    // Ensure you have these keys in your localization files or provide defaults.
-    
     return AlertDialog(
       title: Text('create_ticket'.tr()),
       content: SingleChildScrollView(

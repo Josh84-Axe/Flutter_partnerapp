@@ -11,6 +11,16 @@ class SupportTicketService {
 
   SupportTicketService({Dio? dio}) : _dio = dio ?? Dio();
 
+  Options _getOptions() {
+    return Options(
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': _apiKey,
+      },
+      validateStatus: (status) => status! < 500,
+    );
+  }
+
   Future<(bool success, String message, String? ticketId)> createTicket({
     required String subject,
     required String description,
@@ -22,13 +32,7 @@ class SupportTicketService {
     try {
       final response = await _dio.post(
         _baseUrl,
-        options: Options(
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Api-Key': _apiKey,
-          },
-          validateStatus: (status) => status! < 500, // Handle 400s manually
-        ),
+        options: _getOptions(),
         data: {
           'subject': subject,
           'description': description,
@@ -71,6 +75,56 @@ class SupportTicketService {
       throw Exception(errorMessage);
     } catch (e) {
       if (kDebugMode) print('❌ Error creating ticket: $e');
+      rethrow;
+    }
+  }
+
+  Future<Response> fetchTickets(String email) async {
+    try {
+      if (kDebugMode) print('📨 [SupportTicketService] Fetching tickets for: $email');
+      
+      final response = await _dio.get(
+        _baseUrl,
+        queryParameters: {'contact_email': email},
+        options: _getOptions(),
+      );
+
+      return response;
+    } on DioException catch (e) {
+      if (kDebugMode) print('❌ Error fetching tickets: ${e.message}');
+      rethrow;
+    }
+  }
+
+  Future<Response> fetchMessages(String ticketId) async {
+    try {
+      if (kDebugMode) print('📨 [SupportTicketService] Fetching messages for ticket: $ticketId');
+      
+      final response = await _dio.get(
+        '$_baseUrl$ticketId/messages/',
+        options: _getOptions(),
+      );
+
+      return response;
+    } on DioException catch (e) {
+      if (kDebugMode) print('❌ Error fetching messages: ${e.message}');
+      rethrow;
+    }
+  }
+
+  Future<Response> replyToTicket(String ticketId, String content) async {
+    try {
+      if (kDebugMode) print('📨 [SupportTicketService] Replying to ticket: $ticketId');
+      
+      final response = await _dio.post(
+        '$_baseUrl$ticketId/reply/',
+        data: {'content': content},
+        options: _getOptions(),
+      );
+
+      return response;
+    } on DioException catch (e) {
+      if (kDebugMode) print('❌ Error replying to ticket: ${e.message}');
       rethrow;
     }
   }

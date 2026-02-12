@@ -18,7 +18,7 @@ class TicketProvider with ChangeNotifier {
   List<CrmTicket> get tickets => _tickets;
   List<CrmMessage> get messages => _messages;
 
-  Future<bool> createTicket({
+  Future<(bool success, String message, String? ticketId)> createTicket({
     required String subject,
     required String description,
     required String category,
@@ -31,7 +31,7 @@ class TicketProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _ticketRepository.createCrmTicket(
+      final result = await _ticketRepository.createCrmTicket(
         subject: subject,
         description: description,
         email: email,
@@ -40,12 +40,12 @@ class TicketProvider with ChangeNotifier {
       );
       _isLoading = false;
       notifyListeners();
-      return true;
+      return result;
     } catch (e) {
       _isLoading = false;
       _error = e.toString();
       notifyListeners();
-      return false;
+      return (false, e.toString(), null);
     }
   }
 

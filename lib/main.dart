@@ -19,6 +19,7 @@ import 'services/pwa_service.dart';
 import 'services/api/api_client_factory.dart';
 import 'services/api/token_storage.dart';
 import 'services/api/api_config.dart';
+import 'services/support_ticket_service.dart';
 
 // Repositories
 import 'repositories/auth_repository.dart';
@@ -187,7 +188,11 @@ void main() async {
     hotspotRepository = HotspotRepository(dio: dio);
     sessionRepository = SessionRepository(dio: dio);
     planConfigRepository = PlanConfigRepository(dio: dio);
-    ticketRepository = TicketRepository(dio: dio);
+    
+    // Support Ticket System
+    final supportTicketService = SupportTicketService(dio: dio);
+    ticketRepository = TicketRepository(ticketService: supportTicketService);
+    
     voucherRepository = VoucherRepository(dio: dio);
   } catch (e, stack) {
     print('❌ [Main] Repository Initialization Error: $e\n$stack');

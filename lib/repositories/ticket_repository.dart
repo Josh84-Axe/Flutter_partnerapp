@@ -1,18 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../services/api/api_config.dart';
-import '../services/api/crm_service.dart';
+import '../services/support_ticket_service.dart';
 import '../models/crm_ticket_model.dart';
 
 class TicketRepository {
-  final Dio _dio;
-  final CrmService _crmService;
+  final SupportTicketService _ticketService;
 
   TicketRepository({
-    required Dio dio,
-    CrmService? crmService,
-  }) : _dio = dio,
-       _crmService = crmService ?? CrmService();
+    SupportTicketService? ticketService,
+  }) : _ticketService = ticketService ?? SupportTicketService();
 
   Future<Map<String, dynamic>> createTicket({
     required String subject,
@@ -41,7 +38,7 @@ class TicketRepository {
   }
 
   /// Creates a ticket in the external CRM system
-  Future<bool> createCrmTicket({
+  Future<(bool success, String message, String? ticketId)> createCrmTicket({
     required String subject,
     required String description,
     required String email,
@@ -49,15 +46,14 @@ class TicketRepository {
     String priority = 'LOW',
   }) async {
     try {
-      final response = await _crmService.createTicket(
+      return await _ticketService.createTicket(
         subject: subject,
         description: description,
-        email: email,
-        name: name,
+        contactEmail: email,
+        contactName: name,
         priority: priority,
+        partnerCountry: null, // Optional
       );
-      
-      return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       if (kDebugMode) {
         print('❌ [TicketRepository] CRM Ticket Error: $e');
@@ -69,7 +65,7 @@ class TicketRepository {
   /// Fetches all tickets for a specific email
   Future<List<CrmTicket>> fetchTickets(String email) async {
     try {
-      final response = await _crmService.fetchTickets(email);
+      final response = await _ticketService.fetchTickets(email);
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data as List<dynamic>;
         return data.map((json) => CrmTicket.fromJson(json)).toList();
@@ -86,7 +82,7 @@ class TicketRepository {
   /// Fetches conversation history for a specific ticket
   Future<List<CrmMessage>> fetchTicketMessages(String caseId) async {
     try {
-      final response = await _crmService.fetchMessages(caseId);
+      final response = await _ticketService.fetchMessages(caseId);
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data as List<dynamic>;
         return data.map((json) => CrmMessage.fromJson(json)).toList();
@@ -101,9 +97,9 @@ class TicketRepository {
   }
 
   /// Sends a reply to an existing ticket
-  Future<bool> replyToTicket(String caseId, String content) async {
+  Future<bool> replyToTicket(String ticketId, String content) async {
     try {
-      final response = await _crmService.replyToTicket(caseId, content);
+      final response = await _ticketService.replyToTicket(ticketId, content);
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       if (kDebugMode) {
