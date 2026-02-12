@@ -57,7 +57,7 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
       final fullDescription = '[Category: ${_selectedCategory.toUpperCase()}]\n\n${_descriptionController.text.trim()}';
 
       try {
-        final success = await service.createTicket(
+        final (success, msg, ticketId) = await service.createTicket(
           subject: _subjectController.text.trim(),
           description: fullDescription,
           contactName: currentUser.name ?? 'Valued Partner',
@@ -71,14 +71,14 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
             Navigator.of(context).pop();
             _showStatusDialog(
               title: 'success'.tr(),
-              message: 'ticket_created_detail'.tr(),
+              message: msg,
               icon: Icons.check_circle,
               iconColor: Colors.green,
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('ticket_creation_failed'.tr()),
+                content: Text(msg.contains('Status:') ? 'ticket_creation_failed'.tr() : msg),
                 backgroundColor: Colors.red,
               ),
             );

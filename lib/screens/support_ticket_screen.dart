@@ -154,7 +154,8 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
 
     final service = SupportTicketService();
     try {
-      final success = await service.createTicket(
+    try {
+      final (success, msg, ticketId) = await service.createTicket(
         subject: _subjectController.text.trim(),
         description: _descriptionController.text.trim(),
         contactName: user.name ?? 'Valued Partner',
@@ -165,11 +166,11 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
       if (!mounted) return;
 
       if (success) {
-        _showSuccessDialog();
+        _showSuccessDialog(msg);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to submit ticket. Please try again.'),
+          SnackBar(
+            content: Text(msg.contains('Status:') ? 'Failed to submit ticket. Please try again.' : msg),
             backgroundColor: Colors.red,
           ),
         );
@@ -191,7 +192,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
     }
   }
 
-  void _showSuccessDialog() {
+  void _showSuccessDialog(String message) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -203,9 +204,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
             Text('Success'),
           ],
         ),
-        content: const Text(
-          'Your support ticket has been created successfully. Our team will contact you shortly via email.',
-        ),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () {

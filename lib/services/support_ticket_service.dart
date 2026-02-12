@@ -11,7 +11,7 @@ class SupportTicketService {
 
   SupportTicketService({Dio? dio}) : _dio = dio ?? Dio();
 
-  Future<bool> createTicket({
+  Future<(bool success, String message, String? ticketId)> createTicket({
     required String subject,
     required String description,
     required String contactName,
@@ -39,11 +39,21 @@ class SupportTicketService {
 
       if (response.statusCode == 201) {
         if (kDebugMode) print('✅ Ticket created successfully: ${response.data}');
-        return true;
+        final ticketId = response.data['id']?.toString() ?? 'ID Unknown';
+        return (true, 'Ticket #$ticketId created successfully.', ticketId);
       } else {
-        final errorMsg = response.data is Map ? response.data.toString() : 'Status: ${response.statusCode}';
+        // Parse error response which might be a map of field errors
+        String errorMsg = 'Unknown error';
+        if (response.data is Map) {
+          final errors = response.data as Map;
+          // Flatten the error map
+          errorMsg = errors.entries.map((e) => '${e.key}: ${e.value}').join('\n');
+        } else {
+           errorMsg = 'Status: ${response.statusCode} - ${response.data}';
+        }
+        
         if (kDebugMode) print('❌ Failed to create ticket: $errorMsg');
-        return false;
+        return (false, errorMsg, null);
       }
     } on DioException catch (e) {
       String errorMessage = e.message ?? 'Unknown error';
@@ -53,6 +63,9 @@ class SupportTicketService {
         errorMessage = 'Network Error (CORS): The request was blocked by the browser. Please check server CORS configuration for api.coleah.com.';
       }
       if (kDebugMode) print('❌ Dio Error creating ticket: $errorMessage');
+      
+      // We throw specifically for CORS so the UI can catch it and show the special "Likely Created" dialog
+      // Or we could return a specific failure code. Raising exception is fine as it's an "Exceptional" network state.
       throw Exception(errorMessage);
     } catch (e) {
       if (kDebugMode) print('❌ Error creating ticket: $e');
