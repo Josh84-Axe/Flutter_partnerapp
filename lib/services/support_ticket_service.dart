@@ -34,7 +34,7 @@ class SupportTicketService {
           'description': description,
           'contact_name': contactName,
           'contact_email': contactEmail,
-          'partner_country': partnerCountry,
+          'country': _getCountryIsoCode(partnerCountry),
           'priority': priority,
         },
       );
@@ -73,5 +73,38 @@ class SupportTicketService {
       if (kDebugMode) print('❌ Error creating ticket: $e');
       rethrow;
     }
+  }
+
+  // Convert country names to ISO 3166-1 alpha-2 codes
+  String? _getCountryIsoCode(String? countryName) {
+    if (countryName == null || countryName.isEmpty) return null;
+    
+    // If it's already 2 chars, assume it's correct (e.g. NG, KE)
+    if (countryName.length == 2) return countryName.toUpperCase();
+
+    const countryMap = {
+      'nigeria': 'NG',
+      'kenya': 'KE',
+      'ghana': 'GH',
+      'south africa': 'ZA',
+      'uganda': 'UG',
+      'tanzania': 'TZ',
+      'rwanda': 'RW',
+      'côte d\'ivoire': 'CI',
+      'cote d\'ivoire': 'CI',
+      'ivory coast': 'CI',
+      'senegal': 'SN',
+      'cameroon': 'CM',
+      'benin': 'BJ',
+      'guinea': 'GN',
+      'guinea-bissau': 'GW',
+      'guinea bissau': 'GW',
+      'mali': 'ML',
+      'togo': 'TG',
+      'united states': 'US',
+      'united kingdom': 'GB',
+    };
+
+    return countryMap[countryName.toLowerCase()] ?? countryName; // Default to original if not found
   }
 }
