@@ -40,8 +40,8 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // If currency is CFA (XOF or XAF), use CinetPay
-    if (widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'CFA') {
+    // If currency is CFA (XOF or XAF) or GNF (Francophone), use CinetPay
+    if (widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'GNF' || widget.currency == 'CFA') {
        final fName = widget.userData?['firstName'] ?? '';
        final lName = widget.userData?['lastName'] ?? '';
        final addr = widget.userData?['address'] ?? '';

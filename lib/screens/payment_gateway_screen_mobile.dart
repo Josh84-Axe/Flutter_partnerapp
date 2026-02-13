@@ -28,8 +28,8 @@ class PaymentGatewayScreen extends StatefulWidget {
 class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
   @override
   Widget build(BuildContext context) {
-    // Conditional routing based on currency
-    if (widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'CFA') {
+    // Conditional routing based on currency - Francophone (XOF, XAF, GNF) use CinetPay
+    if (widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'GNF' || widget.currency == 'CFA') {
        return _PaymentGatewayCinetPayMobile(
           apiKey: '297929662685d35c4021b02.21438964',
           siteId: '105899723',
