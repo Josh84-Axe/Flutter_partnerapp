@@ -599,7 +599,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
       }
     }
 
-    return const PlansScreen();
+    return const HomeScreen();
   }
 }
 
