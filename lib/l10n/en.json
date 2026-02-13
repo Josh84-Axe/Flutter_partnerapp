@@ -797,5 +797,20 @@
   "no_tickets_found": "No tickets found",
   "type_your_message": "Type your message...",
   "failed_to_send_message": "Failed to send message",
-  "choose_support_method": "Choose a method to get assistance from our team"
+  "choose_support_method": "Choose a method to get assistance from our team",
+  "onboarding_title_1": "User Management",
+  "onboarding_subtitle_1": "Add, edit and manage users with ease.",
+  "onboarding_title_2": "Network Health",
+  "onboarding_subtitle_2": "Monitor router status and performance in real time.",
+  "onboarding_title_3": "Flexible Plans",
+  "onboarding_subtitle_3": "Create and assign plans tailored to your business.",
+  "get_started": "Get Started",
+  "authentication_failed_token": "Authentication failed - no token received",
+  "login_failed_credentials": "Login failed - invalid credentials",
+  "create_account": "Create account",
+  "ios_install_title": "Install on iPhone",
+  "ios_install_subtitle": "Tap Share then 'Add to Home Screen' to install this app.",
+  "install_app_title": "Install Tiknet Partner",
+  "install_app_subtitle": "Install the app for a faster and smoother experience.",
+  "install": "Install"
 }

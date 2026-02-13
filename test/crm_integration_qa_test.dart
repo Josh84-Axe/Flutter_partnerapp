@@ -4,13 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:hotspot_partner_app/services/api/api_config.dart';
-import 'package:hotspot_partner_app/services/api/crm_service.dart';
+import 'package:hotspot_partner_app/services/support_ticket_service.dart';
 
 void main() {
   test('CRM Integration QA Test', () async {
     print('--- CRM Integration QA Test ---');
     
-    final crmService = CrmService();
+    final crmService = SupportTicketService();
     
     // Bypass SSL verification for testing
     (crmService.dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
@@ -29,23 +29,23 @@ void main() {
       final response = await crmService.createTicket(
         subject: testSubject,
         description: testDescription,
-        email: testEmail,
-        name: testName,
+        contactEmail: testEmail,
+        contactName: testName,
+        partnerCountry: 'GN',
         priority: 'LOW',
       );
 
-      print('Response Status: ${response.statusCode}');
-      print('Response Data: ${jsonEncode(response.data)}');
+      final success = response.$1;
+      final statusMessage = response.$2;
+      final ticketId = response.$3;
 
-      expect(response.statusCode, anyOf(200, 201));
+      print('Success: $success');
+      print('Status Message: $statusMessage');
+      print('Ticket ID: $ticketId');
+
+      expect(success, isTrue);
       
-      final dynamic data = response.data;
-      String? caseId;
-      if (data is Map && data.containsKey('id')) {
-        caseId = data['id'].toString();
-      } else if (data is Map && data.containsKey('case_id')) {
-        caseId = data['case_id'].toString();
-      }
+      final caseId = ticketId;
 
       if (caseId != null) {
         print('Testing Fetch Messages for Case: $caseId...');

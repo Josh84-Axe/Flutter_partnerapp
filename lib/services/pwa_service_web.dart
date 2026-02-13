@@ -27,6 +27,12 @@ class PwaServiceWeb implements PwaService {
   bool get isInstallable => _isInstallable;
 
   @override
+  bool get isIOS {
+    final userAgent = html.window.navigator.userAgent.toLowerCase();
+    return userAgent.contains('iphone') || userAgent.contains('ipad') || userAgent.contains('ipod');
+  }
+
+  @override
   void init() {
     // Register callback for JS using modern dart:js_interop
     onAppInstallable = (() {

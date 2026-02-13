@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 class SupportTicketService {
   final Dio _dio;
+  Dio get dio => _dio;
   
   // As per instructions
   static const String _baseUrl = 'https://api.coleah.com/api/cases/external/cases/';

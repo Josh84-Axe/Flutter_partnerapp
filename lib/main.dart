@@ -130,7 +130,7 @@ import 'screens/active_sessions_screen.dart';
 import 'screens/help_support_screen.dart';
 
 void main() async {
-  print('🚀 WIFI-4U PARTNER APP - FLUTTER RUN v1.1.5 (dev-fresh-debug)');
+  // No-op for production tracking
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   
@@ -335,7 +335,7 @@ class HotspotPartnerApp extends StatelessWidget {
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
-      home: const AuthWrapper(),
+      home: const SplashScreen(),
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/onboarding': (context) => const OnboardingScreen(),

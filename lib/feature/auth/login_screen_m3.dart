@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../motion/m3_motion.dart';
 import '../../providers/split/auth_provider.dart';
 import '../../services/api/token_storage.dart';
@@ -62,7 +63,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
         final error = context.read<AuthProvider>().error;
         if (kDebugMode) print('🔐 [LoginScreenM3] Login failed - showing error: $error');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error ?? 'Login failed - invalid credentials')),
+          SnackBar(content: Text(error ?? 'login_failed_credentials'.tr())),
         );
         return;
       }
@@ -76,7 +77,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
       if (accessToken == null) {
         if (kDebugMode) print('🔐 [LoginScreenM3] No token found - showing error');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Authentication failed - no token received')),
+          SnackBar(content: Text('authentication_failed_token'.tr())),
         );
         return;
       }
@@ -89,7 +90,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: ${e.toString()}')),
+        SnackBar(content: Text('error_generic'.tr(args: [e.toString()]))),
       );
     } finally {
       if (mounted) {
@@ -128,14 +129,14 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
             const SizedBox(height: 24),
             // Title
             Text(
-              'Tiknet Partner',
+              'app_title'.tr(),
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Manage your Wi-Fi zone',
+              'manage_wifi_zone'.tr(),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
@@ -148,16 +149,16 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                   // Email field
                   TextFormField(
                     controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.mail),
+                    decoration: InputDecoration(
+                      labelText: 'email'.tr(),
+                      prefixIcon: const Icon(Icons.mail),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     enabled: !_isLoading,
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
+                        if (value == null || value.isEmpty) {
+                          return 'enter_email'.tr();
+                        }
                       return null;
                     },
                   ),
@@ -167,7 +168,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
-                      labelText: 'Password',
+                      labelText: 'password'.tr(),
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -183,9 +184,9 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                     enabled: !_isLoading,
                     onFieldSubmitted: (_) => _handleLogin(),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
+                        if (value == null || value.isEmpty) {
+                          return 'enter_password'.tr();
+                        }
                       return null;
                     },
                   ),
@@ -202,7 +203,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                     : () {
                         Navigator.of(context).pushNamed('/forgot-password');
                       },
-                child: const Text('Forgot Password?'),
+                child: Text('forgot_password'.tr()),
               ),
             ),
             const SizedBox(height: 16),
@@ -215,7 +216,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Login'),
+                  : Text('login'.tr()),
             ).animate().scale(
                   duration: M3Motion.buttonBounce,
                   curve: M3Motion.bounce,
@@ -229,7 +230,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                   : () {
                       Navigator.of(context).pushNamed('/register');
                     },
-              child: const Text('Create account'),
+              child: Text('create_account'.tr()),
             ),
             const SizedBox(height: 12),
             // Guest button
@@ -256,7 +257,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                       }
                     },
               icon: const Icon(Icons.visibility, size: 18),
-              label: const Text('Continue as guest'),
+              label: Text('continue_as_guest'.tr()),
             ),
           ],
         ),

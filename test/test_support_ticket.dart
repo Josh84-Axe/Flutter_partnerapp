@@ -13,13 +13,14 @@ void main() async {
       description: 'This is a test ticket to verify the API integration.',
       contactName: 'Antigravity Test User',
       contactEmail: 'antigravity_test@tiknetafrica.com',
+      partnerCountry: 'GN',
       priority: 'LOW',
     );
     
-    if (result) {
-      print('✅ Ticket created successfully!');
+    if (result.$1) {
+      print('✅ Ticket created successfully! ID: ${result.$3}');
     } else {
-      print('❌ Failed to create ticket.');
+      print('❌ Failed to create ticket: ${result.$2}');
     }
   } catch (e) {
     print('❌ Error: $e');

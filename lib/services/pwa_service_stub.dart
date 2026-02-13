@@ -16,6 +16,9 @@ class PwaServiceStub implements PwaService {
   bool get isInstallable => false;
 
   @override
+  bool get isIOS => false;
+
+  @override
   void init() {}
 
   @override
