@@ -611,14 +611,20 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 2;
+  int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const DashboardScreen(),
-    const UsersScreen(),
-    const PlansScreen(),
-    const WalletOverviewScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      const DashboardScreen(),
+      const UsersScreen(),
+      PlansScreen(onBack: () => setState(() => _currentIndex = 0)),
+      const WalletOverviewScreen(),
+    ];
+  }
 
 
   @override

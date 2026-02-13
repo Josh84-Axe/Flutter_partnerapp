@@ -7,7 +7,8 @@ import '../providers/split/auth_provider.dart';
 import 'create_edit_plan_screen.dart';
 
 class PlansScreen extends StatefulWidget {
-  const PlansScreen({super.key});
+  final VoidCallback? onBack;
+  const PlansScreen({super.key, this.onBack});
 
   @override
   State<PlansScreen> createState() => _PlansScreenState();
@@ -50,6 +51,12 @@ class _PlansScreenState extends State<PlansScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('internet_plans'.tr()),
+        leading: widget.onBack != null
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: widget.onBack,
+              )
+            : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
