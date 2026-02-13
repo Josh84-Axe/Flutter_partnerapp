@@ -34,8 +34,9 @@ class VoucherModel {
     final bool isExpired = json['is_expired'] ?? false;
     
     String status = 'active';
-    if (isUsed) status = 'used';
-    else if (isExpired) status = 'expired';
+    if (isUsed) {
+      status = 'used';
+    } else if (isExpired) status = 'expired';
 
     return VoucherModel(
       id: json['id']?.toString() ?? '',

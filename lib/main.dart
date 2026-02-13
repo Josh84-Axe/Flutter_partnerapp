@@ -721,7 +721,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  context.watch<AuthProvider>().currentUser?.name ?? 'Partner',
+                  context.watch<AuthProvider>().currentUser?.name ?? 'partner'.tr(),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,

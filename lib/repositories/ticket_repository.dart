@@ -1,6 +1,4 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import '../services/api/api_config.dart';
 import '../services/support_ticket_service.dart';
 import '../models/crm_ticket_model.dart';
 

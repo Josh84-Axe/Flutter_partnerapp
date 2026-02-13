@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../providers/ticket_provider.dart';
 import '../providers/split/auth_provider.dart';
 import 'support_ticket_chat_screen.dart';

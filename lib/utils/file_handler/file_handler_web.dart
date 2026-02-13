@@ -1,5 +1,4 @@
 import 'dart:html' as html;
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 
 class FileHandler {

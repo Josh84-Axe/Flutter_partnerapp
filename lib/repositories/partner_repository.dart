@@ -85,7 +85,7 @@ class PartnerRepository {
           data = responseData['results'] as List;
         }
       } else if (responseData is List) {
-        data = responseData as List;
+        data = responseData;
       }
 
       return data.map<Map<String, String>>((item) => {
@@ -115,7 +115,7 @@ class PartnerRepository {
           data = responseData['results'] as List;
         }
       } else if (responseData is List) {
-        data = responseData as List;
+        data = responseData;
       }
       
       return data.map((item) => item['name']?.toString() ?? '').toList();
@@ -191,7 +191,7 @@ class PartnerRepository {
           data = responseData['results'] as List;
         }
       } else if (responseData is List) {
-        data = responseData as List;
+        data = responseData;
       }
       
       return data.map((item) => item['name']?.toString() ?? '').toList();

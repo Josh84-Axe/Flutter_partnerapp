@@ -7,7 +7,6 @@ import '../providers/split/auth_provider.dart';
 import '../utils/ip_geolocation.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'legal_document_screen.dart';
-import '../widgets/alerts/success_alert.dart';
 import '../widgets/alerts/action_failed_alert.dart';
 import '../utils/error_message_helper.dart';
 
@@ -368,7 +367,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: _selectedCountry,
+                              initialValue: _selectedCountry,
                               decoration: InputDecoration(
                                 labelText: 'register.form.country'.tr(),
                                 filled: true,

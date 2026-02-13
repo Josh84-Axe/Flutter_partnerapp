@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../repositories/router_repository.dart';
 import '../../repositories/hotspot_repository.dart';
@@ -8,7 +7,6 @@ import '../../repositories/session_repository.dart';
 import '../../models/router_model.dart';
 import '../../models/hotspot_profile_model.dart';
 import '../../models/router_configuration_model.dart';
-import '../../models/user_model.dart';
 import '../../repositories/customer_repository.dart';
 import '../../repositories/plan_config_repository.dart';
 import '../../repositories/plan_repository.dart';
@@ -28,7 +26,7 @@ class NetworkProvider with ChangeNotifier {
   List<RouterConfigurationModel> _routerConfigurations = [];
   List<PlanModel> _plans = [];
   List<dynamic> _activeSessions = [];
-  Map<String, double> _activeDataUsage = {'total_bytes': 0, 'limit_bytes': 0};
+  final Map<String, double> _activeDataUsage = {'total_bytes': 0, 'limit_bytes': 0};
   double _totalAccumulatedBytes = 0;
   double _lastRefreshTotalBytes = 0;
   bool _isFirstUsageLoad = true;

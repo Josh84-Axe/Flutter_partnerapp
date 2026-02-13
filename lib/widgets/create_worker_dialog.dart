@@ -213,7 +213,7 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedRole,
+                initialValue: _selectedRole,
                 decoration: InputDecoration(
                   labelText: 'role'.tr(),
                   border: const OutlineInputBorder(),

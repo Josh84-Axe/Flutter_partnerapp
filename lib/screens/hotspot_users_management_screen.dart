@@ -71,7 +71,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: selectedProfile,
+                    initialValue: selectedProfile,
                     decoration: InputDecoration(
                       labelText: 'hotspot_profile'.tr(),
                       border: const OutlineInputBorder(),
@@ -167,7 +167,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: selectedProfile,
+                    initialValue: selectedProfile,
                     decoration: InputDecoration(
                       labelText: 'hotspot_profile'.tr(),
                       border: const OutlineInputBorder(),

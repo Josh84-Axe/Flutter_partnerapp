@@ -5,7 +5,6 @@ import 'package:easy_localization/easy_localization.dart';
 
 import '../providers/split/network_provider.dart';
 import '../models/hotspot_profile_model.dart';
-import '../utils/app_theme.dart';
 import '../utils/error_message_helper.dart';
 
 class CreateEditUserProfileScreen extends StatefulWidget {
@@ -121,7 +120,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
 
                     // Rate Limit Dropdown
                     DropdownButtonFormField<dynamic>(
-                      value: _selectedRateLimit,
+                      initialValue: _selectedRateLimit,
                       decoration: InputDecoration(
                         labelText: 'rate_limit'.tr(),
                         border: OutlineInputBorder(
@@ -145,7 +144,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
 
                     // Idle Timeout Dropdown
                     DropdownButtonFormField<dynamic>(
-                      value: _selectedIdleTime,
+                      initialValue: _selectedIdleTime,
                       decoration: InputDecoration(
                         labelText: 'idle_time'.tr(),
                         border: OutlineInputBorder(
@@ -169,7 +168,7 @@ class _CreateEditUserProfileScreenState extends State<CreateEditUserProfileScree
 
                     // Router Dropdown
                     DropdownButtonFormField<String>(
-                      value: _selectedRouter,
+                      initialValue: _selectedRouter,
                       decoration: InputDecoration(
                         labelText: 'router'.tr(),
                         border: OutlineInputBorder(

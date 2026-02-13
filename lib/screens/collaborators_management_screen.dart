@@ -57,7 +57,7 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: selectedRole,
+                  initialValue: selectedRole,
                   decoration: InputDecoration(
                     labelText: 'role'.tr(),
                     border: const OutlineInputBorder(),

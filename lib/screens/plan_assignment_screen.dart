@@ -156,7 +156,7 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                   ),
                   const SizedBox(height: 48),
                   DropdownButtonFormField<String>(
-                    value: _selectedUser,
+                    initialValue: _selectedUser,
                     decoration: InputDecoration(
                       labelText: 'customer'.tr(),
                       border: OutlineInputBorder(
@@ -188,7 +188,7 @@ class _PlanAssignmentScreenState extends State<PlanAssignmentScreen> {
                   ),
                   const SizedBox(height: 24),
                   DropdownButtonFormField<String>(
-                    value: _selectedPlan,
+                    initialValue: _selectedPlan,
                     decoration: InputDecoration(
                       labelText: 'internet_plan'.tr(),
                       border: OutlineInputBorder(

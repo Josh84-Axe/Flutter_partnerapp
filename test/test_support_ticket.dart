@@ -1,5 +1,5 @@
 
-import '../lib/services/support_ticket_service.dart';
+import 'package:hotspot_partner_app/services/support_ticket_service.dart';
 
 void main() async {
   print('🧪 Testing SupportTicketService...');

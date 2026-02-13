@@ -25,7 +25,7 @@ class RoleRepository {
           return responseData['results'] as List;
         }
       } else if (responseData is List) {
-        return responseData as List;
+        return responseData;
       }
       
       if (kDebugMode) print('⚠️ [RoleRepository] Unexpected response format');
@@ -51,7 +51,7 @@ class RoleRepository {
            return responseData['results'] as List;
          }
       } else if (responseData is List) {
-         return responseData as List;
+         return responseData;
       }
       
       return [];

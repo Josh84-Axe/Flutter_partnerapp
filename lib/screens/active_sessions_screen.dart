@@ -421,7 +421,7 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
                           scale: 0.8,
                           child: Switch(
                             value: !isBlocked, // ON means Access Allowed (Not Blocked)
-                            activeColor: Colors.green,
+                            activeThumbColor: Colors.green,
                             inactiveTrackColor: Colors.red.withOpacity(0.3),
                             inactiveThumbColor: Colors.red,
                             onChanged: (allowed) {

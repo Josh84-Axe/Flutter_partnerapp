@@ -6,7 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/auth_provider.dart';
 import '../providers/split/user_provider.dart';
 import '../models/worker_model.dart';
-import '../models/user_model.dart'; // Added by instruction
+// Added by instruction
 import '../providers/split/network_provider.dart';
 import '../utils/app_theme.dart';
 import '../widgets/search_bar_widget.dart';
@@ -155,9 +155,9 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                     return Text('no_routers_available'.tr(), style: const TextStyle(color: Colors.grey));
                   }
                   return DropdownButtonFormField<String>(
-                    value: selectedRouterId,
+                    initialValue: selectedRouterId,
                     decoration: InputDecoration(
-                      labelText: 'Select Router',
+                      labelText: 'select_router'.tr(),
                       border: const OutlineInputBorder(),
                     ),
                     items: routers.map<DropdownMenuItem<String>>((router) {
@@ -188,7 +188,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               
               if (routerId == null && userData == null) { // Require router only for new users or logical requirement
                  ScaffoldMessenger.of(context).showSnackBar(
-                   const SnackBar(content: Text('Please select a router')),
+                   SnackBar(content: Text('select_router_error'.tr())),
                  );
                  return;
               }
@@ -241,7 +241,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
         actions: [
           IconButton(
             icon: const Icon(Icons.checklist),
-            tooltip: 'Bulk Actions',
+            tooltip: 'bulk_actions'.tr(),
             onPressed: () {
               Navigator.of(context).pushNamed('/bulk-actions');
             },
@@ -602,7 +602,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             Icon(Icons.badge_outlined, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
-              'No workers found',
+              'no_workers_found'.tr(),
               style: TextStyle(color: Colors.grey[600], fontSize: 16),
             ),
           ],
@@ -702,7 +702,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             if (Permissions.canViewUsers(currentUser.role, currentUser.permissions))
               ListTile(
                 leading: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
-                title: const Text('View Details'),
+                title: Text('view_details'.tr()),
                 onTap: () {
                   Navigator.pop(context);
                   _showWorkerDetailsDialog(context, worker);
@@ -800,7 +800,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<String>(
-                    value: selectedRole,
+                    initialValue: selectedRole,
                     decoration: InputDecoration(
                       labelText: 'role'.tr(),
                       border: const OutlineInputBorder(),

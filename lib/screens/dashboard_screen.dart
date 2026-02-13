@@ -92,7 +92,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 if (mounted) {
                    setState(() {
                      isDownloading = false;
-                     errorMessage = 'Update failed: ${e.toString()}';
+                     errorMessage = 'update_failed'.tr(namedArgs: {'error': e.toString()});
                      downloadProgress = 0.0;
                    });
                 }
@@ -108,15 +108,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                  }
               },
               child: AlertDialog(
-                title: Text(isDownloading ? 'Downloading Update...' : 'New Update Available'),
+                title: Text(isDownloading ? 'downloading_update'.tr() : 'new_update_available'.tr()),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (!isDownloading) ...[
-                      Text('A new version (${updateInfo['latestVersion']}) is available.'),
+                      Text('new_version_available'.tr(namedArgs: {'version': updateInfo['latestVersion'] ?? ''})),
                       const SizedBox(height: 8),
-                      const Text('Release Notes:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text('release_notes'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
                       Container(
                         constraints: const BoxConstraints(maxHeight: 100),
                         child: SingleChildScrollView(
@@ -131,7 +131,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 8),
                       Text('${(downloadProgress * 100).toInt()}%', style: Theme.of(context).textTheme.bodySmall),
                       const SizedBox(height: 8),
-                      const Text('Please do not close the app.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      Text('do_not_close_app'.tr(), style: const TextStyle(fontSize: 12, color: Colors.grey)),
                     ],
 
                     if (errorMessage != null) ...[
@@ -144,13 +144,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   if (!isDownloading && !isForceUpdate)
                     TextButton(
                       onPressed: () => Navigator.pop(dialogContext),
-                      child: const Text('Later'),
+                      child: Text('later'.tr()),
                     ),
                   
                   if (!isDownloading)
                     ElevatedButton(
                       onPressed: startUpdate,
-                      child: const Text('Update Now'),
+                      child: Text('update_now'.tr()),
                     ),
                 ],
               ),
@@ -572,11 +572,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load data: $e'),
+            content: Text('error_loading_data'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 10),
             action: SnackBarAction(
-              label: 'Retry',
+              label: 'retry'.tr(),
               textColor: Colors.white,
               onPressed: () => _refreshAll(context),
             ),

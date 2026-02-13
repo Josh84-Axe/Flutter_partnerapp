@@ -27,7 +27,9 @@ class CurrencyUtils {
         normalized.contains('burkina') ||
         normalized.contains('mali') ||
         normalized.contains('niger') ||
-        normalized.contains('togo')) return 'XOF';
+        normalized.contains('togo')) {
+      return 'XOF';
+    }
         
     // XAF Countries
     if (normalized.contains('cameroon') ||
@@ -35,7 +37,9 @@ class CurrencyUtils {
         normalized.contains('gabon') ||
         normalized.contains('congo') ||
         normalized.contains('equatorial guinea') ||
-        normalized.contains('central african republic')) return 'XAF';
+        normalized.contains('central african republic')) {
+      return 'XAF';
+    }
 
     return 'USD';
   }

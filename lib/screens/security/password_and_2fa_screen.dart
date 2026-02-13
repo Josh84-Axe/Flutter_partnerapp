@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../providers/split/auth_provider.dart';
 import '../../utils/app_theme.dart';
-import 'verify_identity_dialog.dart';
 
 class PasswordAndTwoFactorScreen extends StatefulWidget {
   const PasswordAndTwoFactorScreen({super.key});

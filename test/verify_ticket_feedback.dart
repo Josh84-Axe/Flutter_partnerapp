@@ -1,7 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dio/dio.dart';
-import '../lib/services/support_ticket_service.dart';
+import 'package:hotspot_partner_app/services/support_ticket_service.dart';
 
 void main() {
   const String testEmail = 'sientey@hotmail.com';

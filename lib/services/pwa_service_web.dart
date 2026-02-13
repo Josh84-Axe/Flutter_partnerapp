@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:js_interop';
-import 'dart:js_util' as js_util;
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'pwa_service.dart';
+
+@JS('onAppInstallable')
+external set onAppInstallable(JSFunction value);
 
 @JS('isAppInstallable')
 external JSBoolean isAppInstallableJs();
@@ -26,12 +28,12 @@ class PwaServiceWeb implements PwaService {
 
   @override
   void init() {
-    // Register callback for JS using dart:js_util (more reliable for window properties)
-    js_util.setProperty(html.window, 'onAppInstallable', () {
+    // Register callback for JS using modern dart:js_interop
+    onAppInstallable = (() {
       _isInstallable = true;
       _installableController.add(true);
-      if (kDebugMode) print('🌐 [PwaService] App is installable');
-    });
+      if (kDebugMode) debugPrint('🌐 [PwaService] App is installable');
+    }).toJS;
 
     // Check initial state
     try {

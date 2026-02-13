@@ -50,13 +50,13 @@ class SubscriptionModel {
     }
 
     return SubscriptionModel(
-      id: plan?['id']?.toString() ?? json['id']?.toString() ?? '',
-      tier: plan?['name']?.toString() ?? json['tier']?.toString() ?? 'Unknown',
+      id: (plan?['id'] ?? json['id'] ?? '').toString(),
+      tier: (plan?['name'] ?? json['tier'] ?? 'Unknown').toString(),
       renewalDate: parseDate(json['end_date']) ?? _calculateRenewalDate(
         parseDate(json['start_date']),
         plan?['duration'] ?? json['duration']
       ),
-      isActive: json['active'] ?? json['isActive'] ?? false,
+      isActive: json['active'] == true || json['isActive'] == true,
       monthlyFee: parseDouble(plan?['price_info']?['price'] ?? plan?['price'] ?? json['monthlyFee']),
       features: parsedFeatures,
     );
@@ -72,10 +72,11 @@ class SubscriptionModel {
       'features': features,
     };
   }
-  static DateTime? _calculateRenewalDate(DateTime? startDate, String? duration) {
+  static DateTime? _calculateRenewalDate(DateTime? startDate, dynamic duration) {
     if (startDate == null || duration == null) return null;
     
-    switch (duration.toLowerCase()) {
+    final durationStr = duration.toString().toLowerCase();
+    switch (durationStr) {
       case 'monthly':
       case 'mois':
         return DateTime(startDate.year, startDate.month + 1, startDate.day);
@@ -123,9 +124,9 @@ class SubscriptionPlanModel {
     if (json['features'] is List) {
       parsedFeatures = (json['features'] as List).map((f) {
         if (f is Map) {
-          return f['name']?.toString() ?? '';
-        } else if (f is String) {
-          return f;
+          return (f['name'] ?? '').toString();
+        } else if (f != null) {
+          return f.toString();
         }
         return '';
       }).where((s) => s.isNotEmpty).cast<String>().toList();
@@ -134,19 +135,19 @@ class SubscriptionPlanModel {
     // Parse price info
     final priceInfo = json['price_info'] as Map<String, dynamic>?;
     final double price = parseDouble(priceInfo?['price'] ?? json['price']);
-    final String? priceDisplay = priceInfo?['price_display']?.toString() ?? json['price_display']?.toString();
+    final String? priceDisplay = (priceInfo?['price_display'] ?? json['price_display'])?.toString();
     final String? countryName = priceInfo?['country_name']?.toString();
 
     return SubscriptionPlanModel(
-      id: json['id']?.toString() ?? '',
-      name: json['name']?.toString() ?? 'Unknown Plan',
-      description: json['description']?.toString() ?? '',
+      id: (json['id'] ?? '').toString(),
+      name: (json['name'] ?? 'Unknown Plan').toString(),
+      description: (json['description'] ?? '').toString(),
       price: price,
       priceDisplay: priceDisplay,
       features: parsedFeatures,
       isPopular: json['is_popular'] == true || json['isPopular'] == true,
-      currency: json['currency']?.toString() ?? json['currency_code']?.toString(),
-      duration: json['duration']?.toString() ?? 'monthly',
+      currency: (json['currency'] ?? json['currency_code'])?.toString(),
+      duration: (json['duration'] ?? 'monthly').toString(),
       countryName: countryName,
     );
   }

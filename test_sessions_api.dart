@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
 /// Quick test script to check active sessions endpoint
 /// Run this to see what the API actually returns

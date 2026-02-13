@@ -5,7 +5,6 @@ import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/billing_provider.dart';
 import '../utils/currency_utils.dart';
 import '../utils/app_theme.dart';
-import '../widgets/metric_card.dart';
 
 class PayoutRequestScreen extends StatefulWidget {
   const PayoutRequestScreen({super.key});

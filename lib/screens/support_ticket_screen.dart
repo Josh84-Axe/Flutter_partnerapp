@@ -70,7 +70,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
 
               // Priority Dropdown
               DropdownButtonFormField<String>(
-                value: _priority,
+                initialValue: _priority,
                 decoration: const InputDecoration(
                   labelText: 'Priority',
                   border: OutlineInputBorder(),
@@ -153,7 +153,6 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
     });
 
     final service = SupportTicketService();
-    try {
     try {
       final (success, msg, ticketId) = await service.createTicket(
         subject: _subjectController.text.trim(),

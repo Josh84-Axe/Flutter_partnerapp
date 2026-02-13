@@ -7,7 +7,6 @@ import '../providers/split/auth_provider.dart';
 import '../providers/split/billing_provider.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import '../utils/country_utils.dart';
-import 'package:intl/intl.dart';
 
 class PartnerProfileScreen extends StatefulWidget {
   const PartnerProfileScreen({super.key});
@@ -83,7 +82,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
     
     // Construct address
-    final fullAddress = '${_addressController.text}'.trim();
+    final fullAddress = _addressController.text.trim();
     
     final success = await authProvider.updateProfile({
       'first_name': firstName,

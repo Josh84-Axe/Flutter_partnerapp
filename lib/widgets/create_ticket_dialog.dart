@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../services/support_ticket_service.dart';
 import '../providers/split/auth_provider.dart';
 import '../providers/ticket_provider.dart';
 import '../screens/support_ticket_list_screen.dart';
@@ -214,7 +213,7 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
               const SizedBox(height: 16),
               
               DropdownButtonFormField<String>(
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
                 decoration: InputDecoration(
                   labelText: 'category'.tr(),
                   border: const OutlineInputBorder(),
@@ -236,7 +235,7 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
               const SizedBox(height: 16),
               
               DropdownButtonFormField<String>(
-                value: _selectedPriority,
+                initialValue: _selectedPriority,
                 decoration: InputDecoration(
                   labelText: 'priority'.tr(),
                   border: const OutlineInputBorder(),

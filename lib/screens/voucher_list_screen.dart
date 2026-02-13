@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../providers/voucher_provider.dart';
 import '../providers/split/network_provider.dart';
-import '../models/voucher_model.dart';
-import '../services/api/api_config.dart';
 import '../services/voucher_export_service.dart';
 import '../widgets/voucher_ticket_card.dart';
 
@@ -197,7 +194,7 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
             Text('how_many_vouchers'.tr()),
             const SizedBox(height: 16),
             DropdownButtonFormField<int>(
-              value: quantity,
+              initialValue: quantity,
               decoration: InputDecoration(
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),

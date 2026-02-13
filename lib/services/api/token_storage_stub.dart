@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 
 class TokenStorage {
   TokenStorage({dynamic storage});

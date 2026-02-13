@@ -11,9 +11,7 @@ class TokenStorage {
   TokenStorage({dynamic storage}); // Ignore storage arg on web
 
   Future<void> _ensurePrefsInitialized() async {
-    if (_prefs == null) {
-      _prefs = await SharedPreferences.getInstance();
-    }
+    _prefs ??= await SharedPreferences.getInstance();
   }
 
   Future<void> saveTokens({required String accessToken, required String refreshToken}) async {

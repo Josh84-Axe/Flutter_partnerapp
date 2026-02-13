@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../models/voucher_model.dart';
 import '../repositories/voucher_repository.dart';
@@ -6,7 +5,7 @@ import '../repositories/voucher_repository.dart';
 class VoucherProvider with ChangeNotifier {
   final VoucherRepository _repository;
   
-  Map<String, List<VoucherModel>> _planVouchers = {};
+  final Map<String, List<VoucherModel>> _planVouchers = {};
   bool _isLoading = false;
   String? _error;
 

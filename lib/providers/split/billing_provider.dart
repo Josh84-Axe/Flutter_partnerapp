@@ -165,7 +165,7 @@ class BillingProvider with ChangeNotifier {
       }).toList();
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Load transactions error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Load transactions error: $e');
       _setError(e.toString());
     }
   }
@@ -180,16 +180,16 @@ class BillingProvider with ChangeNotifier {
     try {
       if (_walletRepository == null) return;
       
-      if (kDebugMode) print('💰 [BillingProvider] Loading wallet balance...');
+      if (kDebugMode) debugPrint('💰 [BillingProvider] Loading wallet balance...');
       final balanceData = await _walletRepository!.fetchBalance();
       
       if (balanceData != null) {
         // Handle both 'balance' and 'wallet_balance' keys for safety
         final balanceVal = balanceData['balance'] ?? balanceData['wallet_balance'];
         _walletBalance = CurrencyUtils.parseAmount(balanceVal);
-        if (kDebugMode) print('✅ [BillingProvider] Wallet balance loaded: $_walletBalance');
+        if (kDebugMode) debugPrint('✅ [BillingProvider] Wallet balance loaded: $_walletBalance');
       } else {
-        if (kDebugMode) print('⚠️ [BillingProvider] No wallet balance data received');
+        if (kDebugMode) debugPrint('⚠️ [BillingProvider] No wallet balance data received');
       }
       
       notifyListeners();
@@ -204,10 +204,10 @@ class BillingProvider with ChangeNotifier {
     try {
       if (_walletRepository == null) return;
       
-      if (kDebugMode) print('💰 [BillingProvider] Loading revenue counters...');
+      if (kDebugMode) debugPrint('💰 [BillingProvider] Loading revenue counters...');
       final countersData = await _walletRepository!.fetchCounters();
       
-      if (kDebugMode) print('📊 [BillingProvider] Raw countersData: $countersData');
+      if (kDebugMode) debugPrint('📊 [BillingProvider] Raw countersData: $countersData');
       
       if (countersData != null) {
         _totalRevenue = CurrencyUtils.parseAmount(countersData['total_revenue']);
@@ -219,18 +219,18 @@ class BillingProvider with ChangeNotifier {
         _assignedWalletBalance = _assignedRevenue;
         
         if (kDebugMode) {
-          print('✅ [BillingProvider] Counters loaded successfully:');
-          print('   - Total Revenue: \$$_totalRevenue');
-          print('   - Online Revenue: \$$_onlineRevenue');
-          print('   - Assigned Revenue: \$$_assignedRevenue');
+          debugPrint('✅ [BillingProvider] Counters loaded successfully:');
+          debugPrint('   - Total Revenue: \$$_totalRevenue');
+          debugPrint('   - Online Revenue: \$$_onlineRevenue');
+          debugPrint('   - Assigned Revenue: \$$_assignedRevenue');
         }
       } else {
-        if (kDebugMode) print('⚠️ [BillingProvider] No counters data received');
+        if (kDebugMode) debugPrint('⚠️ [BillingProvider] No counters data received');
       }
       
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Load counters error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Load counters error: $e');
       _setError(e.toString());
     }
   }
@@ -248,13 +248,13 @@ class BillingProvider with ChangeNotifier {
     try {
       if (_transactionRepository == null) return;
       
-      if (kDebugMode) print('💳 [BillingProvider] Loading wallet transactions...');
+      if (kDebugMode) debugPrint('💳 [BillingProvider] Loading wallet transactions...');
       _walletTransactions = await _transactionRepository!.getWalletTransactions();
       
-      if (kDebugMode) print('✅ [BillingProvider] Wallet transactions loaded: ${_walletTransactions.length}');
+      if (kDebugMode) debugPrint('✅ [BillingProvider] Wallet transactions loaded: ${_walletTransactions.length}');
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Load wallet transactions error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Load wallet transactions error: $e');
       _setError(e.toString());
     }
   }
@@ -264,13 +264,13 @@ class BillingProvider with ChangeNotifier {
     try {
       if (_transactionRepository == null) return;
       
-      if (kDebugMode) print('💳 [BillingProvider] Loading assigned transactions...');
+      if (kDebugMode) debugPrint('💳 [BillingProvider] Loading assigned transactions...');
       _assignedTransactions = await _transactionRepository!.fetchAssignedPlanTransactions();
       
-      if (kDebugMode) print('✅ [BillingProvider] Assigned transactions loaded: ${_assignedTransactions.length}');
+      if (kDebugMode) debugPrint('✅ [BillingProvider] Assigned transactions loaded: ${_assignedTransactions.length}');
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Load assigned transactions error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Load assigned transactions error: $e');
       _setError(e.toString());
     }
   }
@@ -280,13 +280,13 @@ class BillingProvider with ChangeNotifier {
     try {
       if (_transactionRepository == null) return;
       
-      if (kDebugMode) print('💳 [BillingProvider] Loading assigned wallet transactions...');
+      if (kDebugMode) debugPrint('💳 [BillingProvider] Loading assigned wallet transactions...');
       _assignedWalletTransactions = await _transactionRepository!.getAssignedWalletTransactions();
       
-      if (kDebugMode) print('✅ [BillingProvider] Assigned wallet transactions loaded: ${_assignedWalletTransactions.length}');
+      if (kDebugMode) debugPrint('✅ [BillingProvider] Assigned wallet transactions loaded: ${_assignedWalletTransactions.length}');
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Load assigned wallet transactions error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Load assigned wallet transactions error: $e');
       _setError(e.toString());
     }
   }
@@ -310,7 +310,7 @@ class BillingProvider with ChangeNotifier {
         return await _transactionRepository!.getWalletTransactionDetails(id);
       }
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Get transaction details error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Get transaction details error: $e');
       rethrow;
     }
   }
@@ -320,15 +320,15 @@ class BillingProvider with ChangeNotifier {
     try {
       if (_transactionRepository == null) return;
       
-      if (kDebugMode) print('💸 [BillingProvider] Loading withdrawals...');
+      if (kDebugMode) debugPrint('💸 [BillingProvider] Loading withdrawals...');
       _withdrawals = await _transactionRepository!.getWithdrawals();
       
       if (kDebugMode) {
-        print('✅ [BillingProvider] Withdrawals loaded: ${_withdrawals.length}');
+        debugPrint('✅ [BillingProvider] Withdrawals loaded: ${_withdrawals.length}');
       }
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Load withdrawals error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Load withdrawals error: $e');
       _setError(e.toString());
     }
   }
@@ -342,13 +342,13 @@ class BillingProvider with ChangeNotifier {
     try {
       if (_paymentMethodRepository == null) return;
       
-      if (kDebugMode) print('💳 [BillingProvider] Loading payment methods...');
+      if (kDebugMode) debugPrint('💳 [BillingProvider] Loading payment methods...');
       _paymentMethods = await _paymentMethodRepository!.fetchPaymentMethods();
       
-      if (kDebugMode) print('✅ [BillingProvider] Loaded ${_paymentMethods.length} payment methods');
+      if (kDebugMode) debugPrint('✅ [BillingProvider] Loaded ${_paymentMethods.length} payment methods');
       notifyListeners();
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Load payment methods error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Load payment methods error: $e');
       _setError(e.toString());
     }
   }
@@ -374,7 +374,7 @@ class BillingProvider with ChangeNotifier {
       _setLoading(false);
       return null;
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Request OTP error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Request OTP error: $e');
       _setError(e.toString());
       _setLoading(false);
       return null;
@@ -408,7 +408,7 @@ class BillingProvider with ChangeNotifier {
       _setLoading(false);
       return false;
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Verify OTP error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Verify OTP error: $e');
       _setError(e.toString());
       _setLoading(false);
       return false;
@@ -430,7 +430,7 @@ class BillingProvider with ChangeNotifier {
       _setLoading(false);
       return success;
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Delete payment method error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Delete payment method error: $e');
       _setError(e.toString());
       _setLoading(false);
       return false;
@@ -442,7 +442,7 @@ class BillingProvider with ChangeNotifier {
     try {
       if (_transactionRepository == null) return false;
       
-      if (kDebugMode) print('💸 [BillingProvider] Requesting payout: $amount to method: $paymentMethodId');
+      if (kDebugMode) debugPrint('💸 [BillingProvider] Requesting payout: $amount to method: $paymentMethodId');
       
       final withdrawalData = {
         'amount': amount.toString(),
@@ -451,7 +451,7 @@ class BillingProvider with ChangeNotifier {
       
       final result = await _transactionRepository!.createWithdrawal(withdrawalData);
       
-      if (kDebugMode) print('✅ [BillingProvider] Payout requested successfully: ${result['id']}');
+      if (kDebugMode) debugPrint('✅ [BillingProvider] Payout requested successfully: ${result['id']}');
       
       // Store withdrawal ID for tracking
       _lastWithdrawalId = result['id']?.toString();
@@ -465,7 +465,7 @@ class BillingProvider with ChangeNotifier {
       
       return true;
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Request payout error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Request payout error: $e');
       _setError(e.toString());
       return false;
     }
@@ -480,7 +480,7 @@ class BillingProvider with ChangeNotifier {
         throw Exception('Report repository not initialized');
       }
 
-      if (kDebugMode) print('📊 [BillingProvider] Generating report...');
+      if (kDebugMode) debugPrint('📊 [BillingProvider] Generating report...');
       
       return await _reportRepository!.generateTransactionReport(
         range: dateRange,
@@ -489,7 +489,7 @@ class BillingProvider with ChangeNotifier {
         currency: currencySymbol,
       );
     } catch (e) {
-      if (kDebugMode) print('❌ [BillingProvider] Generate report error: $e');
+      if (kDebugMode) debugPrint('❌ [BillingProvider] Generate report error: $e');
       _setError(e.toString());
       rethrow;
     }

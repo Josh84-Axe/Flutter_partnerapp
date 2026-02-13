@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:provider/provider.dart';
+import '../providers/split/auth_provider.dart';
 import '../providers/ticket_provider.dart';
 import '../widgets/search_bar_widget.dart';
 
@@ -141,13 +142,15 @@ class _SupportScreenState extends State<SupportScreen> {
                       if (_formKey.currentState!.validate()) {
                         final ticketProvider = context.read<TicketProvider>();
                         
-                        final success = await ticketProvider.createTicket(
+                        final authProvider = context.read<AuthProvider>();
+                        final (success, msg, _) = await ticketProvider.createTicket(
                           subject: _subjectController.text.trim(),
                           description: _messageController.text.trim(),
                           category: 'general',
                           priority: 'medium',
                           email: _emailController.text.trim(),
-                          name: _emailController.text.split('@').first, // Fallback name
+                          name: _emailController.text.split('@').first,
+                          country: authProvider.partnerCountry,
                         );
 
                         if (mounted) {
