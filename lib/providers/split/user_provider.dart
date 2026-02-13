@@ -137,6 +137,7 @@ class UserProvider with ChangeNotifier {
   switch (currencyCode) {
     case 'GH₵': return 'GHS';
     case 'KSh': return 'KES';
+    case 'FG': return 'GNF';
     case 'FCFA': return 'XOF'; // Defaulting FCFA to XOF for CinetPay
     case 'XOF': return 'XOF';
     case 'XAF': return 'XAF';
