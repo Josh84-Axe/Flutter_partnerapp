@@ -18,7 +18,7 @@ class ApiConfig {
   /// External CRM API Configuration
   static const String crmApiKey = String.fromEnvironment(
     'CRM_API_KEY',
-    defaultValue: 'aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE',
+    defaultValue: 'QNBBRFCO0rfnxFxS9buqx2cMjTbDwQEd3Zwhew_TXMI',
   );
   
   /// Coleah CRM Partner API Base URL

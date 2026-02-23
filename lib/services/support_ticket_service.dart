@@ -8,7 +8,7 @@ class SupportTicketService {
   
   // As per instructions
   static const String _baseUrl = 'https://api.coleah.com/api/cases/external/cases/';
-  static const String _apiKey = 'aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE';
+  static const String _apiKey = 'QNBBRFCO0rfnxFxS9buqx2cMjTbDwQEd3Zwhew_TXMI';
 
   SupportTicketService({Dio? dio}) : _dio = dio ?? Dio();
 
