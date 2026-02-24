@@ -25,41 +25,48 @@ class SupportTicketService {
   Future<(bool success, String message, String? ticketId)> createTicket({
     required String subject,
     required String description,
-    required String contactName,
     required String contactEmail,
-    required String? partnerCountry,
-    String priority = 'MEDIUM',
+    required String contactName,
+    String? priority,
+    String? partnerCountry,
   }) async {
+    final payload = {
+      'subject': subject,
+      'description': '$description\n\n[Diagnostic Timestamp: ${DateTime.now().toIso8601String()}]',
+      'contact_email': contactEmail,
+      'contact_name': contactName,
+      'priority': priority ?? 'MEDIUM',
+      'country': _getCountryIsoCode(partnerCountry),
+    };
+
+    if (kDebugMode || true) { // Force logging for troubleshooting
+      debugPrint('📡 [SupportTicketService] Sending Ticket Payload: $payload');
+    }
+
     try {
       final response = await _dio.post(
         _baseUrl,
         options: _getOptions(),
-        data: {
-          'subject': subject,
-          'description': description,
-          'contact_name': contactName,
-          'contact_email': contactEmail,
-          'country': _getCountryIsoCode(partnerCountry),
-          'priority': priority,
-        },
+        data: payload,
       );
 
+      if (kDebugMode || true) {
+        debugPrint('📡 [SupportTicketService] Response Status: ${response.statusCode}');
+        debugPrint('📡 [SupportTicketService] Response Data: ${response.data}');
+      }
+
       if (response.statusCode == 201) {
-        if (kDebugMode) print('✅ Ticket created successfully: ${response.data}');
-        final ticketId = response.data['id']?.toString() ?? 'ID Unknown';
-        return (true, 'Ticket #$ticketId created successfully.', ticketId);
+        final data = response.data;
+        final ticketId = data['ticket_number']?.toString() ?? data['id']?.toString();
+        return (true, 'Ticket created successfully', ticketId);
       } else {
-        // Parse error response which might be a map of field errors
         String errorMsg = 'Unknown error';
         if (response.data is Map) {
           final errors = response.data as Map;
-          // Flatten the error map
           errorMsg = errors.entries.map((e) => '${e.key}: ${e.value}').join('\n');
         } else {
-           errorMsg = 'Status: ${response.statusCode} - ${response.data}';
+          errorMsg = 'Status: ${response.statusCode} - ${response.data}';
         }
-        
-        if (kDebugMode) print('❌ Failed to create ticket: $errorMsg');
         return (false, errorMsg, null);
       }
     } on DioException catch (e) {
@@ -69,13 +76,10 @@ class SupportTicketService {
            e.error.toString().contains('onError callback'))) {
         errorMessage = 'Network Error (CORS): The request was blocked by the browser. Please check server CORS configuration for api.coleah.com.';
       }
-      if (kDebugMode) print('❌ Dio Error creating ticket: $errorMessage');
-      
-      // We throw specifically for CORS so the UI can catch it and show the special "Likely Created" dialog
-      // Or we could return a specific failure code. Raising exception is fine as it's an "Exceptional" network state.
+      debugPrint('❌ Dio Error creating ticket: $errorMessage');
       throw Exception(errorMessage);
     } catch (e) {
-      if (kDebugMode) print('❌ Error creating ticket: $e');
+      debugPrint('❌ Error creating ticket: $e');
       rethrow;
     }
   }
