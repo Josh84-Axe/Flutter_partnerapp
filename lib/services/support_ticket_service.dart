@@ -27,6 +27,7 @@ class SupportTicketService {
     required String description,
     required String contactEmail,
     required String contactName,
+    String? contactPhone,
     String? priority,
     String? partnerCountry,
   }) async {
@@ -35,8 +36,12 @@ class SupportTicketService {
       'description': '$description\n\n[Diagnostic Timestamp: ${DateTime.now().toIso8601String()}]',
       'contact_email': contactEmail,
       'contact_name': contactName,
+      'contact_phone': contactPhone,
       'priority': priority ?? 'MEDIUM',
       'country': _getCountryIsoCode(partnerCountry),
+      'metadata': {
+        'origin': 'partner_app'
+      }
     };
 
     if (kDebugMode || true) { // Force logging for troubleshooting

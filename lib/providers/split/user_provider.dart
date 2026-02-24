@@ -647,6 +647,7 @@ class UserProvider with ChangeNotifier {
       case 'mali': return 'ML';
       case 'benin': return 'BJ';
       case 'togo': return 'TG';
+      case 'guinea': return 'GN';
       case 'burkina faso': return 'BF';
       case 'niger': return 'NE';
       case 'cameroon': return 'CM';
@@ -656,7 +657,7 @@ class UserProvider with ChangeNotifier {
       case 'nigeria': return 'NG';
       case 'ghana': return 'GH';
       case 'kenya': return 'KE';
-      default: return 'CI'; // Default fallback
+      default: return 'CI'; 
     }
   }
 }

@@ -57,7 +57,6 @@ Analyzing Flutter_partnerapp...
    info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/feature/auth/login_screen_m3.dart:246:38 • use_build_context_synchronously
    info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/feature/auth/login_screen_m3.dart:250:46 • use_build_context_synchronously
    info • Don't invoke 'print' in production code • lib/feature/auth/verify_password_reset_otp_screen.dart:87:11 • avoid_print
-   info • Don't invoke 'print' in production code • lib/main.dart:133:3 • avoid_print
    info • Don't invoke 'print' in production code • lib/main.dart:150:5 • avoid_print
    info • Don't invoke 'print' in production code • lib/main.dart:198:5 • avoid_print
    info • Statements in an if should be enclosed in a block • lib/models/voucher_model.dart:39:27 • curly_braces_in_flow_control_structures
@@ -145,8 +144,8 @@ warning • The value of the local variable 'colorScheme' isn't used • lib/scr
    info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/create_edit_user_profile_screen.dart:340:40 • use_build_context_synchronously
    info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/create_edit_user_profile_screen.dart:343:49 • use_build_context_synchronously
    info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/dashboard_screen.dart:89:45 • use_build_context_synchronously
-   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/dashboard_screen.dart:270:76 • deprecated_member_use
-   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/dashboard_screen.dart:573:30 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/dashboard_screen.dart:318:80 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/dashboard_screen.dart:623:30 • use_build_context_synchronously
    info • Don't use 'BuildContext's across async gaps • lib/screens/hotspot_users_management_screen.dart:308:15 • use_build_context_synchronously
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/internet_plan_screen.dart:171:80 • deprecated_member_use
    info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/internet_plan_screen.dart:174:49 • deprecated_member_use
@@ -206,7 +205,6 @@ warning • The value of the field '_walletTransactions' isn't used • lib/scre
 warning • The operand can't be 'null', so the condition is always 'true' • lib/services/api/logging_interceptor.dart:79:24 • unnecessary_null_comparison
    info • 'dart:html' is deprecated and shouldn't be used. Use package:web and dart:js_interop instead • lib/services/pwa_service_web.dart:3:1 • deprecated_member_use
    info • Don't use web-only libraries outside Flutter web plugins • lib/services/pwa_service_web.dart:3:1 • avoid_web_libraries_in_flutter
-warning • Unused import: 'dart:html' • lib/services/pwa_service_web.dart:3:8 • unused_import
    info • Don't invoke 'print' in production code • lib/services/update_service_io.dart:121:19 • avoid_print
    info • 'dart:html' is deprecated and shouldn't be used. Use package:web and dart:js_interop instead • lib/services/voucher_export_service_web.dart:2:1 • deprecated_member_use
 warning • The value of the local variable 'anchor' isn't used • lib/services/voucher_export_service_web.dart:36:13 • unused_local_variable
@@ -227,12 +225,13 @@ warning • The value of the local variable 'isUsed' isn't used • lib/widgets/
    info • Don't invoke 'print' in production code • test/check_profile.dart:20:5 • avoid_print
    info • Don't invoke 'print' in production code • test/check_profile.dart:25:7 • avoid_print
    info • Don't invoke 'print' in production code • test/check_profile.dart:27:7 • avoid_print
-  error • Target of URI doesn't exist: 'package:hotspot_partner_app/services/api/crm_service.dart' • test/crm_integration_qa_test.dart:7:8 • uri_does_not_exist
+warning • Unused import: 'package:dio/dio.dart' • test/crm_integration_qa_test.dart:4:8 • unused_import
+warning • Unused import: 'package:hotspot_partner_app/services/api/api_config.dart' • test/crm_integration_qa_test.dart:6:8 • unused_import
    info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:11:5 • avoid_print
-  error • The function 'CrmService' isn't defined • test/crm_integration_qa_test.dart:13:24 • undefined_function
    info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:28:7 • avoid_print
-   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:37:7 • avoid_print
-   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:38:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:42:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:43:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:44:7 • avoid_print
    info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:51:9 • avoid_print
    info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:53:9 • avoid_print
    info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:54:9 • avoid_print
@@ -299,11 +298,9 @@ warning • The value of the local variable 'isUsed' isn't used • lib/widgets/
    info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:93:5 • avoid_print
    info • Don't invoke 'print' in production code • test/test_support_ticket.dart:5:3 • avoid_print
    info • Don't invoke 'print' in production code • test/test_support_ticket.dart:10:5 • avoid_print
-  error • The named parameter 'partnerCountry' is required, but there's no corresponding argument • test/test_support_ticket.dart:11:34 • missing_required_argument
-  error • Conditions must have a static type of 'bool' • test/test_support_ticket.dart:19:9 • non_bool_condition
-   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:20:7 • avoid_print
-   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:22:7 • avoid_print
-   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:25:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:21:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:23:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:26:5 • avoid_print
    info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:10:3 • avoid_print
    info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:23:5 • avoid_print
    info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:24:5 • avoid_print
@@ -481,4 +478,3 @@ warning • The value of the local variable 'isUsed' isn't used • lib/widgets/
    info • Don't invoke 'print' in production code • test_sessions_api.dart:44:7 • avoid_print
    info • Don't invoke 'print' in production code • test_sessions_api.dart:45:7 • avoid_print
 
-480 issues found. (ran in 6.3s)

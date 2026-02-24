@@ -41,6 +41,7 @@ class TicketRepository {
     required String description,
     required String email,
     required String name,
+    String? phone,
     String priority = 'LOW',
     String? country,
   }) async {
@@ -50,6 +51,7 @@ class TicketRepository {
         description: description,
         contactEmail: email,
         contactName: name,
+        contactPhone: phone,
         priority: priority,
         partnerCountry: country,
       );

@@ -227,12 +227,14 @@ warning • The value of the local variable 'isUsed' isn't used • lib/widgets/
    info • Don't invoke 'print' in production code • test/check_profile.dart:20:5 • avoid_print
    info • Don't invoke 'print' in production code • test/check_profile.dart:25:7 • avoid_print
    info • Don't invoke 'print' in production code • test/check_profile.dart:27:7 • avoid_print
-  error • Target of URI doesn't exist: 'package:hotspot_partner_app/services/api/crm_service.dart' • test/crm_integration_qa_test.dart:7:8 • uri_does_not_exist
+warning • Unused import: 'package:dio/dio.dart' • test/crm_integration_qa_test.dart:4:8 • unused_import
+warning • Unused import: 'package:hotspot_partner_app/services/api/api_config.dart' • test/crm_integration_qa_test.dart:6:8 • unused_import
    info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:11:5 • avoid_print
-  error • The function 'CrmService' isn't defined • test/crm_integration_qa_test.dart:13:24 • undefined_function
+  error • The getter 'dio' isn't defined for the type 'SupportTicketService' • test/crm_integration_qa_test.dart:16:17 • undefined_getter
    info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:28:7 • avoid_print
-   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:37:7 • avoid_print
-   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:38:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:42:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:43:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:44:7 • avoid_print
    info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:51:9 • avoid_print
    info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:53:9 • avoid_print
    info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:54:9 • avoid_print
@@ -299,11 +301,9 @@ warning • The value of the local variable 'isUsed' isn't used • lib/widgets/
    info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:93:5 • avoid_print
    info • Don't invoke 'print' in production code • test/test_support_ticket.dart:5:3 • avoid_print
    info • Don't invoke 'print' in production code • test/test_support_ticket.dart:10:5 • avoid_print
-  error • The named parameter 'partnerCountry' is required, but there's no corresponding argument • test/test_support_ticket.dart:11:34 • missing_required_argument
-  error • Conditions must have a static type of 'bool' • test/test_support_ticket.dart:19:9 • non_bool_condition
-   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:20:7 • avoid_print
-   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:22:7 • avoid_print
-   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:25:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:21:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:23:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:26:5 • avoid_print
    info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:10:3 • avoid_print
    info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:23:5 • avoid_print
    info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:24:5 • avoid_print
@@ -481,4 +481,4 @@ warning • The value of the local variable 'isUsed' isn't used • lib/widgets/
    info • Don't invoke 'print' in production code • test_sessions_api.dart:44:7 • avoid_print
    info • Don't invoke 'print' in production code • test_sessions_api.dart:45:7 • avoid_print
 
-480 issues found. (ran in 6.3s)
+480 issues found. (ran in 6.0s)

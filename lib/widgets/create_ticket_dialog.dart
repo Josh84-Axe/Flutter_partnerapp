@@ -60,7 +60,8 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
           category: _selectedCategory,
           priority: _selectedPriority,
           email: currentUser.email,
-          name: currentUser.name ?? 'Valued Partner',
+          name: currentUser.name,
+          phone: currentUser.phone,
           country: currentUser.country,
         );
 
