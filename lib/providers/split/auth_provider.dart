@@ -152,6 +152,7 @@ class AuthProvider with ChangeNotifier {
         name: '${userData['first_name'] ?? ''} ${userData['last_name'] ?? ''}'.trim(),
         email: userData['email']?.toString() ?? email,
         role: userRole,
+        phone: userData['phone']?.toString(), // Added phone mapping
         permissions: mappedPermissions,
         isActive: true,
         createdAt: DateTime.now(),
