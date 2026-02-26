@@ -561,7 +561,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                         ),
                         FilledButton(
                           onPressed: () {
-                            context.read<UserProvider>().deleteUser(user.id);
+                            context.read<UserProvider>().deleteUser(user.username ?? user.id);
                             Navigator.pop(context);
                           },
                           style: FilledButton.styleFrom(

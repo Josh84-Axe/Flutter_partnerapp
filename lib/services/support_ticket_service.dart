@@ -122,14 +122,42 @@ class SupportTicketService {
     }
   }
 
-  Future<Response> replyToTicket(String ticketId, String content) async {
+  Future<Response> replyToTicket(String ticketId, String content, {String? filePath, String? fileName, List<int>? fileBytes}) async {
     try {
-      if (kDebugMode) print('📨 [SupportTicketService] Replying to ticket: $ticketId');
+      if (kDebugMode) print('📨 [SupportTicketService] Replying to ticket: $ticketId with attachment: ${fileName ?? 'none'}');
       
+      dynamic data;
+      Options options = _getOptions();
+
+      if (filePath != null || fileBytes != null) {
+        // Use FormData for multipart upload
+        final formData = FormData.fromMap({
+          'content': content,
+        });
+
+        if (fileBytes != null && fileName != null) {
+          formData.files.add(MapEntry(
+            'file',
+            MultipartFile.fromBytes(fileBytes, filename: fileName),
+          ));
+        } else if (filePath != null) {
+          formData.files.add(MapEntry(
+            'file',
+            await MultipartFile.fromFile(filePath, filename: fileName),
+          ));
+        }
+        
+        data = formData;
+        // Dio automatically sets the correct Content-Type for FormData
+        options.headers?.remove('Content-Type');
+      } else {
+        data = {'content': content};
+      }
+
       final response = await _dio.post(
         '$_baseUrl$ticketId/reply/',
-        data: {'content': content},
-        options: _getOptions(),
+        data: data,
+        options: options,
       );
 
       return response;

@@ -85,13 +85,19 @@ class TicketProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> replyToTicket(String caseId, String content) async {
+  Future<bool> replyToTicket(String caseId, String content, {String? filePath, String? fileName, List<int>? fileBytes}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final success = await _ticketRepository.replyToTicket(caseId, content);
+      final success = await _ticketRepository.replyToTicket(
+        caseId, 
+        content,
+        filePath: filePath,
+        fileName: fileName,
+        fileBytes: fileBytes,
+      );
       if (success) {
         // Refresh messages after successful reply
         await fetchMessages(caseId);

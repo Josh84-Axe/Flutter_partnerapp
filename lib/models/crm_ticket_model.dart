@@ -57,6 +57,8 @@ class CrmMessage {
   final String senderName;
   final DateTime? sentAt;
   final bool isInternal;
+  final String? fileUrl;
+  final String? fileName;
 
   CrmMessage({
     required this.id,
@@ -65,6 +67,8 @@ class CrmMessage {
     required this.senderName,
     this.sentAt,
     this.isInternal = false,
+    this.fileUrl,
+    this.fileName,
   });
 
   factory CrmMessage.fromJson(Map<String, dynamic> json) {
@@ -75,6 +79,8 @@ class CrmMessage {
       senderName: json['sender_name'] ?? 'Agent',
       sentAt: json['sent_at'] != null ? DateTime.tryParse(json['sent_at']) : null,
       isInternal: json['is_internal'] ?? false,
+      fileUrl: json['file_url'],
+      fileName: json['file_name'],
     );
   }
 
@@ -86,6 +92,8 @@ class CrmMessage {
       'sender_name': senderName,
       'sent_at': sentAt?.toIso8601String(),
       'is_internal': isInternal,
+      'file_url': fileUrl,
+      'file_name': fileName,
     };
   }
 

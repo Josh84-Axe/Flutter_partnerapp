@@ -214,11 +214,11 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  Future<void> deleteUser(String userId) async {
+  Future<void> deleteUser(String username) async {
     if (_customerRepository == null) return;
     _setLoading(true);
     try {
-      await _customerRepository!.deleteCustomer(userId);
+      await _customerRepository!.deleteCustomer(username);
       await loadUsers();
       _error = null;
     } catch (e) {

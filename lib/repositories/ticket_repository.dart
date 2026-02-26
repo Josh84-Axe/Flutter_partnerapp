@@ -98,9 +98,15 @@ class TicketRepository {
   }
 
   /// Sends a reply to an existing ticket
-  Future<bool> replyToTicket(String ticketId, String content) async {
+  Future<bool> replyToTicket(String ticketId, String content, {String? filePath, String? fileName, List<int>? fileBytes}) async {
     try {
-      final response = await _ticketService.replyToTicket(ticketId, content);
+      final response = await _ticketService.replyToTicket(
+        ticketId, 
+        content,
+        filePath: filePath,
+        fileName: fileName,
+        fileBytes: fileBytes,
+      );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       if (kDebugMode) {

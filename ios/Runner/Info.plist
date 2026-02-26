@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to take photos for support tickets.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photos access to upload images for support tickets.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs microphone access for video support (if applicable).</string>
 </dict>
 </plist>

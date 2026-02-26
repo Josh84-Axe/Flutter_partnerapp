@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/foundation.dart';
 import '../providers/ticket_provider.dart';
 import '../models/crm_ticket_model.dart';
 
@@ -21,6 +25,9 @@ class SupportTicketChatScreen extends StatefulWidget {
 class _SupportTicketChatScreenState extends State<SupportTicketChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ImagePicker _picker = ImagePicker();
+  XFile? _selectedFile;
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -32,21 +39,77 @@ class _SupportTicketChatScreenState extends State<SupportTicketChatScreen> {
     context.read<TicketProvider>().fetchMessages(widget.ticketId);
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? file = await _picker.pickImage(
+        source: source,
+        imageQuality: 70, // Compress for faster upload
+      );
+      if (file != null) {
+        setState(() => _selectedFile = file);
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error picking image: $e');
+    }
+  }
+
+  Future<void> _pickFile() async {
+    try {
+      final FilePickerResult? result = await FilePicker.platform.pickFiles();
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _selectedFile = XFile(result.files.single.path!);
+        });
+      } else if (result != null && result.files.single.bytes != null) {
+        // Handle web bytes
+        setState(() {
+          _selectedFile = XFile.fromData(
+            result.files.single.bytes!,
+            name: result.files.single.name,
+          );
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error picking file: $e');
+    }
+  }
+
+  void _clearFile() {
+    setState(() => _selectedFile = null);
+  }
+
   void _sendMessage() async {
     final content = _messageController.text.trim();
-    if (content.isEmpty) return;
+    if (content.isEmpty && _selectedFile == null) return;
+
+    final ticketProvider = context.read<TicketProvider>();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    setState(() => _isUploading = true);
+    
+    final file = _selectedFile;
+    // Capture data before async gaps
+    final filePath = kIsWeb ? null : file?.path;
+    final fileName = file?.name;
+    final fileBytes = file != null ? await file.readAsBytes() : null;
 
     _messageController.clear();
-    final success = await context.read<TicketProvider>().replyToTicket(
+    setState(() => _selectedFile = null);
+
+    final success = await ticketProvider.replyToTicket(
       widget.ticketId,
-      content,
+      content.isEmpty ? 'Attachment' : content,
+      filePath: filePath,
+      fileName: fileName,
+      fileBytes: fileBytes,
     );
 
-    if (success) {
-      _scrollToBottom();
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+    if (mounted) {
+      setState(() => _isUploading = false);
+      if (success) {
+        _scrollToBottom();
+      } else {
+        scaffoldMessenger.showSnackBar(
           SnackBar(content: Text('failed_to_send_message'.tr())),
         );
       }
@@ -113,37 +176,127 @@ class _SupportTicketChatScreenState extends State<SupportTicketChatScreen> {
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 5,
             offset: const Offset(0, -2),
           ),
         ],
       ),
       child: SafeArea(
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: TextField(
-                controller: _messageController,
-                decoration: InputDecoration(
-                  hintText: 'type_your_message'.tr(),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerHighest,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 8),
+            if (_selectedFile != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                maxLines: null,
-                textCapitalization: TextCapitalization.sentences,
+                child: Row(
+                  children: [
+                    Icon(
+                      _selectedFile!.name.toLowerCase().endsWith('.png') || 
+                      _selectedFile!.name.toLowerCase().endsWith('.jpg') || 
+                      _selectedFile!.name.toLowerCase().endsWith('.jpeg')
+                        ? Icons.image
+                        : Icons.insert_drive_file,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _selectedFile!.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: _clearFile,
+                    ),
+                  ],
+                ),
               ),
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.add_circle_outline, color: theme.colorScheme.primary),
+                  onPressed: _isUploading ? null : () => _showAttachmentOptions(context),
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: _messageController,
+                    enabled: !_isUploading,
+                    decoration: InputDecoration(
+                      hintText: 'type_your_message'.tr(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: theme.colorScheme.surfaceContainerHighest,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
+                    ),
+                    maxLines: null,
+                    textCapitalization: TextCapitalization.sentences,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                if (_isUploading)
+                  const SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                else
+                  IconButton.filled(
+                    onPressed: _sendMessage,
+                    icon: const Icon(Icons.send),
+                  ),
+              ],
             ),
-            const SizedBox(width: 8),
-            IconButton.filled(
-              onPressed: _sendMessage,
-              icon: const Icon(Icons.send),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAttachmentOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take Photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('From Gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.attach_file),
+              title: const Text('Attach File'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickFile();
+              },
             ),
           ],
         ),
@@ -194,6 +347,8 @@ class _MessageBubble extends StatelessWidget {
                 ),
               ),
             const SizedBox(height: 2),
+            if (message.fileUrl != null && message.fileUrl!.isNotEmpty)
+              _buildAttachment(context, message, isMe, theme),
             Text(
               message.content,
               style: TextStyle(
@@ -218,5 +373,86 @@ class _MessageBubble extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildAttachment(BuildContext context, CrmMessage message, bool isMe, ThemeData theme) {
+    final bool isImage = message.fileUrl!.toLowerCase().endsWith('.png') || 
+                         message.fileUrl!.toLowerCase().endsWith('.jpg') || 
+                         message.fileUrl!.toLowerCase().endsWith('.jpeg');
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _openAttachment(context, message.fileUrl!),
+          borderRadius: BorderRadius.circular(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (isImage)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    message.fileUrl!,
+                    width: double.infinity,
+                    height: 150,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 100,
+                      color: theme.colorScheme.errorContainer,
+                      child: const Center(child: Icon(Icons.broken_image)),
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isMe ? Colors.white24 : theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.insert_drive_file, 
+                        color: isMe ? Colors.white : theme.colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          message.fileName ?? 'Attachment',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isMe ? Colors.white : theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openAttachment(BuildContext context, String url) async {
+    final uri = Uri.parse(url);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not open attachment')),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error launching URL: $e');
+    }
   }
 }
