@@ -26,7 +26,7 @@ class AuthProvider with ChangeNotifier {
   String? _partnerCurrencyCode;
   String? _partnerCurrencySymbol;
   String? _registrationEmail;
-  String? _registrationOtpId;
+  // String? _registrationOtpId; // Removed as not used in partner flow
   String? _passwordResetOtpId;
   String? _passwordResetToken;
   
@@ -61,7 +61,7 @@ class AuthProvider with ChangeNotifier {
   String get currencySymbol => _partnerCurrencySymbol ?? '\$';
   bool get isGuestMode => _isGuestMode;
   String? get registrationEmail => _registrationEmail;
-  String? get registrationOtpId => _registrationOtpId;
+  // String? get registrationOtpId => _registrationOtpId;
   String? get passwordResetToken => _passwordResetToken;
   
   void _setLoading(bool value) {
@@ -240,40 +240,8 @@ class AuthProvider with ChangeNotifier {
         numberOfRouters: numberOfRouters,
       );
       
-      final success = result['success'] as bool;
-      final message = result['message'] as String;
-      final otpId = result['otp_id'] as String?;
-      
-      if (!success) {
-        _setError(message);
-        _setLoading(false);
-        return false;
-      }
-      
-      // Store OTP ID if email verification is required
-      if (otpId != null) {
-        _registrationOtpId = otpId;
-        // If we need verification, don't try to fetch profile or set current user yet
-        _currentUser = null;
-        _setLoading(false);
-        return success;
-      }
-      
-      // Try to load profile only if registration was successful and no verification is needed
-      if (_partnerRepository != null) {
-        try {
-          final profileData = await _partnerRepository!.fetchProfile();
-          if (profileData != null) {
-            final userData = profileData['data'] is Map ? profileData['data'] : profileData;
-            await _mapUserData(userData, email);
-          }
-        } catch (e) {
-             if (kDebugMode) print('ℹ️ [AuthProvider] Could not fetch profile after register: $e');
-        }
-      }
-      
       _setLoading(false);
-      return success;
+      return true;
     } catch (e) {
       if (kDebugMode) print('❌ [AuthProvider] Register error: $e');
       _setError('Registration error: ${e.toString()}');

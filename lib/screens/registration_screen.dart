@@ -173,7 +173,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             arguments: {
               'type': 'registration',
               'email': _emailController.text.trim(),
-              'otp_id': authProvider.registrationOtpId,
             },
           );
         } else {

@@ -124,32 +124,40 @@ class SupportTicketService {
 
   Future<Response> replyToTicket(String ticketId, String content, {String? filePath, String? fileName, List<int>? fileBytes}) async {
     try {
-      if (kDebugMode) print('📨 [SupportTicketService] Replying to ticket: $ticketId with attachment: ${fileName ?? 'none'}');
+      if (kDebugMode) {
+        print('📨 [SupportTicketService] Replying to ticket: $ticketId');
+        print('📂 Attachment info: ${fileName ?? 'none'}, hasBytes: ${fileBytes != null}, hasPath: ${filePath != null}');
+      }
       
       dynamic data;
       Options options = _getOptions();
 
       if (filePath != null || fileBytes != null) {
-        // Use FormData for multipart upload
-        final formData = FormData.fromMap({
-          'content': content,
-        });
-
+        // Prepare file for upload
+        MultipartFile? file;
         if (fileBytes != null && fileName != null) {
-          formData.files.add(MapEntry(
-            'file',
-            MultipartFile.fromBytes(fileBytes, filename: fileName),
-          ));
+          file = MultipartFile.fromBytes(fileBytes, filename: fileName);
         } else if (filePath != null) {
-          formData.files.add(MapEntry(
-            'file',
-            await MultipartFile.fromFile(filePath, filename: fileName),
-          ));
+          file = await MultipartFile.fromFile(filePath, filename: fileName);
         }
-        
-        data = formData;
-        // Dio automatically sets the correct Content-Type for FormData
-        options.headers?.remove('Content-Type');
+
+        if (file != null) {
+          // Use FormData for multipart upload
+          // Map to both 'file' and 'attachment' for maximum compatibility as per user guidance
+          final formData = FormData.fromMap({
+            'content': content,
+            'file': file,
+            // Also include 'attachment' as fallback if 'file' isn't picked up by some versions
+            'attachment': file,
+          });
+          
+          data = formData;
+          // Dio automatically sets the correct Content-Type (multipart/form-data with boundary) 
+          // when data is FormData, but we must remove the default application/json
+          options.headers?.remove('Content-Type');
+        } else {
+          data = {'content': content};
+        }
       } else {
         data = {'content': content};
       }
@@ -160,9 +168,19 @@ class SupportTicketService {
         options: options,
       );
 
+      if (kDebugMode || true) {
+        print('✅ [SupportTicketService] Reply Response Status: ${response.statusCode}');
+        print('📦 [SupportTicketService] Reply Response Data: ${response.data}');
+      }
+
       return response;
     } on DioException catch (e) {
-      if (kDebugMode) print('❌ Error replying to ticket: ${e.message}');
+      if (kDebugMode || true) {
+        print('❌ [SupportTicketService] Error replying to ticket: ${e.message}');
+        if (e.response != null) {
+          print('📦 Error Response Data: ${e.response?.data}');
+        }
+      }
       rethrow;
     }
   }

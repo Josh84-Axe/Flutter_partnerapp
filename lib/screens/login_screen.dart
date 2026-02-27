@@ -144,7 +144,6 @@ class _LoginScreenState extends State<LoginScreen> {
             arguments: {
               'type': 'registration',
               'email': _emailController.text.trim(),
-              'otp_id': authProvider.registrationOtpId,
             },
           );
           return;

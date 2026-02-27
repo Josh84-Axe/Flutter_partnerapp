@@ -23,7 +23,7 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   
   Timer? _timer;
-  int _secondsRemaining = 60;
+  int _secondsRemaining = 180;
   bool _canResend = false;
 
   @override
@@ -34,7 +34,7 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
 
   void _startTimer() {
     setState(() {
-      _secondsRemaining = 60;
+      _secondsRemaining = 180;
       _canResend = false;
     });
     _timer?.cancel();
@@ -339,7 +339,7 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
                     child: Text(
                       _canResend 
                           ? 'resend_code'.tr() 
-                          : '${'resend_code'.tr()} in ${_secondsRemaining}s',
+                          : '${'resend_code'.tr()} in ${_formatTime(_secondsRemaining)}',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -412,5 +412,11 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
         ),
       ),
     );
+  }
+  
+  String _formatTime(int seconds) {
+    final int minutes = seconds ~/ 60;
+    final int remainingSeconds = seconds % 60;
+    return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 }

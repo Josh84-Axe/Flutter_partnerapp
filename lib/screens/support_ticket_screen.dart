@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/user_model.dart';
 import '../services/support_ticket_service.dart';
 import '../providers/split/user_provider.dart';
@@ -37,6 +38,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Text(
                 'create_new_ticket'.tr(),
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
@@ -69,7 +71,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
 
               // Priority Dropdown
               DropdownButtonFormField<String>(
-                initialValue: _priority,
+                value: _priority,
                 decoration: InputDecoration(
                   labelText: 'priority'.tr(),
                   border: OutlineInputBorder(),
@@ -122,11 +124,18 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                      ? Text('submit_ticket'.tr(),
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
                       : Text(
                           'submit_ticket'.tr(),
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                 ),
               ),
@@ -196,10 +205,10 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.green),
-            SizedBox(width: 8),
+            const Icon(Icons.check_circle, color: Colors.green),
+            const SizedBox(width: 8),
             Text('success'.tr()),
           ],
         ),
