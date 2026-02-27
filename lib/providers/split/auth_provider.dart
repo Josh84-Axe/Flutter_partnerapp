@@ -147,6 +147,11 @@ class AuthProvider with ChangeNotifier {
       // Extract role
       final userRole = userData['role'] is Map ? (userData['role']['name']?.toString() ?? 'Partner') : 'Partner';
 
+      // Extract country and set currency info
+      _partnerCountry = userData['country']?.toString() ?? userData['country_name']?.toString();
+      _partnerCurrencyCode = CurrencyUtils.getCurrencyCode(_partnerCountry);
+      _partnerCurrencySymbol = CurrencyUtils.getCurrencySymbol(_partnerCountry);
+
       _currentUser = UserModel(
         id: userData['id']?.toString() ?? '1',
         name: '${userData['first_name'] ?? ''} ${userData['last_name'] ?? ''}'.trim(),
@@ -158,13 +163,9 @@ class AuthProvider with ChangeNotifier {
         createdAt: DateTime.now(),
         isVoucherEnabled: userData['enable_smart_vouchers'] == true || 
                          (userRole == 'Administrator' || userRole == 'Partner'),
-        country: userData['country']?.toString(),
+        country: _partnerCountry,
       );
       
-      // Extract country and set currency info
-      _partnerCountry = userData['country']?.toString() ?? userData['country_name']?.toString();
-      _partnerCurrencyCode = CurrencyUtils.getCurrencyCode(_partnerCountry);
-      _partnerCurrencySymbol = CurrencyUtils.getCurrencySymbol(_partnerCountry);
       notifyListeners();
   }
 

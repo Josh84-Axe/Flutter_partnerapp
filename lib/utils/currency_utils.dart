@@ -3,12 +3,33 @@ import 'package:intl/intl.dart';
 /// Currency utility for formatting prices
 class CurrencyUtils {
   
-  /// Get currency code for a given country
+  /// Get currency code for a given country or ISO code
   static String getCurrencyCode(String? country) {
     if (country == null || country.isEmpty) return 'USD';
     
     final normalized = country.trim().toLowerCase();
     
+    // Handle ISO 2-letter codes first
+    if (normalized == 'gh') return 'GHS';
+    if (normalized == 'ci') return 'XOF';
+    if (normalized == 'ng') return 'NGN';
+    if (normalized == 'ke') return 'KES';
+    if (normalized == 'ug') return 'UGX';
+    if (normalized == 'tz') return 'TZS';
+    if (normalized == 'rw') return 'RWF';
+    if (normalized == 'za') return 'ZAR';
+    if (normalized == 'gn') return 'GNF';
+    if (normalized == 'sn') return 'XOF';
+    if (normalized == 'ml') return 'XOF';
+    if (normalized == 'bj') return 'XOF';
+    if (normalized == 'bf') return 'XOF';
+    if (normalized == 'ne') return 'XOF';
+    if (normalized == 'tg') return 'XOF';
+    if (normalized == 'cm') return 'XAF';
+    if (normalized == 'ga') return 'XAF';
+    if (normalized == 'cg') return 'XAF';
+    if (normalized == 'td') return 'XAF';
+
     // Robust substring matching
     if (normalized.contains('guinea') && !normalized.contains('bissau')) return 'GNF';
     if (normalized.contains('ghana')) return 'GHS';
@@ -19,10 +40,11 @@ class CurrencyUtils {
     if (normalized.contains('rwanda')) return 'RWF';
     if (normalized.contains('south africa')) return 'ZAR';
     
-    // XOF Countries
+    // XOF Countries (including accented versions)
     if (normalized.contains('senegal') || 
         normalized.contains('ivory coast') || 
         normalized.contains('cote d\'ivoire') ||
+        normalized.contains('côte d\'ivoire') ||
         normalized.contains('benin') ||
         normalized.contains('burkina') ||
         normalized.contains('mali') ||
