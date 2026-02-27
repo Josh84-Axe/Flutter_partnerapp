@@ -535,7 +535,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Error: $e'),
+                           content: Text('error_generic'.tr(namedArgs: {'error': e.toString()})),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -840,7 +840,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Role ${roles.firstWhere((r) => r.id == selectedRole).name} assigned successfully'),
+                          content: Text('role_assigned_successfully'.tr(namedArgs: {'name': roles.firstWhere((r) => r.id == selectedRole).name})),
                           backgroundColor: Theme.of(context).colorScheme.primary,
                         ),
                       );
@@ -870,26 +870,26 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Worker Details'),
+        title: Text('worker_details'.tr()),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildDetailRow('Name', worker.fullName),
-              _buildDetailRow('Email', worker.email),
-              _buildDetailRow('Username', worker.username),
-              _buildDetailRow('Role', worker.roleName ?? 'No role'),
-              _buildDetailRow('Status', worker.isActive ? 'Active' : 'Inactive'),
+              _buildDetailRow('name'.tr(), worker.fullName),
+              _buildDetailRow('email'.tr(), worker.email),
+              _buildDetailRow('username'.tr(), worker.username),
+              _buildDetailRow('role'.tr(), worker.roleName ?? 'no_role'.tr()),
+              _buildDetailRow('status'.tr(), worker.isActive ? 'active'.tr() : 'inactive'.tr()),
               if (worker.assignedRouters != null && worker.assignedRouters!.isNotEmpty)
-                _buildDetailRow('Assigned Routers', worker.assignedRouters!.join(', ')),
+                _buildDetailRow('assigned_routers'.tr(), worker.assignedRouters!.join(', ')),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('close'.tr()),
           ),
         ],
       ),
@@ -925,24 +925,24 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit Worker'),
+        title: Text('edit_worker'.tr()),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: firstNameController,
-                decoration: const InputDecoration(labelText: 'First Name'),
+                decoration: InputDecoration(labelText: 'first_name'.tr()),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: lastNameController,
-                decoration: const InputDecoration(labelText: 'Last Name'),
+                decoration: InputDecoration(labelText: 'last_name'.tr()),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(labelText: 'email'.tr()),
                 keyboardType: TextInputType.emailAddress,
               ),
             ],
@@ -964,7 +964,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 if (context.mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Worker updated successfully')),
+                    SnackBar(content: Text('worker_updated_success'.tr())),
                   );
                 }
               } catch (e) {
@@ -978,7 +978,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 }
               }
             },
-            child: const Text('Save'),
+            child: Text('save'.tr()),
           ),
         ],
       ),

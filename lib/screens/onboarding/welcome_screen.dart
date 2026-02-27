@@ -40,9 +40,9 @@ class WelcomeScreen extends StatelessWidget {
                   color: colorScheme.primary,
                 ),
                 const SizedBox(height: 32),
-                const Text(
-                  'Welcome to Partner Hub',
-                  style: TextStyle(
+                Text(
+                  'welcome_hub_title'.tr(),
+                  style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                   ),
@@ -50,7 +50,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Manage your network, empower your users, and grow your business.',
+                  'welcome_hub_subtitle'.tr(),
                   style: TextStyle(
                     fontSize: 16,
                     color: AppTheme.textLight,
@@ -65,7 +65,7 @@ class WelcomeScreen extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('Get Started'),
+                    child: Text('get_started'.tr()),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -76,7 +76,7 @@ class WelcomeScreen extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('Explore Demo'),
+                    child: Text('explore_demo'.tr()),
                   ),
                 ),
               ],

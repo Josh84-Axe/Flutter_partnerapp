@@ -418,19 +418,17 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Payment Method'),
-        content: const Text('Are you sure you want to delete this payment method?'),
+        title: Text('delete_payment_method_title'.tr()),
+        content: Text('delete_payment_method_message'.tr()),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('cancel'.tr()),
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.errorRed,
-            ),
-            child: const Text('Delete'),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: Text('delete'.tr()),
           ),
         ],
       ),
@@ -441,19 +439,13 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
         await context.read<BillingProvider>().deletePaymentMethod(methodId);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Payment method deleted successfully'),
-              backgroundColor: AppTheme.successGreen,
-            ),
+            SnackBar(content: Text('payment_method_deleted'.tr())),
           );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to delete payment method: $e'),
-              backgroundColor: AppTheme.errorRed,
-            ),
+            SnackBar(content: Text('payment_method_delete_failed'.tr(namedArgs: {'error': e.toString()}))),
           );
         }
       }

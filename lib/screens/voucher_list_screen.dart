@@ -64,8 +64,8 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
           PopupMenuButton<String>(
             onSelected: (value) => _handleExport(value, provider),
             itemBuilder: (context) => [
-              PopupMenuItem(value: 'local_pdf', child: Text('Download PDF (Local)')),
-              PopupMenuItem(value: 'local_csv', child: Text('Download CSV (Local)')),
+              PopupMenuItem(value: 'local_pdf', child: Text('download_pdf_local'.tr())),
+              PopupMenuItem(value: 'local_csv', child: Text('download_csv_local'.tr())),
             ],
             icon: const Icon(Icons.download),
           ),
@@ -237,15 +237,15 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.check_circle, color: Colors.green, size: 48),
-        title: const Text('Success!'),
+        title: Text('success'.tr()),
         content: Text(
-          '$quantity vouchers have been generated successfully.\n\nWould you like to download them now?',
+          'vouchers_generated_success'.tr(namedArgs: {'quantity': quantity.toString()}),
           textAlign: TextAlign.center,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Later'),
+            child: Text('later'.tr()),
           ),
           FilledButton.icon(
             onPressed: () async {
@@ -253,7 +253,7 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
               await _handleExport('local_pdf', context.read<VoucherProvider>());
             },
             icon: const Icon(Icons.picture_as_pdf),
-            label: const Text('Download PDF'),
+            label: Text('download_pdf'.tr()),
           ),
         ],
       ),

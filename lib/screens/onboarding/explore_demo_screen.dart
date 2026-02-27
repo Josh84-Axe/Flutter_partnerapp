@@ -12,7 +12,7 @@ class ExploreDemoScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Explore the Demo'),
+        title: Text('explore_demo_title'.tr()),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -20,7 +20,7 @@ class ExploreDemoScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Text(
-              'Experience the app\'s core features using sample data, with no sign-up needed. This is a read-only demo to showcase the value we provide.',
+              'explore_demo_desc'.tr(),
               style: TextStyle(
                 fontSize: 14,
                 color: AppTheme.textLight,
@@ -31,9 +31,9 @@ class ExploreDemoScreen extends StatelessWidget {
           _buildFeatureCard(
             context,
             icon: Icons.bar_chart,
-            title: 'Dashboard Analytics',
-            description: 'Visualize key metrics, user activity, and network performance.',
-            buttonText: 'View Demo Dashboard',
+            title: 'dashboard_analytics_title'.tr(),
+            description: 'dashboard_analytics_desc'.tr(),
+            buttonText: 'view_demo_dashboard'.tr(),
             onTap: () {
               Navigator.of(context).pushReplacementNamed('/home');
             },
@@ -42,9 +42,9 @@ class ExploreDemoScreen extends StatelessWidget {
           _buildFeatureCard(
             context,
             icon: Icons.group,
-            title: 'User & Router Management',
-            description: 'Browse and manage your users and their associated hardware seamlessly.',
-            buttonText: 'Explore Demo Users',
+            title: 'user_router_mgmt_title'.tr(),
+            description: 'user_router_mgmt_desc'.tr(),
+            buttonText: 'explore_demo_users'.tr(),
             onTap: () {
               Navigator.of(context).pushReplacementNamed('/home');
             },
@@ -53,9 +53,9 @@ class ExploreDemoScreen extends StatelessWidget {
           _buildFeatureCard(
             context,
             icon: Icons.receipt_long,
-            title: 'Plan & Billing Management',
-            description: 'Showcases the functionality for creating, viewing, and managing customer subscription plans.',
-            buttonText: 'See Demo Plans',
+            title: 'plan_billing_mgmt_title'.tr(),
+            description: 'plan_billing_mgmt_desc'.tr(),
+            buttonText: 'see_demo_plans'.tr(),
             onTap: () {
               Navigator.of(context).pushReplacementNamed('/home');
             },
@@ -65,7 +65,7 @@ class ExploreDemoScreen extends StatelessWidget {
             child: TextButton(
               onPressed: onSignUpNow,
               child: Text(
-                'Sign Up Now',
+                'sign_up_now'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

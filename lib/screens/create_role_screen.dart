@@ -61,10 +61,10 @@ class _CreateRoleScreenState extends State<CreateRoleScreen> {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading permissions: $e'),
+            content: Text('error_loading_permissions'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: Colors.red,
             action: SnackBarAction(
-              label: 'Retry',
+              label: 'retry'.tr(),
               textColor: Colors.white,
               onPressed: _loadPermissions,
             ),

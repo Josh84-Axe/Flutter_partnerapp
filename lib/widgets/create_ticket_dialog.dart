@@ -45,7 +45,7 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
       if (currentUser == null) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error: User not found. Please log in.')),
+          SnackBar(content: Text('error_user_not_found'.tr())),
         );
         return;
       }

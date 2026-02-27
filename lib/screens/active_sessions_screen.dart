@@ -189,7 +189,7 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
           final activePlan = session['active_plan'];
           String planName = 'Unknown Plan';
           if (activePlan is Map) {
-            planName = activePlan['plan_name']?.toString() ?? 'Unknown Plan';
+            planName = activePlan['plan_name']?.toString() ?? 'unknown_plan'.tr();
           }
 
           // Fallback or Enrich details from Provider Lists
@@ -312,15 +312,15 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
       required String customerName,
       required String phoneNumber,
   }) {
-    final planName = plan['plan_name']?.toString() ?? 'Unknown Plan';
+    final planName = plan['plan_name']?.toString() ?? 'unknown_plan'.tr();
     final isOnline = activeSession != null;
     
     // Extract session details if online
-    final ipAddress = activeSession?['ip_address'] ?? activeSession?['ip'] ?? 'N/A';
-    final uptime = activeSession?['uptime'] ?? 'N/A';
+    final ipAddress = activeSession?['ip_address'] ?? activeSession?['ip'] ?? 'not_available_short'.tr();
+    final uptime = activeSession?['uptime'] ?? 'not_available_short'.tr();
     final bytesIn = activeSession?['bytes_in'] ?? activeSession?['bytes-in'] ?? 0;
     final bytesOut = activeSession?['bytes_out'] ?? activeSession?['bytes-out'] ?? 0;
-    final routerName = activeSession?['router_dns_name'] ?? activeSession?['router_name'] ?? 'Unknown Router';
+    final routerName = activeSession?['router_dns_name'] ?? activeSession?['router_name'] ?? 'unknown_router'.tr();
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -411,7 +411,7 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
                     Row(
                       children: [
                         Text(
-                          isBlocked ? 'Access Denied' : 'Access Allowed',
+                          isBlocked ? 'access_denied'.tr() : 'access_allowed'.tr(),
                           style: TextStyle(
                             fontSize: 10,
                             color: isBlocked ? Colors.red : Colors.green,
@@ -534,7 +534,7 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
          
          if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text('User unblocked')), // Add translation key if needed
+             SnackBar(content: Text('user_unblocked'.tr())), 
            );
          }
       }

@@ -43,7 +43,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text('notifications'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -51,9 +51,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           TextButton(
             onPressed: () => userProvider.markAllNotificationsAsRead(),
-            child: const Text(
-              'Mark all as read',
-              style: TextStyle(color: AppTheme.pureWhite),
+            child: Text(
+              'mark_all_as_read'.tr(),
+              style: const TextStyle(color: AppTheme.pureWhite),
             ),
           ),
         ],
@@ -70,7 +70,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No notifications',
+                    'no_notifications'.tr(),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Colors.grey[600],
                         ),
@@ -81,11 +81,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           : ListView(
               children: [
                 if (today.isNotEmpty) ...[
-                  _buildSectionHeader(context, 'Today'),
+                  _buildSectionHeader(context, 'today_label'.tr()),
                   ...today.map((n) => _buildNotificationItem(context, n, userProvider)),
                 ],
                 if (yesterday.isNotEmpty) ...[
-                  _buildSectionHeader(context, 'Yesterday'),
+                  _buildSectionHeader(context, 'yesterday_label'.tr()),
                   ...yesterday.map((n) => _buildNotificationItem(context, n, userProvider)),
                 ],
               ],
@@ -215,9 +215,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final diff = now.difference(timestamp);
 
     if (diff.inMinutes < 60) {
-      return '${diff.inMinutes}m ago';
+      return 'minutes_ago'.tr(namedArgs: {'minutes': diff.inMinutes.toString()});
     } else if (diff.inHours < 24) {
-      return '${diff.inHours}h ago';
+      return 'hours_ago'.tr(namedArgs: {'hours': diff.inHours.toString()});
     } else {
       return DateFormat('MMM d, h:mm a').format(timestamp);
     }

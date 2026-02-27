@@ -16,23 +16,23 @@ class _CarouselScreenState extends State<CarouselScreen> {
 
   final List<Map<String, String>> _slides = [
     {
-      'title': 'User Management',
-      'description': 'Easily add, edit, and manage your users with an intuitive interface.',
+      'title': 'carousel_title_1',
+      'description': 'carousel_desc_1',
       'icon': 'group',
     },
     {
-      'title': 'Flexible Plans',
-      'description': 'Create and assign custom internet plans tailored to your business needs.',
+      'title': 'carousel_title_2',
+      'description': 'carousel_desc_2',
       'icon': 'wifi',
     },
     {
-      'title': 'Network Health',
-      'description': 'Monitor router status and network performance in real-time.',
+      'title': 'carousel_title_3',
+      'description': 'carousel_desc_3',
       'icon': 'router',
     },
     {
-      'title': 'Track Your Earnings',
-      'description': 'View detailed revenue breakdowns and transaction history.',
+      'title': 'carousel_title_4',
+      'description': 'carousel_desc_4',
       'icon': 'attach_money',
     },
   ];
@@ -79,7 +79,7 @@ class _CarouselScreenState extends State<CarouselScreen> {
                         ),
                         const SizedBox(height: 48),
                         Text(
-                          slide['title']!,
+                          slide['title']!.tr(),
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -88,7 +88,7 @@ class _CarouselScreenState extends State<CarouselScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          slide['description']!,
+                          slide['description']!.tr(),
                           style: TextStyle(
                             fontSize: 16,
                             color: AppTheme.textLight,
@@ -128,7 +128,7 @@ class _CarouselScreenState extends State<CarouselScreen> {
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('Get Started'),
+                  child: Text('get_started'.tr()),
                 ),
               ),
             ),

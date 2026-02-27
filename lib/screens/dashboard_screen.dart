@@ -239,7 +239,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'welcome_back'.tr(namedArgs: {'name': userProvider.currentUser?.name ?? 'Joe'}),
+              'welcome_back'.tr(namedArgs: {'name': userProvider.currentUser?.name ?? 'valued_partner'.tr()}),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
@@ -252,43 +252,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   if (pwa.isIOS) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 24.0),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.blue.shade700, Colors.blue.shade900],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.apple, color: Colors.white, size: 32),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'ios_install_title'.tr(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  Text(
-                                    'ios_install_subtitle'.tr(),
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                      child: GestureDetector(
+                        onTap: () => _showIOSInstallInstructions(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.blue.shade700, Colors.blue.shade900],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
-                          ],
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.apple, color: Colors.white, size: 32),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'ios_install_title'.tr(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      'ios_install_subtitle'.tr(),
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -382,7 +393,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             
             // Subscription Plan Card - load from API
             SubscriptionPlanCard(
-              planName: userProvider.subscription?.tier ?? 'Free Plan',
+              planName: userProvider.subscription?.tier ?? 'free_plan'.tr(),
               renewalDate: userProvider.subscription?.renewalDate,
               isLoading: userProvider.isLoading || networkProvider.isLoading || billingProvider.isLoading,
             ),
@@ -634,5 +645,126 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
       }
     }
+  void _showIOSInstallInstructions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 48,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                const Icon(Icons.apple, size: 32, color: Colors.blue),
+                const SizedBox(width: 12),
+                Text(
+                  'ios_install_title'.tr(),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'ios_install_subtitle'.tr(),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 32),
+            _buildInstallStep(
+              context,
+              number: '1',
+              text: 'pwa_ios_step_1'.tr(),
+              icon: Icons.public,
+            ),
+            const SizedBox(height: 20),
+            _buildInstallStep(
+              context,
+              number: '2',
+              text: 'pwa_ios_step_2'.tr(),
+              icon: Icons.ios_share,
+            ),
+            const SizedBox(height: 20),
+            _buildInstallStep(
+              context,
+              number: '3',
+              text: 'pwa_ios_step_3'.tr(),
+              icon: Icons.add_box_outlined,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text('ok'.tr()),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInstallStep(BuildContext context, {required String number, required String text, required IconData icon}) {
+    return Row(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: Colors.blue.shade50,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              number,
+              style: const TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Icon(icon, color: Colors.grey.shade700, size: 24),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+          ),
+        ),
+      ],
+    );
   }
 }

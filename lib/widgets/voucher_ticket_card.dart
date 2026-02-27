@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/voucher_model.dart';
 import '../models/plan_model.dart';
 
@@ -25,7 +26,7 @@ class _VoucherTicketCardState extends State<VoucherTicketCard> {
   void _handleCopy() async {
     await Clipboard.setData(ClipboardData(text: widget.voucher.code));
     setState(() => _isCopied = true);
-    widget.onMessage('Code copied: ${widget.voucher.code}');
+    widget.onMessage('code_copied'.tr(namedArgs: {'code': widget.voucher.code}));
     
     // Reset copy state after 2 seconds
     Future.delayed(const Duration(seconds: 2), () {
@@ -41,10 +42,10 @@ class _VoucherTicketCardState extends State<VoucherTicketCard> {
   }
 
   String _getStatusText() {
-    if (widget.voucher.isUsed) return 'USED';
-    if (widget.voucher.isExpired) return 'EXPIRED';
-    if (widget.voucher.isAssigned) return 'ASSIGNED';
-    return 'ACTIVE';
+    if (widget.voucher.isUsed) return 'status_used'.tr();
+    if (widget.voucher.isExpired) return 'status_expired'.tr();
+    if (widget.voucher.isAssigned) return 'status_assigned'.tr();
+    return 'status_active'.tr();
   }
 
   @override
@@ -224,9 +225,9 @@ class _VoucherTicketCardState extends State<VoucherTicketCard> {
                       borderRadius: BorderRadius.circular(12),
                       color: Colors.white.withOpacity(0.8),
                     ),
-                    child: const Text(
-                      'COPIED',
-                      style: TextStyle(
+                    child: Text(
+                      'status_copied'.tr(),
+                      style: const TextStyle(
                         color: Colors.green,
                         fontWeight: FontWeight.w900,
                         fontSize: 24,

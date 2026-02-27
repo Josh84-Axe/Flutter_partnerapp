@@ -279,7 +279,7 @@ class _HotspotUsersManagementScreenState extends State<HotspotUsersManagementScr
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('$action $username'),
+        title: Text('confirm_action_header'.tr(namedArgs: {'action': action, 'name': username})),
         content: Text('confirmation_message'.tr(namedArgs: {'action': action, 'item': username})),
         actions: [
           TextButton(

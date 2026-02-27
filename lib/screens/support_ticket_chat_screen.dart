@@ -276,7 +276,7 @@ class _SupportTicketChatScreenState extends State<SupportTicketChatScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text('Take Photo'),
+              title: Text('take_photo'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
@@ -284,7 +284,7 @@ class _SupportTicketChatScreenState extends State<SupportTicketChatScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('From Gallery'),
+              title: Text('from_gallery'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -292,7 +292,7 @@ class _SupportTicketChatScreenState extends State<SupportTicketChatScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.attach_file),
-              title: const Text('Attach File'),
+              title: Text('attach_file'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 _pickFile();
@@ -447,7 +447,7 @@ class _MessageBubble extends StatelessWidget {
       } else {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not open attachment')),
+            SnackBar(content: Text('error_open_attachment'.tr())),
           );
         }
       }

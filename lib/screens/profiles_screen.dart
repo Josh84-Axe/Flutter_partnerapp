@@ -40,7 +40,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hotspot User Profiles'),
+        title: Text('hotspot_user_profiles'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -51,7 +51,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: SearchBarWidget(
-              hintText: 'Search profiles...',
+              hintText: 'search_profiles'.tr(),
               controller: _searchController,
               onChanged: (value) {
                 setState(() {
@@ -66,7 +66,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                 : profiles.isEmpty
                     ? const Center(
                         child: Text(
-                          'No hotspot profiles found.\nCreate one to get started!',
+                          'no_profiles_found_desc'.tr(),
                           textAlign: TextAlign.center,
                         ),
                       )
@@ -111,19 +111,19 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                                       final confirmed = await showDialog<bool>(
                                         context: context,
                                         builder: (context) => AlertDialog(
-                                          title: const Text('Delete Profile'),
+                                          title: Text('delete_profile'.tr()),
                                           content: Text(
-                                            'Are you sure you want to delete ${profile.name}?',
+                                            'delete_plan_confirm'.tr(namedArgs: {'name': profile.name}),
                                           ),
                                           actions: [
                                             TextButton(
                                               onPressed: () => Navigator.of(context).pop(false),
-                                              child: const Text('Cancel'),
+                                              child: Text('cancel'.tr()),
                                             ),
                                             TextButton(
                                               onPressed: () => Navigator.of(context).pop(true),
                                               child: Text(
-                                                'Delete',
+                                                'delete'.tr(),
                                                 style: TextStyle(color: colorScheme.error),
                                               ),
                                             ),
@@ -145,7 +145,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
                                           if (context.mounted) {
                                             ScaffoldMessenger.of(context).showSnackBar(
                                               SnackBar(
-                                                content: Text('Error deleting profile: $e'),
+                                                content: Text('error_deleting_profile'.tr(namedArgs: {'error': e.toString()})),
                                                 backgroundColor: colorScheme.error,
                                               ),
                                             );
@@ -168,7 +168,7 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
           Navigator.of(context).pushNamed('/profile-editor');
         },
         icon: const Icon(Icons.add),
-        label: const Text('Add New Profile'),
+        label: Text('add_new_profile'.tr()),
       ),
     );
   }

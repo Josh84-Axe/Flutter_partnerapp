@@ -28,7 +28,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Support Ticket'),
+        title: Text('support_ticket'.tr()),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -37,13 +37,12 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Create a New Ticket',
+                'create_new_ticket'.tr(),
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
               Text(
-                'Submit your issue directly to our support team.',
+                'submit_issue_desc'.tr(),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.grey[600],
                     ),
@@ -53,15 +52,15 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
               // Subject Field
               TextFormField(
                 controller: _subjectController,
-                decoration: const InputDecoration(
-                  labelText: 'Subject',
-                  hintText: 'Brief summary of the issue',
+                decoration: InputDecoration(
+                  labelText: 'subject'.tr(),
+                  hintText: 'subject_hint'.tr(),
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.title),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a subject';
+                    return 'enter_subject'.tr();
                   }
                   return null;
                 },
@@ -71,15 +70,15 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
               // Priority Dropdown
               DropdownButtonFormField<String>(
                 initialValue: _priority,
-                decoration: const InputDecoration(
-                  labelText: 'Priority',
+                decoration: InputDecoration(
+                  labelText: 'priority'.tr(),
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.flag),
                 ),
                 items: _priorities.map((String priority) {
                   return DropdownMenuItem<String>(
                     value: priority,
-                    child: Text(priority),
+                    child: Text('priority_${priority.toLowerCase()}'.tr()),
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
@@ -96,15 +95,15 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 5,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  hintText: 'Describe your issue in detail...',
+                decoration: InputDecoration(
+                  labelText: 'description'.tr(),
+                  hintText: 'description_hint'.tr(),
                   border: OutlineInputBorder(),
                   alignLabelWithHint: true,
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a description';
+                    return 'enter_description'.tr();
                   }
                   return null;
                 },
@@ -123,10 +122,10 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Submit Ticket',
+                      ? Text('submit_ticket'.tr(),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
+                      : Text(
+                          'submit_ticket'.tr(),
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                 ),
@@ -143,7 +142,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
 
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error: User information not found. Please login again.')),
+        SnackBar(content: Text('error_user_not_found_long'.tr())),
       );
       return;
     }
@@ -157,7 +156,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
       final (success, msg, ticketId) = await service.createTicket(
         subject: _subjectController.text.trim(),
         description: _descriptionController.text.trim(),
-        contactName: user.name ?? 'Valued Partner',
+        contactName: user.name ?? 'valued_partner'.tr(),
         contactEmail: user.email,
         partnerCountry: user.country,
         priority: _priority,
@@ -170,7 +169,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(msg.contains('Status:') ? 'Failed to submit ticket. Please try again.' : msg),
+            content: Text(msg.contains('Status:') ? 'error_submit_ticket'.tr() : msg),
             backgroundColor: Colors.red,
           ),
         );
@@ -201,7 +200,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
           children: [
             Icon(Icons.check_circle, color: Colors.green),
             SizedBox(width: 8),
-            Text('Success'),
+            Text('success'.tr()),
           ],
         ),
         content: Text(message),
@@ -211,7 +210,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
               Navigator.of(context).pop(); // Close dialog
               Navigator.of(context).pop(); // Go back to previous screen
             },
-            child: const Text('OK'),
+            child: Text('ok'.tr()),
           ),
         ],
       ),
