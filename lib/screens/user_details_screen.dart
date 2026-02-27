@@ -319,9 +319,9 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   ],
                   
                   if (_assignedTransactions.isEmpty && _walletTransactions.isEmpty)
-                     const Card(
+                     Card(
                         child: Padding(
-                            padding: EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(20),
                             child: Center(child: Text('no_transactions_found'.tr())),
                         ),
                      ),

@@ -645,6 +645,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
       }
     }
+  }
+
   void _showIOSInstallInstructions(BuildContext context) {
     showModalBottomSheet(
       context: context,

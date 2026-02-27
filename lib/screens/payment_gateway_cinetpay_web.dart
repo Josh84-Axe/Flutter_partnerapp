@@ -5,6 +5,8 @@ import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'package:easy_localization/easy_localization.dart';
+
 class PaymentGatewayCinetPayWeb extends StatefulWidget {
   final String apiKey;
   final String siteId;
@@ -246,4 +248,3 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
     );
   }
 }
-```
