@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
 
 import '../providers/split/user_provider.dart';
@@ -677,14 +679,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 24),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(Icons.apple, size: 32, color: Colors.blue),
-                const SizedBox(width: 12),
-                Text(
-                  'ios_install_title'.tr(),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    const Icon(Icons.apple, size: 32, color: Colors.blue),
+                    const SizedBox(width: 12),
+                    Text(
+                      'ios_install_title'.tr(),
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),
@@ -701,6 +712,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
               number: '1',
               text: 'pwa_ios_step_1'.tr(),
               icon: Icons.public,
+              onTap: () async {
+                const urlString = 'https://partner.tiknetafrica.com';
+                final Uri url = Uri.parse(urlString);
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
+              },
+              trailing: IconButton(
+                icon: const Icon(Icons.copy, size: 20),
+                tooltip: 'copy'.tr(),
+                onPressed: () {
+                  const urlString = 'https://partner.tiknetafrica.com';
+                  Clipboard.setData(const ClipboardData(text: urlString));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('url_copied'.tr())),
+                  );
+                },
+              ),
             ),
             const SizedBox(height: 20),
             _buildInstallStep(
@@ -737,36 +766,65 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildInstallStep(BuildContext context, {required String number, required String text, required IconData icon}) {
-    return Row(
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              number,
-              style: const TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.bold,
+  Widget _buildInstallStep(
+    BuildContext context, {
+    required String number,
+    required String text,
+    required IconData icon,
+    VoidCallback? onTap,
+    Widget? trailing,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  number,
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
-          ),
+            const SizedBox(width: 16),
+            Icon(icon, color: Colors.grey.shade700, size: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    text,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                  ),
+                  if (onTap != null)
+                    Text(
+                      'tap_to_open'.tr(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (trailing != null) trailing,
+          ],
         ),
-        const SizedBox(width: 16),
-        Icon(icon, color: Colors.grey.shade700, size: 24),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
