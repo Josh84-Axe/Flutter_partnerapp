@@ -13,6 +13,9 @@ external set onAppInstalled(JSFunction value);
 @JS('isAppInstallable')
 external JSBoolean isAppInstallableJs();
 
+@JS('isInstallPromptSupported')
+external JSBoolean isInstallPromptSupportedJs();
+
 @JS('isStandalone')
 external JSBoolean isStandaloneJs();
 
@@ -31,6 +34,15 @@ class PwaServiceWeb implements PwaService {
   bool _isInstallable = false;
   @override
   bool get isInstallable => _isInstallable;
+
+  @override
+  bool get isInstallPromptSupported {
+    try {
+      return isInstallPromptSupportedJs().toDart;
+    } catch (e) {
+      return false;
+    }
+  }
 
   @override
   bool get isStandalone {

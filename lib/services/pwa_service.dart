@@ -8,6 +8,7 @@ abstract class PwaService {
 
   Stream<bool> get installableStream;
   bool get isInstallable;
+  bool get isInstallPromptSupported;
   bool get isStandalone;
   bool get isIOS;
   void init();

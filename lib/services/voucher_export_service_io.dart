@@ -49,27 +49,45 @@ class VoucherExportService {
       
       pdf.addPage(
         pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(24),
           build: (context) => [
             pw.Header(
               level: 0,
-              child: pw.Text('Vouchers for $planName', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Tiknet Partner - Vouchers', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.blue900)),
+                  pw.Text(planName, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
             ),
-            pw.SizedBox(height: 20),
-            pw.TableHelper.fromTextArray(
-              headers: ['Code', 'Status', 'Generated At'],
-              data: vouchers.map((v) => [
-                v.code,
-                v.status.toUpperCase(),
-                v.createdAt.toString().substring(0, 16),
-              ]).toList(),
-              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-              headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
-              cellHeight: 30,
-              cellAlignments: {
-                0: pw.Alignment.centerLeft,
-                1: pw.Alignment.center,
-                2: pw.Alignment.centerRight,
-              },
+            pw.SizedBox(height: 15),
+            pw.GridView(
+              crossAxisCount: 5,
+              childAspectRatio: 2.2,
+              children: vouchers.map((v) => pw.Container(
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.grey400, width: 0.5),
+                ),
+                padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                child: pw.Column(
+                  mainAxisAlignment: pw.MainAxisAlignment.center,
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Text(
+                      v.planName.toUpperCase(),
+                      style: pw.TextStyle(fontSize: 7, color: PdfColors.grey800),
+                      maxLines: 1,
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      v.code,
+                      style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                    ),
+                  ],
+                ),
+              )).toList(),
             ),
           ],
         ),

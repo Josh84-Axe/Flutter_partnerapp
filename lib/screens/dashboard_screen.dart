@@ -247,32 +247,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 16),
 
             // PWA Install Banner (Web Only)
+            // PWA Install Banner (Web Only)
             if (kIsWeb)
               Builder(
                 builder: (context) {
                   final pwa = PwaService();
-                  // If already installed (standalone mode), don't show any banner
                   if (pwa.isStandalone) {
                     return const SizedBox.shrink();
                   }
 
-                  if (pwa.isIOS) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 24.0),
-                      child: GestureDetector(
-                        onTap: () => _showIOSInstallInstructions(context),
+                  return StreamBuilder<bool>(
+                    stream: pwa.installableStream,
+                    initialData: pwa.isInstallable,
+                    builder: (context, snapshot) {
+                      final bool isInstallable = snapshot.data ?? pwa.isInstallable;
+                      final bool showNativePrompt = isInstallable && pwa.isInstallPromptSupported;
+                      
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 24.0),
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [Colors.blue.shade700, Colors.blue.shade900],
+                              colors: [
+                                Theme.of(context).colorScheme.primary,
+                                Theme.of(context).colorScheme.secondary,
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.blue.withOpacity(0.3),
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -280,14 +287,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.apple, color: Colors.white, size: 32),
+                              Icon(
+                                Theme.of(context).platform == TargetPlatform.iOS 
+                                  ? Icons.apple 
+                                  : Icons.install_mobile, 
+                                color: Colors.white, 
+                                size: 32
+                              ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'ios_install_title'.tr(),
+                                      'pwa_generic_title'.tr(),
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
@@ -295,7 +308,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       ),
                                     ),
                                     Text(
-                                      'ios_install_subtitle'.tr(),
+                                      'pwa_generic_subtitle'.tr(),
                                       style: const TextStyle(
                                         color: Colors.white70,
                                         fontSize: 14,
@@ -304,85 +317,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+                              const SizedBox(width: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  if (showNativePrompt) {
+                                    pwa.promptInstall();
+                                  } else {
+                                    _showManualInstallInstructions(context);
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Theme.of(context).colorScheme.primary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Text(showNativePrompt ? 'install'.tr() : 'view_details'.tr()),
+                              ),
                             ],
                           ),
                         ),
-                      ),
-                    );
-                  }
-
-                  return StreamBuilder<bool>(
-                    stream: pwa.installableStream,
-                    initialData: pwa.isInstallable,
-                    builder: (context, snapshot) {
-                      if (snapshot.data == true) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 24.0),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Theme.of(context).colorScheme.primary,
-                                  Theme.of(context).colorScheme.secondary,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.install_mobile, color: Colors.white, size: 32),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'install_app_title'.tr(),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      Text(
-                                        'install_app_subtitle'.tr(),
-                                        style: const TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                ElevatedButton(
-                                  onPressed: () => PwaService().promptInstall(),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Theme.of(context).colorScheme.primary,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: Text('install'.tr()),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
+                      );
                     },
                   );
                 },
@@ -654,7 +610,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  void _showIOSInstallInstructions(BuildContext context) {
+  void _showManualInstallInstructions(BuildContext context) {
+    final pwa = PwaService();
+    final bool isIOS = pwa.isIOS;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -688,10 +647,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.apple, size: 32, color: Colors.blue),
+                    Icon(
+                      isIOS ? Icons.apple : Icons.install_mobile,
+                      size: 32,
+                      color: isIOS ? Colors.blue : Theme.of(context).colorScheme.primary,
+                    ),
                     const SizedBox(width: 12),
                     Text(
-                      'ios_install_title'.tr(),
+                      (isIOS ? 'ios_install_title' : 'pwa_generic_title').tr(),
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -706,49 +669,86 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'ios_install_subtitle'.tr(),
+              (isIOS ? 'ios_install_subtitle' : 'pwa_generic_subtitle').tr(),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Colors.grey.shade600,
               ),
             ),
             const SizedBox(height: 32),
-            _buildInstallStep(
-              context,
-              number: '1',
-              text: 'pwa_ios_step_1'.tr(),
-              icon: Icons.public,
-              onTap: () async {
-                const urlString = 'https://partner.tiknetafrica.com';
-                final Uri url = Uri.parse(urlString);
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                }
-              },
-              trailing: IconButton(
-                icon: const Icon(Icons.copy, size: 20),
-                tooltip: 'copy'.tr(),
-                onPressed: () {
-                  const urlString = 'https://partner.tiknetafrica.com';
-                  Clipboard.setData(const ClipboardData(text: urlString));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('url_copied'.tr())),
-                  );
-                },
+            if (isIOS) ...[
+              _buildInstallStep(
+                context,
+                number: '1',
+                text: 'pwa_ios_step_1'.tr(),
+                icon: Icons.ios_share,
               ),
-            ),
-            const SizedBox(height: 20),
-            _buildInstallStep(
-              context,
-              number: '2',
-              text: 'pwa_ios_step_2'.tr(),
-              icon: Icons.ios_share,
-            ),
-            const SizedBox(height: 20),
-            _buildInstallStep(
-              context,
-              number: '3',
-              text: 'pwa_ios_step_3'.tr(),
-              icon: Icons.add_box_outlined,
+              const SizedBox(height: 20),
+              _buildInstallStep(
+                context,
+                number: '2',
+                text: 'pwa_ios_step_2'.tr(),
+                icon: Icons.add_box_outlined,
+              ),
+              const SizedBox(height: 20),
+              _buildInstallStep(
+                context,
+                number: '3',
+                text: 'pwa_ios_step_3'.tr(),
+                icon: Icons.add,
+              ),
+            ] else ...[
+              _buildInstallStep(
+                context,
+                number: '1',
+                text: 'pwa_android_step_1'.tr(),
+                icon: Icons.more_vert,
+              ),
+              const SizedBox(height: 20),
+              _buildInstallStep(
+                context,
+                number: '2',
+                text: 'pwa_android_step_2'.tr(),
+                icon: Icons.install_mobile,
+              ),
+            ],
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.link, size: 20, color: Colors.grey),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'partner.tiknet.africa',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                        color: Colors.grey,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.copy, size: 20),
+                    tooltip: 'copy'.tr(),
+                    onPressed: () {
+                      const urlString = 'https://partner.tiknet.africa';
+                      Clipboard.setData(const ClipboardData(text: urlString));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('url_copied'.tr())),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 32),
             SizedBox(

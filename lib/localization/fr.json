@@ -105,7 +105,7 @@
   "active_users_details": "Détails des utilisateurs actifs",
   "error_loading_data": "Échec du chargement des données : {error}",
   "unassign_user_plan_message": "Êtes-vous sûr de vouloir désassigner le plan de {name} ?",
-  "internet_plans": "Plans Internet",
+  "internet_plans": "Internet Plans",
   "active_sessions": "Sessions Actives",
   "reporting": "Rapports",
   "install_app_title": "Installer l'application",
@@ -118,5 +118,17 @@
   "select_router_error": "Veuillez sélectionner un routeur",
   "bulk_actions": "Actions en masse",
   "no_workers_found": "Aucun employé trouvé",
-  "view_details": "Voir les détails"
+  "view_details": "Voir les détails",
+  "ios_install_title": "Installer sur iOS",
+  "ios_install_subtitle": "Suivez ces étapes pour ajouter Tiknet à votre écran d'accueil",
+  "pwa_ios_step_1": "Appuyez sur le bouton Partager dans la barre d'outils du navigateur",
+  "pwa_ios_step_2": "Faites défiler vers le bas et appuyez sur 'Sur l'écran d'accueil'",
+  "pwa_ios_step_3": "Appuyez sur 'Ajouter' dans le coin supérieur droit",
+  "pwa_generic_title": "Installer l'application Tiknet",
+  "pwa_generic_subtitle": "Obtenez l'expérience complète sur votre appareil",
+  "pwa_android_step_1": "Appuyez sur le menu du navigateur (trois points ou lignes)",
+  "pwa_android_step_2": "Appuyez sur 'Installer l'application' ou 'Ajouter à l'écran d'accueil'",
+  "ok": "OK",
+  "copy": "Copier",
+  "url_copied": "URL copiée dans le presse-papiers"
 }

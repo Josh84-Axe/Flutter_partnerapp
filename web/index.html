@@ -64,21 +64,39 @@
       return window.deferredPrompt !== null;
     };
 
+    window.isInstallPromptSupported = function () {
+      return 'BeforeInstallPromptEvent' in window || (window.deferredPrompt !== null);
+    };
+
     window.isStandalone = function () {
-      return (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone) || false;
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSourcePwa = urlParams.get('source') === 'pwa';
+      const isStandaloneMode = (window.matchMedia('(display-mode: standalone)').matches) ||
+        (window.matchMedia('(display-mode: minimal-ui)').matches) ||
+        (window.matchMedia('(display-mode: fullscreen)').matches) ||
+        (window.navigator.standalone) ||
+        false;
+      return isSourcePwa || isStandaloneMode;
     };
 
     window.promptAppInstall = async function () {
       console.log('🚀 Triggering PWA Install Prompt...');
       const promptEvent = window.deferredPrompt;
-      if (!promptEvent) return false;
+      if (!promptEvent) {
+        console.warn('⚠️ No deferredPrompt available');
+        return false;
+      }
 
-      promptEvent.prompt();
-      const { outcome } = await promptEvent.userChoice;
-      console.log(`User response to the install prompt: ${outcome}`);
-
-      window.deferredPrompt = null;
-      return outcome === 'accepted';
+      try {
+        await promptEvent.prompt();
+        const { outcome } = await promptEvent.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        window.deferredPrompt = null;
+        return outcome === 'accepted';
+      } catch (err) {
+        console.error('❌ Error during prompt:', err);
+        return false;
+      }
     };
   </script>
   <script src="flutter_bootstrap.js?v=1.1.10-fresh" async></script>

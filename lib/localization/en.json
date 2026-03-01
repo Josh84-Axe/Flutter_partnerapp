@@ -118,5 +118,17 @@
   "select_router_error": "Please select a router",
   "bulk_actions": "Bulk Actions",
   "no_workers_found": "No workers found",
-  "view_details": "View Details"
+  "view_details": "View Details",
+  "ios_install_title": "Install on iOS",
+  "ios_install_subtitle": "Follow these steps to add Tiknet to your home screen",
+  "pwa_ios_step_1": "Tap the Share button in the browser toolbar",
+  "pwa_ios_step_2": "Scroll down and tap 'Add to Home Screen'",
+  "pwa_ios_step_3": "Tap 'Add' in the top right corner",
+  "pwa_generic_title": "Install Tiknet App",
+  "pwa_generic_subtitle": "Get the full experience on your device",
+  "pwa_android_step_1": "Tap the browser menu (three dots or lines)",
+  "pwa_android_step_2": "Tap 'Install app' or 'Add to Home Screen'",
+  "ok": "OK",
+  "copy": "Copy",
+  "url_copied": "URL copied to clipboard"
 }
