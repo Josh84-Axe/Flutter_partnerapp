@@ -1,4 +1,5 @@
 {
+    "id": "com.tiknet.partner.app",
     "name": "Tiknet Partner",
     "short_name": "Tiknet",
     "start_url": ".",
