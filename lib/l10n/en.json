@@ -802,9 +802,6 @@
   "install_app_title": "Install Tiknet Partner",
   "install_app_subtitle": "Install the app for a faster and smoother experience.",
   "install": "Install",
-  "pwa_ios_step_1": "Open this website in Safari",
-  "pwa_ios_step_2": "Tap the 'Share' button at the bottom center",
-  "pwa_ios_step_3": "Scroll down and select 'Add to Home Screen'",
   "tap_to_open": "Tap to open",
   "url_copied": "URL copied to clipboard",
   "copy": "Copy",
@@ -918,5 +915,12 @@
   "status_expired": "EXPIRED",
   "status_assigned": "ASSIGNED",
   "status_active": "ACTIVE",
-  "status_copied": "COPIED"
+  "status_copied": "COPIED",
+  "pwa_ios_step_1": "Tap the Share button in the browser toolbar",
+  "pwa_ios_step_2": "Scroll down and tap 'Add to Home Screen'",
+  "pwa_ios_step_3": "Tap 'Add' in the top right corner",
+  "pwa_generic_title": "Install Tiknet App",
+  "pwa_generic_subtitle": "Get the full experience on your device",
+  "pwa_android_step_1": "Tap the browser menu (three dots or lines)",
+  "pwa_android_step_2": "Tap 'Install app' or 'Add to Home Screen'"
 }
