@@ -66,26 +66,26 @@ class VoucherExportService {
             ),
             pw.SizedBox(height: 15),
             pw.GridView(
-              crossAxisCount: 5,
-              childAspectRatio: 2.2,
+              crossAxisCount: 6,
+              childAspectRatio: 1.38,
               children: vouchers.map((v) => pw.Container(
                 decoration: pw.BoxDecoration(
                   border: pw.Border.all(color: PdfColors.grey400, width: 0.5),
                 ),
-                padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
                 child: pw.Column(
                   mainAxisAlignment: pw.MainAxisAlignment.center,
                   crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
                     pw.Text(
                       v.planName.toUpperCase(),
-                      style: pw.TextStyle(fontSize: 7, color: PdfColors.grey800),
+                      style: pw.TextStyle(fontSize: 6, color: PdfColors.grey800),
                       maxLines: 1,
                     ),
-                    pw.SizedBox(height: 2),
+                    pw.SizedBox(height: 1),
                     pw.Text(
                       v.code,
-                      style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
                     ),
                   ],
                 ),
