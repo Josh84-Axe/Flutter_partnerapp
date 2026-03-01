@@ -7,8 +7,14 @@ import 'pwa_service.dart';
 @JS('onAppInstallable')
 external set onAppInstallable(JSFunction value);
 
+@JS('onAppInstalled')
+external set onAppInstalled(JSFunction value);
+
 @JS('isAppInstallable')
 external JSBoolean isAppInstallableJs();
+
+@JS('isStandalone')
+external JSBoolean isStandaloneJs();
 
 @JS('promptAppInstall')
 external JSPromise<JSBoolean> promptAppInstallJs();
@@ -27,6 +33,15 @@ class PwaServiceWeb implements PwaService {
   bool get isInstallable => _isInstallable;
 
   @override
+  bool get isStandalone {
+    try {
+      return isStandaloneJs().toDart;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
   bool get isIOS {
     final userAgent = html.window.navigator.userAgent.toLowerCase();
     return userAgent.contains('iphone') || userAgent.contains('ipad') || userAgent.contains('ipod');
@@ -36,14 +51,24 @@ class PwaServiceWeb implements PwaService {
   void init() {
     // Register callback for JS using modern dart:js_interop
     onAppInstallable = (() {
-      _isInstallable = true;
-      _installableController.add(true);
-      if (kDebugMode) debugPrint('🌐 [PwaService] App is installable');
+      if (isStandalone) {
+        _isInstallable = false;
+      } else {
+        _isInstallable = true;
+      }
+      _installableController.add(_isInstallable);
+      if (kDebugMode) debugPrint('🌐 [PwaService] App is installable: $_isInstallable');
+    }).toJS;
+
+    onAppInstalled = (() {
+      _isInstallable = false;
+      _installableController.add(false);
+      if (kDebugMode) debugPrint('🌐 [PwaService] App was installed');
     }).toJS;
 
     // Check initial state
     try {
-      _isInstallable = isAppInstallableJs().toDart;
+      _isInstallable = isAppInstallableJs().toDart && !isStandalone;
     } catch (e) {
       if (kDebugMode) print('⚠️ [PwaService] Initial check failed (expected on non-PWA): $e');
       _isInstallable = false;

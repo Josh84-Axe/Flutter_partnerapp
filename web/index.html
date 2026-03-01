@@ -52,8 +52,20 @@
       }
     });
 
+    window.addEventListener('appinstalled', (e) => {
+      console.log('✅ PWA was installed');
+      window.deferredPrompt = null;
+      if (window.onAppInstalled) {
+        window.onAppInstalled();
+      }
+    });
+
     window.isAppInstallable = function () {
       return window.deferredPrompt !== null;
+    };
+
+    window.isStandalone = function () {
+      return (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone) || false;
     };
 
     window.promptAppInstall = async function () {

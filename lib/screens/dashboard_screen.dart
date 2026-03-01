@@ -251,6 +251,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Builder(
                 builder: (context) {
                   final pwa = PwaService();
+                  // If already installed (standalone mode), don't show any banner
+                  if (pwa.isStandalone) {
+                    return const SizedBox.shrink();
+                  }
+
                   if (pwa.isIOS) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 24.0),
