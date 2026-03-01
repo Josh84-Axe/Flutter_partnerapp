@@ -1,38 +1,105 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Tiknet Africa Partner Management App">
 
   <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="hotspot_partner_app">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Tiknet Partner">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
-  <title>hotspot_partner_app</title>
-  <link rel="manifest" href="manifest.json">
+  <title>Tiknet Partner</title>
+  <link rel="manifest" href="manifest.json?v=1.1.10-fresh">
 </head>
+
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.10 - TIMESTAMP: ' + new Date().toISOString());
+    window.deferredPrompt = null;
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('service-worker.js?v=1.1.10-fresh').then(function (registration) {
+          console.log('✅ ServiceWorker registration successful with scope: ', registration.scope);
+        }, function (err) {
+          console.log('❌ ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      window.deferredPrompt = e;
+
+      // Notify Flutter that the prompt is available
+      if (window.onAppInstallable) {
+        window.onAppInstallable();
+      }
+    });
+
+    window.addEventListener('appinstalled', (e) => {
+      console.log('✅ PWA was installed');
+      window.deferredPrompt = null;
+      if (window.onAppInstalled) {
+        window.onAppInstalled();
+      }
+    });
+
+    window.isAppInstallable = function () {
+      return window.deferredPrompt !== null;
+    };
+
+    window.isInstallPromptSupported = function () {
+      return 'BeforeInstallPromptEvent' in window || (window.deferredPrompt !== null);
+    };
+
+    window.isStandalone = function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSourcePwa = urlParams.get('source') === 'pwa';
+      const isStandaloneMode = (window.matchMedia('(display-mode: standalone)').matches) ||
+        (window.matchMedia('(display-mode: minimal-ui)').matches) ||
+        (window.matchMedia('(display-mode: fullscreen)').matches) ||
+        (window.navigator.standalone) ||
+        false;
+      return isSourcePwa || isStandaloneMode;
+    };
+
+    window.promptAppInstall = async function () {
+      console.log('🚀 Triggering PWA Install Prompt...');
+      const promptEvent = window.deferredPrompt;
+      if (!promptEvent) {
+        console.warn('⚠️ No deferredPrompt available');
+        return false;
+      }
+
+      try {
+        await promptEvent.prompt();
+        const { outcome } = await promptEvent.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        window.deferredPrompt = null;
+        return outcome === 'accepted';
+      } catch (err) {
+        console.error('❌ Error during prompt:', err);
+        return false;
+      }
+    };
+  </script>
+  <script src="flutter_bootstrap.js?v=1.1.10-fresh" async></script>
 </body>
+
 </html>

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
 
 import '../providers/split/user_provider.dart';
@@ -13,6 +15,8 @@ import '../widgets/quick_action_button.dart';
 import '../widgets/guest_mode_banner.dart';
 import '../widgets/data_usage_card.dart';
 import '../services/update_service.dart';
+import '../services/pwa_service.dart';
+import 'package:flutter/foundation.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -90,7 +94,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 if (mounted) {
                    setState(() {
                      isDownloading = false;
-                     errorMessage = 'Update failed: ${e.toString()}';
+                     errorMessage = 'update_failed'.tr(namedArgs: {'error': e.toString()});
                      downloadProgress = 0.0;
                    });
                 }
@@ -106,15 +110,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                  }
               },
               child: AlertDialog(
-                title: Text(isDownloading ? 'Downloading Update...' : 'New Update Available'),
+                title: Text(isDownloading ? 'downloading_update'.tr() : 'new_update_available'.tr()),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (!isDownloading) ...[
-                      Text('A new version (${updateInfo['latestVersion']}) is available.'),
+                      Text('new_version_available'.tr(namedArgs: {'version': updateInfo['latestVersion'] ?? ''})),
                       const SizedBox(height: 8),
-                      const Text('Release Notes:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text('release_notes'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
                       Container(
                         constraints: const BoxConstraints(maxHeight: 100),
                         child: SingleChildScrollView(
@@ -129,7 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 8),
                       Text('${(downloadProgress * 100).toInt()}%', style: Theme.of(context).textTheme.bodySmall),
                       const SizedBox(height: 8),
-                      const Text('Please do not close the app.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      Text('do_not_close_app'.tr(), style: const TextStyle(fontSize: 12, color: Colors.grey)),
                     ],
 
                     if (errorMessage != null) ...[
@@ -142,13 +146,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   if (!isDownloading && !isForceUpdate)
                     TextButton(
                       onPressed: () => Navigator.pop(dialogContext),
-                      child: const Text('Later'),
+                      child: Text('later'.tr()),
                     ),
                   
                   if (!isDownloading)
                     ElevatedButton(
                       onPressed: startUpdate,
-                      child: const Text('Update Now'),
+                      child: Text('update_now'.tr()),
                     ),
                 ],
               ),
@@ -237,10 +241,108 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'welcome_back'.tr(namedArgs: {'name': userProvider.currentUser?.name ?? 'Joe'}),
+              'welcome_back'.tr(namedArgs: {'name': userProvider.currentUser?.name ?? 'valued_partner'.tr()}),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
+
+            // PWA Install Banner (Web Only)
+            // PWA Install Banner (Web Only)
+            if (kIsWeb)
+              Builder(
+                builder: (context) {
+                  final pwa = PwaService();
+                  if (pwa.isStandalone) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return StreamBuilder<bool>(
+                    stream: pwa.installableStream,
+                    initialData: pwa.isInstallable,
+                    builder: (context, snapshot) {
+                      final bool isInstallable = snapshot.data ?? pwa.isInstallable;
+                      final bool showNativePrompt = isInstallable && pwa.isInstallPromptSupported;
+                      
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 24.0),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.primary,
+                                Theme.of(context).colorScheme.secondary,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Theme.of(context).platform == TargetPlatform.iOS 
+                                  ? Icons.apple 
+                                  : Icons.install_mobile, 
+                                color: Colors.white, 
+                                size: 32
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'pwa_generic_title'.tr(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      'pwa_generic_subtitle'.tr(),
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  if (showNativePrompt) {
+                                    pwa.promptInstall();
+                                  } else {
+                                    _showManualInstallInstructions(context);
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Theme.of(context).colorScheme.primary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Text(showNativePrompt ? 'install'.tr() : 'view_details'.tr()),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             
             // Guest mode banner
             if (userProvider.isGuestMode)
@@ -254,7 +356,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             
             // Subscription Plan Card - load from API
             SubscriptionPlanCard(
-              planName: userProvider.subscription?.tier ?? 'Free Plan',
+              planName: userProvider.subscription?.tier ?? 'free_plan'.tr(),
               renewalDate: userProvider.subscription?.renewalDate,
               isLoading: userProvider.isLoading || networkProvider.isLoading || billingProvider.isLoading,
             ),
@@ -329,8 +431,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 600),
                 child: DataUsageCard(
-                  usedGB: networkProvider.aggregateActiveDataUsage,
-                  totalGB: networkProvider.aggregateTotalDataLimit,
+                  usedGB: networkProvider.totalAccumulatedGB,
+                  totalGB: 200.0,
                   isLoading: networkProvider.isLoading,
                 ),
               ),
@@ -494,11 +596,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load data: $e'),
+            content: Text('error_loading_data'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 10),
             action: SnackBarAction(
-              label: 'Retry',
+              label: 'retry'.tr(),
               textColor: Colors.white,
               onPressed: () => _refreshAll(context),
             ),
@@ -506,5 +608,228 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
       }
     }
+  }
+
+  void _showManualInstallInstructions(BuildContext context) {
+    final pwa = PwaService();
+    final bool isIOS = pwa.isIOS;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 48,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      isIOS ? Icons.apple : Icons.install_mobile,
+                      size: 32,
+                      color: isIOS ? Colors.blue : Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      (isIOS ? 'ios_install_title' : 'pwa_generic_title').tr(),
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              (isIOS ? 'ios_install_subtitle' : 'pwa_generic_subtitle').tr(),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 32),
+            if (isIOS) ...[
+              _buildInstallStep(
+                context,
+                number: '1',
+                text: 'pwa_ios_step_1'.tr(),
+                icon: Icons.ios_share,
+              ),
+              const SizedBox(height: 20),
+              _buildInstallStep(
+                context,
+                number: '2',
+                text: 'pwa_ios_step_2'.tr(),
+                icon: Icons.add_box_outlined,
+              ),
+              const SizedBox(height: 20),
+              _buildInstallStep(
+                context,
+                number: '3',
+                text: 'pwa_ios_step_3'.tr(),
+                icon: Icons.add,
+              ),
+            ] else ...[
+              _buildInstallStep(
+                context,
+                number: '1',
+                text: 'pwa_android_step_1'.tr(),
+                icon: Icons.more_vert,
+              ),
+              const SizedBox(height: 20),
+              _buildInstallStep(
+                context,
+                number: '2',
+                text: 'pwa_android_step_2'.tr(),
+                icon: Icons.install_mobile,
+              ),
+            ],
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.link, size: 20, color: Colors.grey),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'partner.tiknet.africa',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                        color: Colors.grey,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.copy, size: 20),
+                    tooltip: 'copy'.tr(),
+                    onPressed: () {
+                      const urlString = 'https://partner.tiknet.africa';
+                      Clipboard.setData(const ClipboardData(text: urlString));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('url_copied'.tr())),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text('ok'.tr()),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInstallStep(
+    BuildContext context, {
+    required String number,
+    required String text,
+    required IconData icon,
+    VoidCallback? onTap,
+    Widget? trailing,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  number,
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Icon(icon, color: Colors.grey.shade700, size: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    text,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                  ),
+                  if (onTap != null)
+                    Text(
+                      'tap_to_open'.tr(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (trailing != null) trailing,
+          ],
+        ),
+      ),
+    );
   }
 }

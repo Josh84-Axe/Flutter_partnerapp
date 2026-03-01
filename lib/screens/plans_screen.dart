@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/split/network_provider.dart';
 import '../providers/split/user_provider.dart';
+import '../providers/split/auth_provider.dart';
 import 'create_edit_plan_screen.dart';
 
 class PlansScreen extends StatefulWidget {
-  const PlansScreen({super.key});
+  final VoidCallback? onBack;
+  const PlansScreen({super.key, this.onBack});
 
   @override
   State<PlansScreen> createState() => _PlansScreenState();
@@ -37,6 +39,7 @@ class _PlansScreenState extends State<PlansScreen> {
   Widget build(BuildContext context) {
     final networkProvider = context.watch<NetworkProvider>();
     final userProvider = context.watch<UserProvider>();
+    final authProvider = context.watch<AuthProvider>();
     final filteredPlans = networkProvider.plans.where((plan) {
       if (_searchQuery.isEmpty) return true;
       return plan.name.toLowerCase().contains(_searchQuery.toLowerCase());
@@ -48,6 +51,12 @@ class _PlansScreenState extends State<PlansScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('internet_plans'.tr()),
+        leading: widget.onBack != null
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: widget.onBack,
+              )
+            : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -162,27 +171,59 @@ class _PlansScreenState extends State<PlansScreen> {
                                   ),
                                   const SizedBox(height: 16),
                                   
-                                  // Assign button
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: FilledButton.icon(
-                                      onPressed: () {
-                                        Navigator.of(context).pushNamed(
-                                          '/assign-user',
-                                          arguments: {'planId': plan.id.toString(), 'planName': plan.name},
-                                        );
-                                      },
-                                      icon: const Icon(Icons.person_add, size: 18),
-                                      label: Text('assign_to_user'.tr()),
-                                      style: FilledButton.styleFrom(
-                                        backgroundColor: colorScheme.primary,
-                                        foregroundColor: colorScheme.onPrimary,
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                  // Actions row
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: FilledButton.icon(
+                                          onPressed: () {
+                                            Navigator.of(context).pushNamed(
+                                              '/assign-user',
+                                              arguments: {'planId': plan.id.toString(), 'planName': plan.name},
+                                            );
+                                          },
+                                          icon: const Icon(Icons.person_add, size: 18),
+                                          label: Text('assign'.tr()),
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: colorScheme.primary,
+                                            foregroundColor: colorScheme.onPrimary,
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Opacity(
+                                          opacity: authProvider.currentUser?.isVoucherEnabled == true ? 1.0 : 0.5,
+                                          child: OutlinedButton.icon(
+                                            onPressed: authProvider.currentUser?.isVoucherEnabled == true 
+                                              ? () {
+                                                Navigator.of(context).pushNamed(
+                                                  '/vouchers',
+                                                  arguments: {'planId': plan.id.toString(), 'planName': plan.name},
+                                                );
+                                              }
+                                              : null,
+                                            icon: const Icon(Icons.vpn_key, size: 18),
+                                            label: Text('vouchers'.tr()),
+                                            style: OutlinedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              side: BorderSide(
+                                                color: authProvider.currentUser?.isVoucherEnabled == true 
+                                                  ? colorScheme.primary 
+                                                  : colorScheme.outline,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

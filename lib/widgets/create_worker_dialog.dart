@@ -53,16 +53,16 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
             children: [
               Row(
                 children: [
-                  Expanded(
+                   Expanded(
                     child: TextFormField(
                       controller: _firstNameController,
                       decoration: InputDecoration(
-                        labelText: 'First Name',
+                        labelText: 'first_name'.tr(),
                         border: const OutlineInputBorder(),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Required';
+                         if (value == null || value.isEmpty) {
+                          return 'field_required'.tr();
                         }
                         return null;
                       },
@@ -73,12 +73,12 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
                     child: TextFormField(
                       controller: _lastNameController,
                       decoration: InputDecoration(
-                        labelText: 'Last Name',
+                        labelText: 'last_name'.tr(),
                         border: const OutlineInputBorder(),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Required';
+                         if (value == null || value.isEmpty) {
+                          return 'field_required'.tr();
                         }
                         return null;
                       },
@@ -96,10 +96,10 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter email';
+                    return 'enter_email'.tr();
                   }
                   if (!value.contains('@')) {
-                    return 'Please enter a valid email';
+                    return 'enter_valid_email'.tr();
                   }
                   return null;
                 },
@@ -108,13 +108,13 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
               TextFormField(
                 controller: _phoneController,
                 decoration: InputDecoration(
-                  labelText: 'Phone',
+                  labelText: 'phone'.tr(),
                   border: const OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter phone number';
+                    return 'enter_phone'.tr();
                   }
                   return null;
                 },
@@ -123,12 +123,12 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
               TextFormField(
                 controller: _addresseController,
                 decoration: InputDecoration(
-                  labelText: 'Address',
+                  labelText: 'address'.tr(),
                   border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter address';
+                    return 'enter_address'.tr();
                   }
                   return null;
                 },
@@ -140,12 +140,12 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
                     child: TextFormField(
                       controller: _cityController,
                       decoration: InputDecoration(
-                        labelText: 'City',
+                        labelText: 'city'.tr(),
                         border: const OutlineInputBorder(),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Required';
+                         if (value == null || value.isEmpty) {
+                          return 'field_required'.tr();
                         }
                         return null;
                       },
@@ -156,12 +156,12 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
                     child: TextFormField(
                       controller: _countryController,
                       decoration: InputDecoration(
-                        labelText: 'Country',
+                        labelText: 'country'.tr(),
                         border: const OutlineInputBorder(),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Required';
+                         if (value == null || value.isEmpty) {
+                          return 'field_required'.tr();
                         }
                         return null;
                       },
@@ -178,7 +178,7 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter username';
+                    return 'enter_username'.tr();
                   }
                   return null;
                 },
@@ -203,23 +203,23 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
                 obscureText: !_passwordVisible,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter password';
+                    return 'enter_password'.tr();
                   }
                   if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
+                    return 'password_min_length'.tr();
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedRole,
+                initialValue: _selectedRole,
                 decoration: InputDecoration(
                   labelText: 'role'.tr(),
                   border: const OutlineInputBorder(),
                 ),
                 items: roles.isEmpty
-                    ? [DropdownMenuItem(value: null, child: Text('No roles available'))]
+                    ? [DropdownMenuItem(value: null, child: Text('no_roles_available'.tr()))]
                     : roles.map((role) {
                         return DropdownMenuItem(
                           value: role.id,
@@ -233,7 +233,7 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
                 },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please select a role';
+                    return 'select_role'.tr();
                   }
                   return null;
                 },

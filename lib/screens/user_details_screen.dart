@@ -240,7 +240,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         Icon(Icons.shopping_cart, color: colorScheme.primary),
                         const SizedBox(width: 8),
                          Text(
-                          'Purchased Plans (Online)', 
+                          'purchased_plans_online'.tr(), 
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ],
@@ -280,7 +280,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         children: [
                           _buildInfoRow('full_name'.tr(), user.name),
                           const Divider(),
-                          _buildInfoRow('phone_number'.tr(), user.phone ?? 'N/A'),
+                          _buildInfoRow('phone_number'.tr(), user.phone ?? 'not_available_short'.tr()),
                           const Divider(),
                           _buildInfoRow('email_address'.tr(), user.email),
                           const Divider(),
@@ -296,7 +296,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   // Assigned Transactions
                   if (_assignedTransactions.isNotEmpty) ...[
                     Text(
-                      'Assigned Transactions',
+                      'assigned_transactions'.tr(),
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 12),
@@ -309,7 +309,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   // Wallet Transactions
                   if (_walletTransactions.isNotEmpty) ...[
                     Text(
-                      'Wallet/Online Transactions',
+                      'wallet_online_transactions'.tr(),
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 12),
@@ -319,10 +319,10 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   ],
                   
                   if (_assignedTransactions.isEmpty && _walletTransactions.isEmpty)
-                     const Card(
+                     Card(
                         child: Padding(
-                            padding: EdgeInsets.all(20),
-                            child: Center(child: Text('No transactions found')),
+                            padding: const EdgeInsets.all(20),
+                            child: Center(child: Text('no_transactions_found'.tr())),
                         ),
                      ),
                   const SizedBox(height: 32),
@@ -410,7 +410,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    plan['plan_name'] ?? 'Unknown Plan',
+                    plan['plan_name'] ?? 'unknown_plan'.tr(),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -446,7 +446,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   const Icon(Icons.router, size: 16, color: Colors.grey),
                   const SizedBox(width: 4),
                   Text(
-                    (plan['routers'][0]['name'] ?? 'Unknown Router').toString(),
+                    (plan['routers'][0]['name'] ?? 'unknown_router'.tr()).toString(),
                     style: const TextStyle(color: Colors.grey),
                   ),
                 ],
@@ -460,8 +460,8 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                 const SizedBox(width: 4),
                 Text(
                   isAssigned 
-                      ? (plan['formatted_assigned_at'] ?? plan['formatted_purchased_at'] ?? 'N/A')
-                      : (plan['formatted_purchased_at'] ?? 'N/A'),
+                      ? (plan['formatted_assigned_at'] ?? plan['formatted_purchased_at'] ?? 'not_available_short'.tr())
+                      : (plan['formatted_purchased_at'] ?? 'not_available_short'.tr()),
                   style: const TextStyle(color: Colors.grey),
                 ),
               ],
@@ -497,7 +497,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
               backgroundColor: colorScheme.secondaryContainer,
               child: Icon(Icons.receipt, size: 20, color: colorScheme.onSecondaryContainer),
             ),
-            title: Text(txn['description'] ?? txn['type'] ?? 'Transaction'),
+            title: Text(txn['description'] ?? txn['type'] ?? 'transaction'.tr()),
             subtitle: Text(_formatDate(DateTime.tryParse(txn['created_at'] ?? '') ?? DateTime.now())),
             trailing: Text(
               '${txn['amount_paid'] ?? txn['amount'] ?? 0}',

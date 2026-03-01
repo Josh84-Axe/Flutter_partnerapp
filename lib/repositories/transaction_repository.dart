@@ -50,7 +50,7 @@ class TransactionRepository {
           return transactions;
         }
       } else if (responseData is List) {
-        final transactions = responseData as List;
+        final transactions = responseData;
         if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} transactions (direct)');
         return transactions;
       }
@@ -88,7 +88,7 @@ class TransactionRepository {
           return transactions;
         }
       } else if (responseData is List) {
-        final transactions = responseData as List;
+        final transactions = responseData;
         if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} device transactions (direct)');
         return transactions;
       }
@@ -131,7 +131,7 @@ class TransactionRepository {
           return transactions;
         }
       } else if (responseData is List) {
-        final transactions = responseData as List;
+        final transactions = responseData;
         if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} plan transactions (direct)');
         return transactions;
       }
@@ -202,7 +202,7 @@ class TransactionRepository {
           return responseData['results'] as List;
         }
       } else if (responseData is List) {
-        return responseData as List;
+        return responseData;
       }
       return [];
     } catch (e) {
@@ -253,7 +253,7 @@ class TransactionRepository {
           return transactions;
         }
       } else if (responseData is List) {
-        final transactions = responseData as List;
+        final transactions = responseData;
          if (kDebugMode) print('✅ [TransactionRepository] Found ${transactions.length} wallet transactions (direct)');
         return transactions;
       }

@@ -21,6 +21,7 @@ class UserModel {
   final int? totalSessions;
   final String? acquisitionType;
   final String? planName;
+  final bool isVoucherEnabled;
 
   UserModel({
     required this.id,
@@ -43,6 +44,7 @@ class UserModel {
     this.totalSessions,
     this.acquisitionType,
     this.planName,
+    this.isVoucherEnabled = false,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json, {bool? isConnected}) {
@@ -72,14 +74,20 @@ class UserModel {
         totalSessions: null,
         acquisitionType: json['acquisition_type'],
         planName: json['plan_name'],
+        isVoucherEnabled: json['enable_smart_vouchers'] == true || json['enableSmartVouchers'] == true,
       );
     } else {
       // Legacy format
+      final userRole = json['role'] is Map ? (json['role']['name']?.toString() ?? '') : (json['role']?.toString() ?? '');
+      final isVouchers = json['enable_smart_vouchers'] == true || 
+                        json['enableSmartVouchers'] == true ||
+                        (userRole == 'Administrator' || userRole == 'Partner');
+
       return UserModel(
         id: json['id']?.toString() ?? '',
         name: json['name'] ?? '',
         email: json['email'] ?? '',
-        role: json['role'] ?? '',
+        role: userRole,
         phone: json['phone'],
         isActive: json['isActive'] ?? true,
         createdAt: json['createdAt'] != null
@@ -102,6 +110,7 @@ class UserModel {
         totalSessions: json['totalSessions'],
         acquisitionType: json['acquisitionType'],
         planName: json['planName'],
+        isVoucherEnabled: isVouchers,
       );
     }
   }
@@ -131,6 +140,7 @@ class UserModel {
     int? totalSessions,
     String? acquisitionType,
     String? planName,
+    bool? isVoucherEnabled,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -153,6 +163,7 @@ class UserModel {
       totalSessions: totalSessions ?? this.totalSessions,
       acquisitionType: acquisitionType ?? this.acquisitionType,
       planName: planName ?? this.planName,
+      isVoucherEnabled: isVoucherEnabled ?? this.isVoucherEnabled,
     );
   }
 
@@ -178,6 +189,7 @@ class UserModel {
       'totalSessions': totalSessions,
       'acquisitionType': acquisitionType,
       'planName': planName,
+      'enableSmartVouchers': isVoucherEnabled,
     };
   }
 }

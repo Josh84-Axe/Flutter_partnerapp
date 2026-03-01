@@ -6,7 +6,6 @@ import 'dart:async';
 
 // ignore: unused_import
 import 'dart:convert';
-import 'package:tiknet_api_client/src/deserialize.dart';
 import 'package:dio/dio.dart';
 
 

@@ -227,7 +227,7 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
                           ),
                         ),
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
     );

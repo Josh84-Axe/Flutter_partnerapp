@@ -22,7 +22,7 @@ class PaymentMethodRepository {
            return responseData['results'] as List;
          }
       } else if (responseData is List) {
-         return responseData as List;
+         return responseData;
       }
       
       return [];

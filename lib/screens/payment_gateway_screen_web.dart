@@ -1,7 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter/foundation.dart';
 import 'payment_gateway_cinetpay_web.dart';
 import 'dart:html' as html;
 // ignore: avoid_web_libraries_in_flutter
@@ -42,8 +40,8 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // If currency is CFA (XOF or XAF), use CinetPay
-    if (widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'CFA') {
+    // If currency is CFA (XOF or XAF) or GNF/FG (Guinea), use CinetPay
+    if (widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'GNF' || widget.currency == 'FG' || widget.currency == 'CFA') {
        final fName = widget.userData?['firstName'] ?? '';
        final lName = widget.userData?['lastName'] ?? '';
        final addr = widget.userData?['address'] ?? '';

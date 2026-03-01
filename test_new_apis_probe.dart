@@ -14,7 +14,7 @@ void main() async {
 
   // Helper to print section headers
   void printHeader(String title) {
-    print('\n' + '=' * 50);
+    print('\n${'=' * 50}');
     print(title);
     print('=' * 50);
   }

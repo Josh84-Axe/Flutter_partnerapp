@@ -35,8 +35,10 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
     final userProvider = context.watch<UserProvider>();
     final users = userProvider.users.where((user) {
       if (_searchQuery.isEmpty) return true;
-      return user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().contains(_searchQuery.toLowerCase());
+      final query = _searchQuery.toLowerCase();
+      return user.name.toLowerCase().contains(query) ||
+          user.email.toLowerCase().contains(query) ||
+          (user.phone?.contains(query) ?? false);
     }).toList();
 
     return Scaffold(
@@ -103,7 +105,7 @@ class _AssignUserScreenState extends State<AssignUserScreen> {
                         ),
                       ),
                       title: Text(user.name),
-                      subtitle: Text(user.email),
+                      subtitle: Text(user.phone ?? user.email),
                       trailing: Radio<String>(
                         value: user.id,
                         activeColor: colorScheme.primary,

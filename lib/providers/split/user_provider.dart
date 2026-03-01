@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import '../../repositories/customer_repository.dart';
 import '../../repositories/collaborator_repository.dart';
 import '../../repositories/role_repository.dart';
-import '../../repositories/partner_repository.dart';
 import '../../repositories/plan_repository.dart';
 import '../../models/user_model.dart';
 import '../../models/worker_model.dart';
@@ -11,6 +10,7 @@ import '../../models/subscription_model.dart';
 import '../../models/local_notification_model.dart';
 import '../../repositories/subscription_repository.dart';
 import '../../services/local_notification_service.dart';
+import '../../utils/currency_utils.dart';
 
 import 'auth_provider.dart';
 
@@ -20,7 +20,6 @@ class UserProvider with ChangeNotifier {
   CollaboratorRepository? _collaboratorRepository;
   RoleRepository? _roleRepository;
   SubscriptionRepository? _subscriptionRepository;
-  PartnerRepository? _partnerRepository;
   PlanRepository? _planRepository;
   final LocalNotificationService _localNotificationService = LocalNotificationService();
   
@@ -46,14 +45,12 @@ class UserProvider with ChangeNotifier {
 
     AuthProvider? authProvider,
     SubscriptionRepository? subscriptionRepository,
-    PartnerRepository? partnerRepository,
     PlanRepository? planRepository,
   }) : _customerRepository = customerRepository,
        _collaboratorRepository = collaboratorRepository,
        _roleRepository = roleRepository,
        _authProvider = authProvider,
        _subscriptionRepository = subscriptionRepository,
-       _partnerRepository = partnerRepository,
        _planRepository = planRepository;
 
   void update({
@@ -61,7 +58,6 @@ class UserProvider with ChangeNotifier {
     CollaboratorRepository? collaboratorRepository,
     RoleRepository? roleRepository,
     SubscriptionRepository? subscriptionRepository,
-    PartnerRepository? partnerRepository,
     PlanRepository? planRepository,
     AuthProvider? authProvider,
   }) {
@@ -70,7 +66,6 @@ class UserProvider with ChangeNotifier {
     _collaboratorRepository = collaboratorRepository;
     _roleRepository = roleRepository;
     _subscriptionRepository = subscriptionRepository;
-    _partnerRepository = partnerRepository;
     _planRepository = planRepository;
 
     if (authProvider?.currentUser == null) {
@@ -78,6 +73,7 @@ class UserProvider with ChangeNotifier {
       _isSubscriptionLoaded = false;
       _hasSkippedSubscriptionCheck = false;
     }
+    notifyListeners();
   }
 
   List<dynamic> _assignedPlans = [];
@@ -105,33 +101,7 @@ class UserProvider with ChangeNotifier {
   Stream<LocalNotification> get localNotificationStream => _localNotificationService.notificationStream;
 
   String get currencyCode {
-    final country = _partnerCountry ?? _authProvider?.partnerCountry;
-    if (country == null || country.isEmpty) return '₦';
-    
-    // Mapping from country name/code to currency symbol
-    switch (country.toLowerCase()) {
-      case 'ghana': return 'GH₵';
-      case 'kenya': return 'KSh';
-      case 'nigeria': return '₦';
-      case 'côte d\'ivoire':
-      case 'ivory coast':
-      case 'senegal':
-      case 'mali':
-      case 'benin':
-      case 'togo':
-      case 'burkina faso':
-      case 'niger':
-      case 'guinea-bissau':
-        return 'XOF';
-      case 'cameroon':
-      case 'gabon':
-      case 'congo':
-      case 'chad':
-      case 'central african republic':
-      case 'equatorial guinea':
-        return 'XAF';
-      default: return '₦';
-    }
+    return CurrencyUtils.getCurrencySymbol(_partnerCountry ?? _authProvider?.partnerCountry);
   }
 
   /// Get payment details for Paystack inline popup
@@ -167,6 +137,7 @@ class UserProvider with ChangeNotifier {
   switch (currencyCode) {
     case 'GH₵': return 'GHS';
     case 'KSh': return 'KES';
+    case 'FG': return 'GNF';
     case 'FCFA': return 'XOF'; // Defaulting FCFA to XOF for CinetPay
     case 'XOF': return 'XOF';
     case 'XAF': return 'XAF';
@@ -178,12 +149,12 @@ class UserProvider with ChangeNotifier {
   Future<void> loadAssignedPlans() async {
     if (_customerRepository == null) return;
     try {
-      if (kDebugMode) print('📡 [UserProvider] Loading assigned plans...');
+      if (kDebugMode) debugPrint('📡 [UserProvider] Loading assigned plans...');
       final plans = await _customerRepository!.fetchAssignedPlans();
       _assignedPlans = plans;
       _error = null;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error loading assigned plans: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error loading assigned plans: $e');
       _error = e.toString();
     } finally {
       notifyListeners();
@@ -193,12 +164,12 @@ class UserProvider with ChangeNotifier {
   Future<void> loadPurchasedPlans() async {
     if (_customerRepository == null) return;
     try {
-      if (kDebugMode) print('📡 [UserProvider] Loading purchased plans...');
+      if (kDebugMode) debugPrint('📡 [UserProvider] Loading purchased plans...');
       final plans = await _customerRepository!.fetchPurchasedPlans();
       _purchasedPlans = plans;
       _error = null;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error loading purchased plans: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error loading purchased plans: $e');
       _error = e.toString();
     } finally {
       notifyListeners();
@@ -221,7 +192,7 @@ class UserProvider with ChangeNotifier {
       await loadUsers();
       _error = null;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error creating user: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error creating user: $e');
       rethrow;
     } finally {
       _setLoading(false);
@@ -236,22 +207,22 @@ class UserProvider with ChangeNotifier {
       await loadUsers();
       _error = null;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error updating user: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error updating user: $e');
       rethrow;
     } finally {
       _setLoading(false);
     }
   }
 
-  Future<void> deleteUser(String userId) async {
+  Future<void> deleteUser(String username) async {
     if (_customerRepository == null) return;
     _setLoading(true);
     try {
-      await _customerRepository!.deleteCustomer(userId);
+      await _customerRepository!.deleteCustomer(username);
       await loadUsers();
       _error = null;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error deleting user: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error deleting user: $e');
       rethrow;
     } finally {
       _setLoading(false);
@@ -263,13 +234,13 @@ class UserProvider with ChangeNotifier {
     
     _setLoading(true);
     try {
-      if (kDebugMode) print('📡 [UserProvider] Loading users from API...');
+      if (kDebugMode) debugPrint('📡 [UserProvider] Loading users from API...');
       
       List<String> activeSessions = [];
       try {
         activeSessions = await _customerRepository!.getActiveSessions();
       } catch (e) {
-        if (kDebugMode) print('⚠️ [UserProvider] Failed to load active sessions: $e');
+        if (kDebugMode) debugPrint('⚠️ [UserProvider] Failed to load active sessions: $e');
         // Continue with empty active sessions
       }
 
@@ -319,7 +290,7 @@ class UserProvider with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error toggling block status: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error toggling block status: $e');
       rethrow;
     }
   }
@@ -331,12 +302,12 @@ class UserProvider with ChangeNotifier {
     
     _setLoading(true);
     try {
-      if (kDebugMode) print('📡 [UserProvider] Loading workers...');
+      if (kDebugMode) debugPrint('📡 [UserProvider] Loading workers...');
       final workersData = await _collaboratorRepository!.fetchCollaborators();
       _workers = workersData.map((data) => WorkerModel.fromJson(data)).toList();
       _error = null;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error loading workers: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error loading workers: $e');
       _error = e.toString();
     } finally {
       _setLoading(false);
@@ -351,7 +322,7 @@ class UserProvider with ChangeNotifier {
         await loadWorkers();
       }
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error deleting worker: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error deleting worker: $e');
       rethrow;
     }
   }
@@ -362,7 +333,7 @@ class UserProvider with ChangeNotifier {
       await _collaboratorRepository!.assignRole(username, {'role_id': roleId});
       await loadWorkers();
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error assigning role: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error assigning role: $e');
       rethrow;
     }
   }
@@ -373,7 +344,7 @@ class UserProvider with ChangeNotifier {
       await _collaboratorRepository!.updateRole(username, {'role': roleId});
       await loadWorkers();
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error updating worker role: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error updating worker role: $e');
       rethrow;
     }
   }
@@ -384,7 +355,7 @@ class UserProvider with ChangeNotifier {
       await _collaboratorRepository!.createCollaborator(workerData);
       await loadWorkers();
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error creating worker: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error creating worker: $e');
       rethrow;
     }
   }
@@ -395,7 +366,7 @@ class UserProvider with ChangeNotifier {
       await _collaboratorRepository!.updateCollaborator(username, workerData);
       await loadWorkers();
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error updating worker: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error updating worker: $e');
       rethrow;
     }
   }
@@ -406,7 +377,7 @@ class UserProvider with ChangeNotifier {
       await _collaboratorRepository!.assignRouter(username, {'router_id': routerId});
       await loadWorkers();
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error assigning router to worker: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error assigning router to worker: $e');
       rethrow;
     }
   }
@@ -420,12 +391,12 @@ class UserProvider with ChangeNotifier {
     
     _setLoading(true);
     try {
-      if (kDebugMode) print('📡 [UserProvider] Loading roles...');
+      if (kDebugMode) debugPrint('📡 [UserProvider] Loading roles...');
       final rolesData = await repo.fetchRoles();
       _roles = rolesData.map((data) => RoleModel.fromJson(data)).toList();
       _error = null;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error loading roles: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error loading roles: $e');
       _error = e.toString();
     } finally {
       _setLoading(false);
@@ -438,7 +409,7 @@ class UserProvider with ChangeNotifier {
       await _roleRepository!.createRole(roleData);
       await loadRoles();
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error creating role: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error creating role: $e');
       rethrow;
     }
   }
@@ -449,7 +420,7 @@ class UserProvider with ChangeNotifier {
       await _roleRepository!.updateRole(slug, roleData);
       await loadRoles();
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error updating role: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error updating role: $e');
       rethrow;
     }
   }
@@ -460,7 +431,7 @@ class UserProvider with ChangeNotifier {
       await _roleRepository!.deleteRole(slug);
       await loadRoles();
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error deleting role: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error deleting role: $e');
       rethrow;
     }
   }
@@ -470,7 +441,7 @@ class UserProvider with ChangeNotifier {
     try {
       return await _roleRepository!.fetchPermissions();
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error fetching permissions: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error fetching permissions: $e');
       rethrow;
     }
   }
@@ -487,20 +458,20 @@ class UserProvider with ChangeNotifier {
   Future<void> loadSubscription() async {
     if (_subscriptionRepository == null) return;
     try {
-      if (kDebugMode) print('📡 [UserProvider] Loading subscription status...');
+      if (kDebugMode) debugPrint('📡 [UserProvider] Loading subscription status...');
       final subscriptionData = await _subscriptionRepository!.checkSubscriptionStatus();
       
       if (subscriptionData != null) {
         final data = subscriptionData['data'] is Map ? subscriptionData['data'] : subscriptionData;
         _subscription = SubscriptionModel.fromJson(data);
-        if (kDebugMode) print('✅ [UserProvider] Subscription loaded: ${_subscription!.tier}');
+        if (kDebugMode) debugPrint('✅ [UserProvider] Subscription loaded: ${_subscription!.tier}');
       } else {
         _subscription = null;
       }
       _error = null;
       _isSubscriptionLoaded = true;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Error loading subscription: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Error loading subscription: $e');
       _error = e.toString();
       _isSubscriptionLoaded = true; // Still marked as loaded even on error to stop infinite loading
     } finally {
@@ -512,7 +483,7 @@ class UserProvider with ChangeNotifier {
   Future<void> loadAvailableSubscriptionPlans() async {
     if (_subscriptionRepository == null) return;
     try {
-      if (kDebugMode) print('📋 [UserProvider] Loading available subscription plans');
+      if (kDebugMode) debugPrint('📋 [UserProvider] Loading available subscription plans');
       final plansData = await _subscriptionRepository!.fetchSubscriptionPlans(
         country: _partnerCountry ?? _authProvider?.partnerCountry,
       );
@@ -530,7 +501,7 @@ class UserProvider with ChangeNotifier {
                final mergedData = Map<String, dynamic>.from(planData);
                mergedData['price_info'] = priceInfo; // Override with single price info map for parsing
                // Also override top-level duration/price for easier consumption if needed
-               mergedData['duration'] = priceInfo['duration'];
+               mergedData['duration'] = priceInfo['duration']?.toString() ?? 'monthly';
                mergedData['price'] = priceInfo['price'];
                
                allPlans.add(SubscriptionPlanModel.fromJson(mergedData));
@@ -538,9 +509,8 @@ class UserProvider with ChangeNotifier {
           }
         } else {
            // Fallback for plans without price_info list (e.g. legacy or simple structure)
-           // But based on new API, we might want to skip or try parse as is
-           // If 'price' exists at top level, we include it, otherwise skip
-           if (planData['price'] != null) {
+           // If 'price' exists at top level or in price_info map
+           if (planData['price'] != null || (priceInfoList is Map && priceInfoList['price'] != null)) {
               allPlans.add(SubscriptionPlanModel.fromJson(planData));
            }
         }
@@ -550,10 +520,10 @@ class UserProvider with ChangeNotifier {
           .where((plan) => plan.price > 0 || plan.name == "Free Access") // Keep valid paid plans OR free plans (price might comprise 0 or 1)
           .toList();
       
-      if (kDebugMode) print('✅ [UserProvider] Loaded ${_availableSubscriptionPlans.length} subscription plans');
+      if (kDebugMode) debugPrint('✅ [UserProvider] Loaded ${_availableSubscriptionPlans.length} subscription plans');
       _error = null;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Load available subscription plans error: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Load available subscription plans error: $e');
       _error = e.toString();
     } finally {
       notifyListeners();
@@ -566,20 +536,20 @@ class UserProvider with ChangeNotifier {
     _setLoading(true);
     try {
       if (kDebugMode) {
-        print('💳 [UserProvider] Purchasing subscription plan: $planId');
-        print('   Payment reference: $paymentReference');
+        debugPrint('💳 [UserProvider] Purchasing subscription plan: $planId');
+        debugPrint('   Payment reference: $paymentReference');
       }
       final result = await _subscriptionRepository!.purchaseSubscription(planId, paymentReference);
       
       if (result != null) {
-        if (kDebugMode) print('✅ [UserProvider] Subscription purchase successful');
+        if (kDebugMode) debugPrint('✅ [UserProvider] Subscription purchase successful');
         // Reload subscription to get updated data
         await loadSubscription();
         return true;
       }
       return false;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Purchase subscription error: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Purchase subscription error: $e');
       _error = e.toString();
       rethrow;
     } finally {
@@ -643,7 +613,7 @@ class UserProvider with ChangeNotifier {
     if (_planRepository == null) return false;
     _setLoading(true);
     try {
-      if (kDebugMode) print('📡 [UserProvider] Assigning plan $planId to user $userId${routerId != null ? ' on router $routerId' : ''}');
+      if (kDebugMode) debugPrint('📡 [UserProvider] Assigning plan $planId to user $userId${routerId != null ? ' on router $routerId' : ''}');
       
       final data = {
         'customer_id': int.tryParse(userId) ?? userId,
@@ -653,13 +623,13 @@ class UserProvider with ChangeNotifier {
 
       await _planRepository!.assignPlan(data);
       
-      if (kDebugMode) print('✅ [UserProvider] Plan assigned successfully');
+      if (kDebugMode) debugPrint('✅ [UserProvider] Plan assigned successfully');
       
       // Refresh data
       await loadSubscription();
       return true;
     } catch (e) {
-      if (kDebugMode) print('❌ [UserProvider] Assign plan error: $e');
+      if (kDebugMode) debugPrint('❌ [UserProvider] Assign plan error: $e');
       _error = e.toString();
       rethrow;
     } finally {
@@ -677,6 +647,7 @@ class UserProvider with ChangeNotifier {
       case 'mali': return 'ML';
       case 'benin': return 'BJ';
       case 'togo': return 'TG';
+      case 'guinea': return 'GN';
       case 'burkina faso': return 'BF';
       case 'niger': return 'NE';
       case 'cameroon': return 'CM';
@@ -686,7 +657,7 @@ class UserProvider with ChangeNotifier {
       case 'nigeria': return 'NG';
       case 'ghana': return 'GH';
       case 'kenya': return 'KE';
-      default: return 'CI'; // Default fallback
+      default: return 'CI'; 
     }
   }
 }

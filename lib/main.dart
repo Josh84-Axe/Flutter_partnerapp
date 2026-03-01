@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart'; // Added for Dio type
+
 import 'package:easy_localization/easy_localization.dart';
 
 // Providers
@@ -12,9 +15,11 @@ import 'providers/theme_provider.dart';
 import 'theme/tiknet_themes.dart';
 
 // Services
+import 'services/pwa_service.dart';
 import 'services/api/api_client_factory.dart';
 import 'services/api/token_storage.dart';
 import 'services/api/api_config.dart';
+import 'services/support_ticket_service.dart';
 
 // Repositories
 import 'repositories/auth_repository.dart';
@@ -31,6 +36,10 @@ import 'repositories/hotspot_repository.dart';
 import 'repositories/session_repository.dart';
 import 'repositories/plan_config_repository.dart';
 import 'repositories/subscription_repository.dart';
+import 'repositories/ticket_repository.dart';
+import 'repositories/voucher_repository.dart';
+import 'providers/ticket_provider.dart';
+import 'providers/voucher_provider.dart';
 
 // Screens
 import 'screens/login_screen.dart';
@@ -109,6 +118,7 @@ import 'screens/payout_history_screen.dart';
 import 'screens/transaction_details_screen.dart';
 import 'screens/add_payout_method_screen.dart';
 import 'screens/assign_router_screen.dart';
+import 'screens/voucher_list_screen.dart';
 
 import 'screens/hotspot_users_management_screen.dart';
 import 'screens/plan_assignment_screen.dart';
@@ -120,37 +130,82 @@ import 'screens/active_sessions_screen.dart';
 import 'screens/help_support_screen.dart';
 
 void main() async {
+  // No-op for production tracking
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   
   // Dependency Injection Setup
-  final tokenStorage = TokenStorage();
-  final apiClientFactory = ApiClientFactory(
-    tokenStorage: tokenStorage,
-    baseUrl: ApiConfig.baseUrl, 
-  );
-  final dio = apiClientFactory.createDio();
+  late final TokenStorage tokenStorage;
+  late final ApiClientFactory apiClientFactory;
+  late final Dio dio;
+
+  try {
+    tokenStorage = TokenStorage();
+    apiClientFactory = ApiClientFactory(
+      tokenStorage: tokenStorage,
+      baseUrl: ApiConfig.baseUrl, 
+    );
+    dio = apiClientFactory.createDio();
+  } catch (e, stack) {
+    print('❌ [Main] DI Initialization Error: $e\n$stack');
+    rethrow;
+  }
 
   // Core Repositories
-  final authRepository = AuthRepository(dio: dio, tokenStorage: tokenStorage);
-  final partnerRepository = PartnerRepository(dio: dio);
+  late final AuthRepository authRepository;
+  late final PartnerRepository partnerRepository;
+  late final WalletRepository walletRepository;
+  late final TransactionRepository transactionRepository;
+  late final PaymentMethodRepository paymentMethodRepository;
+  late final CustomerRepository customerRepository;
+  late final CollaboratorRepository collaboratorRepository;
+  late final RoleRepository roleRepository;
+  late final SubscriptionRepository subscriptionRepository;
+  late final PlanRepository planRepository;
+  late final RouterRepository routerRepository;
+  late final HotspotRepository hotspotRepository;
+  late final SessionRepository sessionRepository;
+  late final PlanConfigRepository planConfigRepository;
+  late final TicketRepository ticketRepository;
+  late final VoucherRepository voucherRepository;
+
+  try {
+    authRepository = AuthRepository(dio: dio, tokenStorage: tokenStorage);
+    partnerRepository = PartnerRepository(dio: dio);
   
-  // Feature Repositories
-  final walletRepository = WalletRepository(dio: dio);
-  final transactionRepository = TransactionRepository(dio: dio);
-  final paymentMethodRepository = PaymentMethodRepository(dio: dio);
+    // Feature Repositories
+    walletRepository = WalletRepository(dio: dio);
+    transactionRepository = TransactionRepository(dio: dio);
+    paymentMethodRepository = PaymentMethodRepository(dio: dio);
   
-  final customerRepository = CustomerRepository(dio: dio);
-  final collaboratorRepository = CollaboratorRepository(dio: dio);
-  final roleRepository = RoleRepository(dio: dio);
-  final subscriptionRepository = SubscriptionRepository(dio: dio);
-  final planRepository = PlanRepository(dio: dio);
+    customerRepository = CustomerRepository(dio: dio);
+    collaboratorRepository = CollaboratorRepository(dio: dio);
+    roleRepository = RoleRepository(dio: dio);
+    subscriptionRepository = SubscriptionRepository(dio: dio);
+    planRepository = PlanRepository(dio: dio);
   
-  final routerRepository = RouterRepository(dio: dio);
-  final hotspotRepository = HotspotRepository(dio: dio);
-  final sessionRepository = SessionRepository(dio: dio);
-  final planConfigRepository = PlanConfigRepository(dio: dio);
+    routerRepository = RouterRepository(dio: dio);
+    hotspotRepository = HotspotRepository(dio: dio);
+    sessionRepository = SessionRepository(dio: dio);
+    planConfigRepository = PlanConfigRepository(dio: dio);
+    
+    // Support Ticket System
+    final supportTicketService = SupportTicketService(dio: dio);
+    ticketRepository = TicketRepository(ticketService: supportTicketService);
+    
+    voucherRepository = VoucherRepository(dio: dio);
+  } catch (e, stack) {
+    print('❌ [Main] Repository Initialization Error: $e\n$stack');
+    rethrow;
+  }
   
+  // Initialize PWA service
+  try {
+    PwaService().init();
+  } catch (e) {
+    if (kDebugMode) print('❌ [Main] PWA Service Error: $e');
+  }
+
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('fr')],
@@ -196,7 +251,6 @@ void main() async {
               collaboratorRepository: collaboratorRepository,
               roleRepository: roleRepository,
               subscriptionRepository: subscriptionRepository,
-              partnerRepository: partnerRepository,
               planRepository: planRepository,
             ),
             update: (context, auth, prev) {
@@ -205,7 +259,6 @@ void main() async {
                 collaboratorRepository: collaboratorRepository,
                 roleRepository: roleRepository,
                 subscriptionRepository: subscriptionRepository,
-                partnerRepository: partnerRepository,
                 planRepository: planRepository,
               );
               provider.update(
@@ -213,7 +266,6 @@ void main() async {
                 collaboratorRepository: collaboratorRepository,
                 roleRepository: roleRepository,
                 subscriptionRepository: subscriptionRepository,
-                partnerRepository: partnerRepository,
                 planRepository: planRepository,
                 authProvider: auth,
               );
@@ -221,7 +273,7 @@ void main() async {
             },
           ),
           
-          ChangeNotifierProxyProvider<AuthProvider, NetworkProvider>(
+            ChangeNotifierProxyProvider<AuthProvider, NetworkProvider>(
             create: (_) => NetworkProvider(
               routerRepository: routerRepository,
               hotspotRepository: hotspotRepository,
@@ -250,6 +302,13 @@ void main() async {
               );
               return provider;
             },
+          ),
+
+          ChangeNotifierProvider(
+            create: (_) => TicketProvider(ticketRepository: ticketRepository),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => VoucherProvider(repository: voucherRepository),
           ),
         ],
         child: const HotspotPartnerApp(),
@@ -341,6 +400,7 @@ class HotspotPartnerApp extends StatelessWidget {
         '/notification-router': (context) => const NotificationRouterScreen(),
         '/user-details': (context) {
           final user = ModalRoute.of(context)?.settings.arguments as UserModel;
+         if (kDebugMode) print('🚀 [Main] App starting... Version: 1.1.2');
           return UserDetailsScreen(user: user);
         },
         '/onboarding-old': (context) => const OnboardingFlow(),
@@ -419,6 +479,15 @@ class HotspotPartnerApp extends StatelessWidget {
             ),
           );
         }
+        if (settings.name == '/vouchers') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => VoucherListScreen(
+              planId: args['planId'] as String,
+              planName: args['planName'] as String,
+            ),
+          );
+        }
         return null;
       },
     );
@@ -460,6 +529,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -543,12 +613,19 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const DashboardScreen(),
-    const UsersScreen(),
-    const PlansScreen(),
-    const WalletOverviewScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      const DashboardScreen(),
+      const UsersScreen(),
+      PlansScreen(onBack: () => setState(() => _currentIndex = 0)),
+      const WalletOverviewScreen(),
+    ];
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -650,7 +727,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  context.watch<AuthProvider>().currentUser?.name ?? 'Partner',
+                  context.watch<AuthProvider>().currentUser?.name ?? 'partner'.tr(),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,

@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.1.6+1
 
 environment:
   sdk: ^3.9.2
@@ -58,14 +58,17 @@ dependencies:
   csv: ^6.0.0
   path_provider: ^2.1.2
   open_file: ^3.3.2
+  image_picker: ^1.0.7
+  file_picker: ^6.1.1
   flutter_markdown: ^0.7.4+1
   permission_handler: ^11.3.1
   package_info_plus: ^8.0.0
+  js: ^0.6.7
+  integration_test:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
-    sdk: flutter
-  integration_test:
     sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -101,8 +104,6 @@ flutter:
     - assets/branding/
     - assets/html/
     - assets/legal/
-    - lib/localization/en.json
-    - lib/localization/fr.json
     - lib/l10n/
 
   # To add assets to your application, add an assets section, like this:

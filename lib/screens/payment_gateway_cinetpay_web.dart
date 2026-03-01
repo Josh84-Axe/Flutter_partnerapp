@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'dart:async';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
-import 'dart:ui_web' as ui_web;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'package:easy_localization/easy_localization.dart';
 
 class PaymentGatewayCinetPayWeb extends StatefulWidget {
   final String apiKey;
@@ -186,7 +187,7 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
                 // Return success
                  Navigator.of(context).pop({'success': true, 'reference': widget.transactionId});
               } else if (event.data.contains('cinetpay_error')) {
-                 Navigator.of(context).pop({'success': false, 'message': 'Payment failed or cancelled.'});
+                 Navigator.of(context).pop({'success': false, 'message': 'payment_failed_or_cancelled'.tr()});
               }
             }
           } catch (e) {
@@ -203,12 +204,30 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
   Widget build(BuildContext context) {
     if (_error != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Payment Error')),
-        body: Center(child: Text(_error!)),
+        appBar: AppBar(title: Text('payment_error'.tr())),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 64),
+              const SizedBox(height: 16),
+              Text(
+                'payment_error'.tr(),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(_error ?? 'Something went wrong'),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('close'.tr()),
+              ),
+            ],
+          ),
+        ),
       );
     }
-    
-    // We show a loading indicator while the external script initializes and launches the popup
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -216,13 +235,13 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(),
-            const SizedBox(height: 20),
-            const Text('Initializing CinetPay Secure Payment...'),
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
+            Text('initializing_payment'.tr()),
+            const SizedBox(height: 8),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            )
+              child: Text('cancel'.tr()),
+            ),
           ],
         ),
       ),

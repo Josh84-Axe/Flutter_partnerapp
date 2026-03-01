@@ -3,46 +3,67 @@ import 'package:intl/intl.dart';
 /// Currency utility for formatting prices
 class CurrencyUtils {
   
-  /// Get currency code for a given country
+  /// Get currency code for a given country or ISO code
   static String getCurrencyCode(String? country) {
-    if (country == null) return 'USD';
+    if (country == null || country.isEmpty) return 'USD';
     
-    switch (country.toLowerCase()) {
-      case 'ghana':
-        return 'GHS';
-      case 'ivory coast':
-      case 'cote d\'ivoire':
-      case 'côte d\'ivoire':
-      case 'benin':
-      case 'burkina faso':
-      case 'guinea-bissau':
-      case 'mali':
-      case 'niger':
-      case 'senegal':
-      case 'togo':
-        return 'XOF'; // CFA Franc BCEAO
-      case 'cameroon':
-      case 'central african republic':
-      case 'chad':
-      case 'congo':
-      case 'equatorial guinea':
-      case 'gabon':
-        return 'XAF'; // CFA Franc BEAC
-      case 'nigeria':
-        return 'NGN';
-      case 'kenya':
-        return 'KES';
-      case 'uganda':
-        return 'UGX';
-      case 'tanzania':
-        return 'TZS';
-      case 'rwanda':
-        return 'RWF';
-      case 'south africa':
-        return 'ZAR';
-      default:
-        return 'USD';
+    final normalized = country.trim().toLowerCase();
+    
+    // Handle ISO 2-letter codes first
+    if (normalized == 'gh') return 'GHS';
+    if (normalized == 'ci') return 'XOF';
+    if (normalized == 'ng') return 'NGN';
+    if (normalized == 'ke') return 'KES';
+    if (normalized == 'ug') return 'UGX';
+    if (normalized == 'tz') return 'TZS';
+    if (normalized == 'rw') return 'RWF';
+    if (normalized == 'za') return 'ZAR';
+    if (normalized == 'gn') return 'GNF';
+    if (normalized == 'sn') return 'XOF';
+    if (normalized == 'ml') return 'XOF';
+    if (normalized == 'bj') return 'XOF';
+    if (normalized == 'bf') return 'XOF';
+    if (normalized == 'ne') return 'XOF';
+    if (normalized == 'tg') return 'XOF';
+    if (normalized == 'cm') return 'XAF';
+    if (normalized == 'ga') return 'XAF';
+    if (normalized == 'cg') return 'XAF';
+    if (normalized == 'td') return 'XAF';
+
+    // Robust substring matching
+    if (normalized.contains('guinea') && !normalized.contains('bissau')) return 'GNF';
+    if (normalized.contains('ghana')) return 'GHS';
+    if (normalized.contains('nigeria')) return 'NGN';
+    if (normalized.contains('kenya')) return 'KES';
+    if (normalized.contains('uganda')) return 'UGX';
+    if (normalized.contains('tanzania')) return 'TZS';
+    if (normalized.contains('rwanda')) return 'RWF';
+    if (normalized.contains('south africa')) return 'ZAR';
+    
+    // XOF Countries (including accented versions)
+    if (normalized.contains('senegal') || 
+        normalized.contains('ivory coast') || 
+        normalized.contains('cote d\'ivoire') ||
+        normalized.contains('côte d\'ivoire') ||
+        normalized.contains('benin') ||
+        normalized.contains('burkina') ||
+        normalized.contains('mali') ||
+        normalized.contains('niger') ||
+        normalized.contains('togo')) {
+      return 'XOF';
     }
+        
+    // XAF Countries
+    if (normalized.contains('cameroon') ||
+        normalized.contains('chad') ||
+        normalized.contains('gabon') ||
+        normalized.contains('congo') ||
+        normalized.contains('equatorial guinea') ||
+        normalized.contains('central african republic')) {
+      return 'XAF';
+    }
+
+    return 'USD';
   }
 
   /// Get currency symbol/label for a given country
@@ -58,6 +79,7 @@ class CurrencyUtils {
       case 'TZS': return 'TSh';
       case 'RWF': return 'RF';
       case 'ZAR': return 'R';
+      case 'GNF': return 'FG';
       case 'USD': return '\$';
       default: return code;
     }
@@ -77,55 +99,49 @@ class CurrencyUtils {
   /// Format price with currency symbol based on country
   /// 
   /// Examples:
-  /// - Ghana: GHS 2,500
+  /// - Ghana: GHS 2,500.00
   /// - Ivory Coast: 1.000 CFA
-  /// - USA: $2,500
+  /// - Guinea: 25.000 FG
+  /// - USA: $2,500.00
   static String formatPrice(double price, String? country, {String? currencyCode}) {
     // If currencyCode is provided, use it directly (e.g. from API)
     // Otherwise fallback to country-based lookup
     final code = currencyCode ?? getCurrencyCode(country);
     
     // Determine symbol based on code
-    String symbol;
-    switch (code) {
-      case 'GHS': symbol = 'GHS'; break;
-      case 'XOF': 
-      case 'XAF': symbol = 'CFA'; break;
-      case 'NGN': symbol = '₦'; break;
-      case 'KES': symbol = 'KSh'; break;
-      case 'UGX': symbol = 'USh'; break;
-      case 'TZS': symbol = 'TSh'; break;
-      case 'RWF': symbol = 'RF'; break;
-      case 'ZAR': symbol = 'R'; break;
-      case 'USD': symbol = '\$'; break;
-      default: symbol = code; break;
-    }
+    final symbol = getCurrencySymbol(country);
+
+    // Currencies with no decimals
+    const zeroDecimalCodes = {'XOF', 'XAF', 'GNF', 'UGX', 'RWF', 'TZS'};
     
-    // Round to nearest integer (no decimals)
-    final int amount = price.round();
-    
-    // Create formatter with no decimal digits
-    final formatter = NumberFormat.currency(
-      symbol: '', // We'll add symbol manually to control placement
-      decimalDigits: 0,
-    );
-    
-    // Format the number part
-    String formattedNumber;
-    
-    if (code == 'XOF' || code == 'XAF') {
-      // Use custom formatting for CFA to match "1.000" style (dot separator)
-      formattedNumber = NumberFormat.decimalPattern('de_DE').format(amount);
-      return '$formattedNumber $symbol'; // Suffix: 1.000 CFA
+    if (zeroDecimalCodes.contains(code)) {
+      final amount = price.round();
+      // Manually format with dot thousands separator to avoid dependency on 'de_DE' locale data on Web
+      final String raw = amount.toString();
+      final StringBuffer buffer = StringBuffer();
+      for (int i = 0; i < raw.length; i++) {
+        if (i > 0 && (raw.length - i) % 3 == 0) {
+          buffer.write('.');
+        }
+        buffer.write(raw[i]);
+      }
+      final formattedNumber = buffer.toString();
+      return '$formattedNumber $symbol'; // Suffix: 1.000 CFA or 25.000 FG
     } else {
-      // Standard formatting (comma separator)
-      formattedNumber = NumberFormat.decimalPattern('en_US').format(amount);
+      // Standard 2-decimal formatting (comma separator)
+      // Use 'en_US' explicitly to ensure consistent decimal/thousands separators
+      final formatter = NumberFormat.currency(
+        locale: 'en_US',
+        symbol: '',
+        decimalDigits: 2,
+      );
+      final formattedNumber = formatter.format(price).trim();
       
       // Special spacing for GHS and others that use 3-letter codes
       if (symbol.length > 1) {
-        return '$symbol $formattedNumber'; // GHS 2,500
+        return '$symbol $formattedNumber'; // GHS 2,500.00
       } else {
-        return '$symbol$formattedNumber'; // $2,500
+        return '$symbol$formattedNumber'; // $2,500.00
       }
     }
   }

@@ -60,7 +60,7 @@ class RouterDetailsScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                router.status,
+                _getStatusText(router.status),
                 style: TextStyle(
                   color: router.status == 'ONLINE'
                       ? AppTheme.successGreen
@@ -260,5 +260,11 @@ class RouterDetailsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getStatusText(String status) {
+    if (status == 'ONLINE') return 'online'.tr().toUpperCase();
+    if (status == 'OFFLINE') return 'offline'.tr().toUpperCase();
+    return status;
   }
 }

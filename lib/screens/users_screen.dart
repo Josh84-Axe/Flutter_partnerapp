@@ -6,10 +6,9 @@ import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/auth_provider.dart';
 import '../providers/split/user_provider.dart';
 import '../models/worker_model.dart';
-import '../models/user_model.dart'; // Added by instruction
+// Added by instruction
 import '../providers/split/network_provider.dart';
 import '../utils/app_theme.dart';
-import 'assign_routers_screen.dart'; // Added by instruction
 import '../widgets/search_bar_widget.dart';
 import '../widgets/create_worker_dialog.dart';
 import '../utils/permissions.dart';
@@ -156,9 +155,9 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                     return Text('no_routers_available'.tr(), style: const TextStyle(color: Colors.grey));
                   }
                   return DropdownButtonFormField<String>(
-                    value: selectedRouterId,
+                    initialValue: selectedRouterId,
                     decoration: InputDecoration(
-                      labelText: 'Select Router',
+                      labelText: 'select_router'.tr(),
                       border: const OutlineInputBorder(),
                     ),
                     items: routers.map<DropdownMenuItem<String>>((router) {
@@ -189,7 +188,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
               
               if (routerId == null && userData == null) { // Require router only for new users or logical requirement
                  ScaffoldMessenger.of(context).showSnackBar(
-                   const SnackBar(content: Text('Please select a router')),
+                   SnackBar(content: Text('select_router_error'.tr())),
                  );
                  return;
               }
@@ -242,7 +241,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
         actions: [
           IconButton(
             icon: const Icon(Icons.checklist),
-            tooltip: 'Bulk Actions',
+            tooltip: 'bulk_actions'.tr(),
             onPressed: () {
               Navigator.of(context).pushNamed('/bulk-actions');
             },
@@ -536,7 +535,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Error: $e'),
+                           content: Text('error_generic'.tr(namedArgs: {'error': e.toString()})),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -562,7 +561,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                         ),
                         FilledButton(
                           onPressed: () {
-                            context.read<UserProvider>().deleteUser(user.id);
+                            context.read<UserProvider>().deleteUser(user.username ?? user.id);
                             Navigator.pop(context);
                           },
                           style: FilledButton.styleFrom(
@@ -603,7 +602,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             Icon(Icons.badge_outlined, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
-              'No workers found',
+              'no_workers_found'.tr(),
               style: TextStyle(color: Colors.grey[600], fontSize: 16),
             ),
           ],
@@ -703,7 +702,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
             if (Permissions.canViewUsers(currentUser.role, currentUser.permissions))
               ListTile(
                 leading: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
-                title: const Text('View Details'),
+                title: Text('view_details'.tr()),
                 onTap: () {
                   Navigator.pop(context);
                   _showWorkerDetailsDialog(context, worker);
@@ -719,26 +718,6 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                   _showEditWorkerDialog(context, worker);
                 },
               ),
-            // Assign Routers
-            if (Permissions.canAssignRouters(currentUser.role))
-              ListTile(
-                leading: const Icon(Icons.router),
-                title: Text('assign_router'.tr()),
-                onTap: () async {
-                  Navigator.pop(context);
-                  // Navigate to assign routers screen
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AssignRoutersScreen(worker: worker),
-                    ),
-                  );
-                  // Refresh if changes were made
-                    if (result == true && context.mounted) {
-                      context.read<UserProvider>().loadWorkers();
-                    }
-                },
-              ),
             // Assign/Change Role
             ListTile(
               leading: Icon(Icons.badge, color: Theme.of(context).colorScheme.primary),
@@ -748,16 +727,6 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 _showAssignRoleDialog(context, worker);
               },
             ),
-            // Assign Router
-            if (Permissions.canAssignRouters(currentUser.role))
-              ListTile(
-                leading: Icon(Icons.router, color: Theme.of(context).colorScheme.secondary),
-                title: Text('assign_router'.tr()),
-                onTap: () {
-                  Navigator.pop(context);
-                  _showAssignRouterDialog(context, worker);
-                },
-              ),
             // Delete Worker
             if (Permissions.canDeleteUsers(currentUser.role, currentUser.permissions))
               ListTile(
@@ -831,7 +800,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<String>(
-                    value: selectedRole,
+                    initialValue: selectedRole,
                     decoration: InputDecoration(
                       labelText: 'role'.tr(),
                       border: const OutlineInputBorder(),
@@ -871,7 +840,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Role ${roles.firstWhere((r) => r.id == selectedRole).name} assigned successfully'),
+                          content: Text('role_assigned_successfully'.tr(namedArgs: {'name': roles.firstWhere((r) => r.id == selectedRole).name})),
                           backgroundColor: Theme.of(context).colorScheme.primary,
                         ),
                       );
@@ -901,26 +870,26 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Worker Details'),
+        title: Text('worker_details'.tr()),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildDetailRow('Name', worker.fullName),
-              _buildDetailRow('Email', worker.email),
-              _buildDetailRow('Username', worker.username),
-              _buildDetailRow('Role', worker.roleName ?? 'No role'),
-              _buildDetailRow('Status', worker.isActive ? 'Active' : 'Inactive'),
+              _buildDetailRow('name'.tr(), worker.fullName),
+              _buildDetailRow('email'.tr(), worker.email),
+              _buildDetailRow('username'.tr(), worker.username),
+              _buildDetailRow('role'.tr(), worker.roleName ?? 'no_role'.tr()),
+              _buildDetailRow('status'.tr(), worker.isActive ? 'active'.tr() : 'inactive'.tr()),
               if (worker.assignedRouters != null && worker.assignedRouters!.isNotEmpty)
-                _buildDetailRow('Assigned Routers', worker.assignedRouters!.join(', ')),
+                _buildDetailRow('assigned_routers'.tr(), worker.assignedRouters!.join(', ')),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('close'.tr()),
           ),
         ],
       ),
@@ -956,24 +925,24 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit Worker'),
+        title: Text('edit_worker'.tr()),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: firstNameController,
-                decoration: const InputDecoration(labelText: 'First Name'),
+                decoration: InputDecoration(labelText: 'first_name'.tr()),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: lastNameController,
-                decoration: const InputDecoration(labelText: 'Last Name'),
+                decoration: InputDecoration(labelText: 'last_name'.tr()),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(labelText: 'email'.tr()),
                 keyboardType: TextInputType.emailAddress,
               ),
             ],
@@ -995,7 +964,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 if (context.mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Worker updated successfully')),
+                    SnackBar(content: Text('worker_updated_success'.tr())),
                   );
                 }
               } catch (e) {
@@ -1009,85 +978,13 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 }
               }
             },
-            child: const Text('Save'),
+            child: Text('save'.tr()),
           ),
         ],
       ),
     );
   }
 
-  void _showAssignRouterDialog(BuildContext context, WorkerModel worker) {
-    final networkProvider = context.read<NetworkProvider>();
-    final routers = networkProvider.routers; // Assuming routers getter exists
-    String? selectedRouter;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('Assign Router to ${worker.fullName}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (routers.isEmpty)
-                const Text('No routers available')
-              else
-                DropdownButtonFormField<String>(
-                  value: selectedRouter,
-                  decoration: const InputDecoration(
-                    labelText: 'Select Router',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: routers.map((router) {
-                    return DropdownMenuItem(
-                      value: router.id,
-                      child: Text(router.name),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedRouter = value;
-                    });
-                  },
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('cancel'.tr()),
-            ),
-            FilledButton(
-              onPressed: selectedRouter == null
-                  ? null
-                  : () async {
-                      try {
-                        await context.read<UserProvider>().assignRouterToWorker(worker.email, selectedRouter!);
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Router assigned successfully')),
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(ErrorMessageHelper.getUserFriendlyMessage(e)),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      }
-                    },
-              child: const Text('Assign'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
 
 }

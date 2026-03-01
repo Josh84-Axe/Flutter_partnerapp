@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../utils/app_theme.dart';
 
 class GetStartedScreen extends StatelessWidget {
@@ -39,9 +40,9 @@ class GetStartedScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Get Started',
-                style: TextStyle(
+              Text(
+                'get_started_title'.tr(),
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
@@ -49,7 +50,7 @@ class GetStartedScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Manage your partnership on the go.',
+                'get_started_subtitle'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   color: AppTheme.textLight,
@@ -64,7 +65,7 @@ class GetStartedScreen extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('Sign Up'),
+                  child: Text('sign_up'.tr()),
                 ),
               ),
               const SizedBox(height: 12),
@@ -75,14 +76,14 @@ class GetStartedScreen extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('Log In'),
+                  child: Text('login'.tr()),
                 ),
               ),
               const SizedBox(height: 32),
               TextButton(
                 onPressed: onContinueAsGuest,
                 child: Text(
-                  'Continue as Guest',
+                  'continue_as_guest'.tr(),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,

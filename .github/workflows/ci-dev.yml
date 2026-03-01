@@ -3,7 +3,12 @@ name: Dev CI/CD (Web & Android)
 on:
   push:
     branches:
-      - fix/token-storage-windows
+      - 'fix/token-storage-windows'
+      - 'fix-token-storage-windows'
+      - 'fix/*'
+  workflow_dispatch:
+
+# Dummy comment to force trigger: 2026-02-04
 
 jobs:
   build-and-deploy:
@@ -19,7 +24,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.2'
+          flutter-version: '3.38.5'
           channel: 'stable'
           cache: true
       
@@ -28,18 +33,32 @@ jobs:
       
       # --- WEB DEPLOYMENT ---
       - name: Build Web
-        run: flutter build web --release
+        run: flutter build web --release --dart-define=API_HOST=https://api.tiknetafrica.com --dart-define=CRM_API_KEY=aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE --dart-define=USE_REMOTE_API=true
+      
+      - name: Verify Build Output
+        run: |
+          echo "Checking index.html content..."
+          grep "VERSION 1.0.10" build/web/index.html
+          if [ $? -eq 0 ]; then
+            echo "✅ VERIFICATION SUCCESS: New index.html generated correctly."
+          else
+            echo "❌ VERIFICATION FAILED: Old index.html detected!"
+            exit 1
+          fi
       
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: wifi-4u-partner
-          directory: build/web
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: fix-token-storage-windows
-          wranglerVersion: '3'
+          command: pages deploy build/web --project-name=wifi-4u-partner --branch=${{ github.ref_name }}
+  
+      - name: Purge Cache (Optional)
+        continue-on-error: true
+        uses: jakejarvis/cloudflare-purge-action@master
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_AUTH_KEY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       # --- ANDROID BUILD ---
       - name: Build Android APK

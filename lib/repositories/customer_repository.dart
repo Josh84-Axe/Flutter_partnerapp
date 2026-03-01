@@ -101,10 +101,10 @@ class CustomerRepository {
   }
 
   /// Delete a customer
-  Future<void> deleteCustomer(String id) async {
+  Future<void> deleteCustomer(String username) async {
     try {
-      if (kDebugMode) print('🗑️ [CustomerRepository] Deleting customer: $id');
-      await _dio.delete('/partner/customers/$id/');
+      if (kDebugMode) print('🗑️ [CustomerRepository] Deleting customer: $username');
+      await _dio.delete('/partner/customers/$username/delete/');
       if (kDebugMode) print('✅ [CustomerRepository] Customer deleted successfully');
     } catch (e) {
       if (kDebugMode) print('❌ [CustomerRepository] Delete customer error: $e');

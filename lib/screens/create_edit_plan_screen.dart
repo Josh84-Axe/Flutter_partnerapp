@@ -105,7 +105,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
 
                   // Data Limit Dropdown
                   DropdownButtonFormField<dynamic>(
-                    value: _selectedDataLimit,
+                    initialValue: _selectedDataLimit,
                     decoration: InputDecoration(
                       labelText: 'data_limit'.tr(),
                       border: const OutlineInputBorder(),
@@ -139,7 +139,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
 
                   // Validity Dropdown
                   DropdownButtonFormField<dynamic>(
-                    value: _selectedValidity,
+                    initialValue: _selectedValidity,
                     decoration: InputDecoration(
                       labelText: 'validity'.tr(),
                       border: const OutlineInputBorder(),
@@ -165,7 +165,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
 
                   // Device Allowed Dropdown
                   DropdownButtonFormField<dynamic>(
-                    value: _selectedDeviceAllowed,
+                    initialValue: _selectedDeviceAllowed,
                     decoration: InputDecoration(
                       labelText: 'device_allowed'.tr(),
                       border: const OutlineInputBorder(),
@@ -191,7 +191,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
 
                   // Hotspot Profile Dropdown
                   DropdownButtonFormField<int>(
-                    value: _selectedProfile,
+                    initialValue: _selectedProfile,
                     decoration: InputDecoration(
                       labelText: 'hotspot_user_profile'.tr(),
                       border: const OutlineInputBorder(),

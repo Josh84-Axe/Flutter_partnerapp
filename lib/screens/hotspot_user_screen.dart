@@ -31,43 +31,36 @@ class _HotspotUserScreenState extends State<HotspotUserScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Profile'),
-        content: Text('Are you sure you want to delete "${profile.name}"?'),
+        title: Text('delete_profile'.tr()),
+        content: Text('delete_plan_confirm'.tr(namedArgs: {'name': profile.name})),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('cancel'.tr()),
           ),
-          FilledButton(
+          ElevatedButton(
             onPressed: () async {
-              Navigator.pop(context); // Close dialog
               try {
-                final message = await context.read<NetworkProvider>().deleteHotspotProfile(profile.slug);
-                if (context.mounted) {
+                await context.read<NetworkProvider>().deleteHotspotProfile(profile.id);
+                if (mounted) {
+                  Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(message),
-                      backgroundColor: Colors.green,
-                    ),
+                    SnackBar(content: Text('plan_deleted_successfully'.tr())),
                   );
-                  // Reload profiles
-                  context.read<NetworkProvider>().loadHotspotProfiles();
                 }
               } catch (e) {
-                if (context.mounted) {
+                if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Error deleting profile: ${e.toString()}'),
-                      backgroundColor: AppTheme.errorRed,
+                      content: Text('${'error_deleting_profile'.tr()}: ${e.toString()}'),
+                      backgroundColor: Colors.red,
                     ),
                   );
                 }
               }
             },
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.errorRed,
-            ),
-            child: const Text('Delete'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: Text('delete'.tr()),
           ),
         ],
       ),

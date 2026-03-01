@@ -128,7 +128,14 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          tooltip: kIsWeb ? 'dashboard_title'.tr() : 'back_to_dashboard'.tr(),
+          onPressed: () {
+            if (kIsWeb || !Navigator.canPop(context)) {
+              Navigator.pushReplacementNamed(context, '/home');
+            } else {
+              Navigator.pop(context);
+            }
+          },
         ),
         title: Text('internet_plans'.tr()),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
@@ -186,23 +193,23 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  '${plan.dataLimit != null ? '${plan.dataLimit} GB' : 'unlimited'.tr()} | ${plan.formattedValidity}',
+                                  '${plan.dataLimit != null ? '${plan.dataLimit} ${'data_unit'.tr()}' : 'unlimited'.tr()} | ${plan.formattedValidity}',
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
-                                  Text(
-                                    plan.priceDisplay.isNotEmpty 
-                                        ? plan.priceDisplay 
-                                        : '${plan.price} ${userProvider.currencyCode}',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.primary,
-                                    ),
+                                Text(
+                                  plan.priceDisplay.isNotEmpty 
+                                      ? plan.priceDisplay 
+                                      : '${plan.price} ${userProvider.currencyCode}',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.primary,
                                   ),
+                                ),
                               ],
                             ),
                           ),

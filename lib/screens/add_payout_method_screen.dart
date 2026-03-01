@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/billing_provider.dart';
 import '../providers/split/auth_provider.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
@@ -46,7 +47,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Payout Method'),
+        title: Text('add_payment_method'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -191,7 +192,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
                     ),
                   ),
                   child: Text(
-                    'Cancel',
+                    'cancel'.tr(),
                     style: TextStyle(color: colorScheme.primary),
                   ),
                 ),
@@ -208,7 +209,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
                       borderRadius: BorderRadius.circular(24),
                     ),
                   ),
-                  child: const Text('Save Details'),
+                  child: Text('save_details'.tr()),
                 ),
               ),
             ],
@@ -392,11 +393,11 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
             context: context,
             barrierDismissible: false,
             builder: (context) => AlertDialog(
-              title: const Text('Verify Payment Method'),
+              title: Text('verify_payment_method'.tr()),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Enter the OTP code sent to your registered contact.'),
+                  Text('enter_otp_code'.tr()),
                   const SizedBox(height: 16),
                   TextField(
                     controller: otpController,
@@ -440,7 +441,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
                       }
                     }
                   },
-                  child: const Text('Verify'),
+                  child: Text('verify'.tr()),
                 ),
               ],
             ),
@@ -448,8 +449,8 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
           
           if (verified == true && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Payment method added successfully'),
+              SnackBar(
+                content: Text('payment_method_added_success'.tr()),
                 backgroundColor: Colors.green,
               ),
             );
@@ -460,7 +461,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to request OTP: ${e.toString()}'),
+              content: Text('failed_request_otp'.tr(namedArgs: {'error': e.toString()})),
               backgroundColor: Colors.red,
             ),
           );

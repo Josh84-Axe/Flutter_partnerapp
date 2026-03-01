@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/app_theme.dart';
+import '../widgets/create_ticket_dialog.dart';
+import 'support_ticket_list_screen.dart';
 
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
 
   // Support contact details
   static const String _supportEmail = 'assist@tiknetafrica.com';
-  static const String _supportWhatsApp = '233553439010'; // +233 55 343 9010
 
   Future<void> _launchEmail() async {
     final Uri emailLaunchUri = Uri(
@@ -24,23 +25,21 @@ class HelpSupportScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _launchWhatsApp() async {
-    final Uri whatsappUri = Uri.parse('https://wa.me/$_supportWhatsApp');
-    if (!await launchUrl(whatsappUri, mode: LaunchMode.externalApplication)) {
-      debugPrint('Could not launch WhatsApp');
-    }
-  }
-
   String? _encodeQueryParameters(Map<String, String> params) {
     return params.entries
         .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
         .join('&');
   }
 
+  void _showCreateTicketDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => const CreateTicketDialog(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('support_help'.tr()),
@@ -50,51 +49,78 @@ class HelpSupportScreen extends StatelessWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         children: [
-          // Contact Support Section
+          // Header Section
           Text(
             'contact_support'.tr(),
             style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
             ),
           ),
+          const SizedBox(height: 8),
+          Text(
+            'choose_support_method'.tr(), // Make sure this exists or use a fallback
+            style: TextStyle(
+              fontSize: 14,
+              color: AppTheme.textLight,
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Support Actions Hub
+          _buildActionCard(
+            context,
+            icon: Icons.add_circle_outline_rounded,
+            title: 'create_ticket'.tr(),
+            subtitle: 'response_time_msg'.tr(),
+            color: AppTheme.brandGreen,
+            onTap: () => _showCreateTicketDialog(context),
+            isPrimary: true,
+          ),
           const SizedBox(height: 16),
+          _buildActionCard(
+            context,
+            icon: Icons.question_answer_outlined,
+            title: 'my_support_tickets'.tr(),
+            subtitle: 'view_ticket_history'.tr(),
+            color: Colors.orange,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SupportTicketListScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildActionCard(
+            context,
+            icon: Icons.email_outlined,
+            title: 'Email Support',
+            subtitle: _supportEmail,
+            color: Colors.blueGrey,
+            onTap: _launchEmail,
+          ),
+
+          const SizedBox(height: 48),
+
+          // FAQ Section
           Row(
             children: [
-              Expanded(
-                child: _buildContactCard(
-                  context,
-                  icon: Icons.email_outlined,
-                  title: 'email_us'.tr(),
-                  subtitle: 'response_time_msg'.tr(),
-                  color: Colors.blue,
-                  onTap: _launchEmail,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildContactCard(
-                  context,
-                  icon: Icons.chat_bubble_outline,
-                  title: 'whatsapp'.tr(),
-                  subtitle: 'chat_with_support'.tr(),
-                  color: Colors.green,
-                  onTap: _launchWhatsApp,
+              const Icon(Icons.help_outline_rounded, size: 20, color: Colors.blue),
+              const SizedBox(width: 8),
+              Text(
+                'frequently_asked_questions'.tr(),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 32),
-
-          // FAQ Section
-          Text(
-            'frequently_asked_questions'.tr(),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
           ),
           const SizedBox(height: 16),
           _buildFAQItem(
@@ -122,51 +148,80 @@ class HelpSupportScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactCard(
+  Widget _buildActionCard(
     BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
     required Color color,
     required VoidCallback onTap,
+    bool isPrimary = false,
   }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Card(
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: isPrimary 
+            ? BorderSide(color: color.withValues(alpha: 0.3), width: 1)
+            : BorderSide(color: Colors.grey.withValues(alpha: 0.1), width: 1),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 28),
                 ),
-                child: Icon(icon, color: color, size: 32),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.textLight,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppTheme.textLight,
+                Icon(
+                  Icons.arrow_forward_ios_rounded, 
+                  color: Colors.grey.withValues(alpha: 0.5), 
+                  size: 16
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -71,5 +71,12 @@ This document provides a detailed list of test cases for validating the Partner 
 | **CONF-02** | Lang | Switch Language | - | 1. Settings -> Language -> French. | Application text changes to French immediately. |
 | **CONF-03** | Theme | Dark Mode | - | 1. Settings -> Theme -> Dark. | Background becomes dark, text becomes white. |
 
+## 8. CRM & Support
+
+| ID | Feature | Test Case | Pre-conditions | Test Steps | Expected Result |
+|:---|:---|:---|:---|:---|:---|
+| **SUPP-01** | Ticket | **Create Ticket** | - | 1. Settings -> Help & Support -> Create Ticket.<br>2. Fill Subject, Priority, Desc.<br>3. Submit. | Success message displayed. Dialog closes. |
+| **SUPP-02** | Ticket | Validation | - | 1. Create Ticket.<br>2. Leave fields empty.<br>3. Submit. | Validation errors displayed. |
+
 ---
 **End of Test Scenarios**

@@ -106,7 +106,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<dynamic>(
-                    value: _selectedValidity,
+                    initialValue: _selectedValidity,
                     decoration: InputDecoration(
                       labelText: 'validity'.tr(),
                       border: const OutlineInputBorder(),
@@ -131,7 +131,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<dynamic>(
-                    value: _selectedDataLimit,
+                    initialValue: _selectedDataLimit,
                     decoration: InputDecoration(
                       labelText: 'data_limit'.tr(),
                       border: const OutlineInputBorder(),
@@ -156,7 +156,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<dynamic>(
-                    value: _selectedAdditionalDevices,
+                    initialValue: _selectedAdditionalDevices,
                     decoration: InputDecoration(
                       labelText: 'additional_devices_allowed'.tr(),
                       border: const OutlineInputBorder(),
@@ -181,7 +181,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _selectedHotspotProfile,
+                    initialValue: _selectedHotspotProfile,
                     decoration: InputDecoration(
                       labelText: 'hotspot_user_profile'.tr(),
                       border: const OutlineInputBorder(),

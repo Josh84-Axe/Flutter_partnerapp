@@ -92,5 +92,17 @@ sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-
     ```bash
     flutter run -d linux  # Run as Linux desktop app
     # OR
-    flutter run -d chrome # Run in browser
     ```
+    
+## 7. Web Deployment (Fresh Pipeline)
+
+We maintain a dedicated deployment pipeline for the web platform, hosted on Cloudflare Pages.
+
+- **Production URL**: `https://dev-fresh.wifi-4u-partner.pages.dev`
+- **CI/CD**: Managed by GitHub Actions (`.github/workflows/ci-fresh.yml`).
+- **Key Adaptations**:
+    - **TokenStorage**: Uses a conditional import pattern. The default `token_storage.dart` is an abstract interface.
+        - **Mobile**: `token_storage_mobile.dart` uses `flutter_secure_storage`.
+        - **Web**: `token_storage_web.dart` uses `shared_preferences` (as `flutter_secure_storage` is unreliable for our use case on web).
+    - **PWA Service**: Uses `dart:js_util.setProperty` for safe window object property access to prevent `NoSuchMethodError` crashes.
+    - **Build Settings**: Uses `--dart-define` to inject `API_HOST` and `CRM_API_KEY` at build time.

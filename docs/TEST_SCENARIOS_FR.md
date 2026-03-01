@@ -71,5 +71,12 @@ Ce document fournit une liste détaillée des cas de test pour valider les fonct
 | **CONF-02** | Langue | Changer Langue | - | 1. Paramètres -> Langue -> Français. | L'interface change immédiatement en Français. |
 | **CONF-03** | Thème | Mode Sombre | - | 1. Paramètres -> Thème -> Sombre. | Le fond devient noir, le texte blanc. |
 
+## 8. CRM & Support
+
+| ID | Fonction | Cas de Test | Pré-conditions | Étapes de Test | Résultat Attendu |
+|:---|:---|:---|:---|:---|:---|
+| **SUPP-01** | Ticket | **Créer un Ticket** | - | 1. Paramètres -> Aide & Support -> Créer Ticket.<br>2. Remplir Sujet, Priorité, Desc.<br>3. Soumettre. | Message de succès affiché. La boîte de dialogue se ferme. |
+| **SUPP-02** | Ticket | Validation | - | 1. Créer Ticket.<br>2. Laisser champs vides.<br>3. Soumettre. | Erreurs de validation affichées. |
+
 ---
 **Fin des Scénarios de Test**

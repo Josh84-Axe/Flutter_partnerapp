@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:provider/provider.dart';
+import '../providers/split/auth_provider.dart';
+import '../providers/ticket_provider.dart';
 import '../widgets/search_bar_widget.dart';
 
 class SupportScreen extends StatefulWidget {
@@ -135,21 +138,52 @@ class _SupportScreenState extends State<SupportScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('support_request_submitted'.tr()),
-                          ),
+                        final ticketProvider = context.read<TicketProvider>();
+                        
+                        final authProvider = context.read<AuthProvider>();
+                        final (success, msg, _) = await ticketProvider.createTicket(
+                          subject: _subjectController.text.trim(),
+                          description: _messageController.text.trim(),
+                          category: 'general',
+                          priority: 'medium',
+                          email: _emailController.text.trim(),
+                          name: _emailController.text.split('@').first,
+                          country: authProvider.partnerCountry,
                         );
-                        _emailController.clear();
-                        _subjectController.clear();
-                        _messageController.clear();
+
+                        if (mounted) {
+                          if (success) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('support_request_submitted'.tr()),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                            _emailController.clear();
+                            _subjectController.clear();
+                            _messageController.clear();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(ticketProvider.error ?? 'ticket_creation_failed'.tr()),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
                       }
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
-                      child: Text('submit_request'.tr()),
+                      child: context.watch<TicketProvider>().isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : Text('submit_request'.tr()),
                     ),
                   ),
                 ),

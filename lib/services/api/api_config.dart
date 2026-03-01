@@ -14,4 +14,16 @@ class ApiConfig {
   /// Set to false to use mock data during development/testing
   /// TEMPORARY: Hardcoded to true for web builds (bool.fromEnvironment doesn't work reliably on web)
   static const bool useRemoteApi = true; // bool.fromEnvironment('USE_REMOTE_API', defaultValue: true);
+
+  /// External CRM API Configuration
+  static const String crmApiKey = String.fromEnvironment(
+    'CRM_API_KEY',
+    defaultValue: 'QNBBRFCO0rfnxFxS9buqx2cMjTbDwQEd3Zwhew_TXMI',
+  );
+  
+  /// Coleah CRM Partner API Base URL
+  static const String crmBaseUrl = 'https://api.coleah.com/api/cases/external/cases/';
+  
+  /// New CRM Message endpoint (Tiknet - keeping for reference if needed elsewhere)
+  static String get tiknetCrmMessageUrl => '$apiHost/api/comms/external/messages/';
 }

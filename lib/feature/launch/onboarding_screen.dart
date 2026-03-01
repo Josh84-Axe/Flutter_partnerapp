@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../motion/m3_motion.dart';
 
 /// Onboarding screen with 3 pages showing app features
@@ -19,18 +20,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<_OnboardingPage> _pages = const [
     _OnboardingPage(
       icon: Icons.people_alt_rounded,
-      title: 'User Management',
-      subtitle: 'Add, edit and manage users with ease.',
+      title: 'onboarding_title_1',
+      subtitle: 'onboarding_subtitle_1',
     ),
     _OnboardingPage(
       icon: Icons.signal_cellular_alt_rounded,
-      title: 'Network Health',
-      subtitle: 'Monitor router status and performance in real time.',
+      title: 'onboarding_title_2',
+      subtitle: 'onboarding_subtitle_2',
     ),
     _OnboardingPage(
       icon: Icons.public_rounded,
-      title: 'Flexible Plans',
-      subtitle: 'Create and assign plans tailored to your business.',
+      title: 'onboarding_title_3',
+      subtitle: 'onboarding_subtitle_3',
     ),
   ];
 
@@ -94,14 +95,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             .fadeIn(duration: M3Motion.slideIn),
                         const SizedBox(height: 32),
                         Text(
-                          page.title,
+                          page.title.tr(),
                           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          page.subtitle,
+                          page.subtitle.tr(),
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                 color: scheme.onSurfaceVariant,
@@ -140,7 +141,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: _completeOnboarding,
-                      child: const Text('Log In'),
+                      child: Text('login'.tr()),
                     ).animate().scale(
                           duration: M3Motion.buttonBounce,
                           curve: M3Motion.bounce,
@@ -150,7 +151,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Expanded(
                     child: FilledButton(
                       onPressed: _completeOnboarding,
-                      child: const Text('Get Started'),
+                      child: Text('get_started'.tr()),
                     ).animate().scale(
                           duration: M3Motion.buttonBounce,
                           curve: M3Motion.bounce,

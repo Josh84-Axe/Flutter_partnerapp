@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/user_provider.dart';
 import '../providers/split/network_provider.dart';
 import '../widgets/search_bar_widget.dart';
@@ -39,8 +40,8 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
       appBar: AppBar(
         title: Text(
           _selectedUserIds.isEmpty
-              ? 'Bulk Actions'
-              : '${_selectedUserIds.length} selected',
+              ? 'bulk_actions'.tr()
+              : 'selected_count'.tr(namedArgs: {'count': _selectedUserIds.length.toString()}),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -54,9 +55,9 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                   _selectedUserIds.clear();
                 });
               },
-              child: const Text(
-                'Clear',
-                style: TextStyle(color: AppTheme.pureWhite),
+              child: Text(
+                'clear'.tr(),
+                style: const TextStyle(color: AppTheme.pureWhite),
               ),
             ),
         ],
@@ -66,7 +67,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: SearchBarWidget(
-              hintText: 'Search users...',
+              hintText: 'search_users'.tr(),
               controller: _searchController,
               onChanged: (value) {
                 setState(() {
@@ -138,7 +139,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: const Text('Assign Plan'),
+                        child: Text('assign_plan'.tr()),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -148,20 +149,20 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                           final confirmed = await showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
-                              title: const Text('Block Selected Users'),
-                              content: Text(
-                                'Are you sure you want to block ${_selectedUserIds.length} user(s)?',
-                              ),
+                                title: Text('block_selected_users'.tr()),
+                                content: Text(
+                                  'block_selected_confirm'.tr(namedArgs: {'count': _selectedUserIds.length.toString()}),
+                                ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(false),
-                                  child: const Text('Cancel'),
+                                  child: Text('cancel'.tr()),
                                 ),
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(true),
-                                  child: const Text(
-                                    'Block',
-                                    style: TextStyle(color: AppTheme.errorRed),
+                                  child: Text(
+                                    'block'.tr(),
+                                    style: const TextStyle(color: AppTheme.errorRed),
                                   ),
                                 ),
                               ],
@@ -171,7 +172,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  '${_selectedUserIds.length} user(s) blocked',
+                                  'users_blocked_success'.tr(namedArgs: {'count': _selectedUserIds.length.toString()}),
                                 ),
                               ),
                             );
@@ -184,7 +185,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                           backgroundColor: AppTheme.errorRed,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: const Text('Block Selected'),
+                        child: Text('block_selected'.tr()),
                       ),
                     ),
                   ],
@@ -200,7 +201,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Assign Plan'),
+        title: Text('assign_plan'.tr()),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView(
@@ -214,7 +215,10 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        '${plan.name} assigned to ${_selectedUserIds.length} user(s)',
+                        'plan_assigned_bulk_success'.tr(namedArgs: {
+                          'planName': plan.name,
+                          'count': _selectedUserIds.length.toString(),
+                        }),
                       ),
                     ),
                   );
@@ -229,7 +233,7 @@ class _BulkActionsScreenState extends State<BulkActionsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
         ],
       ),

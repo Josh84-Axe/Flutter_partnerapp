@@ -1,3 +1,4 @@
+
 # Politique de Confidentialité
 
 **Dernière mise à jour : 10 décembre 2025**

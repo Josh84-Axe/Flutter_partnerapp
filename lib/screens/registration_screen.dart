@@ -7,7 +7,6 @@ import '../providers/split/auth_provider.dart';
 import '../utils/ip_geolocation.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'legal_document_screen.dart';
-import '../widgets/alerts/success_alert.dart';
 import '../widgets/alerts/action_failed_alert.dart';
 import '../utils/error_message_helper.dart';
 
@@ -156,24 +155,38 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       );
 
       if (success && mounted) {
-        // Show success message
-        await SuccessAlert.show(
-          context,
-          title: 'registration_successful'.tr(),
-          message: authProvider.currentUser != null && !authProvider.currentUser!.isActive
-              ? 'email_verification_sent'.tr()
-              : 'welcome_message'.tr(),
-          buttonText: 'continue'.tr(),
-        );
-        
+        if (kDebugMode) {
+          print('✅ [RegistrationScreen] Registration success: $success');
+          print('ℹ️ [RegistrationScreen] Current User: ${authProvider.currentUser?.email} (Active: ${authProvider.currentUser?.isActive})');
+        }
+
+        if (!mounted) return;
+
         // Navigate based on verification status
-        if (authProvider.currentUser != null && !authProvider.currentUser!.isActive) {
-          if (kDebugMode) print('ℹ️ [RegistrationScreen] Email verification required, navigating to verify-email');
-          Navigator.of(context).pushReplacementNamed('/email-verification');
+        final needsVerification = !authProvider.isAuthenticated;
+        if (kDebugMode) print('ℹ️ [RegistrationScreen] Needs verification: $needsVerification');
+        
+        if (needsVerification) {
+          if (kDebugMode) print('ℹ️ [RegistrationScreen] Navigating to otp-validation with email: ${_emailController.text.trim()}');
+          Navigator.of(context).pushReplacementNamed(
+            '/otp-validation',
+            arguments: {
+              'type': 'registration',
+              'email': _emailController.text.trim(),
+            },
+          );
         } else {
-          if (kDebugMode) print('✅ [RegistrationScreen] Registration complete, navigating to home');
+          if (kDebugMode) print('✅ [RegistrationScreen] Navigating to home');
           Navigator.of(context).pushReplacementNamed('/home');
         }
+      } else if (mounted) {
+        // Show error message if registration failed
+        if (kDebugMode) print('❌ [RegistrationScreen] Registration failed with message: ${authProvider.error}');
+        await ActionFailedAlert.show(
+          context,
+          title: 'registration_failed'.tr(),
+          message: authProvider.error ?? 'Registration failed. Please try again.',
+        );
       }
     } catch (e, stackTrace) {
       if (kDebugMode) {
@@ -353,7 +366,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: _selectedCountry,
+                              initialValue: _selectedCountry,
                               decoration: InputDecoration(
                                 labelText: 'register.form.country'.tr(),
                                 filled: true,

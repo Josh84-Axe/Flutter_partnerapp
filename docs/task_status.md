@@ -268,6 +268,14 @@
 
 ### Transaction History Bug (Android)
 - [ ] Investigate "All" tab rendering issue on Android
-- [ ] Check for platform-specific layout constraints
-- [ ] Fix data rendering for Android
-- [ ] Verify Web still works
+- [x] Redesign Voucher Export Layout
+  - [x] Implement high-density 5-column grid layout for PDF
+  - [x] Add plan name indicators to tickets
+  - [x] Optimize for ink-saving and A4 printing
+- [x] **PWA Installation & Cross-Browser Support**
+  - [x] Enhanced `isStandalone` detection (multi-mode + query param fallback)
+  - [x] Unified PwaInstallBanner with manual instructions (iOS/Android/Edge)
+  - [x] Added `isInstallPromptSupported` capability check
+  - [x] Fixed dashboard compilation errors (undefined method call)
+  - [x] **Fix PWA Localization**: Merged keys from redundant `lib/localization` to `lib/l10n` (Fixed raw keys issue)
+  - [x] Validated web build and standalone detection logic

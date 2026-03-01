@@ -26,7 +26,7 @@ class AuthProvider with ChangeNotifier {
   String? _partnerCurrencyCode;
   String? _partnerCurrencySymbol;
   String? _registrationEmail;
-  String? _registrationOtpId;
+  // String? _registrationOtpId; // Removed as not used in partner flow
   String? _passwordResetOtpId;
   String? _passwordResetToken;
   
@@ -54,12 +54,14 @@ class AuthProvider with ChangeNotifier {
 
   // Getters
   UserModel? get currentUser => _currentUser;
+  bool get isAuthenticated => _currentUser != null && _currentUser!.id != 'guest';
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get partnerCountry => _partnerCountry;
   String get currencySymbol => _partnerCurrencySymbol ?? '\$';
   bool get isGuestMode => _isGuestMode;
   String? get registrationEmail => _registrationEmail;
+  // String? get registrationOtpId => _registrationOtpId;
   String? get passwordResetToken => _passwordResetToken;
   
   void _setLoading(bool value) {
@@ -145,20 +147,25 @@ class AuthProvider with ChangeNotifier {
       // Extract role
       final userRole = userData['role'] is Map ? (userData['role']['name']?.toString() ?? 'Partner') : 'Partner';
 
+      // Extract country and set currency info
+      _partnerCountry = userData['country']?.toString() ?? userData['country_name']?.toString();
+      _partnerCurrencyCode = CurrencyUtils.getCurrencyCode(_partnerCountry);
+      _partnerCurrencySymbol = CurrencyUtils.getCurrencySymbol(_partnerCountry);
+
       _currentUser = UserModel(
         id: userData['id']?.toString() ?? '1',
         name: '${userData['first_name'] ?? ''} ${userData['last_name'] ?? ''}'.trim(),
         email: userData['email']?.toString() ?? email,
         role: userRole,
+        phone: userData['phone']?.toString(), // Added phone mapping
         permissions: mappedPermissions,
         isActive: true,
         createdAt: DateTime.now(),
+        isVoucherEnabled: userData['enable_smart_vouchers'] == true || 
+                         (userRole == 'Administrator' || userRole == 'Partner'),
+        country: _partnerCountry,
       );
       
-      // Extract country and set currency info
-      _partnerCountry = userData['country']?.toString();
-      _partnerCurrencyCode = CurrencyUtils.getCurrencyCode(_partnerCountry);
-      _partnerCurrencySymbol = CurrencyUtils.getCurrencySymbol(_partnerCountry);
       notifyListeners();
   }
 
@@ -233,38 +240,8 @@ class AuthProvider with ChangeNotifier {
         numberOfRouters: numberOfRouters,
       );
       
-      final success = result['success'] as bool;
-      final message = result['message'] as String;
-      final otpId = result['otp_id'] as String?;
-      
-      if (!success) {
-        _setError(message);
-        _setLoading(false);
-        return false;
-      }
-      
-      // Store OTP ID if email verification is required
-      if (otpId != null) {
-        _registrationOtpId = otpId;
-      }
-      
-      // Try to load profile to get user data if possible (auto-login scenario)
-      // If registration requires email verification, this might fail or be skipped
-      if (_partnerRepository != null) {
-        try {
-          final profileData = await _partnerRepository!.fetchProfile();
-          if (profileData != null) {
-            final userData = profileData['data'] is Map ? profileData['data'] : profileData;
-            await _mapUserData(userData, email);
-          }
-        } catch (e) {
-             // Verification likely required
-             if (kDebugMode) print('ℹ️ [AuthProvider] Could not fetch profile after register (verification likely needed): $e');
-        }
-      }
-      
       _setLoading(false);
-      return success;
+      return true;
     } catch (e) {
       if (kDebugMode) print('❌ [AuthProvider] Register error: $e');
       _setError('Registration error: ${e.toString()}');
@@ -371,11 +348,43 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> confirmRegistration(String email, String otp) async {
     _setLoading(true);
+    _setError(null);
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
       final response = await _authRepository!.confirmRegistration(email, otp);
-      _setLoading(false);
-      return response != null;
+      
+      if (response == null) {
+        _setError('No response from server');
+        _setLoading(false);
+        return false;
+      }
+
+      final statusCode = response['statusCode'];
+      final isError = response['error'] == true;
+      final message = response['message']?.toString();
+
+      if (statusCode == 200 && !isError) {
+        final data = response['data'] as Map<String, dynamic>?;
+        if (data != null) {
+          final accessToken = data['access']?.toString() ?? data['access_token']?.toString();
+          final refreshToken = data['refresh']?.toString() ?? data['refresh_token']?.toString();
+
+          if (accessToken != null && refreshToken != null && _tokenStorage != null) {
+            await _tokenStorage!.saveTokens(
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+            );
+            // Load profile if we have tokens
+            await checkAuthStatus();
+          }
+        }
+        _setLoading(false);
+        return true;
+      } else {
+        _setError(message ?? 'Verification failed');
+        _setLoading(false);
+        return false;
+      }
     } catch (e) {
       _setError(e.toString());
       _setLoading(false);

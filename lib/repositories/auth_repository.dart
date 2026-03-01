@@ -183,37 +183,19 @@ class AuthRepository {
       if (statusCode == 200 && error == false) {
         if (kDebugMode) print('✅ [AuthRepository] Registration successful: ${responseData['message']}');
         
-        // Extract tokens and otp_id from nested data object if present
+        // Extract tokens from nested data object if present
         final data = responseData['data'] as Map<String, dynamic>?;
         if (data != null) {
           final accessToken = data['access']?.toString();
           final refreshToken = data['refresh']?.toString();
-          final otpId = data['otp_id']?.toString();
 
           if (accessToken != null && refreshToken != null) {
-            if (kDebugMode) print('✅ [AuthRepository] Registration returned tokens - saving (access: ${accessToken.substring(0, 8)}..., refresh: ${refreshToken.substring(0, 8)}...)');
+            if (kDebugMode) print('✅ [AuthRepository] Registration returned tokens - saving');
             await _tokenStorage.saveTokens(
               accessToken: accessToken,
               refreshToken: refreshToken,
             );
-            
-            // Verify tokens were saved
-            final savedToken = await _tokenStorage.getAccessToken();
-            if (savedToken != null) {
-              if (kDebugMode) print('✅ [AuthRepository] Tokens saved successfully (verified: ${savedToken.substring(0, 8)}...)');
-            } else {
-              if (kDebugMode) print('❌ [AuthRepository] ERROR: Tokens not saved correctly!');
-            }
             return {'success': true, 'message': responseData['message'] ?? 'Registration successful!'};
-          } else if (otpId != null) {
-            if (kDebugMode) print('ℹ️ [AuthRepository] Registration requires email verification - OTP ID: $otpId');
-            return {
-              'success': true, 
-              'message': responseData['message'] ?? 'Registration successful!',
-              'otp_id': otpId
-            };
-          } else {
-            if (kDebugMode) print('ℹ️ [AuthRepository] Registration requires email verification - no tokens or otp_id returned');
           }
         }
         
