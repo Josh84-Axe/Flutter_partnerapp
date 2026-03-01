@@ -277,4 +277,5 @@
   - [x] Unified PwaInstallBanner with manual instructions (iOS/Android/Edge)
   - [x] Added `isInstallPromptSupported` capability check
   - [x] Fixed dashboard compilation errors (undefined method call)
+  - [x] **Fix PWA Localization**: Merged keys from redundant `lib/localization` to `lib/l10n` (Fixed raw keys issue)
   - [x] Validated web build and standalone detection logic
