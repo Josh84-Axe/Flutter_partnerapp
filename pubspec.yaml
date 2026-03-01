@@ -53,13 +53,13 @@ dependencies:
   tiknet_api_client:
     path: packages/tiknet_api_client
   intl_phone_number_input: ^0.7.5
-  pdf: ^3.10.8
-  printing: ^5.11.1
+  pdf: ^3.11.3
+  printing: ^5.13.2
   csv: ^6.0.0
   path_provider: ^2.1.2
   open_file: ^3.3.2
   image_picker: ^1.0.7
-  file_picker: ^6.1.1
+  file_picker: ^10.3.10
   flutter_markdown: ^0.7.4+1
   permission_handler: ^11.3.1
   package_info_plus: ^8.0.0
