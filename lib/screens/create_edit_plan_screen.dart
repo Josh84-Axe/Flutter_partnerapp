@@ -93,10 +93,10 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a price';
+                        return 'enter_price'.tr();
                       }
                       if (double.tryParse(value) == null) {
-                        return 'Please enter a valid number';
+                        return 'enter_valid_number'.tr();
                       }
                       return null;
                     },
@@ -117,7 +117,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                             // Add Unlimited option first
                             const DropdownMenuItem(
                               value: 'unlimited',
-                              child: Text('Unlimited'),
+                               child: Text('unlimited'.tr()),
                             ),
                             // Then add all configured data limits
                             ...networkProvider.dataLimits.map((limit) {
@@ -130,7 +130,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                     onChanged: (value) => setState(() => _selectedDataLimit = value),
                     validator: (value) {
                       if (value == null) {
-                        return 'Please select a data limit';
+                        return 'select_data_limit'.tr();
                       }
                       return null;
                     },
@@ -156,7 +156,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                     onChanged: (value) => setState(() => _selectedValidity = value),
                     validator: (value) {
                       if (value == null) {
-                        return 'Please select a validity period';
+                        return 'select_validity_period'.tr();
                       }
                       return null;
                     },
@@ -182,7 +182,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                     onChanged: (value) => setState(() => _selectedDeviceAllowed = value),
                     validator: (value) {
                       if (value == null) {
-                        return 'Please select device allowed';
+                        return 'select_device_allowed'.tr();
                       }
                       return null;
                     },
@@ -208,7 +208,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                     onChanged: (value) => setState(() => _selectedProfile = value),
                     validator: (value) {
                       if (value == null) {
-                        return 'Please select a hotspot profile';
+                        return 'select_hotspot_profile'.tr();
                       }
                       return null;
                     },

@@ -4,15 +4,18 @@ import '../../utils/app_theme.dart';
 class ActionFailedAlert {
   static Future<void> show(
     BuildContext context, {
-    String title = 'Action Failed',
-    String message = 'Something went wrong. Please check your internet connection and try again.',
+    String? title,
+    String? message,
     VoidCallback? onTryAgain,
     VoidCallback? onContactSupport,
   }) {
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Dialog(
+      builder: (context) {
+        final displayTitle = title ?? 'action_failed'.tr();
+        final displayMessage = message ?? 'generic_error_check_internet'.tr();
+        return Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -34,7 +37,7 @@ class ActionFailedAlert {
               ),
               const SizedBox(height: 24),
               Text(
-                title,
+                displayTitle,
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -42,7 +45,7 @@ class ActionFailedAlert {
               ),
               const SizedBox(height: 8),
               Text(
-                message,
+                displayMessage,
                 style: TextStyle(
                   fontSize: 14,
                   color: AppTheme.textLight,
@@ -61,7 +64,7 @@ class ActionFailedAlert {
                     backgroundColor: AppTheme.errorRed,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('Try Again'),
+                  child: Text('try_again'.tr()),
                 ),
               ),
               const SizedBox(height: 12),
@@ -75,14 +78,14 @@ class ActionFailedAlert {
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('Contact Support'),
+                  child: Text('contact_support_btn'.tr()),
                 ),
               ),
               const SizedBox(height: 12),
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  'Close',
+                  'close'.tr(),
                   style: TextStyle(color: AppTheme.textLight),
                 ),
               ),
