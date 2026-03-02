@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../motion/m3_motion.dart';
@@ -223,9 +223,9 @@ class _VerifyPasswordResetOtpScreenState
             // OTP field
             TextField(
               controller: _otpController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'verification_code'.tr(),
-                prefixIcon: Icon(Icons.pin),
+                prefixIcon: const Icon(Icons.pin),
               ),
               keyboardType: TextInputType.number,
               enabled: !_isLoading,

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/network_provider.dart';
 
 class AssignRouterScreen extends StatefulWidget {
@@ -184,8 +184,9 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
                   ),
                   disabledBackgroundColor: Colors.grey[300],
                 ),
-                  Text('save_assignment'.tr()),
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                child: Text(
+                  'save_assignment'.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ),
