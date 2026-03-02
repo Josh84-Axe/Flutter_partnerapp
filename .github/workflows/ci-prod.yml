@@ -12,10 +12,18 @@ jobs:
     permissions:
       contents: write # Required for creating releases and pushing version.json
       deployments: write
+    env:
+      VERSION: 1.1.${{ github.run_number }}
+      API_HOST: https://api.tiknetafrica.com
+      CRM_API_KEY: ${{ secrets.CRM_API_KEY }}
+      USE_REMOTE_API: true
+      SENTRY_DSN: https://37bff452b01af4d6e285f9d3c913e779@o4510974779588608.ingest.de.sentry.io/4510974786469968
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -30,10 +38,6 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
       
-      - name: Generate Version Number
-        id: version
-        run: echo "VERSION=1.1.${{ github.run_number }}" >> $GITHUB_ENV
-        
       - name: Inject Version into index.html
         run: |
           sed -i 's/BUILD v1\.1\.[0-9]*/BUILD v'"${{ env.VERSION }}"'/g' web/index.html
@@ -42,7 +46,14 @@ jobs:
 
       # --- WEB DEPLOYMENT ---
       - name: Build Web
-        run: flutter build web --release --build-name=${{ env.VERSION }} --build-number=${{ github.run_number }} --dart-define=API_HOST=https://api.tiknetafrica.com --dart-define=CRM_API_KEY=aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE --dart-define=USE_REMOTE_API=true
+        run: |
+          flutter build web --release \
+            --build-name=${{ env.VERSION }} \
+            --build-number=${{ github.run_number }} \
+            --dart-define=API_HOST=${{ env.API_HOST }} \
+            --dart-define=CRM_API_KEY=${{ env.CRM_API_KEY }} \
+            --dart-define=USE_REMOTE_API=${{ env.USE_REMOTE_API }} \
+            --dart-define=SENTRY_DSN=${{ env.SENTRY_DSN }}
       
       - name: Prepare version.json for Web
         run: |

@@ -64,6 +64,7 @@ dependencies:
   permission_handler: ^11.3.1
   package_info_plus: ^8.0.0
   js: ^0.6.7
+  sentry_flutter: ^8.13.0
   integration_test:
     sdk: flutter
 
