@@ -117,13 +117,27 @@ class AuthProvider with ChangeNotifier {
         _setLoading(false);
         return true;
       } else {
-        _setError(result['message'] ?? 'Login failed');
+        String errorMessage = result['message'] ?? 'error_login_failed'.tr();
+        
+        // Map common backend messages to friendly localized versions
+        if (errorMessage.toLowerCase().contains('invalid credentials') || 
+            errorMessage.toLowerCase().contains('no active account found')) {
+          errorMessage = 'invalid_credentials'.tr();
+        } else if (errorMessage.toLowerCase().contains('account is not active')) {
+          errorMessage = 'account_inactive'.tr();
+        }
+        
+        _setError(errorMessage);
         _setLoading(false);
         return false;
       }
     } catch (e) {
       if (kDebugMode) print('🔐 [AuthProvider] Login error: $e');
-      _setError(e.toString());
+      String errorMessage = e.toString();
+      if (errorMessage.toLowerCase().contains('401')) {
+        errorMessage = 'invalid_credentials'.tr();
+      }
+      _setError(errorMessage);
       _setLoading(false);
       return false;
     }

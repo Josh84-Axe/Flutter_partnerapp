@@ -35,7 +35,7 @@ class _VerifyPasswordResetOtpScreenState
   Future<void> _handleVerifyOtp() async {
     if (_otpController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter the verification code')),
+        SnackBar(content: Text('otp_required'.tr())),
       );
       return;
     }
@@ -100,7 +100,7 @@ class _VerifyPasswordResetOtpScreenState
              // Fallback error if still missing (shouldn't happen now)
              ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Error: Token missing in response. Please contact support.\nData: $responseData'),
+                content: Text('error_token_missing'.tr()),
                 duration: const Duration(seconds: 5),
               ),
              );
@@ -118,7 +118,7 @@ class _VerifyPasswordResetOtpScreenState
            );
         } else {
            ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMessage)),
+            SnackBar(content: Text(errorMessage.tr())),
            );
         }
       }
@@ -151,14 +151,14 @@ class _VerifyPasswordResetOtpScreenState
 
       if (result != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Verification code sent successfully'),
+          SnackBar(
+            content: Text('otp_resent_success'.tr()),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to resend code. Please try again.'),
+          SnackBar(
+            content: Text('error_resend_code'.tr()),
           ),
         );
       }
@@ -183,7 +183,7 @@ class _VerifyPasswordResetOtpScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Verify Code'),
+        title: Text('verify_code'.tr()),
       ),
       body: SafeArea(
         child: ListView(
@@ -205,7 +205,7 @@ class _VerifyPasswordResetOtpScreenState
             const SizedBox(height: 24),
             // Title
             Text(
-              'Enter Verification Code',
+              'enter_verification_code_title'.tr(),
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -213,7 +213,7 @@ class _VerifyPasswordResetOtpScreenState
             ),
             const SizedBox(height: 8),
             Text(
-              'We sent a verification code to\n${widget.email}',
+              '${'verification_code_sent_to'.tr()}\n${widget.email}',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
@@ -224,7 +224,7 @@ class _VerifyPasswordResetOtpScreenState
             TextField(
               controller: _otpController,
               decoration: const InputDecoration(
-                labelText: 'Verification Code',
+                labelText: 'verification_code'.tr(),
                 prefixIcon: Icon(Icons.pin),
               ),
               keyboardType: TextInputType.number,
@@ -242,7 +242,7 @@ class _VerifyPasswordResetOtpScreenState
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Continue'),
+                  : Text('continue'.tr()),
             ).animate().scale(
                   duration: M3Motion.buttonBounce,
                   curve: M3Motion.bounce,
@@ -251,7 +251,7 @@ class _VerifyPasswordResetOtpScreenState
             // Resend code button
             TextButton(
               onPressed: _isLoading ? null : _handleResendCode,
-              child: const Text('Resend Code'),
+              child: Text('resend'.tr()),
             ),
             const SizedBox(height: 12),
             // Back button
@@ -261,7 +261,7 @@ class _VerifyPasswordResetOtpScreenState
                   : () {
                       Navigator.of(context).pop();
                     },
-              child: const Text('Back'),
+              child: Text('close'.tr()),
             ),
           ],
         ),

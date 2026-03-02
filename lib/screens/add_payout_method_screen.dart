@@ -77,15 +77,15 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Please select a payout method to add.',
+            'please_select_payout_method'.tr(),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.grey[600],
             ),
           ),
           const SizedBox(height: 24),
           _buildMethodCard(
-            'Add Mobile Money Details',
-            'Receive payments directly to your mobile number.',
+            'add_mobile_money'.tr(),
+            'receive_mobile_payments'.tr(),
             Icons.smartphone,
             () {
               setState(() {
@@ -96,8 +96,8 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
           ),
           const SizedBox(height: 16),
           _buildMethodCard(
-            'Add Bank Transfer Details',
-            'Get funds deposited into your bank account.',
+            'add_bank_transfer'.tr(),
+            'bank_funds_deposit'.tr(),
             Icons.account_balance,
             () {
               setState(() {
@@ -225,7 +225,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
       child: Column(
         children: [
           _buildTextField(
-            label: 'Mobile Money Provider',
+            label: 'mobile_money_provider'.tr(),
             controller: _mobileProviderController,
             isDropdown: true,
             dropdownItems: ['MTN Mobile Money', 'Airtel Money', 'Vodafone Cash'],
@@ -248,7 +248,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
             formatInput: true,
             keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
             inputDecoration: InputDecoration(
-              labelText: 'Mobile Money Number',
+              labelText: 'mobile_money_number'.tr(),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -257,7 +257,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter Mobile Money Number';
+                return 'enter_mobile_money_number'.tr();
               }
               return null;
             },
@@ -278,12 +278,12 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
       child: Column(
         children: [
           _buildTextField(
-            label: 'Bank Name',
+            label: 'bank_name'.tr(),
             controller: _bankNameController,
           ),
           const SizedBox(height: 20),
           _buildTextField(
-            label: 'Bank Account Number',
+            label: 'bank_account_number'.tr(),
             controller: _bankAccountNumberController,
             keyboardType: TextInputType.number,
           ),
@@ -294,7 +294,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
           ),
           const SizedBox(height: 20),
           _buildTextField(
-            label: 'SWIFT/IBAN Code',
+            label: 'swift_iban_code'.tr(),
             controller: _swiftIbanController,
           ),
         ],
@@ -330,7 +330,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
         },
         validator: (value) {
           if (value == null || value.isEmpty) {
-            return 'Please select $label';
+            return 'select_item'.tr(namedArgs: {'item': label});
           }
           return null;
         },
@@ -350,7 +350,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter $label';
+          return 'enter_item'.tr(namedArgs: {'item': label});
         }
         return null;
       },
@@ -418,7 +418,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancel'),
+                  child: Text('cancel'.tr()),
                 ),
                 FilledButton(
                   onPressed: () async {
@@ -433,7 +433,7 @@ class _AddPayoutMethodScreenState extends State<AddPayoutMethodScreen> {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Verification failed: ${e.toString()}'),
+                              content: Text('verification_failed'.tr(namedArgs: {'error': e.toString()})),
                               backgroundColor: Colors.red,
                             ),
                           );

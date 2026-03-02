@@ -40,7 +40,7 @@ class ReportPreviewScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Report Preview'),
+        title: Text('report_preview'.tr()),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -56,18 +56,18 @@ class ReportPreviewScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Report Details',
+                  'report_details'.tr(),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 12),
-                _buildDetailRow('Report Type', reportType),
+                _buildDetailRow('report_type'.tr(), reportType),
                 const SizedBox(height: 8),
                 if (dateRange != null)
                   _buildDetailRow(
-                    'Date Range',
+                    'date_range'.tr(),
                     '${DateFormat('MMM dd, yyyy').format(dateRange.start)} - ${DateFormat('MMM dd, yyyy').format(dateRange.end)}',
                   ),
               ],
@@ -84,11 +84,11 @@ class ReportPreviewScreen extends StatelessWidget {
                       colorScheme.primaryContainer,
                     ),
                     columns: const [
-                      DataColumn(label: Text('User ID', style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('Full Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('Login Timestamp', style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('IP Address', style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('user_id'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('full_name'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('login_timestamp'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('ip_address'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('status'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
                     ],
                     rows: sampleData.map((data) {
                       return DataRow(
@@ -147,7 +147,7 @@ class ReportPreviewScreen extends StatelessWidget {
                         side: BorderSide(color: colorScheme.primary),
                       ),
                       child: const Text(
-                        'Revise Criteria',
+                        'revise_criteria'.tr(),
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                       ),
                     ),
@@ -166,7 +166,7 @@ class ReportPreviewScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: const Text(
-                        'Export Report',
+                        'export_report'.tr(),
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                       ),
                     ),

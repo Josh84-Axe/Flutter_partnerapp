@@ -33,7 +33,7 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Assign Routers to Worker'),
+        title: Text('assign_routers_worker'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -47,7 +47,7 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Select the routers you want to assign to the worker. They will only be able to view and manage the routers you select.',
+                  'select_routers_assignment'.tr(),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -56,7 +56,7 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Search routers',
+                    hintText: 'search_routers_hint'.tr(),
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
@@ -163,7 +163,7 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
                   ),
                 ),
                 child: Text(
-                  'Cancel',
+                  'cancel'.tr(),
                   style: TextStyle(
                     color: colorScheme.primary,
                     fontWeight: FontWeight.w600,
@@ -184,8 +184,7 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
                   ),
                   disabledBackgroundColor: Colors.grey[300],
                 ),
-                child: const Text(
-                  'Save Assignment',
+                  Text('save_assignment'.tr()),
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
@@ -200,7 +199,7 @@ class _AssignRouterScreenState extends State<AssignRouterScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '${_selectedRouters.length} router(s) assigned successfully',
+          'routers_assigned_successfully'.tr(namedArgs: {'count': _selectedRouters.length.toString()}),
         ),
         backgroundColor: Colors.green,
       ),

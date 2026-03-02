@@ -38,22 +38,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (_passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your new password')),
+        SnackBar(content: Text('please_enter_password'.tr())),
       );
       return;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
+        SnackBar(content: Text('passwords_do_not_match'.tr())),
       );
       return;
     }
 
     if (_passwordController.text.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password must be at least 6 characters'),
+        SnackBar(
+          content: Text('password_min_length'.tr()),
         ),
       );
       return;
@@ -82,8 +82,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       if (success) {
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Password reset successfully! Please login.'),
+          SnackBar(
+            content: Text('password_reset_success_message'.tr()),
             backgroundColor: Colors.green,
           ),
         );
@@ -95,17 +95,17 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to reset password. Please try again.'),
+          SnackBar(
+            content: Text('error_reset_password_failed'.tr()),
           ),
         );
       }
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('error_generic'.tr(args: [e.toString()]))),
+        );
     } finally {
       if (mounted) {
         setState(() {
@@ -121,7 +121,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reset Password'),
+        title: Text('reset_password'.tr()),
       ),
       body: SafeArea(
         child: ListView(
@@ -143,7 +143,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             const SizedBox(height: 24),
             // Title
             Text(
-              'Create New Password',
+              'create_new_password'.tr(),
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -151,7 +151,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Enter your new password below',
+              'new_password_instruction'.tr(),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
@@ -163,7 +163,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               controller: _passwordController,
               obscureText: _obscurePassword,
               decoration: InputDecoration(
-                labelText: 'New Password',
+                labelText: 'new_password'.tr(),
                 prefixIcon: const Icon(Icons.lock),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -184,7 +184,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               controller: _confirmPasswordController,
               obscureText: _obscureConfirmPassword,
               decoration: InputDecoration(
-                labelText: 'Confirm Password',
+                labelText: 'confirm_password'.tr(),
                 prefixIcon: const Icon(Icons.lock_outline),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -212,7 +212,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Reset Password'),
+                  : Text('reset_password'.tr()),
             ).animate().scale(
                   duration: M3Motion.buttonBounce,
                   curve: M3Motion.bounce,

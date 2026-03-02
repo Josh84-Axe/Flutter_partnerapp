@@ -25,7 +25,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Future<void> _handleRequestReset() async {
     if (_emailController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your email')),
+        SnackBar(content: Text('please_enter_your_email'.tr())),
       );
       return;
     }
@@ -33,7 +33,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     // Basic email validation
     if (!_emailController.text.contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid email')),
+        SnackBar(content: Text('please_enter_valid_email'.tr())),
       );
       return;
     }
@@ -60,8 +60,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to send reset code. Please try again.'),
+          SnackBar(
+            content: Text('error_send_reset_code'.tr()),
           ),
         );
       }
@@ -69,7 +69,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+        SnackBar(content: Text('error_generic'.tr(args: [e.toString()]))),
       );
     } finally {
       if (mounted) {
@@ -86,7 +86,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Forgot Password'),
+        title: Text('forgot_password'.tr()),
       ),
       body: SafeArea(
         child: ListView(
@@ -108,7 +108,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             const SizedBox(height: 24),
             // Title
             Text(
-              'Reset Password',
+              'reset_password'.tr(),
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -116,7 +116,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Enter your email address and we\'ll send you a code to reset your password.',
+              'reset_password_instruction'.tr(),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
@@ -127,7 +127,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(
-                labelText: 'Email',
+                labelText: 'email'.tr(),
                 prefixIcon: Icon(Icons.mail),
               ),
               keyboardType: TextInputType.emailAddress,
@@ -144,7 +144,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Send Reset Code'),
+                  : Text('send_reset_code'.tr()),
             ).animate().scale(
                   duration: M3Motion.buttonBounce,
                   curve: M3Motion.bounce,
@@ -157,7 +157,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   : () {
                       Navigator.of(context).pop();
                     },
-              child: const Text('Back to Login'),
+              child: Text('back_to_login'.tr()),
             ),
           ],
         ),
