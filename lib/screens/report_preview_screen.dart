@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import '../utils/app_theme.dart';
 
 class ReportPreviewScreen extends StatelessWidget {
@@ -55,7 +56,7 @@ class ReportPreviewScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'report_details'.tr(),
                   style: TextStyle(
                     fontSize: 16,
@@ -83,12 +84,12 @@ class ReportPreviewScreen extends StatelessWidget {
                     headingRowColor: WidgetStateProperty.all(
                       colorScheme.primaryContainer,
                     ),
-                    columns: const [
-                      DataColumn(label: Text('user_id'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('full_name'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('login_timestamp'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('ip_address'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
-                      DataColumn(label: Text('status'.tr(), style: TextStyle(fontWeight: FontWeight.bold))),
+                    columns: [
+                      DataColumn(label: Text('user_id'.tr(), style: const TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('full_name'.tr(), style: const TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('login_timestamp'.tr(), style: const TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('ip_address'.tr(), style: const TextStyle(fontWeight: FontWeight.bold))),
+                      DataColumn(label: Text('status'.tr(), style: const TextStyle(fontWeight: FontWeight.bold))),
                     ],
                     rows: sampleData.map((data) {
                       return DataRow(
@@ -146,9 +147,9 @@ class ReportPreviewScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         side: BorderSide(color: colorScheme.primary),
                       ),
-                      child: const Text(
+                      child: Text(
                         'revise_criteria'.tr(),
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -165,9 +166,9 @@ class ReportPreviewScreen extends StatelessWidget {
                         backgroundColor: colorScheme.primary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text(
+                      child: Text(
                         'export_report'.tr(),
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),

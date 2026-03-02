@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../repositories/auth_repository.dart';
 import '../../repositories/partner_repository.dart';
 import '../../services/api/token_storage.dart';

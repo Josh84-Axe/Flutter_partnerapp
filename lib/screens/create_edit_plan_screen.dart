@@ -115,7 +115,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                         ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
                         : [
                             // Add Unlimited option first
-                            const DropdownMenuItem(
+                            DropdownMenuItem(
                               value: 'unlimited',
                                child: Text('unlimited'.tr()),
                             ),

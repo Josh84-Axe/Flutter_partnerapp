@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ActionFailedAlert {
   static Future<void> show(
@@ -92,7 +92,8 @@ class ActionFailedAlert {
             ],
           ),
         ),
-      ),
+        );
+      },
     );
   }
 }
