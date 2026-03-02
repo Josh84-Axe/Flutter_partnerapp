@@ -9,6 +9,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      VERSION: 1.1.${{ github.run_number }}
+      API_HOST: https://api.tiknetafrica.com
+      CRM_API_KEY: ${{ secrets.CRM_API_KEY }}
+      USE_REMOTE_API: true
+      SENTRY_DSN: https://37bff452b01af4d6e285f9d3c913e779@o4510974779588608.ingest.de.sentry.io/4510974786469968
+
     steps:
       - uses: actions/checkout@v4
 
@@ -16,7 +23,7 @@ jobs:
         with:
           flutter-version: '3.38.5'
           channel: 'stable'
-          cache: false
+          cache: true
       
       - name: Clean Build
         run: flutter clean
@@ -24,18 +31,30 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
       
+      - name: Inject Version into index.html
+        run: |
+          sed -i 's/BUILD v1\.1\.[0-9]*/BUILD v'"${{ env.VERSION }}"'/g' web/index.html
+          sed -i 's/v1\.1\.[0-9]*-fresh/v'"${{ env.VERSION }}"'/g' web/index.html
+          echo "Updated web/index.html with version ${{ env.VERSION }}"
+
       - name: Build Web
-        run: flutter build web --release --dart-define=API_HOST=https://api.tiknetafrica.com --dart-define=CRM_API_KEY=aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE --dart-define=USE_REMOTE_API=true
+        run: |
+          flutter build web --release \
+            --build-name=${{ env.VERSION }} \
+            --build-number=${{ github.run_number }} \
+            --dart-define=API_HOST=${{ env.API_HOST }} \
+            --dart-define=CRM_API_KEY=${{ env.CRM_API_KEY }} \
+            --dart-define=USE_REMOTE_API=${{ env.USE_REMOTE_API }} \
+            --dart-define=SENTRY_DSN=${{ env.SENTRY_DSN }}
       
       - name: Verify Build Output
         run: |
           echo "Checking index.html content..."
-          # Check for console log version string
-          grep "WIFI-4U PARTNER APP - BUILD v1\.1\.[0-9]" build/web/index.html
+          grep "BUILD v${{ env.VERSION }}" build/web/index.html
           if [ $? -eq 0 ]; then
-            echo "✅ VERIFICATION SUCCESS: New index.html generated correctly."
+            echo "✅ VERIFICATION SUCCESS: index.html has correct version."
           else
-            echo "❌ VERIFICATION FAILED: Fresh index.html content missing!"
+            echo "❌ VERIFICATION FAILED: index.html version mismatch!"
             exit 1
           fi
       

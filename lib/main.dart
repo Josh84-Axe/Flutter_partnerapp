@@ -129,10 +129,33 @@ import 'screens/assigned_plans_list_screen.dart';
 import 'screens/active_sessions_screen.dart';
 import 'screens/help_support_screen.dart';
 
+import 'package:sentry_flutter/sentry_flutter.dart';
+
 void main() async {
   // No-op for production tracking
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+
+  const sentryDsn = String.fromEnvironment(
+    'SENTRY_DSN',
+    defaultValue: 'https://37bff452b01af4d6e285f9d3c913e779@o4510974779588608.ingest.de.sentry.io/4510974786469968',
+  );
+
+  if (sentryDsn.isNotEmpty && !kDebugMode) {
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = sentryDsn;
+        options.tracesSampleRate = 1.0;
+        options.enablePrintSampleRate = 1.0;
+      },
+      appRunner: () => _runApp(),
+    );
+  } else {
+    _runApp();
+  }
+}
+
+void _runApp() {
   
   // Dependency Injection Setup
   late final TokenStorage tokenStorage;
@@ -774,4 +797,5 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
 }
