@@ -24,6 +24,9 @@ jobs:
           channel: 'stable'
           cache: true
       
+      - name: Clean Build
+        run: flutter clean
+
       - name: Get dependencies
         run: flutter pub get
       
@@ -36,15 +39,18 @@ jobs:
         run: flutter build web --release --build-name=${{ env.VERSION }} --build-number=${{ github.run_number }} --dart-define=API_HOST=https://api.tiknetafrica.com --dart-define=CRM_API_KEY=aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE --dart-define=USE_REMOTE_API=true
       
       - name: Deploy to Cloudflare Pages (Production)
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: wifi-4u-partner
-          directory: build/web
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
-          wranglerVersion: '3'
+          command: pages deploy build/web --project-name=wifi-4u-partner --branch=main
+
+      - name: Purge Cloudflare Cache
+        continue-on-error: true
+        uses: jakejarvis/cloudflare-purge-action@master
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_AUTH_KEY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       # --- ANDROID BUILD ---
       - name: Build Android APK
