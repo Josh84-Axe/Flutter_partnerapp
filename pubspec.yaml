@@ -85,7 +85,6 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-<<<<<<< HEAD
   web:
     generate: true
     image_path: "assets/icons/app_icon_new.png"
@@ -94,11 +93,6 @@ flutter_launcher_icons:
   image_path: "assets/icons/app_icon_new.png"
   adaptive_icon_background: "#000000"
   adaptive_icon_foreground: "assets/icons/app_icon_new.png"
-=======
-  image_path: "assets/icons/app_icon.png"
-  adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/icons/app_icon.png"
->>>>>>> 882ba11 (feat: update app icons for PWA and Mobile using new logo)
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
