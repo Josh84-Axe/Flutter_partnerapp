@@ -230,3 +230,17 @@
 - [x] Update ReportingScreen to generate and view reports <!-- id: 135 -->
 - [x] Implement PDF generation logic for transactions <!-- id: 136 -->
 - [x] Implement CSV generation logic for transactions <!-- id: 137 -->
+233: 
+234: # Task: Production Web Deployment & Versioning Fix
+235: 
+236: - [x] Identify deployment stalemate in legacy `pages-action` <!-- id: 138 -->
+237: - [x] Modernize `ci-prod.yml` with `wrangler-action@v3` and cache purging <!-- id: 139 -->
+238: - [x] Implement dynamic version injection and build verification <!-- id: 140 -->
+239: - [x] Trigger production build and verify propagation <!-- id: 141 -->
+240: 
+241: # Task: Final Voucher & Ticket Implementation Verification
+242: 
+243: - [x] Verify `PlansScreen` voucher generation entry point <!-- id: 142 -->
+244: - [x] Verify `VoucherListScreen` generation and export logic <!-- id: 143 -->
+245: - [x] Confirm `AuthProvider` role-based access for vouchers <!-- id: 144 -->
+246: - [x] Verify refactored `HelpSupportScreen` support ticket integration <!-- id: 145 -->
