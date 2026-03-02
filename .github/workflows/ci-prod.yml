@@ -34,10 +34,37 @@ jobs:
         id: version
         run: echo "VERSION=1.1.${{ github.run_number }}" >> $GITHUB_ENV
         
+      - name: Inject Version into index.html
+        run: |
+          sed -i 's/BUILD v1\.1\.[0-9]*/BUILD v'"${{ env.VERSION }}"'/g' web/index.html
+          sed -i 's/v1\.1\.[0-9]*-fresh/v'"${{ env.VERSION }}"'/g' web/index.html
+          echo "Updated web/index.html with version ${{ env.VERSION }}"
+
       # --- WEB DEPLOYMENT ---
       - name: Build Web
         run: flutter build web --release --build-name=${{ env.VERSION }} --build-number=${{ github.run_number }} --dart-define=API_HOST=https://api.tiknetafrica.com --dart-define=CRM_API_KEY=aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE --dart-define=USE_REMOTE_API=true
       
+      - name: Prepare version.json for Web
+        run: |
+          echo '{
+              "latestVersion": "${{ env.VERSION }}",
+              "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v${{ env.VERSION }}/app-release.apk",
+              "forceUpdate": false,
+              "releaseNotes": "Automated update v${{ env.VERSION }}"
+          }' > build/web/version.json
+          echo "Created build/web/version.json"
+
+      - name: Verify Web Build Output
+        run: |
+          echo "Checking index.html content..."
+          grep "BUILD v${{ env.VERSION }}" build/web/index.html
+          if [ $? -eq 0 ]; then
+            echo "✅ VERIFICATION SUCCESS: index.html has correct version."
+          else
+            echo "❌ VERIFICATION FAILED: index.html version mismatch!"
+            exit 1
+          fi
+
       - name: Deploy to Cloudflare Pages (Production)
         uses: cloudflare/wrangler-action@v3
         with:
