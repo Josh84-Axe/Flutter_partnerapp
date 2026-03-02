@@ -146,6 +146,7 @@ void main() async {
       (options) {
         options.dsn = sentryDsn;
         options.tracesSampleRate = 1.0;
+        options.enablePrintSampleRate = 1.0;
       },
       appRunner: () => _runApp(),
     );
@@ -796,4 +797,5 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
 }
