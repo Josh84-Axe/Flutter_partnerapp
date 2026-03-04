@@ -712,45 +712,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
             const SizedBox(height: 32),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.link, size: 20, color: Colors.grey),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'partner.tiknet.africa',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontFamily: 'monospace',
-                        color: Colors.grey,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.copy, size: 20),
-                    tooltip: 'copy'.tr(),
-                    onPressed: () {
-                      const urlString = 'https://partner.tiknet.africa';
-                      Clipboard.setData(const ClipboardData(text: urlString));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('url_copied'.tr())),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
