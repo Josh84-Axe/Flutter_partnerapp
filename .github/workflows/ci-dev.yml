@@ -51,7 +51,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy build/web --project-name=wifi-4u-partner --branch=${{ github.ref_name }}
+          command: pages deploy build/web --project-name=tiknet-partner-fresh --branch=${{ github.ref_name }}
   
       - name: Purge Cache (Optional)
         continue-on-error: true
