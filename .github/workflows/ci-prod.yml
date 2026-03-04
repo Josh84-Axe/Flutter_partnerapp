@@ -81,7 +81,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy build/web --project-name=wifi-4u-partner --branch=main
+          command: pages deploy build/web --project-name=tiknet-partner-fresh --branch=main
 
       - name: Purge Cloudflare Cache
         continue-on-error: true
