@@ -627,10 +627,10 @@ class UserProvider with ChangeNotifier {
         'plan_id': int.tryParse(planId) ?? planId,
         if (routerId != null) 'router_id': int.tryParse(routerId) ?? routerId,
         // Tag transaction with worker/manager first name if not partner/owner
-        if (currentUser != null && 
-            currentUser!.role.toLowerCase() != 'partner' && 
-            currentUser!.role.toLowerCase() != 'owner')
-          'tag': currentUser!.name.split(' ').first,
+        if (_authProvider?.currentUser != null && 
+            _authProvider!.currentUser!.role.toLowerCase() != 'partner' && 
+            _authProvider!.currentUser!.role.toLowerCase() != 'owner')
+          'tag': _authProvider!.currentUser!.name.split(' ').first,
       };
 
       await _planRepository!.assignPlan(data);
