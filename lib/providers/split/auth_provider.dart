@@ -194,7 +194,7 @@ class AuthProvider with ChangeNotifier {
         isActive: true,
         createdAt: DateTime.now(),
         isVoucherEnabled: userData['enable_smart_vouchers'] == true || 
-                         (userRole == 'Administrator' || userRole == 'Partner'),
+                         Permissions.isOwner(userRole),
         country: _partnerCountry,
       );
       

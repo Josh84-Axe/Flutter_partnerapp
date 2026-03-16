@@ -81,7 +81,7 @@ class UserModel {
       final userRole = json['role'] is Map ? (json['role']['name']?.toString() ?? '') : (json['role']?.toString() ?? '');
       final isVouchers = json['enable_smart_vouchers'] == true || 
                         json['enableSmartVouchers'] == true ||
-                        (userRole == 'Administrator' || userRole == 'Partner');
+                        Permissions.isOwner(userRole);
 
       return UserModel(
         id: json['id']?.toString() ?? '',
