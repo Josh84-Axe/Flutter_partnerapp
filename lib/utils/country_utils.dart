@@ -139,4 +139,48 @@ class CountryUtils {
   static List<String> getAllIsoCodes() {
     return isoCodeToCountryName.keys.toList()..sort();
   }
+
+  /// Map of ISO codes to phone prefixes
+  static const Map<String, String> isoCodeToPhonePrefix = {
+    'TG': '+228',
+    'GH': '+233',
+    'NG': '+234',
+    'BJ': '+229',
+    'BF': '+226',
+    'CI': '+225',
+    'SN': '+221',
+    'ML': '+223',
+    'NE': '+227',
+    'GN': '+224',
+    'CM': '+237',
+    'TD': '+235',
+    'GA': '+241',
+    'CG': '+242',
+    'KE': '+254',
+    'UG': '+256',
+    'TZ': '+255',
+    'RW': '+250',
+    'ZA': '+27',
+  };
+
+  /// Get phone prefix for a country name or ISO code
+  static String getPhonePrefix(String? country) {
+    if (country == null || country.isEmpty) return '';
+    
+    // Normalize input
+    final input = country.trim();
+    
+    // If it's a 2-letter ISO code
+    if (input.length == 2) {
+      return isoCodeToPhonePrefix[input.toUpperCase()] ?? '';
+    }
+    
+    // Try to get ISO code from name
+    final isoCode = getIsoCode(input);
+    if (isoCode.length == 2) {
+      return isoCodeToPhonePrefix[isoCode.toUpperCase()] ?? '';
+    }
+    
+    return '';
+  }
 }

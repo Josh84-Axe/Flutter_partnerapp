@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/user_provider.dart';
+import '../providers/split/auth_provider.dart';
+import '../utils/country_utils.dart';
 
 class CreateWorkerDialog extends StatefulWidget {
   const CreateWorkerDialog({super.key});
@@ -23,6 +25,22 @@ class _CreateWorkerDialogState extends State<CreateWorkerDialog> {
   final _passwordController = TextEditingController();
   String? _selectedRole;
   bool _passwordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill phone prefix and country based on partner's country
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final authProvider = context.read<AuthProvider>();
+        final partnerCountry = authProvider.partnerCountry;
+        if (partnerCountry != null) {
+          _phoneController.text = CountryUtils.getPhonePrefix(partnerCountry);
+          _countryController.text = partnerCountry;
+        }
+      }
+    });
+  }
 
   @override
   void dispose() {

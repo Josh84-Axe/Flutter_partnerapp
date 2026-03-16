@@ -15,6 +15,7 @@ import '../utils/permissions.dart';
 import '../utils/permission_mapping.dart';
 import '../widgets/permission_denied_dialog.dart';
 import '../utils/error_message_helper.dart';
+import '../utils/country_utils.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -83,42 +84,13 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     // Ensure routers are loaded for the dropdown
     context.read<NetworkProvider>().loadRouters();
 
-    // Helper to get country code
-    String getCountryCode(String? country) {
-      if (country == null) return '';
-      switch (country.toLowerCase()) {
-        case 'ghana': return '+233';
-        case 'benin': return '+229';
-        case 'togo': return '+228';
-        case 'ivory coast':
-        case 'cote d\'ivoire':
-        case 'côte d\'ivoire': return '+225';
-        case 'nigeria': return '+234';
-        case 'senegal': return '+221';
-        case 'mali': return '+223';
-        case 'burkina faso': return '+226';
-        case 'niger': return '+227';
-        case 'cameroon': return '+237';
-        case 'chad': return '+235';
-        case 'gabon': return '+241';
-        case 'congo': return '+242';
-        case 'kenya': return '+254';
-        case 'uganda': return '+256';
-        case 'tanzania': return '+255';
-        case 'rwanda': return '+250';
-        case 'south africa': return '+27';
-        default: return '';
-      }
-    }
+    final partnerCountry = context.read<AuthProvider>().partnerCountry;
 
-    final authProvider = context.read<AuthProvider>();
-    final partnerCountry = authProvider.partnerCountry;
-    
     // Pre-fill phone with country code if new user and country is known
     String initialPhone = userData?['phone'] ?? '';
     if (initialPhone.isEmpty && partnerCountry != null) {
       // Add country code if not present
-      initialPhone = getCountryCode(partnerCountry);
+      initialPhone = CountryUtils.getPhonePrefix(partnerCountry);
     }
     
     final firstNameController = TextEditingController(text: userData?['first_name'] ?? userData?['name']);
