@@ -12,6 +12,7 @@ import '../../repositories/plan_config_repository.dart';
 import '../../repositories/plan_repository.dart';
 import '../../models/plan_model.dart';
 import '../../providers/split/auth_provider.dart';
+import '../../utils/permissions.dart';
 
 class NetworkProvider with ChangeNotifier {
   RouterRepository? _routerRepository;
@@ -100,10 +101,8 @@ class NetworkProvider with ChangeNotifier {
     final user = _authProvider?.currentUser;
     if (user == null) return [];
     
-    final role = user.role.toLowerCase();
-    
     // Partners/Owners see ALL routers
-    if (role == 'partner' || role == 'owner' || role == 'admin' || role == 'administrator') {
+    if (Permissions.isOwner(user.role)) {
       return _routers;
     }
     

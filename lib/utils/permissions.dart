@@ -4,7 +4,11 @@ class Permissions {
   static const String roleOwner = 'Administrator';
   
   static bool isOwner(String role) {
-    return role.toLowerCase() == 'administrator' || role.toLowerCase() == 'partner';
+    final lowerRole = role.toLowerCase();
+    return lowerRole == 'administrator' || 
+           lowerRole == 'partner' || 
+           lowerRole == 'owner' || 
+           lowerRole == 'admin';
   }
   
   // Legacy methods (kept for backward compatibility)
