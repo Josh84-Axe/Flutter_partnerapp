@@ -207,6 +207,8 @@ class AuthProvider with ChangeNotifier {
       // Extract subscription data
       if (userData['subscription'] is Map) {
         _subscriptionData = userData['subscription'];
+      } else if (userData['partner'] is Map && userData['partner']['subscription'] is Map) {
+        _subscriptionData = userData['partner']['subscription'];
       }
 
       _currentUser = UserModel(
