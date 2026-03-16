@@ -11,7 +11,6 @@ import '../../models/local_notification_model.dart';
 import '../../repositories/subscription_repository.dart';
 import '../../services/local_notification_service.dart';
 import '../../utils/currency_utils.dart';
-
 import 'auth_provider.dart';
 
 class UserProvider with ChangeNotifier {
@@ -72,6 +71,14 @@ class UserProvider with ChangeNotifier {
       _subscription = null;
       _isSubscriptionLoaded = false;
       _hasSkippedSubscriptionCheck = false;
+    } else if (authProvider?.subscriptionData != null && !_isSubscriptionLoaded) {
+       // Use pre-loaded subscription data (especially for workers/managers)
+       try {
+         _subscription = SubscriptionModel.fromJson(authProvider!.subscriptionData!);
+         _isSubscriptionLoaded = true;
+       } catch (e) {
+         if (kDebugMode) debugPrint('❌ [UserProvider] Error mapping pre-loaded subscription: $e');
+       }
     }
     notifyListeners();
   }
@@ -618,7 +625,12 @@ class UserProvider with ChangeNotifier {
       final data = {
         'customer_id': int.tryParse(userId) ?? userId,
         'plan_id': int.tryParse(planId) ?? planId,
-        if (routerId != null) 'router_id': int.tryParse(routerId) ?? routerId, // API might expect int or string, usually safe to send what we have if it's an ID
+        if (routerId != null) 'router_id': int.tryParse(routerId) ?? routerId,
+        // Tag transaction with worker/manager first name if not partner/owner
+        if (currentUser != null && 
+            currentUser!.role.toLowerCase() != 'partner' && 
+            currentUser!.role.toLowerCase() != 'owner')
+          'tag': currentUser!.name.split(' ').first,
       };
 
       await _planRepository!.assignPlan(data);

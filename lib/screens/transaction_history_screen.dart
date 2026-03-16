@@ -421,7 +421,17 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
               if (type.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
-                  child: _buildTypeBadge(type),
+                  child: Row(
+                    children: [
+                      _buildTypeBadge(type),
+                      const SizedBox(width: 8),
+                      // Backend returns assigned_by. If null, it's a Voucher.
+                      _buildTagBadge(
+                        transaction['assigned_by'] ?? transaction['tag'] ?? transaction['worker_name'],
+                        isAssigned: type == 'assigned',
+                      ),
+                    ],
+                  ),
                 ),
             ],
           ),
@@ -477,6 +487,31 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
           color: color,
           fontSize: 11,
           fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTagBadge(dynamic tag, {bool isAssigned = false}) {
+    // If tag exists, use it. If null and it's an assignment, it's a "Voucher" transaction.
+    if (tag == null && !isAssigned) return const SizedBox.shrink();
+
+    final String label = tag != null ? tag.toString() : 'Voucher';
+    final Color color = tag != null ? Colors.blueGrey : Colors.orange;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withAlpha(25),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withAlpha(50), width: 0.5),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
