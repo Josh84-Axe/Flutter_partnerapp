@@ -8,6 +8,7 @@ import '../../services/local_notification_service.dart';
 import '../../models/user_model.dart';
 import '../../utils/permission_mapping.dart';
 import '../../utils/currency_utils.dart';
+import '../../utils/permissions.dart';
 
 class AuthProvider with ChangeNotifier {
   AuthRepository? _authRepository;
