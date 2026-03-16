@@ -29,6 +29,7 @@ class AuthProvider with ChangeNotifier {
   String? _partnerCurrencySymbol;
   String? _registrationEmail;
   // String? _registrationOtpId; // Removed as not used in partner flow
+  String? _passwordResetOtpId;
   String? _passwordResetToken;
   String? _partnerName;
   Map<String, dynamic>? _subscriptionData;

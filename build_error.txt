@@ -1,0 +1,133 @@
+Resolving dependencies...
+Downloading packages...
+  animations 2.1.0 (2.1.1 available)
+  archive 4.0.7 (4.0.9 available)
+  characters 1.4.0 (1.4.1 available)
+  crypto 3.0.6 (3.0.7 available)
+  csv 6.0.0 (7.2.0 available)
+  dio 5.9.0 (5.9.2 available)
+  dio_web_adapter 2.1.1 (2.1.2 available)
+  dlibphonenumber 1.1.52 (1.1.59 available)
+  equatable 2.0.7 (2.0.8 available)
+  ffi 2.1.4 (2.2.0 available)
+  fl_chart 1.1.1 (1.2.0 available)
+  flutter_markdown 0.7.7+1 (discontinued replaced by flutter_markdown_plus)
+  flutter_secure_storage 9.2.4 (10.0.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.0 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.0.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.0 available)
+  flutter_secure_storage_windows 3.1.2 (4.1.0 available)
+  flutter_svg 2.2.1 (2.2.4 available)
+  golden_toolkit 0.15.0 (discontinued)
+  google_fonts 6.3.2 (8.0.2 available)
+  http 1.5.0 (1.6.0 available)
+  image 4.5.4 (4.8.0 available)
+  js 0.6.7 (discontinued)
+  json_annotation 4.9.0 (4.11.0 available)
+  lints 6.0.0 (6.1.0 available)
+  matcher 0.12.17 (0.12.19 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.17.0 (1.18.1 available)
+  open_file 3.5.10 (3.5.11 available)
+  open_file_ios 1.0.3 (1.0.4 available)
+  open_file_mac 1.0.3 (1.0.4 available)
+  package_info_plus 8.3.1 (9.0.0 available)
+  path_provider_android 2.2.20 (2.2.22 available)
+  path_provider_foundation 2.4.3 (2.6.0 available)
+  pdf 3.11.3 (3.12.0 available)
+  permission_handler 11.4.0 (12.0.1 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  petitparser 7.0.1 (7.0.2 available)
+  posix 6.0.3 (6.5.0 available)
+  printing 5.14.2 (5.14.3 available)
+  protobuf 5.1.0 (6.0.0 available)
+  sentry 8.14.2 (9.14.0 available)
+  sentry_flutter 8.14.2 (9.14.0 available)
+  shared_preferences 2.5.3 (2.5.4 available)
+  shared_preferences_android 2.4.15 (2.4.21 available)
+  shared_preferences_foundation 2.5.5 (2.5.6 available)
+  source_span 1.10.1 (1.10.2 available)
+  test_api 0.7.7 (0.7.10 available)
+  url_launcher_android 6.3.24 (6.3.28 available)
+  url_launcher_ios 6.3.5 (6.4.1 available)
+  url_launcher_linux 3.2.1 (3.2.2 available)
+  url_launcher_macos 3.2.4 (3.2.5 available)
+  url_launcher_web 2.4.1 (2.4.2 available)
+  url_launcher_windows 3.1.4 (3.1.5 available)
+  vector_graphics 1.1.19 (1.1.20 available)
+  vector_graphics_compiler 1.1.19 (1.2.0 available)
+  webview_flutter 4.13.0 (4.13.1 available)
+  webview_flutter_android 4.10.5 (4.10.13 available)
+  webview_flutter_wkwebview 3.23.1 (3.24.0 available)
+  win32 5.15.0 (6.0.0 available)
+Got dependencies!
+3 packages are discontinued.
+59 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Compiling lib/main.dart for the Web...                          
+Wasm dry run findings:
+Found incompatibilities with WebAssembly.
+
+package:flutter_secure_storage_web/flutter_secure_storage_web.dart 5:1 - dart:html unsupported (0)
+package:flutter_secure_storage_web/src/subtle.dart 21:1 - dart:html unsupported (0)
+package:js/js.dart 10:1 - dart:js unsupported (1)
+package:flutter_secure_storage_web/flutter_secure_storage_web.dart 6:1 - JS interop library 'dart:js_util' can't be imported when compiling to Wasm. (2)
+package:flutter_secure_storage_web/src/subtle.dart 22:1 - JS interop library 'dart:js_util' can't be imported when compiling to Wasm. (2)
+package:flutter_secure_storage_web/src/subtle.dart 26:1 - JS interop library 'package:js/js.dart' can't be imported when compiling to Wasm. (2)
+file:///Users/josh/.pub-cache/hosted/pub.dev/image-4.5.4/lib/src/exif/ifd_directory.dart 174:26 - avoid_double_and_int_checks lint violation: Explicit check for double or int. (13)
+file:///Users/josh/.pub-cache/hosted/pub.dev/image-4.5.4/lib/src/exif/ifd_directory.dart 183:26 - avoid_double_and_int_checks lint violation: Explicit check for double or int. (13)
+
+Consider addressing these issues to enable wasm builds. See docs for more info: https://docs.flutter.dev/platform-integration/web/wasm
+
+Use --no-wasm-dry-run to disable these warnings.
+Target dart2js failed: ProcessException: Process exited abnormally with exit code 1:
+lib/providers/split/auth_provider.dart:353:7:
+Error: The setter '_passwordResetOtpId' isn't defined for the type 'AuthProvider'.
+ - 'AuthProvider' is from 'package:hotspot_partner_app/providers/split/auth_provider.dart' ('lib/providers/split/auth_provider.dart').
+      _passwordResetOtpId = null; // Clear any previous
+      ^^^^^^^^^^^^^^^^^^^
+Error: Compilation failed.
+  Command: /opt/homebrew/share/flutter/bin/cache/dart-sdk/bin/dart compile js --platform-binaries=/opt/homebrew/share/flutter/bin/cache/flutter_web_sdk/kernel --invoker=flutter_tool -Ddart.vm.product=true -DFLUTTER_VERSION=3.38.5 -DFLUTTER_CHANNEL=stable -DFLUTTER_GIT_URL=https://github.com/flutter/flutter.git -DFLUTTER_FRAMEWORK_REVISION=f6ff1529fd -DFLUTTER_ENGINE_REVISION=1527ae0ec5 -DFLUTTER_DART_VERSION=3.10.4 -DFLUTTER_WEB_USE_SKIA=true -DFLUTTER_WEB_USE_SKWASM=false -DFLUTTER_WEB_CANVASKIT_URL=https://www.gstatic.com/flutter-canvaskit/1527ae0ec577a4ef50e65f6fefcfc1326707d9bf/ --native-null-assertions --no-source-maps -O4 --minify -o /Users/josh/Flutter_partnerapp/.dart_tool/flutter_build/37f6c91440de23455a02a80228f6799e/app.dill --packages=/Users/josh/Flutter_partnerapp/.dart_tool/package_config.json --cfe-only /Users/josh/Flutter_partnerapp/.dart_tool/flutter_build/37f6c91440de23455a02a80228f6799e/main.dart
+#0      RunResult.throwException (package:flutter_tools/src/base/process.dart:153:5)
+#1      _DefaultProcessUtils.run (package:flutter_tools/src/base/process.dart:379:19)
+<asynchronous suspension>
+#2      Dart2JSTarget.build (package:flutter_tools/src/build_system/targets/web.dart:207:5)
+<asynchronous suspension>
+#3      _BuildInstance._invokeInternal (package:flutter_tools/src/build_system/build_system.dart:895:9)
+<asynchronous suspension>
+#4      Future.wait.<anonymous closure> (dart:async/future.dart:546:21)
+<asynchronous suspension>
+#5      _BuildInstance.invokeTarget (package:flutter_tools/src/build_system/build_system.dart:833:32)
+<asynchronous suspension>
+#6      Future.wait.<anonymous closure> (dart:async/future.dart:546:21)
+<asynchronous suspension>
+#7      _BuildInstance.invokeTarget (package:flutter_tools/src/build_system/build_system.dart:833:32)
+<asynchronous suspension>
+#8      FlutterBuildSystem.build (package:flutter_tools/src/build_system/build_system.dart:653:16)
+<asynchronous suspension>
+#9      WebBuilder.buildWeb (package:flutter_tools/src/web/compile.dart:94:34)
+<asynchronous suspension>
+#10     BuildWebCommand.runCommand (package:flutter_tools/src/commands/build_web.dart:296:5)
+<asynchronous suspension>
+#11     FlutterCommand.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command.dart:1559:27)
+<asynchronous suspension>
+#12     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#13     CommandRunner.runCommand (package:args/command_runner.dart:212:13)
+<asynchronous suspension>
+#14     FlutterCommandRunner.runCommand.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:487:9)
+<asynchronous suspension>
+#15     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#16     FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:422:5)
+<asynchronous suspension>
+#17     run.<anonymous closure>.<anonymous closure> (package:flutter_tools/runner.dart:104:11)
+<asynchronous suspension>
+#18     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#19     main (package:flutter_tools/executable.dart:103:3)
+<asynchronous suspension>
+
+Compiling lib/main.dart for the Web...                             48.0s
+Error: Failed to compile application for the Web.
