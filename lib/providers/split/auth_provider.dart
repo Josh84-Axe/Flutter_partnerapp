@@ -157,10 +157,27 @@ class AuthProvider with ChangeNotifier {
             }
           }
         });
+      } else if (userData['permissions'] is Map) {
+        final permsMap = userData['permissions'] as Map;
+        permsMap.forEach((key, value) {
+          if (value == true) {
+            final constant = PermissionMapping.getConstant(key.toString());
+            if (constant != null) {
+              mappedPermissions.add(constant);
+            }
+          }
+        });
+      } else if (userData['permissions'] is List) {
+        mappedPermissions = (userData['permissions'] as List).map((e) {
+          final constant = PermissionMapping.getConstant(e.toString());
+          return constant ?? e.toString();
+        }).toList();
       }
       
       // Extract role
-      final userRole = userData['role'] is Map ? (userData['role']['name']?.toString() ?? 'Partner') : 'Partner';
+      final userRole = userData['role'] is Map 
+          ? (userData['role']['name']?.toString() ?? 'Partner') 
+          : (userData['role']?.toString() ?? 'Partner');
 
       // Extract country and set currency info
       _partnerCountry = userData['country']?.toString() ?? userData['country_name']?.toString();
