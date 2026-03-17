@@ -970,5 +970,6 @@
   "status_copied": "COPIED",
   "Filter by Assigned By (Optional)": "Filter by Assigned By (Optional)",
   "assigned_by": "Assigned By",
-  "all": "All"
+  "all": "All",
+  "remember_me": "Remember Me"
 }

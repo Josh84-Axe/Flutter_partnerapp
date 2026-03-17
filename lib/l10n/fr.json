@@ -929,5 +929,6 @@
   "select_item": "Veuillez sélectionner {item}",
   "Filter by Assigned By (Optional)": "Filtrer avec assigné à (Optionnel)",
   "assigned_by": "Assigné par",
-  "all": "Tout"
+  "all": "Tout",
+  "remember_me": "Se souvenir de moi"
 }
