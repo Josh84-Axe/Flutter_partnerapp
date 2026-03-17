@@ -474,6 +474,7 @@ class BillingProvider with ChangeNotifier {
   Future<Uint8List?> generateReport({
     required DateTimeRange dateRange,
     required String format,
+    String? assignedBy,
   }) async {
     try {
       if (_reportRepository == null) {
@@ -487,6 +488,7 @@ class BillingProvider with ChangeNotifier {
         format: format,
         partnerName: _partnerCountry ?? 'Partner', // Ideally use actual partner name from AuthProvider if available, or just 'Partner'
         currency: currencySymbol,
+        assignedBy: assignedBy,
       );
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Generate report error: $e');

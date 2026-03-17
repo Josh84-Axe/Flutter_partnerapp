@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../motion/m3_motion.dart';
 import '../../providers/split/auth_provider.dart';
 import '../../services/api/token_storage.dart';
@@ -23,10 +24,23 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
 
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _rememberMe = true;
 
   @override
   void initState() {
     super.initState();
+    _loadRememberedEmail();
+  }
+
+  Future<void> _loadRememberedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('remembered_email');
+    if (email != null && mounted) {
+      setState(() {
+        _emailController.text = email;
+        _rememberMe = true;
+      });
+    }
   }
 
 
@@ -50,6 +64,15 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
 
     try {
       if (kDebugMode) print('🔐 [LoginScreenM3] Calling AuthProvider.login()');
+      
+      // Save or clear email for "Remember Me"
+      final prefs = await SharedPreferences.getInstance();
+      if (_rememberMe) {
+        await prefs.setString('remembered_email', _emailController.text.trim());
+      } else {
+        await prefs.remove('remembered_email');
+      }
+
       final success = await context.read<AuthProvider>().login(
             _emailController.text,
             _passwordController.text,
@@ -189,6 +212,19 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                         }
                       return null;
                     },
+                  ),
+                  const SizedBox(height: 8),
+                  CheckboxListTile(
+                    value: _rememberMe,
+                    onChanged: (value) {
+                      setState(() {
+                        _rememberMe = value ?? false;
+                      });
+                    },
+                    title: Text('remember_me'.tr()),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    activeColor: scheme.primary,
                   ),
                 ],
               ),

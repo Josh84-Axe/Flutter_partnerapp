@@ -11,7 +11,6 @@ import '../../models/local_notification_model.dart';
 import '../../repositories/subscription_repository.dart';
 import '../../services/local_notification_service.dart';
 import '../../utils/currency_utils.dart';
-
 import 'auth_provider.dart';
 
 class UserProvider with ChangeNotifier {
@@ -72,6 +71,15 @@ class UserProvider with ChangeNotifier {
       _subscription = null;
       _isSubscriptionLoaded = false;
       _hasSkippedSubscriptionCheck = false;
+    } else if (authProvider?.subscriptionData != null && (_subscription == null || authProvider!.subscriptionData != _authProvider?.subscriptionData)) {
+       // Use pre-loaded subscription data (especially for workers/managers)
+       try {
+         _subscription = SubscriptionModel.fromJson(authProvider!.subscriptionData!);
+         _isSubscriptionLoaded = true;
+         if (kDebugMode) debugPrint('✅ [UserProvider] Inherited partner subscription: ${_subscription!.tier}');
+       } catch (e) {
+         if (kDebugMode) debugPrint('❌ [UserProvider] Error mapping pre-loaded subscription: $e');
+       }
     }
     notifyListeners();
   }
@@ -457,6 +465,15 @@ class UserProvider with ChangeNotifier {
 
   Future<void> loadSubscription() async {
     if (_subscriptionRepository == null) return;
+    
+    // Workaround: Workers/Managers usually inherit subscription from Partner
+    // If they have it already and are not partners, don't try to fetch (avoids 403 Forbidden)
+    final userRole = _authProvider?.currentUser?.role.toLowerCase();
+    if (userRole != 'partner' && userRole != 'owner' && _subscription != null) {
+      if (kDebugMode) debugPrint('ℹ️ [UserProvider] Skipping subscription fetch for $userRole (using inherited plan)');
+      return;
+    }
+
     try {
       if (kDebugMode) debugPrint('📡 [UserProvider] Loading subscription status...');
       final subscriptionData = await _subscriptionRepository!.checkSubscriptionStatus();
@@ -618,7 +635,12 @@ class UserProvider with ChangeNotifier {
       final data = {
         'customer_id': int.tryParse(userId) ?? userId,
         'plan_id': int.tryParse(planId) ?? planId,
-        if (routerId != null) 'router_id': int.tryParse(routerId) ?? routerId, // API might expect int or string, usually safe to send what we have if it's an ID
+        if (routerId != null) 'router_id': int.tryParse(routerId) ?? routerId,
+        // Tag transaction with worker/manager first name if not partner/owner
+        if (_authProvider?.currentUser != null && 
+            _authProvider!.currentUser!.role.toLowerCase() != 'partner' && 
+            _authProvider!.currentUser!.role.toLowerCase() != 'owner')
+          'tag': _authProvider!.currentUser!.name.split(' ').first,
       };
 
       await _planRepository!.assignPlan(data);

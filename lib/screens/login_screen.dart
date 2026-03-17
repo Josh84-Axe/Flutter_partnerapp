@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/split/auth_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/ip_geolocation.dart';
@@ -20,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _password2Controller = TextEditingController(); // Confirm password
   bool _isLogin = true;
+  bool _rememberMe = true;
   final _nameController = TextEditingController(); // First Name
   final _enterpriseNameController = TextEditingController(); // Enterprise Name
   final _phoneController = TextEditingController();
@@ -75,6 +77,18 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     _detectCountryFromIp();
+    _loadRememberedEmail();
+  }
+
+  Future<void> _loadRememberedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('remembered_email');
+    if (email != null && mounted) {
+      setState(() {
+        _emailController.text = email;
+        _rememberMe = true;
+      });
+    }
   }
 
   /// Detect user's country from their IP address
@@ -108,6 +122,13 @@ class _LoginScreenState extends State<LoginScreen> {
     bool success;
 
     if (_isLogin) {
+      final prefs = await SharedPreferences.getInstance();
+      if (_rememberMe) {
+        await prefs.setString('remembered_email', _emailController.text.trim());
+      } else {
+        await prefs.remove('remembered_email');
+      }
+
       success = await authProvider.login(
         _emailController.text.trim(),
         _passwordController.text,
@@ -363,6 +384,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
+                  if (_isLogin) ...[
+                    const SizedBox(height: 8),
+                    CheckboxListTile(
+                      value: _rememberMe,
+                      onChanged: (value) {
+                        setState(() {
+                          _rememberMe = value ?? false;
+                        });
+                      },
+                      title: Text('remember_me'.tr()),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      contentPadding: EdgeInsets.zero,
+                      activeColor: colorScheme.primary,
+                    ),
+                  ],
                   if (!_isLogin) ...[
                     const SizedBox(height: 16),
                     TextFormField(

@@ -31,6 +31,8 @@ class AuthProvider with ChangeNotifier {
   // String? _registrationOtpId; // Removed as not used in partner flow
   String? _passwordResetOtpId;
   String? _passwordResetToken;
+  String? _partnerName;
+  Map<String, dynamic>? _subscriptionData;
   
   // Guest mode
   bool _isGuestMode = false;
@@ -65,6 +67,8 @@ class AuthProvider with ChangeNotifier {
   String? get registrationEmail => _registrationEmail;
   // String? get registrationOtpId => _registrationOtpId;
   String? get passwordResetToken => _passwordResetToken;
+  String? get partnerName => _partnerName;
+  Map<String, dynamic>? get subscriptionData => _subscriptionData;
   
   void _setLoading(bool value) {
     _isLoading = value;
@@ -184,6 +188,28 @@ class AuthProvider with ChangeNotifier {
       _partnerCountry = userData['country']?.toString() ?? userData['country_name']?.toString();
       _partnerCurrencyCode = CurrencyUtils.getCurrencyCode(_partnerCountry);
       _partnerCurrencySymbol = CurrencyUtils.getCurrencySymbol(_partnerCountry);
+
+      // Extract partner name if available (especially for workers)
+      if (userData['partner'] is Map) {
+        _partnerName = userData['partner']['name']?.toString();
+        // If the worker has no country set but partner does, use partner country
+        if (_partnerCountry == null || _partnerCountry!.isEmpty) {
+          _partnerCountry = userData['partner']['country']?.toString();
+          if (_partnerCountry != null) {
+            _partnerCurrencyCode = CurrencyUtils.getCurrencyCode(_partnerCountry);
+            _partnerCurrencySymbol = CurrencyUtils.getCurrencySymbol(_partnerCountry);
+          }
+        }
+      } else {
+        _partnerName = '${userData['first_name'] ?? ''} ${userData['last_name'] ?? ''}'.trim();
+      }
+
+      // Extract subscription data
+      if (userData['subscription'] is Map) {
+        _subscriptionData = userData['subscription'];
+      } else if (userData['partner'] is Map && userData['partner']['subscription'] is Map) {
+        _subscriptionData = userData['partner']['subscription'];
+      }
 
       _currentUser = UserModel(
         id: userData['id']?.toString() ?? '1',

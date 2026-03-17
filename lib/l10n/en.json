@@ -967,5 +967,18 @@
   "status_used": "USED",
   "status_expired": "EXPIRED",
   "status_active": "ACTIVE",
-  "status_copied": "COPIED"
+  "status_copied": "COPIED",
+  "Filter by Assigned By (Optional)": "Filter by Assigned By (Optional)",
+  "assigned_by": "Assigned By",
+  "assigned": "Assigned",
+  "all": "All",
+  "this_week": "This Week",
+  "transactions_will_appear_here": "Your transaction history will appear here",
+  "today_at": "Today at {}",
+  "yesterday_at": "Yesterday at {}",
+  "payout_history": "Payout History",
+  "payments_in": "Payments In",
+  "payouts_out": "Payouts Out",
+  "voucher": "Voucher",
+  "remember_me": "Remember Me"
 }

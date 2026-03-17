@@ -926,5 +926,18 @@
   "select_device_allowed": "Veuillez sélectionner l'appareil autorisé",
   "select_hotspot_profile": "Veuillez sélectionner un profil hotspot",
   "generic_error_check_internet": "Quelque chose s'est mal passé. Veuillez vérifier votre connexion internet et réessayer.",
-  "select_item": "Veuillez sélectionner {item}"
+  "select_item": "Veuillez sélectionner {item}",
+  "Filter by Assigned By (Optional)": "Filtrer avec assigné à (Optionnel)",
+  "assigned_by": "Assigné par",
+  "assigned": "Assigné",
+  "all": "Tout",
+  "this_week": "Cette semaine",
+  "transactions_will_appear_here": "Votre historique des transactions apparaîtra ici",
+  "today_at": "Aujourd'hui à {}",
+  "yesterday_at": "Hier à {}",
+  "payout_history": "Historique des retraits",
+  "payments_in": "Entrées (Paiements)",
+  "payouts_out": "Sorties (Retraits)",
+  "voucher": "Coupon",
+  "remember_me": "Se souvenir de moi"
 }

@@ -51,13 +51,15 @@ class SubscriptionModel {
 
     return SubscriptionModel(
       id: (plan?['id'] ?? json['id'] ?? '').toString(),
-      tier: (plan?['name'] ?? json['tier'] ?? 'Unknown').toString(),
-      renewalDate: parseDate(json['end_date']) ?? _calculateRenewalDate(
-        parseDate(json['start_date']),
-        plan?['duration'] ?? json['duration']
-      ),
-      isActive: json['active'] == true || json['isActive'] == true,
-      monthlyFee: parseDouble(plan?['price_info']?['price'] ?? plan?['price'] ?? json['monthlyFee']),
+      tier: (plan?['name'] ?? json['tier'] ?? json['name'] ?? 'Unknown').toString(),
+      renewalDate: parseDate(json['end_date']) ?? 
+                   parseDate(json['renewal_date']) ??
+                   _calculateRenewalDate(
+                     parseDate(json['start_date']),
+                     plan?['duration'] ?? json['duration']
+                   ),
+      isActive: json['active'] == true || json['isActive'] == true || json['is_active'] == true,
+      monthlyFee: parseDouble(plan?['price_info']?['price'] ?? plan?['price'] ?? json['monthlyFee'] ?? json['monthly_fee']),
       features: parsedFeatures,
     );
   }
