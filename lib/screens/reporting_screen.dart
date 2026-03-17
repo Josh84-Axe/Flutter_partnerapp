@@ -68,7 +68,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
       options.add('all'.tr());
       
       // 2. Add Voucher
-      options.add('Voucher');
+      options.add('voucher'.tr());
 
       // 3. Add Partner (currentUser)
       final partnerName = authProvider.currentUser?.name ?? 'Partner';

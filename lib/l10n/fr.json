@@ -929,6 +929,15 @@
   "select_item": "Veuillez sélectionner {item}",
   "Filter by Assigned By (Optional)": "Filtrer avec assigné à (Optionnel)",
   "assigned_by": "Assigné par",
+  "assigned": "Assigné",
   "all": "Tout",
+  "this_week": "Cette semaine",
+  "transactions_will_appear_here": "Votre historique des transactions apparaîtra ici",
+  "today_at": "Aujourd'hui à {}",
+  "yesterday_at": "Hier à {}",
+  "payout_history": "Historique des retraits",
+  "payments_in": "Entrées (Paiements)",
+  "payouts_out": "Sorties (Retraits)",
+  "voucher": "Coupon",
   "remember_me": "Se souvenir de moi"
 }

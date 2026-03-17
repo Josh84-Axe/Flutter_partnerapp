@@ -496,7 +496,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
     // If tag exists, use it. If null and it's an assignment, it's a "Voucher" transaction.
     if (tag == null && !isAssigned) return const SizedBox.shrink();
 
-    final String label = tag != null ? tag.toString() : 'Voucher';
+    final String label = tag != null ? tag.toString() : 'voucher'.tr();
     final Color color = tag != null ? Colors.blueGrey : Colors.orange;
 
     return Container(
