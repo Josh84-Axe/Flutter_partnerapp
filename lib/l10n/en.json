@@ -967,5 +967,6 @@
   "status_used": "USED",
   "status_expired": "EXPIRED",
   "status_active": "ACTIVE",
-  "status_copied": "COPIED"
+  "status_copied": "COPIED",
+  "Filter by Assigned By (Optional)": "Filter by Assigned By (Optional)"
 }

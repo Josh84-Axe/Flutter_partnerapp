@@ -18,6 +18,7 @@ class ReportRepository {
     required String format,
     required String partnerName,
     String currency = 'GHS',
+    String? assignedBy,
   }) async {
     try {
       if (kDebugMode) print('📊 [ReportRepository] Generating $format report for ${range.start} - ${range.end}');
@@ -28,15 +29,33 @@ class ReportRepository {
       
       final allTransactions = [...assignedTransactions, ...walletTransactions];
       
-      // 2. Filter by date range
+      // 2. Filter by date range and assigned_by tag
       final filteredTransactions = allTransactions.where((t) {
         final dateStr = t['created_at'] ?? t['createdAt'];
         if (dateStr == null) return false;
         final date = DateTime.tryParse(dateStr);
         if (date == null) return false;
         
-        return date.isAfter(range.start.subtract(const Duration(days: 1))) && 
-               date.isBefore(range.end.add(const Duration(days: 1)));
+        // Exact start of the start date, until the very end of the end date
+        final isWithinDateRange = (date.isAfter(range.start.subtract(const Duration(seconds: 1))) || date.isAtSameMomentAs(range.start)) && 
+                                  date.isBefore(range.end.add(const Duration(days: 1)));
+        
+        if (!isWithinDateRange) return false;
+
+        // Apply assigned_by filter if provided
+        if (assignedBy != null && assignedBy.isNotEmpty) {
+          final String transactionAssignedBy = (t['assigned_by'] ?? t['tag'] ?? t['worker_name'] ?? '').toString();
+          
+          if (assignedBy.toLowerCase() == 'voucher') {
+            // "Voucher" means the assigned_by field is empty or null
+            if (transactionAssignedBy.isNotEmpty) return false;
+          } else {
+            // Otherwise, match the assigned_by name (case-insensitive)
+            if (transactionAssignedBy.toLowerCase() != assignedBy.toLowerCase()) return false;
+          }
+        }
+        
+        return true;
       }).toList();
       
       // Sort by date (newest first)
@@ -68,6 +87,7 @@ class ReportRepository {
       'Transaction ID',
       'Date',
       'Type',
+      'Assigned By',
       'Amount',
       'Status',
       'Description',
@@ -80,6 +100,7 @@ class ReportRepository {
         t['id']?.toString() ?? '',
         _formatDate(t['created_at'] ?? t['createdAt']),
         t['type'] ?? '',
+        _getAssignedByLabel(t),
         t['amount_paid']?.toString() ?? t['amount']?.toString() ?? '0',
         t['status'] ?? '',
         t['description'] ?? '',
@@ -177,6 +198,7 @@ class ReportRepository {
       return [
         _formatDate(t['created_at'] ?? t['createdAt']),
         t['type'] ?? 'Transaction',
+        _getAssignedByLabel(t),
         t['payment_reference']?.toString() ?? '#${t['id']}',
         t['status']?.toString().toUpperCase() ?? 'UNKNOWN',
         '$currency ${t['amount_paid']?.toString() ?? t['amount']?.toString() ?? '0.00'}',
@@ -184,7 +206,7 @@ class ReportRepository {
     }).toList();
 
     return pw.Table.fromTextArray(
-      headers: ['Date', 'Type', 'Reference', 'Status', 'Amount'],
+      headers: ['Date', 'Type', 'Assigned By', 'Reference', 'Status', 'Amount'],
       data: tableData,
 
       headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
@@ -194,8 +216,8 @@ class ReportRepository {
       ),
       cellAlignment: pw.Alignment.centerLeft,
       cellAlignments: {
-        3: pw.Alignment.center,
-        4: pw.Alignment.centerRight,
+        4: pw.Alignment.center,
+        5: pw.Alignment.centerRight,
       },
     );
   }
@@ -208,5 +230,12 @@ class ReportRepository {
     } catch (e) {
       return dateStr;
     }
+  }
+
+  String _getAssignedByLabel(Map<String, dynamic> t) {
+    if (t['type'] != 'assigned') return 'N/A';
+    final name = (t['assigned_by'] ?? t['tag'] ?? t['worker_name'])?.toString();
+    if (name == null || name.isEmpty) return 'Voucher';
+    return name;
   }
 }

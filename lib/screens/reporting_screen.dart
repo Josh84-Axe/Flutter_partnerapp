@@ -16,6 +16,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
   String _selectedFormat = 'CSV';
   DateTimeRange? _dateRange;
   bool _isGenerating = false;
+  final TextEditingController _assignedByController = TextEditingController();
 
   final List<String> _reportTypes = [
     'report_user_data_usage'.tr(),
@@ -42,6 +43,12 @@ class _ReportingScreenState extends State<ReportingScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _updateReportTypes();
+  }
+
+  @override
+  void dispose() {
+    _assignedByController.dispose();
+    super.dispose();
   }
 
   void _updateReportTypes() {
@@ -115,6 +122,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
       final bytes = await billingProvider.generateReport(
         dateRange: _dateRange!,
         format: _selectedFormat,
+        assignedBy: _assignedByController.text.trim().isEmpty ? null : _assignedByController.text.trim(),
       );
       
       if (!mounted) return;
@@ -240,6 +248,30 @@ class _ReportingScreenState extends State<ReportingScreen> {
             ),
           ),
           const SizedBox(height: 20),
+          
+          if (_selectedReportType == 'report_transaction_history'.tr()) ...[
+            Text(
+              'Filter by Assigned By (Optional)'.tr(),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _assignedByController,
+              decoration: InputDecoration(
+                hintText: 'e.g. Voucher, Magass...',
+                prefixIcon: const Icon(Icons.person_outline),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+          
           Text(
             'export_format'.tr(),
             style: const TextStyle(
