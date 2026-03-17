@@ -16,7 +16,8 @@ class _ReportingScreenState extends State<ReportingScreen> {
   String _selectedFormat = 'CSV';
   DateTimeRange? _dateRange;
   bool _isGenerating = false;
-  final TextEditingController _assignedByController = TextEditingController();
+  String? _selectedCollaborator;
+  List<String> _collaboratorOptions = [];
 
   final List<String> _reportTypes = [
     'report_user_data_usage'.tr(),
@@ -34,9 +35,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
       start: DateTime(now.year, now.month, 1),
       end: now,
     );
-    // Initialize selected type after localization is available (in build or future, but for init we use defaults)
-    // Actually, we should initialize list in build or didChangeDependencies if we want dynamic lang switch.
-    // For now, let's keep it simple.
+    _loadCollaborators();
   }
 
   @override
@@ -47,8 +46,45 @@ class _ReportingScreenState extends State<ReportingScreen> {
 
   @override
   void dispose() {
-    _assignedByController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCollaborators() async {
+    try {
+      final userProvider = context.read<UserProvider>();
+      final authProvider = context.read<AuthProvider>();
+      
+      // Ensure workers are loaded
+      await userProvider.loadWorkers();
+      
+      if (!mounted) return;
+
+      final List<String> options = [];
+      
+      // 1. Add All (default)
+      options.add('all'.tr());
+      
+      // 2. Add Voucher
+      options.add('Voucher');
+
+      // 3. Add Partner (currentUser)
+      final partnerName = authProvider.currentUser?.name ?? 'Partner';
+      options.add(partnerName);
+
+      // 4. Add Workers/Managers
+      for (var worker in userProvider.workers) {
+        if (worker.fullName.isNotEmpty && !options.contains(worker.fullName)) {
+          options.add(worker.fullName);
+        }
+      }
+
+      setState(() {
+        _collaboratorOptions = options;
+        _selectedCollaborator = options.first; // Default to 'All'
+      });
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error loading collaborators for filter: $e');
+    }
   }
 
   void _updateReportTypes() {
@@ -122,7 +158,9 @@ class _ReportingScreenState extends State<ReportingScreen> {
       final bytes = await billingProvider.generateReport(
         dateRange: _dateRange!,
         format: _selectedFormat,
-        assignedBy: _assignedByController.text.trim().isEmpty ? null : _assignedByController.text.trim(),
+        assignedBy: (_selectedCollaborator == null || _selectedCollaborator == 'all'.tr()) 
+            ? null 
+            : _selectedCollaborator,
       );
       
       if (!mounted) return;
@@ -258,15 +296,29 @@ class _ReportingScreenState extends State<ReportingScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _assignedByController,
-              decoration: InputDecoration(
-                hintText: 'e.g. Voucher, Magass...',
-                prefixIcon: const Icon(Icons.person_outline),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _selectedCollaborator,
+                  isExpanded: true,
+                  hint: Text('select_item'.tr(namedArgs: {'item': 'assigned_by'.tr()})),
+                  items: _collaboratorOptions.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedCollaborator = newValue;
+                    });
+                  },
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
             ),
             const SizedBox(height: 20),
