@@ -1,6 +1,6 @@
 {
-    "latestVersion": "1.1.34",
-    "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.1.34/app-release.apk",
-    "forceUpdate": true,
-    "releaseNotes": "Automated deployment with fixed CI/CD version injection v1.1.34"
+    "latestVersion": "1.1.35",
+    "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.1.35/app-release.apk",
+    "forceUpdate": false,
+    "releaseNotes": "Automated update v1.1.35"
 }
