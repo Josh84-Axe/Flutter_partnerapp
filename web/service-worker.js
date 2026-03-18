@@ -76,3 +76,10 @@ self.addEventListener('fetch', (event) => {
         })
     );
 });
+
+// Message Event for immediate updates
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
