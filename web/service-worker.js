@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tiknet-partner-v1.1.10';
+const CACHE_NAME = 'tiknet-partner-v1.1.34';
 const RESOURCES_TO_CACHE = [
     './',
     './index.html',
@@ -6,9 +6,6 @@ const RESOURCES_TO_CACHE = [
     './favicon.png',
     './icons/Icon-192.png',
     './icons/Icon-512.png',
-    './icons/Icon-maskable-192.png',
-    './icons/Icon-maskable-512.png',
-    './main.dart.js',
     './flutter.js',
     './flutter_bootstrap.js'
 ];
@@ -17,7 +14,7 @@ const RESOURCES_TO_CACHE = [
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('📦 [Service Worker] Caching app shell and assets');
+            console.log('📦 [Service Worker] Caching critical assets');
             return cache.addAll(RESOURCES_TO_CACHE);
         })
     );
@@ -41,45 +38,43 @@ self.addEventListener('activate', (event) => {
     return self.clients.claim();
 });
 
-// Fetch Event
-self.addEventListener('fetch', (event) => {
-    // Only handle GET requests
-    if (event.request.method !== 'GET') return;
-
-    event.respondWith(
-        caches.match(event.request).then((response) => {
-            // Return cached response if found
-            if (response) {
-                return response;
-            }
-
-            // Otherwise fetch from network
-            return fetch(event.request).then((networkResponse) => {
-                // Don't cache if not a valid response
-                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-                    return networkResponse;
-                }
-
-                // Clone the response to store in cache
-                const responseToCache = networkResponse.clone();
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, responseToCache);
-                });
-
-                return networkResponse;
-            }).catch(() => {
-                // Fallback for offline mode if needed
-                if (event.request.mode === 'navigate') {
-                    return caches.match('./index.html');
-                }
-            });
-        })
-    );
-});
-
-// Message Event for immediate updates
+// Message Event
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+});
+
+// Fetch Event
+self.addEventListener('fetch', (event) => {
+    if (event.request.method !== 'GET') return;
+
+    // Navigation requests (index.html) should be Network First
+    if (event.request.mode === 'navigate') {
+        event.respondWith(
+            fetch(event.request).catch(() => {
+                return caches.match('./index.html');
+            })
+        );
+        return;
+    }
+
+    // Other requests: Cache First then Network
+    event.respondWith(
+        caches.match(event.request).then((response) => {
+            if (response) {
+                return response;
+            }
+            return fetch(event.request).then((networkResponse) => {
+                // Don't cache everything, just valid responses
+                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+                    return networkResponse;
+                }
+                
+                // Optional: cache large assets on the fly? 
+                // For now, let's keep it clean to avoid blank pages.
+                return networkResponse;
+            });
+        })
+    );
 });

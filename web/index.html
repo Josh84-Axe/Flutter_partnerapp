@@ -26,59 +26,46 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png" />
 
-  <!-- Prevent caching of index.html -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-
   <title>Tiknet Partner</title>
-  <!-- DEPLOY_VERIFICATION_TAG_2145Z -->
-  <link id="pwa-manifest" rel="manifest" href="manifest.json">
-  <script>
-    // Dynamically update manifest version to bust cache
-    document.getElementById('pwa-manifest').setAttribute('href', 'manifest.json?v=' + new Date().getTime());
-  </script>
+  <link rel="manifest" href="manifest.json">
 </head>
 
 <body>
   <script>
-    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.10 - TIMESTAMP: ' + new Date().toISOString());
+    // BUILD v1.1.35 - DO NOT REMOVE THIS LINE
+    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.35 - TIMESTAMP: ' + new Date().toISOString());
     window.deferredPrompt = null;
 
-    // Register Service Worker with enhanced update detection
+    // Stable Service Worker registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        // Use a timestamp to bypass browser cache for service-worker.js
-        const swUrl = 'service-worker.js?v=' + new Date().getTime();
-        
-        navigator.serviceWorker.register(swUrl).then(function (registration) {
-          console.log('✅ ServiceWorker registration successful');
+        // We use a clean URL to avoid infinite install loops. 
+        // Browsers check for updates automatically on script content change.
+        navigator.serviceWorker.register('service-worker.js').then(function (registration) {
+          console.log('✅ ServiceWorker registered');
 
-          // Check for updates
+          // Detect new service worker versions
           registration.onupdatefound = () => {
             const installingWorker = registration.installing;
             if (installingWorker == null) return;
             
             installingWorker.onstatechange = () => {
-              if (installingWorker.state === 'installed') {
-                if (navigator.serviceWorker.controller) {
-                  // A new version is ready, activate it immediately
-                  console.log('🔄 New version found! Activating automatically...');
+              if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // A new version is available on the server and has been installed locally.
+                  // We activate it immediately.
+                  console.log('🔄 New version ready. Activating...');
                   installingWorker.postMessage({ type: 'SKIP_WAITING' });
-                } else {
-                  console.log('📦 Content cached for offline use.');
                 }
-              }
             };
           };
-        }, function (err) {
+        }).catch(function (err) {
           console.log('❌ ServiceWorker registration failed: ', err);
         });
 
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           if (refreshing) return;
-          console.log('🔄 Version updated! Reloading application...');
+          console.log('🔄 Controller changed, refreshing page...');
           window.location.reload();
           refreshing = true;
         });
@@ -91,8 +78,7 @@
       if (window.onAppInstallable) window.onAppInstallable();
     });
 
-    window.addEventListener('appinstalled', (e) => {
-      console.log('✅ PWA was installed');
+    window.addEventListener('appinstalled', () => {
       window.deferredPrompt = null;
       if (window.onAppInstalled) window.onAppInstalled();
     });
@@ -100,27 +86,10 @@
     window.isAppInstallable = function () { return window.deferredPrompt !== null; };
     window.isInstallPromptSupported = function () { return 'BeforeInstallPromptEvent' in window || (window.deferredPrompt !== null); };
     window.isStandalone = function () {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('source') === 'pwa' || window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    };
-
-    window.promptAppInstall = async function () {
-      const promptEvent = window.deferredPrompt;
-      if (!promptEvent) return false;
-      try {
-        await promptEvent.prompt();
-        const { outcome } = await promptEvent.userChoice;
-        window.deferredPrompt = null;
-        return outcome === 'accepted';
-      } catch (err) {
-        return false;
-      }
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     };
   </script>
-  <script>
-    // Load flutter_bootstrap.js with cache busting
-    document.write('<script src="flutter_bootstrap.js?v=' + new Date().getTime() + '" async><\/script>');
-  </script>
+  <script src="flutter_bootstrap.js" async></script>
 </body>
 
 </html>

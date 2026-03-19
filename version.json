@@ -1,6 +1,6 @@
 {
     "latestVersion": "1.1.35",
     "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.1.35/app-release.apk",
-    "forceUpdate": false,
-    "releaseNotes": "Automated update v1.1.35"
+    "forceUpdate": true,
+    "releaseNotes": "Emergency fix for PWA reload loop and blank page v1.1.35"
 }
