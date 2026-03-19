@@ -70,10 +70,11 @@ self.addEventListener('fetch', (event) => {
                 if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
                     return networkResponse;
                 }
-                
-                // Optional: cache large assets on the fly? 
-                // For now, let's keep it clean to avoid blank pages.
                 return networkResponse;
+            }).catch((err) => {
+                console.error('❌ [Service Worker] Fetch failed:', event.request.url, err);
+                // Return a failure response or fallback if appropriate
+                return new Response('Offline or Content Blocked', { status: 503, statusText: 'Service Unavailable' });
             });
         })
     );

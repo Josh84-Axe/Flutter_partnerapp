@@ -9,7 +9,7 @@
   <meta name="description" content="Tiknet Africa Partner Management App">
   <meta name="theme-color" content="#121212">
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*; connect-src 'self' https://www.gstatic.com https://fonts.gstatic.com https://api.tiknetafrica.com https://api.coleah.com https://*.sentry.io https://cloudflareinsights.com;">
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://static.cloudflareinsights.com https://*.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*; connect-src 'self' https://www.gstatic.com https://fonts.gstatic.com https://api.tiknetafrica.com https://api.coleah.com https://*.sentry.io https://cloudflareinsights.com https://*.cloudflareinsights.com;">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -32,8 +32,8 @@
 
 <body>
   <script>
-    // BUILD v1.1.35 - DO NOT REMOVE THIS LINE
-    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.35 - TIMESTAMP: ' + new Date().toISOString());
+    // BUILD v1.1.36 - DO NOT REMOVE THIS LINE
+    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.36 - TIMESTAMP: ' + new Date().toISOString());
     window.deferredPrompt = null;
 
     // Stable Service Worker registration
@@ -65,7 +65,17 @@
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           if (refreshing) return;
+          
+          // Debounce reload to prevent infinite loops if something trigger it early
+          const lastReload = sessionStorage.getItem('sw-reload');
+          const now = Date.now();
+          if (lastReload && (now - lastReload < 5000)) {
+            console.warn('⚠️ Reload loop detected, skipping auto-refresh');
+            return;
+          }
+          
           console.log('🔄 Controller changed, refreshing page...');
+          sessionStorage.setItem('sw-reload', now);
           window.location.reload();
           refreshing = true;
         });
