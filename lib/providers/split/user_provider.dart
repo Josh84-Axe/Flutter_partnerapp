@@ -146,9 +146,11 @@ class UserProvider with ChangeNotifier {
     case 'GH₵': return 'GHS';
     case 'KSh': return 'KES';
     case 'FG': return 'GNF';
-    case 'FCFA': return 'XOF'; // Defaulting FCFA to XOF for CinetPay
+    case 'FCFA': return 'XOF'; 
+    case 'CFA': return 'XOF'; // Handle CFA specifically
     case 'XOF': return 'XOF';
     case 'XAF': return 'XAF';
+    case '₦': return 'NGN';   // Handle Naira specifically
     default: return 'NGN';
   }
 }

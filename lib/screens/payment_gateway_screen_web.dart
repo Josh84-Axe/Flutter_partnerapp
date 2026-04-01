@@ -51,6 +51,10 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
                                   widget.currency == 'FG' || widget.currency == 'CFA';
 
     // If either currency OR country matches a francophone region, use CinetPay
+    debugPrint('­ƒô▒ [PaymentGateway] Selecting gateway:');
+    debugPrint('   - Detected Country: $rawCountry (isFrancophone: $isFrancophoneCountry)');
+    debugPrint('   - Detected Currency: ${widget.currency} (isFrancophone: $isFrancophoneCurrency)');
+
     if (isFrancophoneCurrency || isFrancophoneCountry) {
        final fName = widget.userData?['firstName'] ?? '';
        final lName = widget.userData?['lastName'] ?? '';
