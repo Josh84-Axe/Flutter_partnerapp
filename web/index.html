@@ -32,29 +32,24 @@
 
 <body>
   <script>
-    // BUILD v1.1.36 - DO NOT REMOVE THIS LINE
-    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.36 - TIMESTAMP: ' + new Date().toISOString());
+    // BUILD v1.1.42 - DO NOT REMOVE THIS LINE
+    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.42 - TIMESTAMP: ' + new Date().toISOString());
     window.deferredPrompt = null;
 
     // Stable Service Worker registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        // We use a clean URL to avoid infinite install loops. 
-        // Browsers check for updates automatically on script content change.
         navigator.serviceWorker.register('service-worker.js').then(function (registration) {
           console.log('✅ ServiceWorker registered');
 
-          // Detect new service worker versions
           registration.onupdatefound = () => {
             const installingWorker = registration.installing;
             if (installingWorker == null) return;
             
             installingWorker.onstatechange = () => {
               if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // A new version is available on the server and has been installed locally.
-                  // We activate it immediately.
-                  console.log('🔄 New version ready. Activating...');
-                  installingWorker.postMessage({ type: 'SKIP_WAITING' });
+                  console.log('🔄 New version ready. Please refresh to update.');
+                  // We no longer auto-reload to avoid loops in some environments
                 }
             };
           };
@@ -62,22 +57,9 @@
           console.log('❌ ServiceWorker registration failed: ', err);
         });
 
-        let refreshing = false;
+        // Simplified controller change listener without auto-reload
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (refreshing) return;
-          
-          // Debounce reload to prevent infinite loops if something trigger it early
-          const lastReload = sessionStorage.getItem('sw-reload');
-          const now = Date.now();
-          if (lastReload && (now - lastReload < 5000)) {
-            console.warn('⚠️ Reload loop detected, skipping auto-refresh');
-            return;
-          }
-          
-          console.log('🔄 Controller changed, refreshing page...');
-          sessionStorage.setItem('sw-reload', now);
-          window.location.reload();
-          refreshing = true;
+          console.log('🔄 Controller changed (New Service Worker active)');
         });
       });
     }
