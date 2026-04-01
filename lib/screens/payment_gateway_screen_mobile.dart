@@ -28,14 +28,24 @@ class PaymentGatewayScreen extends StatefulWidget {
 class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
   @override
   Widget build(BuildContext context) {
-    // Conditional routing based on currency - Francophone (XOF, XAF, GNF, FG) use CinetPay
-    if (widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'GNF' || widget.currency == 'FG' || widget.currency == 'CFA') {
+    // Determine target gateway based on currency OR user country
+    final rawCountry = widget.userData?['country']?.toString()?.toLowerCase() ?? 'ci';
+    final isFrancophoneCountry = rawCountry == 'ci' || rawCountry == 'sn' || rawCountry == 'ml' || rawCountry == 'bj' || 
+                                 rawCountry == 'bf' || rawCountry == 'ne' || rawCountry == 'tg' || rawCountry == 'cm' || 
+                                 rawCountry == 'ga' || rawCountry == 'cg' || rawCountry == 'td' || rawCountry == 'gn' ||
+                                 rawCountry.contains('guinea') || rawCountry.contains('ivoire') || rawCountry.contains('senegal');
+
+    final isFrancophoneCurrency = widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'GNF' || 
+                                  widget.currency == 'FG' || widget.currency == 'CFA';
+
+    // If either currency OR country matches a francophone region, use CinetPay
+    if (isFrancophoneCurrency || isFrancophoneCountry) {
        return _PaymentGatewayCinetPayMobile(
           apiKey: '297929662685d35c4021b02.21438964',
           siteId: '105899723',
           transactionId: 'txn_${DateTime.now().millisecondsSinceEpoch}',
           amount: widget.amount,
-          currency: widget.currency == 'CFA' ? 'XOF' : widget.currency,
+          currency: (widget.currency == 'CFA' || widget.currency == 'USD') ? 'XOF' : widget.currency, // Ensure XOF if CFA or fallback for CI
           description: 'Payment for ${widget.planName}',
           email: widget.email,
           userData: widget.userData,
