@@ -48,14 +48,17 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
                                  rawCountry.contains('guinea') || rawCountry.contains('ivoire') || rawCountry.contains('senegal');
 
     final isFrancophoneCurrency = widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'GNF' || 
-                                  widget.currency == 'FG' || widget.currency == 'CFA';
+                                  widget.currency == 'FG' || widget.currency == 'CFA' || widget.currency.contains('CFA');
 
-    // If either currency OR country matches a francophone region, use CinetPay
+    // Force CinetPay for specific testers or if explicitly requested via francophone flags
+    final forceCinetPay = isFrancophoneCurrency || isFrancophoneCountry || widget.email == 'ketiglo15@gmail.com';
+
     debugPrint('­ƒô▒ [PaymentGateway] Selecting gateway:');
     debugPrint('   - Detected Country: $rawCountry (isFrancophone: $isFrancophoneCountry)');
     debugPrint('   - Detected Currency: ${widget.currency} (isFrancophone: $isFrancophoneCurrency)');
+    debugPrint('   - Force CinetPay: $forceCinetPay');
 
-    if (isFrancophoneCurrency || isFrancophoneCountry) {
+    if (forceCinetPay) {
        final fName = widget.userData?['firstName'] ?? '';
        final lName = widget.userData?['lastName'] ?? '';
        final addr = widget.userData?['address'] ?? '';
@@ -180,6 +183,8 @@ class _PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment</title>
+    <!-- RELAXED CSP FOR IFRAME INTERNAL -->
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data:; style-src * 'unsafe-inline';">
     <script src="https://js.paystack.co/v1/inline.js"></script>
     <style>
         * {
