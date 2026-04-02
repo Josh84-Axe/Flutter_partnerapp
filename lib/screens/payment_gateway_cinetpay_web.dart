@@ -110,158 +110,66 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
       _triggerCheckout();
     });
   }
+    // Use a clean transaction ID immediately
+    _transactionId = 'TXN${DateTime.now().millisecondsSinceEpoch}';
+    // Auto-launch redirection in the next frame
+    Future.delayed(Duration.zero, () => _launchRedirection());
+  }
 
-  void _triggerCheckout() {
-    try {
-      // Access the global CinetPay object
-       // We use js_interop or older dart:js. Let's use basic dart:html window property for simplicity here
-       // assuming CinetPay attaches to window.
-              // Define the config object
-        final configData = {
-          'apikey': widget.apiKey,
-          'site_id': int.tryParse(widget.siteId) ?? 105899723,
-          'notify_url': widget.notifyUrl.isNotEmpty ? widget.notifyUrl : 'https://api.tiknetafrica.com/api/payment/notify/', // Updated to real notify if possible
-          'mode': 'PRODUCTION',
-        };
-
-        // Define the payment data - Minimalist approach to let the portal handle validation
-        final paymentData = {
-          'transaction_id': 'T${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}', 
-          'amount': widget.amount.toInt(), 
-          'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
-          'channels': 'ALL',
-          'description': widget.description.trim(),
-          'customer_name': widget.firstName.trim().replaceAll('\'', ' '),
-          'customer_surname': widget.lastName.trim().replaceAll('\'', ' '),
-          'customer_email': widget.email.trim(),
-          // Removing pre-filled phone/country/address/city to avoid conflict in the modal
-          // Let the user choose these in the UI which is more reliable for USSD triggering
-          'customer_address': "Abidjan",
-          'customer_city': "Abidjan",
-          'customer_country': "CI",
-          'customer_state': "CI",
-          'customer_zip_code': "00225",
-        };
-
-        final scriptContent = '''
-          if (typeof CinetPay !== 'undefined') {
-            const paymentData = ${jsonEncode(paymentData)};
-            console.log("🚀 Initializing CinetPay v2...");
-            console.log("📦 CinetPay Payment Data:", paymentData);
-            
-            CinetPay.setConfig(${jsonEncode(configData)});
-            CinetPay.getCheckout(paymentData);
-            
-            CinetPay.waitResponse(function(data) {
-              console.log("ℹ️ CinetPay Response Received:", data);
-              if (data.status == "ACCEPTED") {
-                window.postMessage(JSON.stringify({'type': 'cinetpay_success', 'data': data}), "*");
-              } else if (data.status == "REFUSED") {
-                window.postMessage(JSON.stringify({'type': 'cinetpay_error', 'data': data}), "*");
-              }
-            });
-
-            // Fallback for close/cancel if detected
-            window.addEventListener('message', function(event) {
-               // Internal CinetPay modal might send messages we can intercept
-            });
-          } else {
-            console.error("⚠️ CinetPay SDK not found in window");
-          }
-        ''';
-       
-       final script = html.ScriptElement()..text = scriptContent;
-       html.document.body!.append(script);
-       
-       // Listen for messages
-       html.window.onMessage.listen((event) {
-          try {
-            if (event.data is String) {
-              // Parse basic logic checks
-              if (event.data.contains('cinetpay_success')) {
-                // Return success
-                 Navigator.of(context).pop({'success': true, 'reference': widget.transactionId});
-              } else if (event.data.contains('cinetpay_error')) {
-                 Navigator.of(context).pop({'success': false, 'message': 'payment_failed_or_cancelled'.tr()});
-              }
-            }
-          } catch (e) {
-            if (kDebugMode) print('Error parsing message: $e');
-          }
-       });
-
-    } catch (e) {
-      if (kDebugMode) print('Error triggering checkout: $e');
-    }
+  void _launchRedirection() {
+    final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
+    final String amount = widget.amount.toInt().toString();
+    final String currency = widget.currency == 'CFA' ? 'XOF' : widget.currency;
+    
+    // CinetPay Redirection URL (Most stable for USSD/Wave/Mobile Money)
+    final url = 'https://checkout.cinetpay.com/payment/$siteId'
+                '?amount=$amount'
+                '&currency=$currency'
+                '&transaction_id=$_transactionId'
+                '&description=${Uri.encodeComponent(widget.description)}'
+                '&customer_name=${Uri.encodeComponent(widget.firstName)}'
+                '&customer_surname=${Uri.encodeComponent(widget.lastName)}'
+                '&customer_email=${Uri.encodeComponent(widget.email)}'
+                '&customer_phone_number=${Uri.encodeComponent(widget.phoneNumber)}'
+                '&customer_address=Abidjan'
+                '&customer_city=Abidjan'
+                '&customer_country=CI'
+                '&customer_state=CI'
+                '&customer_zip_code=00225'
+                '&notify_url=${Uri.encodeComponent('https://api.tiknetafrica.com/api/payment/notify/')}';
+    
+    html.window.open(url, '_self'); // Use _self to replace current page for stability
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) {
-      return Scaffold(
-        appBar: AppBar(title: Text('payment_error'.tr())),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 64),
-              const SizedBox(height: 16),
-              Text(
-                'payment_error'.tr(),
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(_error ?? 'Something went wrong'),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('close'.tr()),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text('payment'.tr()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(),
-            const SizedBox(height: 20),
-            Text('initializing_payment_gateway'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Text('Build v1.1.59', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)), // VERSION LABEL
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
+            Text('redirecting_to_cinetpay'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('Build v1.1.60', style: TextStyle(fontSize: 10, color: Colors.grey)),
+            const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () => _launchRedirection(),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade700, foregroundColor: Colors.white),
-              child: const Text('Si le portail ne s\'ouvre pas, Cliquez ici'),
-            ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('cancel'.tr()),
+              child: const Text('Si vous n\'êtes pas redirigé, cliquez ici'),
             ),
           ],
         ),
       ),
     );
-  }
-
-  void _launchRedirection() {
-     // Trigger manual redirection as fallback if seamless hangs
-     final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
-     final String amount = widget.amount.toInt().toString();
-     final String currency = widget.currency == 'CFA' ? 'XOF' : widget.currency;
-     final String transId = 'TXN${DateTime.now().millisecondsSinceEpoch}';
-     
-     // CinetPay payment URL (V2)
-     final url = 'https://checkout.cinetpay.com/payment/$siteId?amount=$amount&currency=$currency&transaction_id=$transId&description=${Uri.encodeComponent(widget.description)}&customer_name=${Uri.encodeComponent(widget.firstName)}&customer_surname=${Uri.encodeComponent(widget.lastName)}&customer_email=${Uri.encodeComponent(widget.email)}&notify_url=${Uri.encodeComponent('https://api.tiknetafrica.com/api/payment/notify/')}';
-     
-     html.window.open(url, '_blank');
   }
 
   String _sanitizePhone(String phone, String country) {

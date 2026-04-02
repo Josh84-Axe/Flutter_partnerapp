@@ -10,14 +10,17 @@ class UpdateService {
 
   Future<Map<String, dynamic>?> checkUpdate() async {
     try {
-      if (kDebugMode) print('🌐 [UpdateService] Checking for web updates at ${UpdateConfig.versionCheckUrl}...');
-      
+      if (kDebugMode) print('🌐 [UpdateService] Skipping GitHub check for web stability...');
+      // CORS blocking makes this unreliable in web without proxy
+      /*
       final response = await _dio.get(
         UpdateConfig.versionCheckUrl,
         options: Options(
           headers: {'Cache-Control': 'no-cache'},
         ),
       );
+      */
+      return null; 
 
       if (response.statusCode == 200) {
         final data = response.data is String ? jsonDecode(response.data) : response.data;
