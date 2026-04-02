@@ -143,10 +143,12 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
 
         final scriptContent = '''
           if (typeof CinetPay !== 'undefined') {
+            const paymentData = ${jsonEncode(paymentData)};
             console.log("🚀 Initializing CinetPay v2...");
-            CinetPay.setConfig(${jsonEncode(configData)});
+            console.log("📦 CinetPay Payment Data:", paymentData);
             
-            CinetPay.getCheckout(${jsonEncode(paymentData)});
+            CinetPay.setConfig(${jsonEncode(configData)});
+            CinetPay.getCheckout(paymentData);
             
             CinetPay.waitResponse(function(data) {
               console.log("ℹ️ CinetPay Response Received:", data);
@@ -229,7 +231,7 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
             const SizedBox(height: 20),
             Text('initializing_payment_gateway'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            Text('Build v1.1.54', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)), // VERSION LABEL
+            Text('Build v1.1.55', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)), // VERSION LABEL
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
