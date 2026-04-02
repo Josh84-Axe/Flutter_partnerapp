@@ -138,8 +138,9 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
           'customer_address': widget.address.isEmpty ? "Abidjan" : widget.address.replaceAll('\'', ' '),
           'customer_city': widget.city.isEmpty ? "Abidjan" : widget.city.replaceAll('\'', ' '),
           'customer_country': widget.country.toUpperCase(),
-          'customer_state': widget.country.toUpperCase(), // Mandatory field
-          'customer_zip_code': widget.postalCode.isEmpty ? "00225" : widget.postalCode, // Mandatory 5-digit string
+          'customer_state': widget.country.toUpperCase(),
+          'customer_zip_code': widget.postalCode.isEmpty ? "00225" : widget.postalCode,
+          'lock_phone_number': true, // Trying to force auto-forwarding to USSD screen
         };
 
         final scriptContent = '''
@@ -232,7 +233,7 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
             const SizedBox(height: 20),
             Text('initializing_payment_gateway'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            Text('Build v1.1.56', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)), // VERSION LABEL
+            Text('Build v1.1.57', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)), // VERSION LABEL
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -245,11 +246,19 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
   }
 
   String _sanitizePhone(String phone, String country) {
+    // Standardize to digits only
     String clean = phone.replaceAll(RegExp(r'\D'), '');
-    // If country is Ivory Coast (CI) and starts with 225, strip it
-    if (country.toUpperCase() == 'CI' && clean.startsWith('225') && clean.length > 10) {
-      return clean.substring(clean.length - 10);
+    
+    // For Ivory Coast (CI), ensure it's in the format +225XXXXXXXXXX (13 chars total)
+    if (country.toUpperCase() == 'CI') {
+      if (clean.startsWith('225') && clean.length >= 12) {
+        return '+$clean';
+      } else if (clean.length == 10) {
+        return '+225$clean';
+      }
     }
-    return clean;
+    
+    // Default fallback
+    return '+$clean';
   }
 }
