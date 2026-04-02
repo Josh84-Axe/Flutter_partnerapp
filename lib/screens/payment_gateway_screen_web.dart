@@ -52,29 +52,21 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
 
     // Paystack remains default for NGN, GHS and non-francophone cases
     final bool isCinetPay = isFrancophoneCurrency || isFrancophoneCountry || widget.email == 'ketiglo15@gmail.com';
-
+    
     if (isCinetPay) {
        final fName = widget.userData?['firstName'] ?? '';
        final lName = widget.userData?['lastName'] ?? '';
-       final addr = widget.userData?['address'] ?? '';
-       final city = widget.userData?['city'] ?? '';
-       final country = widget.userData?['country'] ?? 'CI'; // Default or from userData
        final phone = widget.userData?['phone'] ?? '';
 
-       return PaymentGatewayCinetPayWeb(
-          apiKey: '297929662685d35c4021b02.21438964',
-          siteId: '105899723',
-          transactionId: _transactionId,
-          amount: widget.amount,
-          currency: (widget.currency == 'CFA' || widget.currency == 'USD') ? 'XOF' : widget.currency, // Ensure XOF if CFA or fallback for CI
-          description: 'Payment for ${widget.planName}',
+       return PaymentGatewayCinetPay(
           email: widget.email,
+          amount: widget.amount,
+          currency: (widget.currency == 'CFA' || widget.currency == 'USD') ? 'XOF' : widget.currency,
+          description: 'Payment for ${widget.planName}',
           firstName: fName,
           lastName: lName,
-          address: addr,
-          city: city,
-          country: country,
           phoneNumber: phone,
+          siteId: '105899723',
        );
     }
 
