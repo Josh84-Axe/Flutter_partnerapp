@@ -32,24 +32,35 @@
 
 <body>
   <script>
-    // BUILD v1.1.61 - FORCE ATOMIC CACHE CLEAR
-    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.61 - TIMESTAMP: ' + new Date().toISOString());
-    const targetVersion = '1.1.61';
+    // BUILD v1.1.66 - NUCLEAR CACHE RESET
+    const targetVersion = '1.1.66';
+    console.log('🚀 WIFI-4U PARTNER APP - BUILD ' + targetVersion + ' - TIMESTAMP: ' + new Date().toISOString());
     
-    // Nuke caches on version mismatch to escape the PWA sticky cache trap
-    if ('serviceWorker' in navigator && localStorage.getItem('last_app_version') !== targetVersion) {
-      console.log('🧹 [Atomic Clear] Version mismatch! Purging all caches and service workers...');
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        for (let registration of registrations) {
-          registration.unregister();
-        }
-      });
+    // Escaping the PWA/ServiceWorker sticky cache trap once and for all
+    if (localStorage.getItem('last_version') !== targetVersion) {
+      console.warn('🧹 [Nuclear Clear] Version mismatch! Purging and resetting...');
+      
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          for (let r of registrations) r.unregister();
+        });
+      }
+      
       if ('caches' in window) {
         caches.keys().then(names => {
           for (let name of names) caches.delete(name);
         });
       }
+      
+      localStorage.clear(); // Complete reset
+      localStorage.setItem('last_version', targetVersion);
+      
+      // Delay and hard reload
+      setTimeout(() => {
+        window.location.href = window.location.origin + window.location.pathname + '?v=' + targetVersion;
+      }, 500);
     }
+    
     window.appVersion = targetVersion;
     window.deferredPrompt = null;
 
