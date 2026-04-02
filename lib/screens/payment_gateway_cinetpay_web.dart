@@ -1,10 +1,7 @@
-import 'dart:convert';
 import 'dart:async';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 import 'package:easy_localization/easy_localization.dart';
 
 class PaymentGatewayCinetPayWeb extends StatefulWidget {
@@ -15,7 +12,6 @@ class PaymentGatewayCinetPayWeb extends StatefulWidget {
   final String currency;
   final String description;
   final String email;
-  // final String phone; // Removed as we use phoneNumber
   final String address;
   final String city;
   final String country;
@@ -49,82 +45,26 @@ class PaymentGatewayCinetPayWeb extends StatefulWidget {
 }
 
 class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
-  late String _viewId;
-  bool _scriptLoaded = false;
-  String? _error;
+  late String _transactionId;
 
   @override
   void initState() {
     super.initState();
-    // Unique ID for the IFrame view factory
-    _viewId = 'TXN${DateTime.now().millisecondsSinceEpoch}';
-    _loadCinetPayScript();
-  }
-
-      // View factory code removed as we use seamless integration via script injection
-      // ui_web.platformViewRegistry.registerViewFactory(_viewId, (int viewId) => html.IFrameElement()); // Method removed
-
-  
-  // Actually, for Flutter Web integrations of 3rd party JS libs that open modals,
-  // it's often better to inject the script into the main document head 
-  // and call the JS functions using dart:js_util.
-  
-  Future<void> _loadCinetPayScript() async {
-    try {
-      if (html.document.getElementById('cinetpay-script') != null) {
-        _initializePayment();
-        return;
-      }
-
-      final script = html.ScriptElement()
-        ..id = 'cinetpay-script'
-        ..src = 'https://cdn.cinetpay.com/seamless/main.js'
-        ..type = 'text/javascript'
-        ..async = true;
-
-      final completer = Completer<void>();
-      script.onLoad.listen((_) => completer.complete());
-      script.onError.listen((e) => completer.completeError(e));
-
-      html.document.head!.append(script);
-      
-      await completer.future;
-      if (mounted) {
-        setState(() {
-          _scriptLoaded = true;
-        });
-        _initializePayment();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = 'Failed to load payment gateway: $e';
-        });
-      }
-    }
-  }
-
-  void _initializePayment() {
-    // We'll use a delayed call to ensure the script is fully parsed
-    Future.delayed(const Duration(milliseconds: 500), () {
-      _triggerCheckout();
-    });
-  }
     // Use a clean transaction ID immediately
-    _transactionId = 'TXN${DateTime.now().millisecondsSinceEpoch}';
+    _transactionId = 'TX1${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
     // Auto-launch redirection in the next frame
-    Future.delayed(Duration.zero, () => _launchRedirection());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _launchRedirection());
   }
 
   void _launchRedirection() {
     final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
-    final String amount = widget.amount.toInt().toString();
-    final String currency = widget.currency == 'CFA' ? 'XOF' : widget.currency;
+    final String amountValue = widget.amount.toInt().toString();
+    final String currencyValue = widget.currency == 'CFA' ? 'XOF' : widget.currency;
     
     // CinetPay Redirection URL (Most stable for USSD/Wave/Mobile Money)
     final url = 'https://checkout.cinetpay.com/payment/$siteId'
-                '?amount=$amount'
-                '&currency=$currency'
+                '?amount=$amountValue'
+                '&currency=$currencyValue'
                 '&transaction_id=$_transactionId'
                 '&description=${Uri.encodeComponent(widget.description)}'
                 '&customer_name=${Uri.encodeComponent(widget.firstName)}'
@@ -170,18 +110,5 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
         ),
       ),
     );
-  }
-
-  String _sanitizePhone(String phone, String country) {
-    // Standardize to digits only
-    String clean = phone.replaceAll(RegExp(r'\D'), '');
-    
-    // For Ivory Coast (CI), keep it as 225XXXXXXXXXX (12 chars total)
-    // Most CinetPay seamless implementations expect prefix WITHOUT the '+'
-    if (country.toUpperCase() == 'CI' && !clean.startsWith('225') && clean.length == 10) {
-      return '225$clean';
-    }
-    
-    return clean;
   }
 }
