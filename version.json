@@ -1,6 +1,6 @@
 {
     "latestVersion": "1.1.66",
     "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.1.66/app-release.apk",
-    "forceUpdate": true,
-    "releaseNotes": "Nuclear Reset v1.1.66 - Forces a complete browser cache purge to ensure the fixed Ghana Cedis (GHS) payment logic is correctly activated."
+    "forceUpdate": false,
+    "releaseNotes": "Automated update v1.1.66"
 }
