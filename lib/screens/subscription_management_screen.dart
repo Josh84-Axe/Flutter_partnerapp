@@ -527,6 +527,14 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
         
         setState(() => _isLoading = true);
         
+        // ADDED: Delay to prevent race condition with CinetPay IPN callback
+        if (kDebugMode) print('⏳ [Subscription] Waiting for CinetPay synchronization...');
+        await Future.delayed(const Duration(seconds: 2));
+
+        if (kDebugMode) {
+           print('🚀 [Subscription] Confirming purchase - Plan: $planId, Ref: $paymentReference');
+        }
+
         // Purchase subscription with payment reference
         final success = await userProvider.purchaseSubscriptionPlan(
           planId,

@@ -32,21 +32,21 @@
 
 <body>
   <script>
-    // BUILD v1.1.60 - DO NOT REMOVE THIS LINE
-    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.60 - TIMESTAMP: ' + new Date().toISOString());
-    const targetVersion = '1.1.60';
+    // BUILD v1.1.61 - FORCE ATOMIC CACHE CLEAR
+    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.61 - TIMESTAMP: ' + new Date().toISOString());
+    const targetVersion = '1.1.61';
     
-    // Force clear sticky caches AND unregister SW for clean update
-    if ('serviceWorker' in navigator && window.appVersion !== targetVersion) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-          registration.unregister().then(() => console.log('🗑️ Legacy SW Unregistered'));
+    // Nuke caches on version mismatch to escape the PWA sticky cache trap
+    if ('serviceWorker' in navigator && localStorage.getItem('last_app_version') !== targetVersion) {
+      console.log('🧹 [Atomic Clear] Version mismatch! Purging all caches and service workers...');
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) {
+          registration.unregister();
         }
       });
       if ('caches' in window) {
-        caches.keys().then(function(names) {
+        caches.keys().then(names => {
           for (let name of names) caches.delete(name);
-          console.log('🧹 Caches cleared');
         });
       }
     }
