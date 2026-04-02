@@ -1,6 +1,6 @@
 {
-    "latestVersion": "1.1.60",
-    "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.1.60/app-release.apk",
-    "forceUpdate": true,
-    "releaseNotes": "Nuclear stability Fix v1.1.60 - Switched to Direct Redirection mode as the primary payment method to avoid SDK iframe blocks"
+    "latestVersion": "1.1.61",
+    "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.1.61/app-release.apk",
+    "forceUpdate": false,
+    "releaseNotes": "Automated update v1.1.61"
 }
