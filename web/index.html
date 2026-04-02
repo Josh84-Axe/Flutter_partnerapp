@@ -32,17 +32,25 @@
 
 <body>
   <script>
-    // BUILD v1.1.53 - DO NOT REMOVE THIS LINE
-    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.53 - TIMESTAMP: ' + new Date().toISOString());
-    window.appVersion = '1.1.53';
-
-    // Force clear sticky caches (like the 503 error)
-    if ('caches' in window) {
-      caches.keys().then(function(names) {
-        for (let name of names) caches.delete(name);
-        console.log('🧹 Caches cleared to resolve persistent 503 errors');
+    // BUILD v1.1.54 - DO NOT REMOVE THIS LINE
+    console.log('🚀 WIFI-4U PARTNER APP - BUILD v1.1.54 - TIMESTAMP: ' + new Date().toISOString());
+    const targetVersion = '1.1.54';
+    
+    // Force clear sticky caches AND unregister SW for clean update
+    if ('serviceWorker' in navigator && window.appVersion !== targetVersion) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          registration.unregister().then(() => console.log('🗑️ Legacy SW Unregistered'));
+        }
       });
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          for (let name of names) caches.delete(name);
+          console.log('🧹 Caches cleared');
+        });
+      }
     }
+    window.appVersion = targetVersion;
     window.deferredPrompt = null;
 
     // Stable Service Worker registration

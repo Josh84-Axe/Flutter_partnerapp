@@ -127,16 +127,16 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
         // Define the payment data
         final paymentData = {
           'transaction_id': widget.transactionId,
-          'amount': widget.amount.toInt(), // XOF/XAF must be integers
+          'amount': widget.amount.toInt(), 
           'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
           'channels': 'ALL',
-          'description': widget.description,
-          'customer_name': widget.firstName,
-          'customer_surname': widget.lastName,
-          'customer_email': widget.email,
-          'customer_phone_number': widget.phoneNumber,
-          'customer_address': widget.address.isEmpty ? "Abidjan" : widget.address,
-          'customer_city': widget.city.isEmpty ? "Abidjan" : widget.city,
+          'description': widget.description.trim(),
+          'customer_name': widget.firstName.trim().replaceAll('\'', ' '),
+          'customer_surname': widget.lastName.trim().replaceAll('\'', ' '),
+          'customer_email': widget.email.trim(),
+          'customer_phone_number': widget.phoneNumber.replaceAll(RegExp(r'\D'), ''),
+          'customer_address': widget.address.isEmpty ? "Abidjan" : widget.address.replaceAll('\'', ' '),
+          'customer_city': widget.city.isEmpty ? "Abidjan" : widget.city.replaceAll('\'', ' '),
           'customer_country': widget.country,
           'customer_zip_code': widget.postalCode,
         };
@@ -226,8 +226,10 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(),
-            const SizedBox(height: 16),
-            Text('initializing_payment'.tr()),
+            const SizedBox(height: 20),
+            Text('initializing_payment_gateway'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Text('Build v1.1.54', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)), // VERSION LABEL
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
