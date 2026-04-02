@@ -107,7 +107,7 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
             const SizedBox(height: 24),
             Text('redirecting_to_cinetpay'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text('Build v1.1.60', style: TextStyle(fontSize: 10, color: Colors.grey)),
+            const Text('Build v1.1.69', style: TextStyle(fontSize: 10, color: Colors.grey)),
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () => _launchRedirection(),
