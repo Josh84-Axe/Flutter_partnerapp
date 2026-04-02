@@ -99,7 +99,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
-                'payment_popup_instruction'.tr(fallback: 'Une fenêtre de paiement s\'est ouverte. Veuillez finaliser votre transaction là-bas. Ne fermez pas cette page.'),
+                'payment_popup_instruction'.tr(),
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.grey),
               ),
