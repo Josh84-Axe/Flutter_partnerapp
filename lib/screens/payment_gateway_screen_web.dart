@@ -34,8 +34,8 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
   @override
   void initState() {
     super.initState();
-    // Generate a stable transaction ID for the session
-    _transactionId = 'txn_${DateTime.now().millisecondsSinceEpoch}';
+    // Unique ID for the transaction (Numeric-ish only)
+    _transactionId = 'TXN${DateTime.now().millisecondsSinceEpoch}';
   }
 
   @override

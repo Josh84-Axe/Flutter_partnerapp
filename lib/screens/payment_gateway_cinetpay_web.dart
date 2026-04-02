@@ -57,7 +57,7 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
   void initState() {
     super.initState();
     // Unique ID for the IFrame view factory
-    _viewId = 'cinetpay_gateway_${DateTime.now().millisecondsSinceEpoch}';
+    _viewId = 'TXN${DateTime.now().millisecondsSinceEpoch}';
     _loadCinetPayScript();
   }
 
@@ -134,11 +134,12 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
           'customer_name': widget.firstName.trim().replaceAll('\'', ' '),
           'customer_surname': widget.lastName.trim().replaceAll('\'', ' '),
           'customer_email': widget.email.trim(),
-          'customer_phone_number': widget.phoneNumber.replaceAll(RegExp(r'\D'), ''),
+          'customer_phone_number': _sanitizePhone(widget.phoneNumber, widget.country),
           'customer_address': widget.address.isEmpty ? "Abidjan" : widget.address.replaceAll('\'', ' '),
           'customer_city': widget.city.isEmpty ? "Abidjan" : widget.city.replaceAll('\'', ' '),
-          'customer_country': widget.country,
-          'customer_zip_code': widget.postalCode,
+          'customer_country': widget.country.toUpperCase(),
+          'customer_state': widget.country.toUpperCase(), // Mandatory field
+          'customer_zip_code': widget.postalCode.isEmpty ? "00225" : widget.postalCode, // Mandatory 5-digit string
         };
 
         final scriptContent = '''
@@ -231,7 +232,7 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
             const SizedBox(height: 20),
             Text('initializing_payment_gateway'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            Text('Build v1.1.55', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)), // VERSION LABEL
+            Text('Build v1.1.56', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)), // VERSION LABEL
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -241,5 +242,14 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
         ),
       ),
     );
+  }
+
+  String _sanitizePhone(String phone, String country) {
+    String clean = phone.replaceAll(RegExp(r'\D'), '');
+    // If country is Ivory Coast (CI) and starts with 225, strip it
+    if (country.toUpperCase() == 'CI' && clean.startsWith('225') && clean.length > 10) {
+      return clean.substring(clean.length - 10);
+    }
+    return clean;
   }
 }
