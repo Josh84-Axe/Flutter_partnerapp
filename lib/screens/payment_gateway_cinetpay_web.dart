@@ -148,20 +148,18 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
             
             CinetPay.getCheckout(${jsonEncode(paymentData)});
             
-            CinetPay.on('payment_done', function(data) {
-              console.log("✅ CinetPay Success:", data);
-              window.postMessage(JSON.stringify({'type': 'cinetpay_success', 'data': data}), "*");
+            CinetPay.waitResponse(function(data) {
+              console.log("ℹ️ CinetPay Response Received:", data);
+              if (data.status == "ACCEPTED") {
+                window.postMessage(JSON.stringify({'type': 'cinetpay_success', 'data': data}), "*");
+              } else if (data.status == "REFUSED") {
+                window.postMessage(JSON.stringify({'type': 'cinetpay_error', 'data': data}), "*");
+              }
             });
 
-            CinetPay.on('error', function(data) {
-              console.error("❌ CinetPay Error:", data);
-              window.postMessage(JSON.stringify({'type': 'cinetpay_error', 'data': data}), "*");
-            });
-
-            CinetPay.on('close', function(data) {
-              console.log("ℹ️ CinetPay Closed:", data);
-              // If status is not success, treat as cancelled
-              window.postMessage(JSON.stringify({'type': 'cinetpay_close', 'data': data}), "*");
+            // Fallback for close/cancel if detected
+            window.addEventListener('message', function(event) {
+               // Internal CinetPay modal might send messages we can intercept
             });
           } else {
             console.error("⚠️ CinetPay SDK not found in window");
