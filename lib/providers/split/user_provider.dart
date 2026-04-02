@@ -141,17 +141,23 @@ class UserProvider with ChangeNotifier {
   }
 
   String _getCurrencyCodeForPayment() {
-  // Current mapping for Paystack and CinetPay supported currencies
-  switch (currencyCode) {
-    case 'GH₵': return 'GHS';
+  // Map our UI symbols back to ISO codes for Paystack/CinetPay
+  final symbol = currencyCode;
+  switch (symbol) {
+    case 'GHS': return 'GHS';
     case 'KSh': return 'KES';
     case 'FG': return 'GNF';
-    case 'FCFA': return 'XOF'; 
-    case 'CFA': return 'XOF'; // Handle CFA specifically
+    case 'CFA': return 'XOF'; 
     case 'XOF': return 'XOF';
     case 'XAF': return 'XAF';
-    case '₦': return 'NGN';   // Handle Naira specifically
-    default: return 'NGN';
+    case '₦': return 'NGN';   
+    case 'NGN': return 'NGN';
+    case 'USh': return 'UGX';
+    case 'TSh': return 'TZS';
+    case 'RF': return 'RWF';
+    case 'R': return 'ZAR';
+    case '\$': return 'USD';
+    default: return symbol.length == 3 ? symbol : 'NGN';
   }
 }
 
