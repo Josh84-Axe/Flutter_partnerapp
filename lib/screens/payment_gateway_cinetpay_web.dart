@@ -3,89 +3,155 @@ import 'dart:async';
 import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'dart:js' as js;
 
-class PaymentGatewayCinetPayWeb extends StatefulWidget {
-  final String apiKey;
-  final String siteId;
-  final String transactionId;
+class PaymentGatewayCinetPay extends StatefulWidget {
+  final String email;
   final double amount;
   final String currency;
   final String description;
-  final String email;
-  final String address;
-  final String city;
-  final String country;
   final String firstName;
   final String lastName;
-  final String notifyUrl;
-  final String postalCode;
   final String phoneNumber;
+  final String siteId;
 
-  const PaymentGatewayCinetPayWeb({
+  const PaymentGatewayCinetPay({
     super.key,
-    required this.apiKey,
-    required this.siteId,
-    required this.transactionId,
+    required this.email,
     required this.amount,
     required this.currency,
     required this.description,
-    required this.email,
     required this.firstName,
     required this.lastName,
-    required this.address,
-    required this.city,
-    required this.country,
-    this.postalCode = '00000',
-    this.phoneNumber = '',
-    this.notifyUrl = '',
+    required this.phoneNumber,
+    this.siteId = '105899723',
   });
 
   @override
-  State<PaymentGatewayCinetPayWeb> createState() => _PaymentGatewayCinetPayWebState();
+  State<PaymentGatewayCinetPay> createState() => _PaymentGatewayCinetPayState();
 }
 
-class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
+class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
+  bool _isInit = false;
   late String _transactionId;
 
   @override
   void initState() {
     super.initState();
-    // Use a clean transaction ID immediately
-    _transactionId = 'TX1${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
-    // Auto-launch redirection in the next frame
-    WidgetsBinding.instance.addPostFrameCallback((_) => _launchRedirection());
+    _transactionId = 'TXW${DateTime.now().millisecondsSinceEpoch}';
   }
 
-  void _launchRedirection() {
-    final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
-    final String apiKey = '297929662685d35c4021b02.21438964';
-    final String amountValue = widget.amount.toInt().toString();
-    final String currencyValue = widget.currency == 'CFA' ? 'XOF' : widget.currency;
-    
-    // Get current URL to return to after payment
-    final String returnUrl = html.window.location.href.split('?').first;
-    
-    // CinetPay Redirection URL (Including API Key for session validity)
-    final url = 'https://checkout.cinetpay.com/payment/$siteId'
-                '?apikey=$apiKey'
-                '&amount=$amountValue'
-                '&currency=$currencyValue'
-                '&transaction_id=$_transactionId'
-                '&description=${Uri.encodeComponent(widget.description)}'
-                '&return_url=${Uri.encodeComponent(returnUrl)}'
-                '&notify_url=${Uri.encodeComponent('https://api.tiknetafrica.com/api/payment/notify/')}'
-                '&customer_name=${Uri.encodeComponent(widget.firstName)}'
-                '&customer_surname=${Uri.encodeComponent(widget.lastName)}'
-                '&customer_email=${Uri.encodeComponent(widget.email)}'
-                '&customer_phone_number=${Uri.encodeComponent(widget.phoneNumber)}'
-                '&customer_address=Abidjan'
-                '&customer_city=Abidjan'
-                '&customer_country=CI'
-                '&customer_state=CI'
-                '&customer_zip_code=00225';
-    
-    debugPrint('🚀 [CinetPayWeb] Redirecting to: $url');
-    html.window.open(url, '_self'); 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInit) {
+      _loadCinetPayScript();
+      _isInit = true;
+    }
+  }
+
+  void _loadCinetPayScript() {
+    // Check if script already exists
+    if (html.document.getElementById('cinetpay-js') != null) {
+       _startCheckout();
+       return;
+    }
+
+    final script = html.ScriptElement()
+      ..id = 'cinetpay-js'
+      ..src = 'https://cdn.cinetpay.com/seamless/main.js'
+      ..type = 'text/javascript';
+
+    script.onLoad.listen((_) {
+      _startCheckout();
+    });
+
+    html.document.head!.append(script);
+  }
+
+  void _startCheckout() {
+    try {
+      final String apiKey = '297929662685d35c4021b02.21438964';
+      final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
+      
+      // Ensure JS side is configured
+      js.context.callMethod('eval', ["""
+        window.startCinetPayCheckout = function(config, checkoutData) {
+          try {
+            CinetPay.setConfig({
+              apikey: config.apiKey,
+              site_id: config.siteId,
+              notify_url: 'https://api.tiknetafrica.com/api/payment/notify/',
+              mode: 'PRODUCTION'
+            });
+            
+            CinetPay.getCheckout({
+              transaction_id: checkoutData.transId,
+              amount: checkoutData.amount,
+              currency: checkoutData.currency,
+              channels: 'ALL',
+              description: checkoutData.description,
+              customer_name: checkoutData.firstName,
+              customer_surname: checkoutData.lastName,
+              customer_email: checkoutData.email,
+              customer_phone_number: checkoutData.phone,
+              customer_address: 'Abidjan',
+              customer_city: 'Abidjan',
+              customer_country: 'CI',
+              customer_state: 'CI',
+              customer_zip_code: '00225'
+            });
+            
+            CinetPay.waitResponse(function(data) {
+              if (data.status == "ACCEPTED") {
+                window.parent.postMessage({type: 'CINETPAY_SUCCESS', data: data}, '*');
+              } else {
+                window.parent.postMessage({type: 'CINETPAY_ERROR', data: data}, '*');
+              }
+            });
+            
+            CinetPay.onError(function(data) {
+              window.parent.postMessage({type: 'CINETPAY_ERROR', data: data}, '*');
+            });
+          } catch (e) {
+            console.error('CinetPay JS Error:', e);
+          }
+        }
+      """]);
+
+      // Call the JS function
+      js.context.callMethod('startCinetPayCheckout', [
+        js.JsObject.jsify({
+          'apiKey': apiKey,
+          'siteId': siteId,
+        }),
+        js.JsObject.jsify({
+          'transId': _transactionId,
+          'amount': widget.amount.toInt(),
+          'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
+          'description': widget.description,
+          'firstName': widget.firstName,
+          'lastName': widget.lastName,
+          'email': widget.email,
+          'phone': widget.phoneNumber,
+        })
+      ]);
+
+      // Listen for the cross-window message from the JS SDK
+      html.window.onMessage.listen((event) {
+        if (event.data is Map) {
+          final type = event.data['type'];
+          if (type == 'CINETPAY_SUCCESS') {
+            if (mounted) Navigator.pop(context, {'success': true, 'reference': _transactionId});
+          } else if (type == 'CINETPAY_ERROR') {
+            if (mounted) Navigator.pop(context, {'success': false, 'message': 'Payment failed'});
+          }
+        }
+      });
+
+    } catch (e) {
+      debugPrint('❌ [CinetPayWeb] SDK Error: $e');
+    }
   }
 
   @override
@@ -107,11 +173,11 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
             const SizedBox(height: 24),
             Text('redirecting_to_cinetpay'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text('Build v1.1.69', style: TextStyle(fontSize: 10, color: Colors.grey)),
+            const Text('Build v1.1.70 - Seamless Mode', style: TextStyle(fontSize: 10, color: Colors.grey)),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () => _launchRedirection(),
-              child: const Text('Si vous n\'êtes pas redirigé, cliquez ici'),
+              onPressed: () => _startCheckout(),
+              child: const Text('Ressayer le paiement'),
             ),
           ],
         ),
