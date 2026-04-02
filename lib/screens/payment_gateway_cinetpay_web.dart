@@ -58,15 +58,22 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
 
   void _launchRedirection() {
     final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
+    final String apiKey = '297929662685d35c4021b02.21438964';
     final String amountValue = widget.amount.toInt().toString();
     final String currencyValue = widget.currency == 'CFA' ? 'XOF' : widget.currency;
     
-    // CinetPay Redirection URL (Most stable for USSD/Wave/Mobile Money)
+    // Get current URL to return to after payment
+    final String returnUrl = html.window.location.href.split('?').first;
+    
+    // CinetPay Redirection URL (Including API Key for session validity)
     final url = 'https://checkout.cinetpay.com/payment/$siteId'
-                '?amount=$amountValue'
+                '?apikey=$apiKey'
+                '&amount=$amountValue'
                 '&currency=$currencyValue'
                 '&transaction_id=$_transactionId'
                 '&description=${Uri.encodeComponent(widget.description)}'
+                '&return_url=${Uri.encodeComponent(returnUrl)}'
+                '&notify_url=${Uri.encodeComponent('https://api.tiknetafrica.com/api/payment/notify/')}'
                 '&customer_name=${Uri.encodeComponent(widget.firstName)}'
                 '&customer_surname=${Uri.encodeComponent(widget.lastName)}'
                 '&customer_email=${Uri.encodeComponent(widget.email)}'
@@ -75,10 +82,10 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
                 '&customer_city=Abidjan'
                 '&customer_country=CI'
                 '&customer_state=CI'
-                '&customer_zip_code=00225'
-                '&notify_url=${Uri.encodeComponent('https://api.tiknetafrica.com/api/payment/notify/')}';
+                '&customer_zip_code=00225';
     
-    html.window.open(url, '_self'); // Use _self to replace current page for stability
+    debugPrint('🚀 [CinetPayWeb] Redirecting to: $url');
+    html.window.open(url, '_self'); 
   }
 
   @override
