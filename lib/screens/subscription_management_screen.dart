@@ -488,17 +488,13 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
     setState(() => _isLoading = false);
     
     try {
-      // Get payment details for Paystack popup
+      // User payment data
       final paymentDetails = userProvider.getPaymentDetails(
-        planId: planId,
-        planName: planName,
+        planId: planId, 
+        planName: planName, 
         amount: amount,
+        planCurrency: currencyCode,
       );
-      
-      // Override currency if provided by plan
-      if (currencyCode != null) {
-        paymentDetails['currency'] = currencyCode;
-      }
       
       
       // Open Paystack inline popup
