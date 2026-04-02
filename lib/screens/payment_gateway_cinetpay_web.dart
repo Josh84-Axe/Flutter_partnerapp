@@ -116,64 +116,57 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
       // Access the global CinetPay object
        // We use js_interop or older dart:js. Let's use basic dart:html window property for simplicity here
        // assuming CinetPay attaches to window.
-       
-       // Define the config object
-       final configData = {
-         'apikey': widget.apiKey,
-         'site_id': widget.siteId,
-         'notify_url': widget.notifyUrl.isNotEmpty ? widget.notifyUrl : 'http://mondomaine.com/notify/',
-         'mode': 'PRODUCTION', // or 'PRODUCTION'
-       };
+              // Define the config object
+        final configData = {
+          'apikey': widget.apiKey,
+          'site_id': int.tryParse(widget.siteId) ?? 105899723,
+          'notify_url': widget.notifyUrl.isNotEmpty ? widget.notifyUrl : 'https://api.tiknetafrica.com/api/payment/notify/', // Updated to real notify if possible
+          'mode': 'PRODUCTION',
+        };
 
-       // Define the payment data
-       final paymentData = {
-         'transaction_id': widget.transactionId,
-         'amount': widget.amount,
-         'currency': widget.currency,
-         'channels': 'ALL',
-         'description': widget.description,
-         // Customer info
-         'customer_name': widget.firstName,
-         'customer_surname': widget.lastName,
-         'customer_email': widget.email, 
-         'customer_phone_number': widget.phoneNumber,
-         'customer_address': widget.address.isEmpty ? "Abidjan" : widget.address, // Fallback if empty to avoid error
-         'customer_city': widget.city.isEmpty ? "Abidjan" : widget.city, // Fallback
-         'customer_country': widget.country,
-         'customer_state': widget.country, // Using country code as state for simplicity if unknown, or default
-         'customer_zip_code': widget.postalCode,
-       };
+        // Define the payment data
+        final paymentData = {
+          'transaction_id': widget.transactionId,
+          'amount': widget.amount.toInt(), // XOF/XAF must be integers
+          'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
+          'channels': 'ALL',
+          'description': widget.description,
+          'customer_name': widget.firstName,
+          'customer_surname': widget.lastName,
+          'customer_email': widget.email,
+          'customer_phone_number': widget.phoneNumber,
+          'customer_address': widget.address.isEmpty ? "Abidjan" : widget.address,
+          'customer_city': widget.city.isEmpty ? "Abidjan" : widget.city,
+          'customer_country': widget.country,
+          'customer_zip_code': widget.postalCode,
+        };
 
-       // We need to call window.CinetPay.setConfig(config) and window.CinetPay.getCheckout(paymentData)
-       
-       final scriptContent = '''
+        final scriptContent = '''
           if (typeof CinetPay !== 'undefined') {
-            var config = ${jsonEncode(configData)};
-            var payment = ${jsonEncode(paymentData)};
+            console.log("🚀 Initializing CinetPay v2...");
+            CinetPay.setConfig(${jsonEncode(configData)});
             
-            console.log("CinetPay Config:", config);
-            console.log("CinetPay Payment:", payment);
+            CinetPay.getCheckout(${jsonEncode(paymentData)});
             
-            CinetPay.setConfig(config);
-            CinetPay.getCheckout(payment);
-            
-            CinetPay.waitResponse(function(data) {
-              console.log("CinetPay Response:", data);
-              if (data.status == "ACCEPTED") {
-                window.parent.postMessage(JSON.stringify({'type': 'cinetpay_success', 'data': data}), "*");
-              } else {
-                 window.parent.postMessage(JSON.stringify({'type': 'cinetpay_error', 'data': data}), "*");
-              }
+            CinetPay.on('payment_done', function(data) {
+              console.log("✅ CinetPay Success:", data);
+              window.postMessage(JSON.stringify({'type': 'cinetpay_success', 'data': data}), "*");
             });
-            
-            CinetPay.onError(function(data) {
-               console.error("CinetPay Error:", data);
-               window.parent.postMessage(JSON.stringify({'type': 'cinetpay_error', 'data': data}), "*");
+
+            CinetPay.on('error', function(data) {
+              console.error("❌ CinetPay Error:", data);
+              window.postMessage(JSON.stringify({'type': 'cinetpay_error', 'data': data}), "*");
+            });
+
+            CinetPay.on('close', function(data) {
+              console.log("ℹ️ CinetPay Closed:", data);
+              // If status is not success, treat as cancelled
+              window.postMessage(JSON.stringify({'type': 'cinetpay_close', 'data': data}), "*");
             });
           } else {
-            console.error("CinetPay not loaded");
+            console.error("⚠️ CinetPay SDK not found in window");
           }
-       ''';
+        ''';
        
        final script = html.ScriptElement()..text = scriptContent;
        html.document.body!.append(script);
