@@ -134,7 +134,7 @@ class UserProvider with ChangeNotifier {
         'lastName': _authProvider?.currentUser?.lastName,
         'address': _authProvider?.currentUser?.address,
         'city': _authProvider?.currentUser?.city,
-        'country': _getIsoCountryCode(_partnerCountry) ?? 'CI', 
+        'country': _getIsoCountryCode(_partnerCountry) ?? '', 
         'phone': _authProvider?.currentUser?.phone,
       },
     };
@@ -681,7 +681,7 @@ class UserProvider with ChangeNotifier {
       case 'nigeria': return 'NG';
       case 'ghana': return 'GH';
       case 'kenya': return 'KE';
-      default: return 'CI'; 
+      default: return null; 
     }
   }
 }
