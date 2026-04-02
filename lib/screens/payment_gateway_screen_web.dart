@@ -41,24 +41,19 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
   @override
   Widget build(BuildContext context) {
     // Determine target gateway based on currency OR user country
-    final rawCountry = widget.userData?['country']?.toString()?.toLowerCase() ?? 'ci';
+    final rawCountry = widget.userData?['country']?.toString()?.toLowerCase() ?? '';
     final isFrancophoneCountry = rawCountry == 'ci' || rawCountry == 'sn' || rawCountry == 'ml' || rawCountry == 'bj' || 
                                  rawCountry == 'bf' || rawCountry == 'ne' || rawCountry == 'tg' || rawCountry == 'cm' || 
                                  rawCountry == 'ga' || rawCountry == 'cg' || rawCountry == 'td' || rawCountry == 'gn' ||
-                                 rawCountry.contains('guinea') || rawCountry.contains('ivoire') || rawCountry.contains('senegal');
+                                 rawCountry.contains('ivoire') || rawCountry.contains('senegal');
 
     final isFrancophoneCurrency = widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'GNF' || 
                                   widget.currency == 'FG' || widget.currency == 'CFA' || widget.currency.contains('CFA');
 
-    // Force CinetPay for specific testers or if explicitly requested via francophone flags
-    final forceCinetPay = isFrancophoneCurrency || isFrancophoneCountry || widget.email == 'ketiglo15@gmail.com';
+    // Paystack remains default for NGN, GHS and non-francophone cases
+    final bool isCinetPay = isFrancophoneCurrency || isFrancophoneCountry || widget.email == 'ketiglo15@gmail.com';
 
-    debugPrint('­ƒô▒ [PaymentGateway] Selecting gateway:');
-    debugPrint('   - Detected Country: $rawCountry (isFrancophone: $isFrancophoneCountry)');
-    debugPrint('   - Detected Currency: ${widget.currency} (isFrancophone: $isFrancophoneCurrency)');
-    debugPrint('   - Force CinetPay: $forceCinetPay');
-
-    if (forceCinetPay) {
+    if (isCinetPay) {
        final fName = widget.userData?['firstName'] ?? '';
        final lName = widget.userData?['lastName'] ?? '';
        final addr = widget.userData?['address'] ?? '';
