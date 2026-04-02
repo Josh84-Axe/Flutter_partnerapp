@@ -124,22 +124,23 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
           'mode': 'PRODUCTION',
         };
 
-        // Define the payment data
+        // Define the payment data - Minimalist approach to let the portal handle validation
         final paymentData = {
-          'transaction_id': widget.transactionId,
+          'transaction_id': 'T${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}', 
           'amount': widget.amount.toInt(), 
           'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
-          'channels': 'MOBILE_MONEY,CARD',
+          'channels': 'ALL',
           'description': widget.description.trim(),
           'customer_name': widget.firstName.trim().replaceAll('\'', ' '),
           'customer_surname': widget.lastName.trim().replaceAll('\'', ' '),
           'customer_email': widget.email.trim(),
-          'customer_phone_number': _sanitizePhone(widget.phoneNumber, widget.country),
-          'customer_address': widget.address.isEmpty ? "Abidjan" : widget.address.replaceAll('\'', ' '),
-          'customer_city': widget.city.isEmpty ? "Abidjan" : widget.city.replaceAll('\'', ' '),
-          'customer_country': widget.country.toUpperCase(),
-          'customer_state': widget.country.toUpperCase(),
-          'customer_zip_code': widget.postalCode.isEmpty ? "00225" : widget.postalCode,
+          // Removing pre-filled phone/country/address/city to avoid conflict in the modal
+          // Let the user choose these in the UI which is more reliable for USSD triggering
+          'customer_address': "Abidjan",
+          'customer_city': "Abidjan",
+          'customer_country': "CI",
+          'customer_state': "CI",
+          'customer_zip_code': "00225",
         };
 
         final scriptContent = '''
@@ -232,7 +233,13 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
             const SizedBox(height: 20),
             Text('initializing_payment_gateway'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            Text('Build v1.1.58', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)), // VERSION LABEL
+            Text('Build v1.1.59', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)), // VERSION LABEL
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _launchRedirection(),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade700, foregroundColor: Colors.white),
+              child: const Text('Si le portail ne s\'ouvre pas, Cliquez ici'),
+            ),
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -242,6 +249,19 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
         ),
       ),
     );
+  }
+
+  void _launchRedirection() {
+     // Trigger manual redirection as fallback if seamless hangs
+     final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
+     final String amount = widget.amount.toInt().toString();
+     final String currency = widget.currency == 'CFA' ? 'XOF' : widget.currency;
+     final String transId = 'TXN${DateTime.now().millisecondsSinceEpoch}';
+     
+     // CinetPay payment URL (V2)
+     final url = 'https://checkout.cinetpay.com/payment/$siteId?amount=$amount&currency=$currency&transaction_id=$transId&description=${Uri.encodeComponent(widget.description)}&customer_name=${Uri.encodeComponent(widget.firstName)}&customer_surname=${Uri.encodeComponent(widget.lastName)}&customer_email=${Uri.encodeComponent(widget.email)}&notify_url=${Uri.encodeComponent('https://api.tiknetafrica.com/api/payment/notify/')}';
+     
+     html.window.open(url, '_blank');
   }
 
   String _sanitizePhone(String phone, String country) {
