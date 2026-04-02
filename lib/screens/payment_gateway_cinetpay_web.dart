@@ -81,38 +81,52 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('payment'.tr()),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Force Sync Cache',
+            onPressed: () {
+              html.window.localStorage.clear();
+              html.window.location.reload();
+            },
+          )
+        ],
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(),
+            const Icon(Icons.security, size: 60, color: Colors.blue),
             const SizedBox(height: 24),
             Text('redirecting_to_cinetpay'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text('Build v1.1.72 - Popup Mode', style: TextStyle(fontSize: 10, color: Colors.grey)),
+            const Text('Build v1.1.74 - Terminal Sync', style: TextStyle(fontSize: 10, color: Colors.grey)),
             const SizedBox(height: 32),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
-                'payment_popup_instruction'.tr(),
+                'payment_safe_mode_instruction'.tr(),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey),
+                style: const TextStyle(color: Colors.blueGrey),
+              ),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: 250,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () => _startPayment(),
+                child: const Text('OUVRIR LE PORTAIL DE PAIEMENT', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => _startPayment(),
-              child: const Text('Ressayer le paiement (Ouvrir Pop-up)'),
-            ),
-            const SizedBox(height: 16),
             TextButton(
               onPressed: () => Navigator.pop(context, {'success': true, 'reference': _transactionId}),
-              child: const Text('J\'ai terminé le paiement'),
+              child: const Text('Confirmer le retour après paiement'),
             ),
           ],
         ),
