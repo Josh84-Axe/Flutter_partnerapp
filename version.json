@@ -1,6 +1,6 @@
 {
-    "latestVersion": "1.1.57",
-    "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.1.57/app-release.apk",
-    "forceUpdate": false,
-    "releaseNotes": "Automated update v1.1.57"
+    "latestVersion": "1.1.58",
+    "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.1.58/app-release.apk",
+    "forceUpdate": true,
+    "releaseNotes": "Stability fix v1.1.58 - Relax phone number format and explicitly set payment channels"
 }

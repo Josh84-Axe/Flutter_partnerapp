@@ -129,7 +129,7 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
           'transaction_id': widget.transactionId,
           'amount': widget.amount.toInt(), 
           'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
-          'channels': 'ALL',
+          'channels': 'MOBILE_MONEY,CARD',
           'description': widget.description.trim(),
           'customer_name': widget.firstName.trim().replaceAll('\'', ' '),
           'customer_surname': widget.lastName.trim().replaceAll('\'', ' '),
@@ -140,7 +140,6 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
           'customer_country': widget.country.toUpperCase(),
           'customer_state': widget.country.toUpperCase(),
           'customer_zip_code': widget.postalCode.isEmpty ? "00225" : widget.postalCode,
-          'lock_phone_number': true, // Trying to force auto-forwarding to USSD screen
         };
 
         final scriptContent = '''
@@ -233,7 +232,7 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
             const SizedBox(height: 20),
             Text('initializing_payment_gateway'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            Text('Build v1.1.57', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)), // VERSION LABEL
+            Text('Build v1.1.58', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)), // VERSION LABEL
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -249,16 +248,12 @@ class _PaymentGatewayCinetPayWebState extends State<PaymentGatewayCinetPayWeb> {
     // Standardize to digits only
     String clean = phone.replaceAll(RegExp(r'\D'), '');
     
-    // For Ivory Coast (CI), ensure it's in the format +225XXXXXXXXXX (13 chars total)
-    if (country.toUpperCase() == 'CI') {
-      if (clean.startsWith('225') && clean.length >= 12) {
-        return '+$clean';
-      } else if (clean.length == 10) {
-        return '+225$clean';
-      }
+    // For Ivory Coast (CI), keep it as 225XXXXXXXXXX (12 chars total)
+    // Most CinetPay seamless implementations expect prefix WITHOUT the '+'
+    if (country.toUpperCase() == 'CI' && !clean.startsWith('225') && clean.length == 10) {
+      return '225$clean';
     }
     
-    // Default fallback
-    return '+$clean';
+    return clean;
   }
 }
