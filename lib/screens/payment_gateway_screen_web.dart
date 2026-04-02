@@ -301,47 +301,57 @@ class _PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
         function payWithPaystack() {
             console.log('­ƒÆ│ Initiating payment...');
             
+            var config = {
+                key: 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
+                email: '${widget.email}',
+                amount: $amountInKobo,
+                currency: '${widget.currency}',
+                ref: 'PSK_' + Math.floor((Math.random() * 1000000000) + 1),
+                metadata: {
+                    plan_id: '${widget.planId}',
+                    plan_name: '${widget.planName}',
+                    custom_fields: [
+                        {
+                            display_name: "Subscription Plan",
+                            variable_name: "subscription_plan",
+                            value: "${widget.planName}"
+                        }
+                    ]
+                },
+                onSuccess: function(response) {
+                    console.log('✅ Payment successful:', response);
+                    document.getElementById('loading').classList.add('active');
+                    window.parent.postMessage(JSON.stringify({
+                        success: true,
+                        type: 'paystack_success',
+                        reference: response.reference,
+                        message: 'Payment successful'
+                    }), '*');
+                },
+                onError: function(error) {
+                    console.error('❌ Paystack Error:', error);
+                    alert('Paystack Error: ' + (error.message || 'Verification failed'));
+                },
+                onCancel: function() {
+                    console.log('⚠️ Payment popup closed');
+                    window.parent.postMessage(JSON.stringify({
+                        success: false,
+                        type: 'paystack_cancel',
+                        message: 'Payment cancelled'
+                    }), '*');
+                }
+            };
+
+            console.log('⚙️ Paystack Config:', config);
+            
+            // Visual warning for potentially unsupported currency
+            if (!['NGN', 'GHS', 'USD', 'KES', 'ZAR'].includes('${widget.currency}')) {
+                console.warn('⚠️ Currency ${widget.currency} might be unsupported by Paystack.');
+            }
+
             try {
-                var handler = PaystackPop.setup({
-                    key: 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
-                    email: '${widget.email}',
-                    amount: $amountInKobo,
-                    currency: '${widget.currency}',
-                    ref: 'PSK_' + Math.floor((Math.random() * 1000000000) + 1),
-                    metadata: {
-                        plan_id: '${widget.planId}',
-                        plan_name: '${widget.planName}',
-                        custom_fields: [
-                            {
-                                display_name: "Subscription Plan",
-                                variable_name: "subscription_plan",
-                                value: "${widget.planName}"
-                            }
-                        ]
-                    },
-                    callback: function(response) {
-                        console.log('Ô£à Payment successful:', response);
-                        document.getElementById('loading').classList.add('active');
-                        
-                        // Send success message to Flutter via postMessage
-                        window.parent.postMessage(JSON.stringify({
-                            success: true,
-                            reference: response.reference,
-                            message: 'Payment successful'
-                        }), '*');
-                    },
-                    onClose: function() {
-                        console.log('ÔÜá´©Å Payment popup closed');
-                        
-                        // Send cancellation message to Flutter
-                        window.parent.postMessage(JSON.stringify({
-                            success: false,
-                            message: 'Payment cancelled'
-                        }), '*');
-                    }
-                });
-                
-                console.log('­ƒÄ» Opening Paystack iframe...');
+                var handler = PaystackPop.setup(config);
+                console.log('🎞️ Opening Paystack iframe...');
                 handler.openIframe();
             } catch (error) {
                 console.error('ÔØî Error in payWithPaystack:', error);
