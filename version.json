@@ -1,6 +1,6 @@
 {
     "latestVersion": "1.1.57",
     "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.1.57/app-release.apk",
-    "forceUpdate": true,
-    "releaseNotes": "Implementation fix v1.1.57 - Fix phone formatting and lock mode to trigger USSD"
+    "forceUpdate": false,
+    "releaseNotes": "Automated update v1.1.57"
 }
