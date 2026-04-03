@@ -1,6 +1,6 @@
 {
     "latestVersion": "1.1.78",
     "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.1.78/app-release.apk",
-    "forceUpdate": true,
-    "releaseNotes": "In-App Stability Build v1.1.78 - Finalized the hardened in-app payment experience by resolving compilation issues with Flutter Web view factories. Correctly loads the payment portal directly inside the app for all mobile and desktop browsers."
+    "forceUpdate": false,
+    "releaseNotes": "Automated update v1.1.78"
 }
