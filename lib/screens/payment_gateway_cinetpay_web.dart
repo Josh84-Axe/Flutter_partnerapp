@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:html' as html;
+import 'dart:js' as js;
 
 class PaymentGatewayCinetPay extends StatefulWidget {
   final String email;
@@ -30,24 +31,25 @@ class PaymentGatewayCinetPay extends StatefulWidget {
 
 class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
   late String _transactionId;
-  html.WindowBase? _popup;
+  late String _viewId;
+  late String _paymentUrl;
 
   @override
   void initState() {
     super.initState();
     _transactionId = 'TXW${DateTime.now().millisecondsSinceEpoch}';
+    _viewId = 'cinetpay-view-$_transactionId';
+    _paymentUrl = _getPaymentUrl();
   }
 
-  void _startPayment() {
+  String _getPaymentUrl() {
     final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
     final String apiKey = '297929662685d35c4021b02.21438964';
     final String amountValue = widget.amount.toInt().toString();
     final String currencyValue = widget.currency == 'CFA' ? 'XOF' : widget.currency;
-    
-    // We point return_url to exactly this app's current screen
     final String returnUrl = html.window.location.href.split('?').first;
     
-    final url = 'https://checkout.cinetpay.com/payment/$siteId'
+    return 'https://checkout.cinetpay.com/payment/$siteId'
                 '?apikey=$apiKey'
                 '&amount=$amountValue'
                 '&currency=$currencyValue'
@@ -64,84 +66,84 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                 '&customer_country=CI'
                 '&customer_state=CI'
                 '&customer_zip_code=00225';
-    
-    debugPrint('🚀 [CinetPayWeb] Attempting Pay-in-App via Secure Window...');
-    
-    try {
-      // 1. Try a new tab/window first (Best for Desktop & Mobile Browser)
-      _popup = html.window.open(url, '_blank');
-      
-      // 2. Check if popup was blocked by mobile safari/chrome
-      if (_popup == null || _popup!.closed!) {
-        debugPrint('⚠️ [CinetPayWeb] Popup BLOCKED. Falling back to direct redirection (HARDENER v2)');
-        // Last-resort fail-safe for PWA standalone mode and aggressive mobile browsers
-        html.window.location.replace(url); 
-      }
-    } catch (e) {
-       debugPrint('⚠️ [CinetPayWeb] Redirection Error: $e. Falling back...');
-       html.window.location.assign(url);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Ensuring our JS registry hook is ready
+    js.context.callMethod('eval', ["""
+      (function() {
+        var viewId = '$_viewId';
+        if (!window._flutter_web_set_view_factory) return;
+        
+        window._flutter_web_set_view_factory(viewId, function() {
+          var iframe = document.createElement('iframe');
+          iframe.src = '$_paymentUrl';
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+          iframe.style.border = 'none';
+          iframe.id = '$_viewId-frame';
+          return iframe;
+        });
+      })();
+    """]);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('payment'.tr()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.sync_problem),
-            tooltip: 'Hard Reset Cache',
-            onPressed: () {
-              html.window.localStorage.clear();
-              html.window.location.reload();
-            },
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Actualiser le paiement',
+            onPressed: () => setState(() { 
+              _transactionId = 'TXW${DateTime.now().millisecondsSinceEpoch}';
+              _viewId = 'cinetpay-view-$_transactionId';
+              _paymentUrl = _getPaymentUrl();
+            }),
           )
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.verified_user, size: 60, color: Colors.green),
-            const SizedBox(height: 24),
-            Text('redirecting_to_cinetpay'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text('Build v1.1.75 - Hardened Terminal (Restored)', style: TextStyle(fontSize: 10, color: Colors.grey)),
-            const SizedBox(height: 32),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                'payment_hardened_instruction'.tr(),
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.blueGrey),
-              ),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: 250,
-              height: 55,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      body: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            color: Colors.blue.shade50,
+            child: Row(
+              children: [
+                const Icon(Icons.shield, color: Colors.blue, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'payment_in_app_instruction'.tr(fallback: 'Paiement sécurisé CinetPay - Restez sur cette page jusqu\'à validation.'),
+                    style: TextStyle(fontSize: 11, color: Colors.blue.shade800),
+                  ),
                 ),
-                onPressed: () => _startPayment(),
-                child: const Text('PAYER MAINTENANT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text('Build v1.1.79', style: TextStyle(fontSize: 9, color: Colors.blue.shade300)),
+              ],
+            ),
+          ),
+          Expanded(
+            child: HtmlElementView(viewType: _viewId),
+          ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(top: BorderSide(color: Colors.grey.shade200))
+            ),
+            child: Center(
+              child: Text(
+                'Entrez votre numéro et validez la confirmation USSD sur votre téléphone.',
+                style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
               ),
             ),
-            const SizedBox(height: 32),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Confirmer le retour après paiement'),
-            ),
-            const SizedBox(height: 16),
-            const Text('Compatible: Orange, MTN, Wave, Card, USSD', style: TextStyle(fontSize: 10, color: Colors.grey)),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
