@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:html' as html;
-import 'dart:js' as js;
 
 class PaymentGatewayCinetPay extends StatefulWidget {
   final String email;
@@ -31,24 +30,24 @@ class PaymentGatewayCinetPay extends StatefulWidget {
 
 class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
   late String _transactionId;
-  late String _viewId;
-  bool _initialized = false;
+  html.WindowBase? _popup;
 
   @override
   void initState() {
     super.initState();
     _transactionId = 'TXW${DateTime.now().millisecondsSinceEpoch}';
-    _viewId = 'cinetpay_container_$_transactionId';
   }
 
-  String _getPaymentUrl() {
+  void _startPayment() {
     final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
     final String apiKey = '297929662685d35c4021b02.21438964';
     final String amountValue = widget.amount.toInt().toString();
     final String currencyValue = widget.currency == 'CFA' ? 'XOF' : widget.currency;
+    
+    // We point return_url to exactly this app's current screen
     final String returnUrl = html.window.location.href.split('?').first;
     
-    return 'https://checkout.cinetpay.com/payment/$siteId'
+    final url = 'https://checkout.cinetpay.com/payment/$siteId'
                 '?apikey=$apiKey'
                 '&amount=$amountValue'
                 '&currency=$currencyValue'
@@ -65,118 +64,84 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                 '&customer_country=CI'
                 '&customer_state=CI'
                 '&customer_zip_code=00225';
+    
+    debugPrint('🚀 [CinetPayWeb] Attempting Pay-in-App via Secure Window...');
+    
+    try {
+      // 1. Try a new tab/window first (Best for Desktop & Mobile Browser)
+      _popup = html.window.open(url, '_blank');
+      
+      // 2. Check if popup was blocked by mobile safari/chrome
+      if (_popup == null || _popup!.closed!) {
+        debugPrint('⚠️ [CinetPayWeb] Popup BLOCKED. Falling back to direct redirection (HARDENER v2)');
+        // Last-resort fail-safe for PWA standalone mode and aggressive mobile browsers
+        html.window.location.replace(url); 
+      }
+    } catch (e) {
+       debugPrint('⚠️ [CinetPayWeb] Redirection Error: $e. Falling back...');
+       html.window.location.assign(url);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_initialized) {
-      _injectIframe();
-      _initialized = true;
-    }
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('payment'.tr()),
         actions: [
           IconButton(
-            icon: const Icon(Icons.sync),
-            onPressed: () => setState(() { _initialized = false; }),
+            icon: const Icon(Icons.sync_problem),
+            tooltip: 'Hard Reset Cache',
+            onPressed: () {
+              html.window.localStorage.clear();
+              html.window.location.reload();
+            },
           )
         ],
       ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            color: Colors.orange.shade50,
-            child: Row(
-              children: [
-                const Icon(Icons.info_outline, color: Colors.orange, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'payment_in_app_hint'.tr(),
-                    style: const TextStyle(fontSize: 12, color: Colors.orange),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Center(
-                // Use a standard div as an anchor for our JS iframe
-                child: SizedBox(
-                   width: double.infinity,
-                   height: double.infinity,
-                   child: HtmlElementView(viewType: _viewId),
-                ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.verified_user, size: 60, color: Colors.green),
+            const SizedBox(height: 24),
+            Text('redirecting_to_cinetpay'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('Build v1.1.75 - Hardened Terminal (Restored)', style: TextStyle(fontSize: 10, color: Colors.grey)),
+            const SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Text(
+                'payment_hardened_instruction'.tr(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.blueGrey),
               ),
             ),
-          ),
-          _buildFooterButtons(),
-        ],
-      ),
-    );
-  }
-
-  void _injectIframe() {
-     // We will use a safe registration method that doesn't trigger the compiler error
-     // By using js.context to register the factory if it exists, or doing a manual DOM tie
-     js.context.callMethod('eval', ["""
-        (function() {
-          var viewId = '$_viewId';
-          var url = '${_getPaymentUrl()}';
-          
-          if (window._flutter_web_set_view_factory) {
-            window._flutter_web_set_view_factory(viewId, function() {
-              var iframe = document.createElement('iframe');
-              iframe.src = url;
-              iframe.style.border = 'none';
-              iframe.style.width = '100%';
-              iframe.style.height = '100%';
-              return iframe;
-            });
-          } else {
-             // Fallback to global registry hook if available in index.html
-             if (window.registerFlutterView) {
-                window.registerFlutterView(viewId, url);
-             }
-          }
-        })();
-     """]);
-  }
-
-  Widget _buildFooterButtons() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('Build v1.1.78 - In-App Mode', style: TextStyle(fontSize: 10, color: Colors.grey)),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.security, size: 18),
-              label: const Text('JE NE REÇOIS PAS LE CODE USSD ?', style: TextStyle(fontSize: 13)),
-              onPressed: () {
-                html.window.location.assign(_getPaymentUrl());
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.blue,
-                side: const BorderSide(color: Colors.blue),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: 250,
+              height: 55,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () => _startPayment(),
+                child: const Text('PAYER MAINTENANT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 32),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Confirmer le retour après paiement'),
+            ),
+            const SizedBox(height: 16),
+            const Text('Compatible: Orange, MTN, Wave, Card, USSD', style: TextStyle(fontSize: 10, color: Colors.grey)),
+          ],
+        ),
       ),
     );
   }
