@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:dio/dio.dart';
 import 'dart:html' as html;
 import 'dart:js' as js;
 
@@ -56,7 +57,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     // WidgetsBinding.instance.addPostFrameCallback((_) => _launchOfficialSDK());
   }
 
-  void _launchPaymentGateway() {
+  Future<void> _launchPaymentGateway() async {
     final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
     final String apiKey = '297929662685d35c4021b02.21438964';
     final String returnUrl = html.window.location.href.split('?').first;
@@ -66,21 +67,42 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     final isMobile = userAgent.contains('mobile') || userAgent.contains('android') || userAgent.contains('iphone');
 
     if (isMobile) {
-      debugPrint('📱 [CinetPay] Mobile detected. Using Direct Redirect (Hardened v1.1.82)');
-      final redirectUrl = 'https://checkout.cinetpay.com/payment/$siteId'
-                  '?apikey=$apiKey'
-                  '&amount=${widget.amount.toInt()}'
-                  '&currency=${widget.currency == 'CFA' ? 'XOF' : widget.currency}'
-                  '&transaction_id=$_transactionId'
-                  '&description=${Uri.encodeComponent(widget.description)}'
-                  '&return_url=${Uri.encodeComponent(returnUrl)}'
-                  '&notify_url=${Uri.encodeComponent('https://api.tiknetafrica.com/api/payment/notify/')}'
-                  '&customer_name=${Uri.encodeComponent(widget.firstName)}'
-                  '&customer_surname=${Uri.encodeComponent(widget.lastName)}'
-                  '&customer_email=${Uri.encodeComponent(widget.email)}'
-                  '&customer_phone_number=${Uri.encodeComponent(widget.phoneNumber)}';
+      if (mounted) setState(() { _status = 'PENDING'; });
+      debugPrint('📱 [CinetPay] Mobile detected. Initiating API Handshake (v1.1.83)');
       
-      html.window.location.assign(redirectUrl);
+      try {
+        final dio = Dio();
+        final response = await dio.post(
+          'https://api-checkout.cinetpay.com/v2/payment',
+          data: {
+            'apikey': apiKey,
+            'site_id': siteId,
+            'transaction_id': _transactionId,
+            'amount': widget.amount.toInt(),
+            'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
+            'description': widget.description,
+            'notify_url': 'https://api.tiknetafrica.com/api/payment/notify/',
+            'return_url': returnUrl,
+            'customer_name': widget.firstName,
+            'customer_surname': widget.lastName,
+            'customer_email': widget.email,
+            'customer_phone_number': widget.phoneNumber,
+            'channels': 'ALL',
+            'lang': 'fr'
+          }
+        );
+
+        if (response.data['code'] == '201') {
+          final paymentUrl = response.data['data']['payment_url'];
+          debugPrint('🚀 [CinetPay] Redirecting to: $paymentUrl');
+          html.window.location.assign(paymentUrl);
+        } else {
+          throw Exception('CinetPay API Error: ${response.data['message']}');
+        }
+      } catch (e) {
+        debugPrint('❌ [CinetPay] API Handshake Failed: $e');
+        if (mounted) setState(() { _status = 'ERROR'; });
+      }
     } else {
       debugPrint('💻 [CinetPay] Desktop detected. Using Seamless In-App Modal.');
       if (mounted) setState(() { _status = 'PENDING'; });
@@ -151,7 +173,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Build v1.1.82 - Garantie de visibilité USSD (Hybrid Mode)',
+                  'Build v1.1.83 - Garantie de visibilité USSD (API Handshake)',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 10, color: Colors.blueGrey),
                 ),
@@ -178,7 +200,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                 ),
               ],
               const SizedBox(height: 48),
-              const Text('Build v1.1.82 - Garantie de visibilité USSD (Hybrid Mode)', style: TextStyle(fontSize: 10, color: Colors.grey)),
+              const Text('Build v1.1.83 - Garantie de visibilité USSD (API Handshake)', style: TextStyle(fontSize: 10, color: Colors.grey)),
             ],
           ),
         ),
