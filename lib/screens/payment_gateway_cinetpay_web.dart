@@ -38,19 +38,19 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     super.initState();
     _transactionId = 'TXW${DateTime.now().millisecondsSinceEpoch}';
     
-    // Register JS callbacks for payment outcomes
-    js.context['onPaymentSuccess'] = (data) {
-       debugPrint('✅ [CinetPay] Payment Success: $data');
+    // Register JS callbacks for payment outcomes correctly using allowInterop
+    js.context['onPaymentSuccess'] = js.allowInterop((data) {
+       debugPrint('✅ [CinetPay] Payment Success (JS Callback): $data');
        if (mounted) setState(() { _status = 'SUCCESS'; });
-       Future.delayed(const Duration(seconds: 2), () {
+       Future.delayed(const Duration(seconds: 1), () {
           if (mounted) Navigator.pop(context, {'success': true, 'reference': _transactionId});
        });
-    };
+    });
 
-    js.context['onPaymentError'] = (data) {
-       debugPrint('❌ [CinetPay] Payment Error: $data');
+    js.context['onPaymentError'] = js.allowInterop((data) {
+       debugPrint('❌ [CinetPay] Payment Error (JS Callback): $data');
        if (mounted) setState(() { _status = 'ERROR'; });
-    };
+    });
 
     // Auto-launch the official SDK Modal
     WidgetsBinding.instance.addPostFrameCallback((_) => _launchOfficialSDK());

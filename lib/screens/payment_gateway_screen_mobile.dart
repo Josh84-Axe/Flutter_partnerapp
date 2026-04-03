@@ -316,7 +316,7 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.cinetpay.com/seamless/main.js"></script>
+    <script src="https://checkout.cinetpay.com/sdk/dist/cinetpay.min.js"></script>
     <style>body{display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif;background:#f0f2f5}</style>
 </head>
 <body>
@@ -325,10 +325,10 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
             var transId = '${widget.transactionId}';
             
             CinetPay.setConfig({
-                apikey: '${widget.apiKey}',
+                apiKey: '${widget.apiKey}',
                 site_id: '${widget.siteId}',
-                notify_url: 'http://mondomaine.com/notify/',
-                mode: 'PRODUCTION' // or 'PRODUCTION'
+                notify_url: 'https://api.tiknetafrica.com/api/payment/notify/',
+                mode: 'PRODUCTION'
             });
             
             CinetPay.getCheckout({
