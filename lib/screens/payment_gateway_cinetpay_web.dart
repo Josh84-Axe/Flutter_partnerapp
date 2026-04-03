@@ -119,7 +119,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'payment_in_app_instruction'.tr(fallback: 'Paiement sécurisé CinetPay - Restez sur cette page jusqu\'à validation.'),
+                    'payment_in_app_instruction'.tr(),
                     style: TextStyle(fontSize: 11, color: Colors.blue.shade800),
                   ),
                 ),
