@@ -56,30 +56,52 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     // WidgetsBinding.instance.addPostFrameCallback((_) => _launchOfficialSDK());
   }
 
-  void _launchOfficialSDK() {
+  void _launchPaymentGateway() {
     final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
     final String apiKey = '297929662685d35c4021b02.21438964';
     final String returnUrl = html.window.location.href.split('?').first;
     
-    if (mounted) setState(() { _status = 'PENDING'; });
+    // Detect if this is a mobile browser or PWA
+    final userAgent = html.window.navigator.userAgent.toLowerCase();
+    final isMobile = userAgent.contains('mobile') || userAgent.contains('android') || userAgent.contains('iphone');
 
-    // Calling the native helper defined in index.html
-    js.context.callMethod('launchCinetPay', [
-      js.JsObject.jsify({
-        'apiKey': apiKey,
-        'siteId': siteId,
-        'notifyUrl': 'https://api.tiknetafrica.com/api/payment/notify/',
-        'transactionId': _transactionId,
-        'amount': widget.amount.toInt(),
-        'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
-        'description': widget.description,
-        'customerName': widget.firstName,
-        'customerSurname': widget.lastName,
-        'customerEmail': widget.email,
-        'customerPhoneNumber': widget.phoneNumber,
-        'returnUrl': returnUrl,
-      })
-    ]);
+    if (isMobile) {
+      debugPrint('📱 [CinetPay] Mobile detected. Using Direct Redirect (Hardened v1.1.82)');
+      final redirectUrl = 'https://checkout.cinetpay.com/payment/$siteId'
+                  '?apikey=$apiKey'
+                  '&amount=${widget.amount.toInt()}'
+                  '&currency=${widget.currency == 'CFA' ? 'XOF' : widget.currency}'
+                  '&transaction_id=$_transactionId'
+                  '&description=${Uri.encodeComponent(widget.description)}'
+                  '&return_url=${Uri.encodeComponent(returnUrl)}'
+                  '&notify_url=${Uri.encodeComponent('https://api.tiknetafrica.com/api/payment/notify/')}'
+                  '&customer_name=${Uri.encodeComponent(widget.firstName)}'
+                  '&customer_surname=${Uri.encodeComponent(widget.lastName)}'
+                  '&customer_email=${Uri.encodeComponent(widget.email)}'
+                  '&customer_phone_number=${Uri.encodeComponent(widget.phoneNumber)}';
+      
+      html.window.location.assign(redirectUrl);
+    } else {
+      debugPrint('💻 [CinetPay] Desktop detected. Using Seamless In-App Modal.');
+      if (mounted) setState(() { _status = 'PENDING'; });
+      
+      js.context.callMethod('launchCinetPay', [
+        js.JsObject.jsify({
+          'apiKey': apiKey,
+          'siteId': siteId,
+          'notifyUrl': 'https://api.tiknetafrica.com/api/payment/notify/',
+          'transactionId': _transactionId,
+          'amount': widget.amount.toInt(),
+          'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
+          'description': widget.description,
+          'customerName': widget.firstName,
+          'customerSurname': widget.lastName,
+          'customerEmail': widget.email,
+          'customerPhoneNumber': widget.phoneNumber,
+          'returnUrl': returnUrl,
+        })
+      ]);
+    }
   }
 
   @override
@@ -108,7 +130,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Cliquez sur le bouton ci-dessous pour ouvrir le portail officiel de validation (Orange, MTN, Wave).',
+                  'Le portail officiel de validation (Orange, MTN, Wave) va s\'ouvrir pour confirmer votre transaction.',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey),
                 ),
@@ -123,15 +145,15 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 4,
                     ),
-                    onPressed: () => _launchOfficialSDK(),
-                    child: const Text('OUVRIR LE PORTAIL', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    onPressed: () => _launchPaymentGateway(),
+                    child: const Text('PAYER MAINTENANT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Si le portail ne s\'affiche pas, vérifiez que votre navigateur autorise les fenêtres surgissantes.',
+                  'Build v1.1.82 - Garanie de visibilité USSD (Hybrid Mode)',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 10, color: Colors.redAccent),
+                  style: TextStyle(fontSize: 10, color: Colors.blueGrey),
                 ),
               ] else if (_status == 'SUCCESS') ...[
                 const Icon(Icons.check_circle, color: Colors.green, size: 80),
