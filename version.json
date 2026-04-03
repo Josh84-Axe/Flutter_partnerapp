@@ -1,6 +1,6 @@
 {
-    "latestVersion": "1.1.82",
-    "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.1.82/app-release.apk",
-    "forceUpdate": true,
-    "releaseNotes": "Hardened v1.1.82 - Implemented Hybrid Payment Architecture. Seamless mode is maintained for Desktop, while Mobile browsers now use Direct Redirect mode. This guarantees that the USSD/Orange Money 'Confirmation Code' stage is always displayed on all mobile devices by using a full-page context."
+    "latestVersion": "1.1.87",
+    "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v1.1.87/app-release.apk",
+    "forceUpdate": false,
+    "releaseNotes": "Automated update v1.1.87"
 }
