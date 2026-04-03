@@ -46,8 +46,9 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     final String amountValue = widget.amount.toInt().toString();
     final String currencyValue = widget.currency == 'CFA' ? 'XOF' : widget.currency;
     
-    // We point return_url to exactly this app's current screen
-    final String returnUrl = html.window.location.href.split('?').first;
+    // Crucial: Ensure the app returns to exactly this dashboard after payment
+    final String currentUrl = html.window.location.href;
+    final String returnUrl = currentUrl.contains('?') ? currentUrl.split('?').first : currentUrl;
     
     final url = 'https://checkout.cinetpay.com/payment/$siteId'
                 '?apikey=$apiKey'
@@ -67,21 +68,14 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                 '&customer_state=CI'
                 '&customer_zip_code=00225';
     
-    debugPrint('🚀 [CinetPayWeb] Attempting Pay-in-App via Secure Window...');
+    debugPrint('🛡️ [CinetPayWeb] Full-Page Redirection for Crucial Visibility (v1.1.76)...');
     
     try {
-      // 1. Try a new tab/window first (Best for Desktop & Mobile Browser)
-      _popup = html.window.open(url, '_blank');
-      
-      // 2. Check if popup was blocked by mobile safari/chrome
-      if (_popup == null || _popup!.closed!) {
-        debugPrint('⚠️ [CinetPayWeb] Popup BLOCKED. Falling back to direct redirection (HARDENER v2)');
-        // Last-resort fail-safe for PWA standalone mode and aggressive mobile browsers
-        html.window.location.replace(url); 
-      }
+      // Direct same-tab navigation to guarantee USSD/OTP screen delivery
+      html.window.location.assign(url);
     } catch (e) {
-       debugPrint('⚠️ [CinetPayWeb] Redirection Error: $e. Falling back...');
-       html.window.location.assign(url);
+       debugPrint('⚠️ [CinetPayWeb] Redirection Error: $e. Using fallback...');
+       html.window.location.href = url;
     }
   }
 
@@ -106,42 +100,42 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.verified_user, size: 60, color: Colors.green),
-            const SizedBox(height: 24),
-            Text('redirecting_to_cinetpay'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text('Build v1.1.75 - Hardened Terminal (Final)', style: TextStyle(fontSize: 10, color: Colors.grey)),
+            const Icon(Icons.lock_person, size: 80, color: Colors.blue),
             const SizedBox(height: 32),
+            Text('redirecting_to_cinetpay'.tr(), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            const Text('Build v1.1.76 - Crucial Visibility Mode', style: TextStyle(fontSize: 10, color: Colors.grey)),
+            const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
-                'payment_hardened_instruction'.tr(),
+                'payment_crucial_instruction'.tr(),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.blueGrey),
+                style: const TextStyle(color: Colors.blueGrey, fontSize: 16),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 48),
             SizedBox(
-              width: 250,
-              height: 55,
+              width: 280,
+              height: 60,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
+                  backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 onPressed: () => _startPayment(),
-                child: const Text('PAYER MAINTENANT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                child: const Text('VOIR LA PAGE DE VALIDATION', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+            const Text('Redirection sécurisée (Même onglet)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            const SizedBox(height: 40),
             TextButton(
-              onPressed: () => Navigator.pop(context, {'success': true, 'reference': _transactionId}),
-              child: const Text('Confirmer le retour après paiement'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('cancel'.tr()),
             ),
-            const SizedBox(height: 16),
-            const Text('Compatible: Orange, MTN, Wave, Card, USSD', style: TextStyle(fontSize: 10, color: Colors.grey)),
           ],
         ),
       ),
