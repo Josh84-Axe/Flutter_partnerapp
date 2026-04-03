@@ -151,7 +151,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Build v1.1.82 - Garanie de visibilité USSD (Hybrid Mode)',
+                  'Build v1.1.82 - Garantie de visibilité USSD (Hybrid Mode)',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 10, color: Colors.blueGrey),
                 ),
@@ -178,7 +178,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                 ),
               ],
               const SizedBox(height: 48),
-              const Text('Build v1.1.82 - Garanie de visibilité USSD (Hybrid Mode)', style: TextStyle(fontSize: 10, color: Colors.grey)),
+              const Text('Build v1.1.82 - Garantie de visibilité USSD (Hybrid Mode)', style: TextStyle(fontSize: 10, color: Colors.grey)),
             ],
           ),
         ),
