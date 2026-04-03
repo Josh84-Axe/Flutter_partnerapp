@@ -41,7 +41,7 @@ jobs:
       - name: Inject Version into index.html
         run: |
           sed -i 's/BUILD v1\.1\.[0-9]*/BUILD v'"${{ env.VERSION }}"'/g' web/index.html
-          sed -i 's/v1\.1\.[0-9]*-fresh/v'"${{ env.VERSION }}"'/g' web/index.html
+          sed -i "s/targetVersion = '[0-9.]*'/targetVersion = '${{ env.VERSION }}'/g" web/index.html
           echo "Updated web/index.html with version ${{ env.VERSION }}"
 
       # --- WEB DEPLOYMENT ---
