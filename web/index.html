@@ -28,22 +28,66 @@
 
   <title>Tiknet Partner</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- CinetPay official SDK Integration (v1.1.80) -->
+  <script src="https://checkout.cinetpay.com/sdk/dist/cinetpay.min.js"></script>
 </head>
 
 <body>
   <script>
-    // BUILD v1.1.79 - NUCLEAR CACHE RESET
-    const targetVersion = '1.1.79';
+    // BUILD v1.1.80 - NUCLEAR CACHE RESET
+    const targetVersion = '1.1.80';
     console.log('🚀 WIFI-4U PARTNER APP - BUILD ' + targetVersion + ' - TIMESTAMP: ' + new Date().toISOString());
     
-    // Global helper for PlatformView registration without Dart-side compilation errors
-    window._flutter_web_view_registry_factories = {};
-    window._flutter_web_set_view_factory = function(viewId, factory) {
-       if (window.registerViewFactory) {
-          window.registerViewFactory(viewId, factory);
-       } else {
-          window._flutter_web_view_registry_factories[viewId] = factory;
-       }
+    // Global helper for CinetPay official SDK launch
+    window.launchCinetPay = function(config) {
+      if (!window.CinetPay) {
+        alert("CinetPay SDK not loaded! Please check your internet connection.");
+        return;
+      }
+      try {
+        CinetPay.setConfig({
+          apiKey: config.apiKey,
+          site_id: config.siteId,
+          notify_url: config.notifyUrl,
+          mode: 'PRODUCTION'
+        });
+        
+        CinetPay.getCheckout({
+          transaction_id: config.transactionId,
+          amount: config.amount,
+          currency: config.currency,
+          channels: 'ALL',
+          description: config.description,
+          customer_name: config.customerName,
+          customer_surname: config.customerSurname,
+          customer_email: config.customerEmail,
+          customer_phone_number: config.customerPhoneNumber,
+          customer_address: "Abidjan",
+          customer_city: "Abidjan",
+          customer_country: "CI",
+          customer_state: "CI",
+          customer_zip_code: "00225",
+          return_url: config.returnUrl,
+          wait_response: true
+        });
+
+        CinetPay.waitResponse(function(data) {
+           console.log('CinetPay Response:', data);
+           if (data.status == "ACCEPTED") {
+              if (window.onPaymentSuccess) window.onPaymentSuccess(data);
+           } else {
+              if (window.onPaymentError) window.onPaymentError(data);
+           }
+        });
+
+        CinetPay.onError(function(data) {
+          console.error('CinetPay Error:', data);
+          if (window.onPaymentError) window.onPaymentError(data);
+        });
+      } catch (e) {
+        console.error('Launch Error:', e);
+      }
     };
 
     // Escaping the PWA/ServiceWorker sticky cache trap once and for all
@@ -79,42 +123,12 @@
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('service-worker.js').then(function (registration) {
           console.log('✅ ServiceWorker registered');
-
-          registration.onupdatefound = () => {
-            const installingWorker = registration.installing;
-            if (installingWorker == null) return;
-            
-            installingWorker.onstatechange = () => {
-              if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('🔄 New version ready. Please refresh to update.');
-                  // We no longer auto-reload to avoid loops in some environments
-                }
-            };
-          };
         }).catch(function (err) {
           console.log('❌ ServiceWorker registration failed: ', err);
-        });
-
-        // Simplified controller change listener without auto-reload
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          console.log('🔄 Controller changed (New Service Worker active)');
         });
       });
     }
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      window.deferredPrompt = e;
-      if (window.onAppInstallable) window.onAppInstallable();
-    });
-
-    window.addEventListener('appinstalled', () => {
-      window.deferredPrompt = null;
-      if (window.onAppInstalled) window.onAppInstalled();
-    });
-
-    window.isAppInstallable = function () { return window.deferredPrompt !== null; };
-    window.isInstallPromptSupported = function () { return 'BeforeInstallPromptEvent' in window || (window.deferredPrompt !== null); };
     window.isStandalone = function () {
       return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     };

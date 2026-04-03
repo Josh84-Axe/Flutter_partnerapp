@@ -31,119 +31,115 @@ class PaymentGatewayCinetPay extends StatefulWidget {
 
 class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
   late String _transactionId;
-  late String _viewId;
-  late String _paymentUrl;
+  String _status = 'INITIAL'; // INITIAL, PENDING, SUCCESS, ERROR
 
   @override
   void initState() {
     super.initState();
     _transactionId = 'TXW${DateTime.now().millisecondsSinceEpoch}';
-    _viewId = 'cinetpay-view-$_transactionId';
-    _paymentUrl = _getPaymentUrl();
+    
+    // Register JS callbacks for payment outcomes
+    js.context['onPaymentSuccess'] = (data) {
+       debugPrint('✅ [CinetPay] Payment Success: $data');
+       if (mounted) setState(() { _status = 'SUCCESS'; });
+       Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) Navigator.pop(context, {'success': true, 'reference': _transactionId});
+       });
+    };
+
+    js.context['onPaymentError'] = (data) {
+       debugPrint('❌ [CinetPay] Payment Error: $data');
+       if (mounted) setState(() { _status = 'ERROR'; });
+    };
+
+    // Auto-launch the official SDK Modal
+    WidgetsBinding.instance.addPostFrameCallback((_) => _launchOfficialSDK());
   }
 
-  String _getPaymentUrl() {
+  void _launchOfficialSDK() {
     final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
     final String apiKey = '297929662685d35c4021b02.21438964';
-    final String amountValue = widget.amount.toInt().toString();
-    final String currencyValue = widget.currency == 'CFA' ? 'XOF' : widget.currency;
     final String returnUrl = html.window.location.href.split('?').first;
     
-    return 'https://checkout.cinetpay.com/payment/$siteId'
-                '?apikey=$apiKey'
-                '&amount=$amountValue'
-                '&currency=$currencyValue'
-                '&transaction_id=$_transactionId'
-                '&description=${Uri.encodeComponent(widget.description)}'
-                '&return_url=${Uri.encodeComponent(returnUrl)}'
-                '&notify_url=${Uri.encodeComponent('https://api.tiknetafrica.com/api/payment/notify/')}'
-                '&customer_name=${Uri.encodeComponent(widget.firstName)}'
-                '&customer_surname=${Uri.encodeComponent(widget.lastName)}'
-                '&customer_email=${Uri.encodeComponent(widget.email)}'
-                '&customer_phone_number=${Uri.encodeComponent(widget.phoneNumber)}'
-                '&customer_address=Abidjan'
-                '&customer_city=Abidjan'
-                '&customer_country=CI'
-                '&customer_state=CI'
-                '&customer_zip_code=00225';
+    if (mounted) setState(() { _status = 'PENDING'; });
+
+    // Calling the native helper defined in index.html
+    js.context.callMethod('launchCinetPay', [
+      js.JsObject.jsify({
+        'apiKey': apiKey,
+        'siteId': siteId,
+        'notifyUrl': 'https://api.tiknetafrica.com/api/payment/notify/',
+        'transactionId': _transactionId,
+        'amount': widget.amount.toInt(),
+        'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
+        'description': widget.description,
+        'customerName': widget.firstName,
+        'customerSurname': widget.lastName,
+        'customerEmail': widget.email,
+        'customerPhoneNumber': widget.phoneNumber,
+        'returnUrl': returnUrl,
+      })
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Ensuring our JS registry hook is ready
-    js.context.callMethod('eval', ["""
-      (function() {
-        var viewId = '$_viewId';
-        if (!window._flutter_web_set_view_factory) return;
-        
-        window._flutter_web_set_view_factory(viewId, function() {
-          var iframe = document.createElement('iframe');
-          iframe.src = '$_paymentUrl';
-          iframe.style.width = '100%';
-          iframe.style.height = '100%';
-          iframe.style.border = 'none';
-          iframe.id = '$_viewId-frame';
-          return iframe;
-        });
-      })();
-    """]);
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('payment'.tr()),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Actualiser le paiement',
-            onPressed: () => setState(() { 
-              _transactionId = 'TXW${DateTime.now().millisecondsSinceEpoch}';
-              _viewId = 'cinetpay-view-$_transactionId';
-              _paymentUrl = _getPaymentUrl();
-            }),
-          )
-        ],
       ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            color: Colors.blue.shade50,
-            child: Row(
-              children: [
-                const Icon(Icons.shield, color: Colors.blue, size: 16),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'payment_in_app_instruction'.tr(),
-                    style: TextStyle(fontSize: 11, color: Colors.blue.shade800),
-                  ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (_status == 'PENDING') ...[
+                const CircularProgressIndicator(),
+                const SizedBox(height: 24),
+                const Text(
+                  'Finalisation du tunnel de paiement sécurisé...',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                Text('Build v1.1.79', style: TextStyle(fontSize: 9, color: Colors.blue.shade300)),
+                const SizedBox(height: 12),
+                const Text(
+                  'Le portail officiel CinetPay va apparaître dans un instant.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ] else if (_status == 'SUCCESS') ...[
+                const Icon(Icons.check_circle, color: Colors.green, size: 80),
+                const SizedBox(height: 24),
+                const Text(
+                  'Paiement Réussi !',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green),
+                ),
+                const SizedBox(height: 8),
+                const Text('Redirection vers votre tableau de bord...'),
+              ] else if (_status == 'ERROR') ...[
+                const Icon(Icons.error_outline, color: Colors.red, size: 80),
+                const SizedBox(height: 24),
+                const Text(
+                  'Le paiement n\'a pas pu aboutir.',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => _launchOfficialSDK(),
+                  child: const Text('Réessayer le paiement'),
+                ),
               ],
-            ),
+              const SizedBox(height: 48),
+              const Text('Build v1.1.80 - Documentation Standard (SDK Official)', style: TextStyle(fontSize: 10, color: Colors.grey)),
+            ],
           ),
-          Expanded(
-            child: HtmlElementView(viewType: _viewId),
-          ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: Colors.grey.shade200))
-            ),
-            child: Center(
-              child: Text(
-                'Entrez votre numéro et validez la confirmation USSD sur votre téléphone.',
-                style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
