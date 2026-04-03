@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:html' as html;
@@ -30,27 +31,34 @@ class PaymentGatewayCinetPay extends StatefulWidget {
 
 class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
   late String _transactionId;
-  html.WindowBase? _popup;
+  late String _viewId;
 
   @override
   void initState() {
     super.initState();
     _transactionId = 'TXW${DateTime.now().millisecondsSinceEpoch}';
-    // Auto-launch redirection in a popup
-    WidgetsBinding.instance.addPostFrameCallback((_) => _startPayment());
+    _viewId = 'cinetpay-frame-$_transactionId';
+    
+    // REGISTRATION FOR WEB PLATFORM VIEW
+    // ignore: undefined_prefixed_name
+    ui.platformViewRegistry.registerViewFactory(_viewId, (int viewId) {
+       final iframe = html.IFrameElement()
+          ..src = _getPaymentUrl()
+          ..style.border = 'none'
+          ..style.width = '100%'
+          ..style.height = '100%';
+       return iframe;
+    });
   }
 
-  void _startPayment() {
+  String _getPaymentUrl() {
     final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
     final String apiKey = '297929662685d35c4021b02.21438964';
     final String amountValue = widget.amount.toInt().toString();
     final String currencyValue = widget.currency == 'CFA' ? 'XOF' : widget.currency;
+    final String returnUrl = html.window.location.href.split('?').first;
     
-    // Crucial: Ensure the app returns to exactly this dashboard after payment
-    final String currentUrl = html.window.location.href;
-    final String returnUrl = currentUrl.contains('?') ? currentUrl.split('?').first : currentUrl;
-    
-    final url = 'https://checkout.cinetpay.com/payment/$siteId'
+    return 'https://checkout.cinetpay.com/payment/$siteId'
                 '?apikey=$apiKey'
                 '&amount=$amountValue'
                 '&currency=$currencyValue'
@@ -67,16 +75,6 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                 '&customer_country=CI'
                 '&customer_state=CI'
                 '&customer_zip_code=00225';
-    
-    debugPrint('🛡️ [CinetPayWeb] Full-Page Redirection for Crucial Visibility (v1.1.76)...');
-    
-    try {
-      // Direct same-tab navigation to guarantee USSD/OTP screen delivery
-      html.window.location.assign(url);
-    } catch (e) {
-       debugPrint('⚠️ [CinetPayWeb] Redirection Error: $e. Using fallback...');
-       html.window.location.href = url;
-    }
   }
 
   @override
@@ -87,57 +85,64 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
         title: Text('payment'.tr()),
         actions: [
           IconButton(
-            icon: const Icon(Icons.sync_problem),
-            tooltip: 'Hard Reset Cache',
-            onPressed: () {
-              html.window.localStorage.clear();
-              html.window.location.reload();
-            },
+            icon: const Icon(Icons.sync),
+            tooltip: 'Reload',
+            onPressed: () => setState(() {}),
           )
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.lock_person, size: 80, color: Colors.blue),
-            const SizedBox(height: 32),
-            Text('redirecting_to_cinetpay'.tr(), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            const Text('Build v1.1.76 - Crucial Visibility Mode', style: TextStyle(fontSize: 10, color: Colors.grey)),
-            const SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                'payment_crucial_instruction'.tr(),
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.blueGrey, fontSize: 16),
-              ),
-            ),
-            const SizedBox(height: 48),
-            SizedBox(
-              width: 280,
-              height: 60,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  elevation: 8,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      body: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            color: Colors.orange.shade50,
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'payment_in_app_hint'.tr(),
+                    style: const TextStyle(fontSize: 12, color: Colors.orange),
+                  ),
                 ),
-                onPressed: () => _startPayment(),
-                child: const Text('VOIR LA PAGE DE VALIDATION', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              ),
+              ],
             ),
-            const SizedBox(height: 24),
-            const Text('Redirection sécurisée (Même onglet)', style: TextStyle(fontSize: 12, color: Colors.grey)),
-            const SizedBox(height: 40),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('cancel'.tr()),
+          ),
+          Expanded(
+            child: HtmlElementView(viewType: _viewId),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]
             ),
-          ],
-        ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Build v1.1.77 - In-App Mode', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.security, size: 18),
+                    label: const Text('JE NE REÇOIS PAS LE CODE USSD ?', style: TextStyle(fontSize: 13)),
+                    onPressed: () {
+                      // Fallback breakout button only if the hardware prompt is blocked by browser
+                      html.window.location.assign(_getPaymentUrl());
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.blue,
+                      side: const BorderSide(color: Colors.blue),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
