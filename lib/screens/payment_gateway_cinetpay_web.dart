@@ -1,7 +1,7 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:html' as html;
+import 'dart:js' as js;
 
 class PaymentGatewayCinetPay extends StatefulWidget {
   final String email;
@@ -32,23 +32,13 @@ class PaymentGatewayCinetPay extends StatefulWidget {
 class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
   late String _transactionId;
   late String _viewId;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
     _transactionId = 'TXW${DateTime.now().millisecondsSinceEpoch}';
-    _viewId = 'cinetpay-frame-$_transactionId';
-    
-    // REGISTRATION FOR WEB PLATFORM VIEW
-    // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(_viewId, (int viewId) {
-       final iframe = html.IFrameElement()
-          ..src = _getPaymentUrl()
-          ..style.border = 'none'
-          ..style.width = '100%'
-          ..style.height = '100%';
-       return iframe;
-    });
+    _viewId = 'cinetpay_container_$_transactionId';
   }
 
   String _getPaymentUrl() {
@@ -79,6 +69,11 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_initialized) {
+      _injectIframe();
+      _initialized = true;
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -86,8 +81,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
         actions: [
           IconButton(
             icon: const Icon(Icons.sync),
-            tooltip: 'Reload',
-            onPressed: () => setState(() {}),
+            onPressed: () => setState(() { _initialized = false; }),
           )
         ],
       ),
@@ -110,36 +104,76 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
             ),
           ),
           Expanded(
-            child: HtmlElementView(viewType: _viewId),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Build v1.1.77 - In-App Mode', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.security, size: 18),
-                    label: const Text('JE NE REÇOIS PAS LE CODE USSD ?', style: TextStyle(fontSize: 13)),
-                    onPressed: () {
-                      // Fallback breakout button only if the hardware prompt is blocked by browser
-                      html.window.location.assign(_getPaymentUrl());
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.blue,
-                      side: const BorderSide(color: Colors.blue),
-                    ),
-                  ),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Center(
+                // Use a standard div as an anchor for our JS iframe
+                child: SizedBox(
+                   width: double.infinity,
+                   height: double.infinity,
+                   child: HtmlElementView(viewType: _viewId),
                 ),
-              ],
+              ),
+            ),
+          ),
+          _buildFooterButtons(),
+        ],
+      ),
+    );
+  }
+
+  void _injectIframe() {
+     // We will use a safe registration method that doesn't trigger the compiler error
+     // By using js.context to register the factory if it exists, or doing a manual DOM tie
+     js.context.callMethod('eval', ["""
+        (function() {
+          var viewId = '$_viewId';
+          var url = '${_getPaymentUrl()}';
+          
+          if (window._flutter_web_set_view_factory) {
+            window._flutter_web_set_view_factory(viewId, function() {
+              var iframe = document.createElement('iframe');
+              iframe.src = url;
+              iframe.style.border = 'none';
+              iframe.style.width = '100%';
+              iframe.style.height = '100%';
+              return iframe;
+            });
+          } else {
+             // Fallback to global registry hook if available in index.html
+             if (window.registerFlutterView) {
+                window.registerFlutterView(viewId, url);
+             }
+          }
+        })();
+     """]);
+  }
+
+  Widget _buildFooterButtons() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Build v1.1.78 - In-App Mode', style: TextStyle(fontSize: 10, color: Colors.grey)),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.security, size: 18),
+              label: const Text('JE NE REÇOIS PAS LE CODE USSD ?', style: TextStyle(fontSize: 13)),
+              onPressed: () {
+                html.window.location.assign(_getPaymentUrl());
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.blue,
+                side: const BorderSide(color: Colors.blue),
+              ),
             ),
           ),
         ],

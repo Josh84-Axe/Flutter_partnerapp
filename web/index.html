@@ -32,10 +32,20 @@
 
 <body>
   <script>
-    // BUILD v1.1.77 - NUCLEAR CACHE RESET
-    const targetVersion = '1.1.77';
+    // BUILD v1.1.78 - NUCLEAR CACHE RESET
+    const targetVersion = '1.1.78';
     console.log('🚀 WIFI-4U PARTNER APP - BUILD ' + targetVersion + ' - TIMESTAMP: ' + new Date().toISOString());
     
+    // Global helper for PlatformView registration without Dart-side compilation errors
+    window._flutter_web_view_registry_factories = {};
+    window._flutter_web_set_view_factory = function(viewId, factory) {
+       if (window.registerViewFactory) {
+          window.registerViewFactory(viewId, factory);
+       } else {
+          window._flutter_web_view_registry_factories[viewId] = factory;
+       }
+    };
+
     // Escaping the PWA/ServiceWorker sticky cache trap once and for all
     if (localStorage.getItem('last_version') !== targetVersion) {
       console.warn('🧹 [Nuclear Clear] Version mismatch! Purging and resetting...');
