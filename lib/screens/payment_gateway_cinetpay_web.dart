@@ -52,8 +52,8 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
        if (mounted) setState(() { _status = 'ERROR'; });
     });
 
-    // Auto-launch the official SDK Modal
-    WidgetsBinding.instance.addPostFrameCallback((_) => _launchOfficialSDK());
+    // Auto-launch the official SDK Modal is DISABLED for mobile compliance
+    // WidgetsBinding.instance.addPostFrameCallback((_) => _launchOfficialSDK());
   }
 
   void _launchOfficialSDK() {
@@ -99,19 +99,39 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (_status == 'PENDING') ...[
-                const CircularProgressIndicator(),
+              if (_status == 'PENDING' || _status == 'INITIAL') ...[
+                const Icon(Icons.security, color: Colors.blue, size: 80),
                 const SizedBox(height: 24),
                 const Text(
-                  'Finalisation du tunnel de paiement sécurisé...',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  'Prêt pour le paiement sécurisé',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Le portail officiel CinetPay va apparaître dans un instant.',
+                  'Cliquez sur le bouton ci-dessous pour ouvrir le portail officiel de validation (Orange, MTN, Wave).',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: 280,
+                  height: 60,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade700,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 4,
+                    ),
+                    onPressed: () => _launchOfficialSDK(),
+                    child: const Text('OUVRIR LE PORTAIL', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Si le portail ne s\'affiche pas, vérifiez que votre navigateur autorise les fenêtres surgissantes.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 10, color: Colors.redAccent),
                 ),
               ] else if (_status == 'SUCCESS') ...[
                 const Icon(Icons.check_circle, color: Colors.green, size: 80),
