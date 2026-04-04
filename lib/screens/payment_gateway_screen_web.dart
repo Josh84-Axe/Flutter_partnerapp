@@ -220,10 +220,10 @@ class _PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  'Prêt pour le paiement sécurisé avec Paystack.',
+                  'payment_ready',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey),
-                ),
+                ).tr(),
                 const SizedBox(height: 32),
                 SizedBox(
                   width: 280,
@@ -236,7 +236,7 @@ class _PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
                       elevation: 4,
                     ),
                     onPressed: () => _launchPaystack(),
-                    child: const Text('PAYER MAINTENANT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: const Text('pay_now', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)).tr(),
                   ),
                 ),
                 if (_status == 'PENDING') ...[
@@ -246,29 +246,29 @@ class _PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
                   TextButton.icon(
                     onPressed: () => _checkTransactionStatus(),
                     icon: const Icon(Icons.refresh),
-                    label: const Text('VÉRIFIER MON PAIEMENT'),
+                    label: const Text('verify_my_payment').tr(),
                   ),
                 ],
               ] else if (_status == 'SUCCESS') ...[
                 const Icon(Icons.check_circle, color: Colors.green, size: 80),
                 const SizedBox(height: 24),
                 const Text(
-                  'Paiement Réussi !',
+                  'payment_success',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green),
-                ),
+                ).tr(),
                 const SizedBox(height: 8),
-                const Text('Activation de votre forfait en cours...'),
+                const Text('payment_activation_pending').tr(),
               ] else if (_status == 'ERROR') ...[
                 const Icon(Icons.error_outline, color: Colors.red, size: 80),
                 const SizedBox(height: 24),
                 const Text(
-                  'Le paiement n\'a pas pu aboutir.',
+                  'payment_failed_desc',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+                ).tr(),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => _launchPaystack(),
-                  child: const Text('Réessayer le paiement'),
+                  child: const Text('retry_payment').tr(),
                 ),
               ],
               const SizedBox(height: 48),
