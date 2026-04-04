@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:dio/dio.dart';
+import 'dart:js' as js;
 import 'payment_gateway_cinetpay_web.dart';
 import 'dart:html' as html;
 // ignore: avoid_web_libraries_in_flutter
