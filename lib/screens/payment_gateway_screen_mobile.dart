@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:dio/dio.dart';
 
 /// Screen for handling Paystack inline payment popup (Mobile platforms)
 class PaymentGatewayScreen extends StatefulWidget {
@@ -86,15 +88,48 @@ class _PaymentGatewayPaystackMobile extends StatefulWidget {
 class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMobile> {
   WebViewController? _controller;
   bool _isLoading = true;
+  String _status = 'INITIAL';
+  Timer? _statusTimer;
+  late String _transactionId;
 
   @override
   void initState() {
     super.initState();
+    _transactionId = 'PSK${DateTime.now().millisecondsSinceEpoch}';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _initializeWebView();
       }
     });
+
+    _startStatusPolling();
+  }
+
+  @override
+  void dispose() {
+    _statusTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startStatusPolling() {
+    _statusTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      _checkTransactionStatus();
+    });
+  }
+
+  Future<void> _checkTransactionStatus() async {
+    try {
+      final dio = Dio();
+      final response = await dio.get('https://api.tiknetafrica.com/api/partner/subscription-plans/check/');
+      if (response.data != null && response.data['is_active'] == true) {
+        _statusTimer?.cancel();
+        if (mounted) {
+           Navigator.pop(context, {'success': true, 'reference': _transactionId});
+        }
+      }
+    } catch (e) {
+      // Periodic check fail is expected until payment is done
+    }
   }
 
   void _initializeWebView() {

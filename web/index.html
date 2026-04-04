@@ -29,14 +29,15 @@
   <title>Tiknet Partner</title>
   <link rel="manifest" href="manifest.json">
 
-  <!-- CinetPay official SDK Integration (Documentation Standard) -->
+  <!-- Payment SDKs Integration (Documentation Standard) -->
   <script src="https://cdn.cinetpay.com/seamless/main.js" type="text/javascript"></script>
+  <script src="https://js.paystack.co/v1/inline.js"></script>
 </head>
 
 <body>
   <script>
-    // BUILD v1.1.82 - NUCLEAR CACHE RESET
-    const targetVersion = '1.1.82';
+    // BUILD v1.1.85 - NUCLEAR CACHE RESET
+    const targetVersion = '1.1.85';
     console.log('🚀 WIFI-4U PARTNER APP - BUILD ' + targetVersion + ' - TIMESTAMP: ' + new Date().toISOString());
     
     // Global helper for CinetPay official SDK launch
@@ -87,6 +88,38 @@
         });
       } catch (e) {
         console.error('Launch Error:', e);
+      }
+    };
+
+    // Global helper for Paystack SDK launch
+    window.launchPaystack = function (config) {
+      if (!window.PaystackPop) {
+        alert("Paystack SDK not loaded! Please check your internet connection.");
+        return;
+      }
+      try {
+        const handler = PaystackPop.setup({
+          key: config.key,
+          email: config.email,
+          amount: config.amount,
+          currency: config.currency,
+          ref: config.ref,
+          metadata: {
+            plan_id: config.planId,
+            plan_name: config.planName
+          },
+          callback: function (response) {
+            console.log('✅ Paystack Success:', response);
+            if (window.onPaystackSuccess) window.onPaystackSuccess(response.reference);
+          },
+          onClose: function () {
+            console.log('⚠️ Paystack Cancel');
+            if (window.onPaystackCancel) window.onPaystackCancel();
+          }
+        });
+        handler.openIframe();
+      } catch (e) {
+        console.error('Paystack Launch Error:', e);
       }
     };
 
