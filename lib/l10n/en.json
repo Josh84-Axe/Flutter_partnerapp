@@ -988,5 +988,7 @@
   "payments_in": "Payments In",
   "payouts_out": "Payouts Out",
   "voucher": "Voucher",
-  "remember_me": "Remember Me"
+  "remember_me": "Remember Me",
+  "cancel_payment": "Cancel Payment",
+  "payment_redirecting": "Redirecting to your plan..."
 }

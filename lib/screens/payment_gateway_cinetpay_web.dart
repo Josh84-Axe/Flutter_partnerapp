@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:dio/dio.dart';
 import 'dart:html' as html;
 import 'dart:js' as js;
+import '../services/api/token_storage.dart';
 
 class PaymentGatewayCinetPay extends StatefulWidget {
   final String email;
@@ -55,9 +56,6 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
        debugPrint('❌ [CinetPay] Payment Error (JS Callback): $data');
        if (mounted) setState(() { _status = 'ERROR'; });
     });
-
-    // Auto-launch current BUILD logic
-    // WidgetsBinding.instance.addPostFrameCallback((_) => _launchPaymentGateway());
   }
 
   @override
@@ -79,12 +77,34 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
   }
 
   Future<void> _checkTransactionStatus() async {
-    if (_checkCount > 12) { // Stop after 2 minutes
+    if (_checkCount > 15) { // Stop after ~2.5 minutes
       _statusTimer?.cancel();
       return;
     }
     _checkCount++;
     
+    // 1. Check Tiknet Backend (Primary Source of Truth for Plan Activation)
+    try {
+      final token = await TokenStorage().getAccessToken();
+      final dio = Dio(); 
+      final response = await dio.get(
+        'https://api.tiknetafrica.com/api/partner/subscription-plans/check/',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      
+      if (response.data != null && response.data['is_active'] == true) {
+         _statusTimer?.cancel();
+         if (mounted) setState(() { _status = 'SUCCESS'; });
+         Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) Navigator.pop(context, {'success': true, 'reference': _transactionId});
+         });
+         return; // Success! No need to check CinetPay
+      }
+    } catch (e) {
+       debugPrint('ℹ️ [CinetPay] Polling Tiknet Check (Normal if unpaid): $e');
+    }
+
+    // 2. Fallback: Check CinetPay API directly
     final String siteId = widget.siteId.isEmpty ? '105899723' : widget.siteId;
     final String apiKey = '297929662685d35c4021b02.21438964';
 
@@ -99,18 +119,15 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
         }
       );
 
-      if (response.data['code'] == '00') {
-        final data = response.data['data'];
-        if (data['status'] == 'ACCEPTED') {
+      if (response.data['code'] == '00' && response.data['data']['status'] == 'ACCEPTED') {
           _statusTimer?.cancel();
           if (mounted) setState(() { _status = 'SUCCESS'; });
           Future.delayed(const Duration(seconds: 2), () {
             if (mounted) Navigator.pop(context, {'success': true, 'reference': _transactionId});
           });
-        }
       }
     } catch (e) {
-      debugPrint('ℹ️ [CinetPay] Status check silent fail (normal if unpaid yet): $e');
+      debugPrint('ℹ_ [CinetPay] Polling CinetPay Check (Normal): $e');
     }
   }
 
@@ -119,13 +136,13 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     final String apiKey = '297929662685d35c4021b02.21438964';
     final String returnUrl = html.window.location.href.split('?').first;
     
-    // Detect if this is a mobile browser or PWA
+    // Detect if this is a mobile browser for redirect
     final userAgent = html.window.navigator.userAgent.toLowerCase();
     final isMobile = userAgent.contains('mobile') || userAgent.contains('android') || userAgent.contains('iphone');
 
     if (isMobile) {
       if (mounted) setState(() { _status = 'PENDING'; });
-      debugPrint('📱 [CinetPay] Mobile detected. Initiating API Handshake (v1.1.83)');
+      debugPrint('📱 [CinetPay] Mobile Redirecting to Checkout');
       
       try {
         final dio = Dio();
@@ -151,18 +168,17 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
 
         if (response.data['code'] == '201') {
           final paymentUrl = response.data['data']['payment_url'];
-          debugPrint('🚀 [CinetPay] Redirecting to: $paymentUrl');
-          _startStatusPolling(); // Start polling in case they return
+          _startStatusPolling();
           html.window.location.assign(paymentUrl);
         } else {
           throw Exception('CinetPay API Error: ${response.data['message']}');
         }
       } catch (e) {
-        debugPrint('❌ [CinetPay] API Handshake Failed: $e');
+        debugPrint('❌ [CinetPay] Redirect Failed: $e');
         if (mounted) setState(() { _status = 'ERROR'; });
       }
     } else {
-      debugPrint('💻 [CinetPay] Desktop detected. Using Seamless In-App Modal.');
+      debugPrint('💻 [CinetPay] Desktop Seamless Modal Launch');
       if (mounted) setState(() { _status = 'PENDING'; });
       
       js.context.callMethod('launchCinetPay', [
@@ -193,11 +209,27 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
         title: Text('payment'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () async {
+            final shouldPop = await Navigator.of(context).maybePop();
+             if (shouldPop == false) {
+                 final bool? confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                        title: Text('cancel_payment'.tr()),
+                        content: Text('cancel_payment_confirm'.tr()),
+                        actions: [
+                            TextButton(child: Text('no'.tr()), onPressed: () => Navigator.pop(context, false)),
+                            TextButton(child: Text('yes'.tr()), style: TextButton.styleFrom(foregroundColor: Colors.red), onPressed: () => Navigator.pop(context, true)),
+                        ],
+                    ),
+                 );
+                 if (confirm == true && mounted) Navigator.pop(context);
+            }
+          },
         ),
       ),
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -217,34 +249,26 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                 ).tr(),
                 const SizedBox(height: 32),
                 SizedBox(
-                  width: 280,
+                  width: double.infinity,
+                  maxWidth: 320,
                   height: 60,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade700,
+                      backgroundColor: Colors.blue.shade800,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                       elevation: 4,
                     ),
                     onPressed: () => _launchPaymentGateway(),
-                    child: const Text('pay_now', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)).tr(),
+                    child: Text(_status == 'INITIAL' ? 'pay_now'.tr() : 'verify_my_payment'.tr(), 
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Build v1.1.85 - Resilient Polling Gateway (Final Optimization)',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 10, color: Colors.blueGrey),
                 ),
                 if (_status == 'PENDING') ...[
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                   const CircularProgressIndicator(),
                   const SizedBox(height: 16),
-                  TextButton.icon(
-                    onPressed: () => _checkTransactionStatus(),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('verify_my_payment').tr(),
-                  ),
+                  const Text('payment_activation_pending', style: TextStyle(color: Colors.blueGrey)).tr(),
                 ],
               ] else if (_status == 'SUCCESS') ...[
                 const Icon(Icons.check_circle, color: Colors.green, size: 80),
@@ -253,8 +277,8 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                   'payment_success',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green),
                 ).tr(),
-                const SizedBox(height: 8),
-                const Text('payment_redirecting').tr(),
+                const SizedBox(height: 12),
+                const Text('payment_redirecting', textAlign: TextAlign.center).tr(),
               ] else if (_status == 'ERROR') ...[
                 const Icon(Icons.error_outline, color: Colors.red, size: 80),
                 const SizedBox(height: 24),
@@ -262,14 +286,15 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
                   'payment_failed_desc',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ).tr(),
-                const SizedBox(height: 16),
+                const SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: () => _launchPaymentGateway(),
                   child: const Text('retry_payment').tr(),
                 ),
               ],
-              const SizedBox(height: 48),
-              const Text('Build v1.1.85 - Resilient Polling Gateway (Final Optimization)', style: TextStyle(fontSize: 10, color: Colors.grey)),
+              const SizedBox(height: 60),
+              const Text('Build v1.1.90 - Resilient Polling Gateway (Final Optimization)', 
+                style: TextStyle(fontSize: 10, color: Colors.grey)),
             ],
           ),
         ),

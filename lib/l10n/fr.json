@@ -947,5 +947,7 @@
   "payments_in": "Entrées (Paiements)",
   "payouts_out": "Sorties (Retraits)",
   "voucher": "Coupon",
-  "remember_me": "Se souvenir de moi"
+  "remember_me": "Se souvenir de moi",
+  "cancel_payment": "Annuler le paiement",
+  "payment_redirecting": "Redirection vers votre forfait..."
 }

@@ -243,17 +243,52 @@ class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMo
         title: Text('payment'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(context, {'success': false, 'message': 'Cancelled'}),
+          onPressed: () async {
+            final shouldPop = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text('cancel_payment'.tr()),
+                content: Text('cancel_payment_confirm'.tr()),
+                actions: [
+                  TextButton(child: Text('no'.tr()), onPressed: () => Navigator.pop(context, false)),
+                  TextButton(child: Text('yes'.tr()), style: TextButton.styleFrom(foregroundColor: Colors.red), onPressed: () => Navigator.pop(context, true)),
+                ],
+              ),
+            );
+            if (shouldPop == true && context.mounted) {
+              Navigator.pop(context, {'success': false, 'message': 'Cancelled'});
+            }
+          },
         ),
       ),
-      body: _controller == null
-          ? const Center(child: CircularProgressIndicator())
-          : Stack(
-              children: [
-                WebViewWidget(controller: _controller!),
-                if (_isLoading) const Center(child: CircularProgressIndicator()),
+      body: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+          final bool? shouldPop = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('cancel_payment'.tr()),
+              content: Text('cancel_payment_confirm'.tr()),
+              actions: [
+                TextButton(child: Text('no'.tr()), onPressed: () => Navigator.pop(context, false)),
+                TextButton(child: Text('yes'.tr()), style: TextButton.styleFrom(foregroundColor: Colors.red), onPressed: () => Navigator.pop(context, true)),
               ],
             ),
+          );
+          if (shouldPop == true && context.mounted) {
+            Navigator.pop(context, {'success': false, 'message': 'Cancelled'});
+          }
+        },
+        child: _controller == null
+            ? const Center(child: CircularProgressIndicator())
+            : Stack(
+                children: [
+                  WebViewWidget(controller: _controller!),
+                  if (_isLoading) const Center(child: CircularProgressIndicator()),
+                ],
+              ),
+      ),
     );
   }
 }
