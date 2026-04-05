@@ -6,7 +6,9 @@ import 'dart:html' as html;
 import 'dart:js' as js;
 import '../services/api/token_storage.dart';
 
-/// Sealed CinetPay Gateway with Seamless-Only Logic (v1.1.102)
+/// Optimized CinetPay Gateway (v1.1.103)
+/// Reverted to redirect-mode for mobile to support bank/mobile-money secondary popups,
+/// while maintaining seamless overlay for desktop.
 class PaymentGatewayCinetPay extends StatefulWidget {
   final String email;
   final double amount;
@@ -48,6 +50,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     super.initState();
     _transactionId = 'TXW${DateTime.now().millisecondsSinceEpoch}';
     
+    // JS Callbacks for Seamless Mode (Desktop)
     js.context['onPaymentSuccess'] = js.allowInterop((transactionId) {
        if (mounted) setState(() => _status = 'SUCCESS');
        Future.delayed(const Duration(seconds: 1), () { 
@@ -56,11 +59,18 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     });
     
     js.context['onPaymentError'] = js.allowInterop((data) {
-       debugPrint('CinetPay Error/Cancel triggered from JS: $data');
+       debugPrint('CinetPay Error/Cancel (JS): $data');
        if (mounted) widget.onResult(false, null, 'payment_cancelled'.tr());
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) { _launchPaymentGateway(); });
+    // Check if we just returned from a mobile redirect
+    final uri = Uri.parse(html.window.location.href.replaceFirst('/#/', '/'));
+    if (uri.queryParameters.containsKey('transaction_id')) {
+       _transactionId = uri.queryParameters['transaction_id']!;
+       _startStatusPolling();
+    } else {
+       WidgetsBinding.instance.addPostFrameCallback((_) { _launchPaymentGateway(); });
+    }
   }
 
   @override
@@ -68,14 +78,14 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
 
   void _startStatusPolling() {
     _statusTimer?.cancel();
-    _statusTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
-      if (_status == 'PENDING') _checkTransactionStatus();
+    _statusTimer = Timer.periodic(const Duration(seconds: 8), (timer) {
+      if (_status == 'PENDING' || _status == 'INITIAL') _checkTransactionStatus();
       else timer.cancel();
     });
   }
 
   Future<void> _checkTransactionStatus() async {
-    if (_checkCount++ > 15) { _statusTimer?.cancel(); return; }
+    if (_checkCount++ > 30) { _statusTimer?.cancel(); return; }
     try {
       final token = await TokenStorage().getAccessToken();
       final response = await Dio().get(
@@ -94,46 +104,65 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
 
   Future<void> _launchPaymentGateway() async {
     if (mounted) setState(() => _status = 'PENDING');
-    final returnUrl = html.window.location.href.split('?').first;
+    
+    final userAgent = html.window.navigator.userAgent.toLowerCase();
+    final isMobile = userAgent.contains('mobile') || userAgent.contains('android') || userAgent.contains('iphone');
 
-    // FIXED v1.1.102: Always use launchCinetPay (Seamless SDK) instead of html redirect.
-    // This maintains the Flutter app state on mobile browsers, allowing Navigator.pop to work on return.
-    js.context.callMethod('launchCinetPay', [
-      js.JsObject.jsify({
-        'apiKey': '297929662685d35c4021b02.21438964', 
-        'siteId': widget.siteId,
-        'notifyUrl': 'https://api.tiknetafrica.com/v1/partner/payment/notify/', 
-        'transactionId': _transactionId,
-        'amount': widget.amount.toInt(), 
-        'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
-        'description': widget.description, 
-        'customerName': widget.firstName, 
-        'customerSurname': widget.lastName,
-        'customerEmail': widget.email, 
-        'customerPhoneNumber': widget.phoneNumber, 
-        'returnUrl': returnUrl,
-      })
-    ]);
-    _startStatusPolling();
+    // PRESERVE REVERT: Use redirect for mobile to allow bank/SIM-toolkit popups to function
+    if (isMobile) {
+      try {
+        final response = await Dio().post(
+          'https://api-checkout.cinetpay.com/v2/payment',
+          data: {
+            'apikey': '297929662685d35c4021b02.21438964', 'site_id': widget.siteId, 'transaction_id': _transactionId,
+            'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
+            'description': widget.description, 'notify_url': 'https://api.tiknetafrica.com/v1/partner/payment/notify/',
+            'return_url': html.window.location.href, // Return to this exact page
+            'customer_name': widget.firstName, 'customer_surname': widget.lastName,
+            'customer_email': widget.email, 'customer_phone_number': widget.phoneNumber, 'channels': 'ALL', 'lang': 'fr'
+          }
+        );
+        if (response.data['code'] == '201') {
+          html.window.location.assign(response.data['data']['payment_url']);
+        } else { throw Exception(); }
+      } catch (e) { if (mounted) widget.onResult(false, null, 'error_occurred'.tr()); }
+    } else {
+      // Use Seamless for Desktop
+      js.context.callMethod('launchCinetPay', [
+        js.JsObject.jsify({
+          'apiKey': '297929662685d35c4021b02.21438964', 'siteId': widget.siteId,
+          'notifyUrl': 'https://api.tiknetafrica.com/v1/partner/payment/notify/', 'transactionId': _transactionId,
+          'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
+          'description': widget.description, 'customerName': widget.firstName, 'customerSurname': widget.lastName,
+          'customerEmail': widget.email, 'customerPhoneNumber': widget.phoneNumber, 'returnUrl': html.window.location.href,
+        })
+      ]);
+      _startStatusPolling();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: _status == 'PENDING' 
-        ? Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(blurRadius: 20, color: Colors.black26)]),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 16),
-                const Text('payment_redirecting', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)).tr(),
-              ],
-            ),
-          )
-        : const SizedBox.shrink(),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(blurRadius: 20, color: Colors.black26)]),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            const Text('payment_redirecting', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)).tr(),
+            if (_status == 'PENDING') ...[
+               const SizedBox(height: 8),
+               TextButton(
+                 onPressed: () => widget.onResult(false, null, 'payment_cancelled'.tr()),
+                 child: Text('cancel'.tr(), style: const TextStyle(color: Colors.red)),
+               )
+            ]
+          ],
+        ),
+      ),
     );
   }
 }
