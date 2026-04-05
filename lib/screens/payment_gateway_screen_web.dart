@@ -6,7 +6,7 @@ import 'dart:js' as js;
 import 'payment_gateway_cinetpay_web.dart';
 import '../services/api/token_storage.dart';
 
-/// Transparent Gateway Wrapper with specialized cancellation handling (v1.1.98)
+/// Transparent Gateway Wrapper with Direct Exit logic (v1.1.99)
 class PaymentGatewayScreen extends StatefulWidget {
   final String email;
   final double amount;
@@ -33,19 +33,24 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
   bool _isExiting = false;
   final GlobalKey<PaymentGatewayPaystackWebState> _paystackKey = GlobalKey();
 
-  Future<void> _forceExitApp() async {
-    if (mounted) {
+  Future<void> _forceExitApp({bool success = false, String? reference}) async {
+    if (mounted && !_isExiting) {
       setState(() => _isExiting = true);
-      // Wait for state to apply
+      // Wait for state to apply to satisfy PopScope
       await Future.delayed(Duration.zero);
-      if (mounted) Navigator.of(context).pop({'success': false, 'message': 'payment_cancelled'.tr()});
+      if (mounted) {
+        Navigator.of(context).pop({
+          'success': success, 
+          'reference': reference,
+          'message': success ? 'payment_success'.tr() : 'payment_cancelled'.tr()
+        });
+      }
     }
   }
 
-  Future<bool> _handlePop({bool isPaystack = true}) async {
+  Future<bool> _handleManualPop({bool isPaystack = true}) async {
     if (_isExiting) return true;
     
-    // For CinetPay, if the cancel comes from the portal, we return immediately per user request
     final bool? confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -94,7 +99,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
       canPop: _isExiting,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        final confirmed = await _handlePop(isPaystack: !isCinetPay);
+        final confirmed = await _handleManualPop(isPaystack: !isCinetPay);
         if (confirmed && mounted) Navigator.of(context).pop();
       },
       child: Scaffold(
@@ -108,8 +113,10 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
               firstName: widget.userData?['firstName'] ?? '',
               lastName: widget.userData?['lastName'] ?? '',
               phoneNumber: widget.userData?['phone'] ?? '',
-              onRequestClose: () => _handlePop(isPaystack: false).then((conf) { if (conf && mounted) Navigator.of(context).pop(); }),
-              onPortalCancel: _forceExitApp,
+              onRequestClose: () => _handleManualPop(isPaystack: false).then((confirmed) {
+                 if (confirmed && mounted) Navigator.of(context).pop();
+              }),
+              onPortalCancel: () => _forceExitApp(success: false),
             )
           : PaymentGatewayPaystackWeb(
               key: _paystackKey,
@@ -118,7 +125,10 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
               planId: widget.planId,
               planName: widget.planName,
               currency: widget.currency,
-              onRequestClose: () => _handlePop(isPaystack: true).then((conf) { if (conf && mounted) Navigator.of(context).pop(); }),
+              onRequestClose: () => _handleManualPop(isPaystack: true).then((confirmed) {
+                 if (confirmed && mounted) Navigator.of(context).pop();
+              }),
+              onPortalCancel: () => _forceExitApp(success: false),
             ),
       ),
     );
@@ -132,6 +142,7 @@ class PaymentGatewayPaystackWeb extends StatefulWidget {
   final String planName;
   final String currency;
   final VoidCallback onRequestClose;
+  final VoidCallback onPortalCancel;
 
   const PaymentGatewayPaystackWeb({
     super.key,
@@ -141,6 +152,7 @@ class PaymentGatewayPaystackWeb extends StatefulWidget {
     required this.planName,
     required this.currency,
     required this.onRequestClose,
+    required this.onPortalCancel,
   });
 
   @override
@@ -158,12 +170,11 @@ class PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
     super.initState();
     _transactionId = 'PSK${DateTime.now().millisecondsSinceEpoch}';
     js.context['onPaystackSuccess'] = js.allowInterop((reference) {
-      if (mounted) setState(() => _status = 'SUCCESS');
-      Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.of(context).pop({'success': true, 'reference': reference}); });
+       if (mounted) setState(() => _status = 'SUCCESS');
+       Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.of(context).pop({'success': true, 'reference': reference}); });
     });
     js.context['onPaystackCancel'] = js.allowInterop(() {
-       if (mounted) setState(() => _status = 'INITIAL'); 
-       widget.onRequestClose(); 
+       if (mounted) widget.onPortalCancel(); 
     });
     WidgetsBinding.instance.addPostFrameCallback((_) { _launchPaystack(); });
   }
