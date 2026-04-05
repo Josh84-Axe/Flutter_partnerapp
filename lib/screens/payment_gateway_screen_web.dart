@@ -257,10 +257,8 @@ class _PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
                   style: TextStyle(fontSize: 20, color: Colors.blue.shade700, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  maxWidth: 320,
-                  height: 60,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 320, minHeight: 60),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue.shade800,
@@ -269,8 +267,10 @@ class _PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
                       elevation: 4,
                     ),
                     onPressed: () => _launchPaystack(),
-                    child: Text(_status == 'INITIAL' ? 'pay_now'.tr() : 'verify_my_payment'.tr(), 
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: Center(
+                      child: Text(_status == 'INITIAL' ? 'pay_now'.tr() : 'verify_my_payment'.tr(), 
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
