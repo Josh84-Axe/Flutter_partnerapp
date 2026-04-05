@@ -16,6 +16,7 @@ class PaymentGatewayCinetPay extends StatefulWidget {
   final String phoneNumber;
   final String siteId;
   final VoidCallback onRequestClose;
+  final VoidCallback onPortalCancel;
 
   const PaymentGatewayCinetPay({
     super.key,
@@ -27,6 +28,7 @@ class PaymentGatewayCinetPay extends StatefulWidget {
     required this.lastName,
     required this.phoneNumber,
     required this.onRequestClose,
+    required this.onPortalCancel,
     this.siteId = '105899723',
   });
 
@@ -44,18 +46,16 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
   void initState() {
     super.initState();
     _transactionId = 'TXW${DateTime.now().millisecondsSinceEpoch}';
+    
     js.context['onPaymentSuccess'] = js.allowInterop((data) {
        if (mounted) setState(() => _status = 'SUCCESS');
        Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.pop(context, {'success': true}); });
     });
     
-    // CinetPay Cancel/Error handling - immediate return to subscription screen per user request
+    // CinetPay Cancel/Error handling - use the portal cancel callback to bypass confirmation dialog
     js.context['onPaymentError'] = js.allowInterop((data) {
-       debugPrint('CinetPay Error/Cancel triggered');
-       if (mounted) {
-          // Instead of showing error state, return to sub screen as requested
-          Navigator.of(context).pop({'success': false, 'message': 'payment_cancelled'.tr()});
-       }
+       debugPrint('CinetPay Error/Cancel triggered from JS');
+       if (mounted) widget.onPortalCancel();
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) { _launchPaymentGateway(); });
@@ -110,7 +110,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
           _startStatusPolling();
           html.window.location.assign(response.data['data']['payment_url']);
         } else { throw Exception(); }
-      } catch (e) { if (mounted) Navigator.pushReplacementNamed(context, '/subscription-management'); }
+      } catch (e) { if (mounted) widget.onPortalCancel(); }
     } else {
       js.context.callMethod('launchCinetPay', [
         js.JsObject.jsify({

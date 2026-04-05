@@ -6,7 +6,7 @@ import 'dart:js' as js;
 import 'payment_gateway_cinetpay_web.dart';
 import '../services/api/token_storage.dart';
 
-/// Transparent Gateway Wrapper with advanced cancellation handling (v1.1.97)
+/// Transparent Gateway Wrapper with specialized cancellation handling (v1.1.98)
 class PaymentGatewayScreen extends StatefulWidget {
   final String email;
   final double amount;
@@ -33,9 +33,19 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
   bool _isExiting = false;
   final GlobalKey<PaymentGatewayPaystackWebState> _paystackKey = GlobalKey();
 
+  Future<void> _forceExitApp() async {
+    if (mounted) {
+      setState(() => _isExiting = true);
+      // Wait for state to apply
+      await Future.delayed(Duration.zero);
+      if (mounted) Navigator.of(context).pop({'success': false, 'message': 'payment_cancelled'.tr()});
+    }
+  }
+
   Future<bool> _handlePop({bool isPaystack = true}) async {
     if (_isExiting) return true;
     
+    // For CinetPay, if the cancel comes from the portal, we return immediately per user request
     final bool? confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -46,7 +56,6 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
           TextButton(
             onPressed: () {
                Navigator.of(dialogContext).pop(false);
-               // If user says 'No' on Paystack, reload the gateway automatically
                if (isPaystack && _paystackKey.currentState != null) {
                   _paystackKey.currentState!.reLaunch();
                }
@@ -99,9 +108,8 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
               firstName: widget.userData?['firstName'] ?? '',
               lastName: widget.userData?['lastName'] ?? '',
               phoneNumber: widget.userData?['phone'] ?? '',
-              onRequestClose: () => _handlePop(isPaystack: false).then((confirmed) {
-                 if (confirmed && mounted) Navigator.of(context).pop();
-              }),
+              onRequestClose: () => _handlePop(isPaystack: false).then((conf) { if (conf && mounted) Navigator.of(context).pop(); }),
+              onPortalCancel: _forceExitApp,
             )
           : PaymentGatewayPaystackWeb(
               key: _paystackKey,
@@ -110,9 +118,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
               planId: widget.planId,
               planName: widget.planName,
               currency: widget.currency,
-              onRequestClose: () => _handlePop(isPaystack: true).then((confirmed) {
-                 if (confirmed && mounted) Navigator.of(context).pop();
-              }),
+              onRequestClose: () => _handlePop(isPaystack: true).then((conf) { if (conf && mounted) Navigator.of(context).pop(); }),
             ),
       ),
     );
@@ -156,18 +162,13 @@ class PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
       Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.of(context).pop({'success': true, 'reference': reference}); });
     });
     js.context['onPaystackCancel'] = js.allowInterop(() {
-       debugPrint('Paystack Cancel Event Called');
        if (mounted) setState(() => _status = 'INITIAL'); 
        widget.onRequestClose(); 
     });
-    
     WidgetsBinding.instance.addPostFrameCallback((_) { _launchPaystack(); });
   }
 
-  void reLaunch() {
-    debugPrint('Paystack Relaunching...');
-    _launchPaystack();
-  }
+  void reLaunch() { _launchPaystack(); }
 
   @override
   void dispose() { _statusTimer?.cancel(); super.dispose(); }
@@ -201,12 +202,8 @@ class PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
      js.context.callMethod('launchPaystack', [
        js.JsObject.jsify({
          'key': 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
-         'email': widget.email,
-         'amount': (widget.amount * 100).toInt(),
-         'currency': widget.currency,
-         'ref': _transactionId,
-         'planId': widget.planId,
-         'planName': widget.planName,
+         'email': widget.email, 'amount': (widget.amount * 100).toInt(), 'currency': widget.currency,
+         'ref': _transactionId, 'planId': widget.planId, 'planName': widget.planName,
        })
      ]);
      _startStatusPolling();
