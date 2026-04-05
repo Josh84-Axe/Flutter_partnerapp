@@ -48,9 +48,16 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
        if (mounted) setState(() => _status = 'SUCCESS');
        Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.pop(context, {'success': true}); });
     });
-    js.context['onPaymentError'] = js.allowInterop((data) { if (mounted) setState(() => _status = 'ERROR'); });
     
-    // Auto-launch CinetPay
+    // CinetPay Cancel/Error handling - immediate return to subscription screen per user request
+    js.context['onPaymentError'] = js.allowInterop((data) {
+       debugPrint('CinetPay Error/Cancel triggered');
+       if (mounted) {
+          // Instead of showing error state, return to sub screen as requested
+          Navigator.of(context).pop({'success': false, 'message': 'payment_cancelled'.tr()});
+       }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) { _launchPaymentGateway(); });
   }
 
@@ -69,8 +76,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     if (_checkCount++ > 15) { _statusTimer?.cancel(); return; }
     try {
       final token = await TokenStorage().getAccessToken();
-      final dio = Dio(); 
-      final response = await dio.get(
+      final response = await Dio().get(
         'https://api.tiknetafrica.com/api/partner/subscription-plans/check/',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
@@ -78,20 +84,6 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
          _statusTimer?.cancel();
          if (mounted) setState(() => _status = 'SUCCESS');
          Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.pop(context, {'success': true}); });
-         return;
-      }
-    } catch (_) {}
-
-    try {
-      final dio = Dio();
-      final response = await dio.post(
-        'https://api-checkout.cinetpay.com/v2/payment/check',
-        data: { 'apikey': '297929662685d35c4021b02.21438964', 'site_id': widget.siteId, 'transaction_id': _transactionId }
-      );
-      if (response.data['code'] == '00' && response.data['data']['status'] == 'ACCEPTED') {
-          _statusTimer?.cancel();
-          if (mounted) setState(() => _status = 'SUCCESS');
-          Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.pop(context, {'success': true}); });
       }
     } catch (_) {}
   }
@@ -118,7 +110,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
           _startStatusPolling();
           html.window.location.assign(response.data['data']['payment_url']);
         } else { throw Exception(); }
-      } catch (e) { if (mounted) setState(() => _status = 'ERROR'); }
+      } catch (e) { if (mounted) Navigator.pushReplacementNamed(context, '/subscription-management'); }
     } else {
       js.context.callMethod('launchCinetPay', [
         js.JsObject.jsify({
@@ -139,7 +131,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
       child: _status == 'PENDING' 
         ? Container(
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(blurRadius: 20, color: Colors.black12)]),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(blurRadius: 20, color: Colors.black26)]),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
