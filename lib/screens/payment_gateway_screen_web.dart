@@ -6,7 +6,7 @@ import 'dart:js' as js;
 import 'payment_gateway_cinetpay_web.dart';
 import '../services/api/token_storage.dart';
 
-/// Unified Screen for handling Payment Gateways on Web
+/// Transparent Gateway Wrapper to eliminate transition screens
 class PaymentGatewayScreen extends StatefulWidget {
   final String email;
   final double amount;
@@ -34,7 +34,6 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
 
   Future<bool> _handlePop() async {
     if (_isExiting) return true;
-    
     final bool? confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -51,11 +50,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
         ],
       ),
     );
-
-    if (confirmed == true) {
-      setState(() => _isExiting = true);
-      return true;
-    }
+    if (confirmed == true) { setState(() => _isExiting = true); return true; }
     return false;
   }
 
@@ -79,25 +74,29 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
         final confirmed = await _handlePop();
         if (confirmed && mounted) Navigator.of(context).pop();
       },
-      child: isCinetPay 
-        ? PaymentGatewayCinetPay(
-            email: widget.email,
-            amount: widget.amount,
-            currency: widget.currency == 'CFA' ? 'XOF' : widget.currency,
-            description: 'Payment for ${widget.planName}',
-            firstName: widget.userData?['firstName'] ?? '',
-            lastName: widget.userData?['lastName'] ?? '',
-            phoneNumber: widget.userData?['phone'] ?? '',
-            onRequestClose: () => _handlePop().then((conf) { if (conf && mounted) Navigator.of(context).pop(); }),
-          )
-        : PaymentGatewayPaystackWeb(
-            email: widget.email,
-            amount: widget.amount,
-            planId: widget.planId,
-            planName: widget.planName,
-            currency: widget.currency,
-            onRequestClose: () => _handlePop().then((conf) { if (conf && mounted) Navigator.of(context).pop(); }),
-          ),
+      // Use a Scaffold with transparent background to prevent white/black flashes
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: isCinetPay 
+          ? PaymentGatewayCinetPay(
+              email: widget.email,
+              amount: widget.amount,
+              currency: widget.currency == 'CFA' ? 'XOF' : widget.currency,
+              description: 'Payment for ${widget.planName}',
+              firstName: widget.userData?['firstName'] ?? '',
+              lastName: widget.userData?['lastName'] ?? '',
+              phoneNumber: widget.userData?['phone'] ?? '',
+              onRequestClose: () => _handlePop().then((conf) { if (conf && mounted) Navigator.of(context).pop(); }),
+            )
+          : PaymentGatewayPaystackWeb(
+              email: widget.email,
+              amount: widget.amount,
+              planId: widget.planId,
+              planName: widget.planName,
+              currency: widget.currency,
+              onRequestClose: () => _handlePop().then((conf) { if (conf && mounted) Navigator.of(context).pop(); }),
+            ),
+      ),
     );
   }
 }
@@ -136,11 +135,10 @@ class _PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
     _transactionId = 'PSK${DateTime.now().millisecondsSinceEpoch}';
     js.context['onPaystackSuccess'] = js.allowInterop((reference) {
       if (mounted) setState(() => _status = 'SUCCESS');
-      Future.delayed(const Duration(seconds: 2), () { if (mounted) Navigator.of(context).pop({'success': true}); });
+      Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.of(context).pop({'success': true, 'reference': reference}); });
     });
-    js.context['onPaystackCancel'] = js.allowInterop(() { if (mounted) setState(() => _status = 'INITIAL'); });
+    js.context['onPaystackCancel'] = js.allowInterop(() { if (mounted) setState(() => _status = 'INITIAL'); widget.onRequestClose(); });
     
-    // Auto-launch Paystack
     WidgetsBinding.instance.addPostFrameCallback((_) { _launchPaystack(); });
   }
 
@@ -149,14 +147,14 @@ class _PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
 
   void _startStatusPolling() {
     _statusTimer?.cancel();
-    _statusTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    _statusTimer = Timer.periodic(const Duration(seconds: 8), (timer) {
       if (_status == 'PENDING') _checkTransactionStatus();
       else timer.cancel();
     });
   }
 
   Future<void> _checkTransactionStatus() async {
-    if (_checkCount++ > 20) { _statusTimer?.cancel(); return; }
+    if (_checkCount++ > 25) { _statusTimer?.cancel(); return; }
     try {
       final token = await TokenStorage().getAccessToken();
       final response = await Dio().get(
@@ -166,7 +164,7 @@ class _PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
       if (response.data != null && response.data['is_active'] == true) {
          _statusTimer?.cancel();
          if (mounted) setState(() => _status = 'SUCCESS');
-         Future.delayed(const Duration(seconds: 2), () { if (mounted) Navigator.of(context).pop({'success': true}); });
+         Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.of(context).pop({'success': true, 'reference': _transactionId}); });
       }
     } catch (_) {}
   }
@@ -189,35 +187,23 @@ class _PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(title: Text('payment'.tr()), leading: IconButton(icon: const Icon(Icons.close), onPressed: widget.onRequestClose)),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (_status == 'PENDING' || _status == 'INITIAL') ...[
-              const CircularProgressIndicator(),
-              const SizedBox(height: 24),
-              const Text('payment_redirecting', style: TextStyle(fontSize: 16, color: Colors.blueGrey)).tr(),
-              const SizedBox(height: 8),
-              Text(widget.planName, style: const TextStyle(fontWeight: FontWeight.bold)),
-            ] else if (_status == 'SUCCESS') ...[
-              const Icon(Icons.check_circle, color: Colors.green, size: 80),
-              const SizedBox(height: 24),
-              const Text('payment_success', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green)).tr(),
-            ] else if (_status == 'ERROR') ...[
-              const Icon(Icons.error_outline, color: Colors.red, size: 80),
-              const SizedBox(height: 24),
-              const Text('payment_failed_desc', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)).tr(),
-              const SizedBox(height: 32),
-              ElevatedButton(onPressed: () => _launchPaystack(), child: const Text('retry_payment').tr()),
-            ],
-            const SizedBox(height: 60),
-            const Text('Build v1.1.95 - Seamless Integrated Gateway', style: TextStyle(fontSize: 10, color: Colors.grey)),
-          ],
-        ),
-      ),
+    // Show absolutely nothing except a subtle loading overlay if needed
+    // The Paystack portal is an iframe on top of the DOM
+    return Center(
+      child: _status == 'PENDING' 
+        ? Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxConstraints.expand() as dynamic, BoxShadow(blurRadius: 10, color: Colors.black26)]),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                const Text('payment_redirecting', style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+              ],
+            ),
+          )
+        : const SizedBox.shrink(),
     );
   }
 }

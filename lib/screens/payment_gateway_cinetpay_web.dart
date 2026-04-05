@@ -77,7 +77,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
       if (response.data != null && response.data['is_active'] == true) {
          _statusTimer?.cancel();
          if (mounted) setState(() => _status = 'SUCCESS');
-         Future.delayed(const Duration(seconds: 2), () { if (mounted) Navigator.pop(context, {'success': true}); });
+         Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.pop(context, {'success': true}); });
          return;
       }
     } catch (_) {}
@@ -91,7 +91,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
       if (response.data['code'] == '00' && response.data['data']['status'] == 'ACCEPTED') {
           _statusTimer?.cancel();
           if (mounted) setState(() => _status = 'SUCCESS');
-          Future.delayed(const Duration(seconds: 2), () { if (mounted) Navigator.pop(context, {'success': true}); });
+          Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.pop(context, {'success': true}); });
       }
     } catch (_) {}
   }
@@ -109,7 +109,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
           data: {
             'apikey': '297929662685d35c4021b02.21438964', 'site_id': widget.siteId, 'transaction_id': _transactionId,
             'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
-            'description': widget.description, 'notify_url': 'https://api.tiknetafrica.com/api/payment/notify/',
+            'description': widget.description, 'notify_url': 'https://api.tiknetafrica.com/api/partner/payment/notify/',
             'return_url': returnUrl, 'customer_name': widget.firstName, 'customer_surname': widget.lastName,
             'customer_email': widget.email, 'customer_phone_number': widget.phoneNumber, 'channels': 'ALL', 'lang': 'fr'
           }
@@ -123,7 +123,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
       js.context.callMethod('launchCinetPay', [
         js.JsObject.jsify({
           'apiKey': '297929662685d35c4021b02.21438964', 'siteId': widget.siteId,
-          'notifyUrl': 'https://api.tiknetafrica.com/api/payment/notify/', 'transactionId': _transactionId,
+          'notifyUrl': 'https://api.tiknetafrica.com/api/partner/payment/notify/', 'transactionId': _transactionId,
           'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
           'description': widget.description, 'customerName': widget.firstName, 'customerSurname': widget.lastName,
           'customerEmail': widget.email, 'customerPhoneNumber': widget.phoneNumber, 'returnUrl': returnUrl,
@@ -135,35 +135,21 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(title: Text('payment'.tr()), leading: IconButton(icon: const Icon(Icons.close), onPressed: widget.onRequestClose)),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (_status == 'PENDING' || _status == 'INITIAL') ...[
-              const CircularProgressIndicator(),
-              const SizedBox(height: 24),
-              const Text('payment_redirecting', style: TextStyle(fontSize: 16, color: Colors.blueGrey)).tr(),
-              const SizedBox(height: 8),
-              const Text('Initializing Secure Gateway...', style: TextStyle(fontSize: 12, color: Colors.grey)),
-            ] else if (_status == 'SUCCESS') ...[
-              const Icon(Icons.check_circle, color: Colors.green, size: 80),
-              const SizedBox(height: 24),
-              const Text('payment_success', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green)).tr(),
-            ] else if (_status == 'ERROR') ...[
-              const Icon(Icons.error_outline, color: Colors.red, size: 80),
-              const SizedBox(height: 24),
-              const Text('payment_failed_desc', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)).tr(),
-              const SizedBox(height: 32),
-              ElevatedButton(onPressed: () => _launchPaymentGateway(), child: const Text('retry_payment').tr()),
-            ],
-            const SizedBox(height: 60),
-            const Text('Build v1.1.95 - Seamless Integrated Gateway', style: TextStyle(fontSize: 10, color: Colors.grey)),
-          ],
-        ),
-      ),
+    return Center(
+      child: _status == 'PENDING' 
+        ? Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(blurRadius: 20, color: Colors.black12)]),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                const Text('payment_redirecting', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)).tr(),
+              ],
+            ),
+          )
+        : const SizedBox.shrink(),
     );
   }
 }
