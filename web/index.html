@@ -36,9 +36,9 @@
 
 <body>
   <script>
-    // BUILD v1.1.96 - NUCLEAR CACHE RESET
-    const targetVersion = '1.1.96';
-    console.log('🚀 WIFI-4U PARTNER APP - BUILD ' + targetVersion + ' - TIMESTAMP: ' + new Date().toISOString());
+    // FINAL BUILD v1.1.101 - STABLE GATEWAY RELEASE
+    const targetVersion = '1.1.101';
+    console.log('🚀 WIFI-4U PARTNER APP - BUILD ' + targetVersion + ' (STABLE GATEWAY)');
     
     // Global helper for CinetPay official SDK launch
     window.launchCinetPay = function(config) {
@@ -48,35 +48,22 @@
       }
       try {
         CinetPay.setConfig({
-          apikey: config.apiKey,
-          site_id: config.siteId,
-          notify_url: config.notifyUrl,
-          mode: 'PRODUCTION'
+          apikey: config.apiKey, site_id: config.siteId, notify_url: config.notifyUrl, mode: 'PRODUCTION'
         });
         
         CinetPay.getCheckout({
-          transaction_id: config.transactionId,
-          amount: config.amount,
-          currency: config.currency,
-          channels: 'ALL',
-          description: config.description,
-          customer_name: config.customerName,
-          customer_surname: config.customerSurname,
-          customer_email: config.customerEmail,
-          customer_phone_number: config.customerPhoneNumber,
-          customer_address: "Abidjan",
-          customer_city: "Abidjan",
-          customer_country: "CI",
-          customer_state: "CI",
-          customer_zip_code: "00225",
-          return_url: config.returnUrl,
-          wait_response: true
+          transaction_id: config.transactionId, amount: config.amount, currency: config.currency,
+          channels: 'ALL', description: config.description, customer_name: config.customerName,
+          customer_surname: config.customerSurname, customer_email: config.customerEmail,
+          customer_phone_number: config.customerPhoneNumber, customer_address: "Abidjan",
+          customer_city: "Abidjan", customer_country: "CI", customer_state: "CI",
+          customer_zip_code: "00225", return_url: config.returnUrl, wait_response: true
         });
 
         CinetPay.waitResponse(function(data) {
            console.log('CinetPay Response:', data);
            if (data.status == "ACCEPTED") {
-              if (window.onPaymentSuccess) window.onPaymentSuccess(data);
+              if (window.onPaymentSuccess) window.onPaymentSuccess(config.transactionId);
            } else {
               if (window.onPaymentError) window.onPaymentError(data);
            }
@@ -88,11 +75,11 @@
         });
 
         CinetPay.onClose(function(data) {
-          console.log('CinetPay Closed');
-          if (window.onPaymentError) window.onPaymentError(data);
+          console.log('CinetPay Portal Closed');
+          if (window.onPaymentError) window.onPaymentError({message: "closed"});
         });
       } catch (e) {
-        console.error('Launch Error:', e);
+        console.error('CinetPay Launch Error:', e);
       }
     };
 
@@ -104,11 +91,7 @@
       }
       try {
         const handler = PaystackPop.setup({
-          key: config.key,
-          email: config.email,
-          amount: config.amount,
-          currency: config.currency,
-          ref: config.ref,
+          key: config.key, email: config.email, amount: config.amount, currency: config.currency, ref: config.ref,
           metadata: {
             custom_fields: [
               { display_name: "Plan ID", variable_name: "plan_id", value: config.planId },
@@ -120,7 +103,7 @@
             if (window.onPaystackSuccess) window.onPaystackSuccess(response.reference);
           },
           onClose: function () {
-            console.log('⚠️ Paystack Cancel');
+            console.log('⚠️ Paystack Closed');
             if (window.onPaystackCancel) window.onPaystackCancel();
           }
         });
@@ -130,48 +113,32 @@
       }
     };
 
-    // Escaping the PWA/ServiceWorker sticky cache trap once and for all
+    // Standalone and Version Management
     if (localStorage.getItem('last_version') !== targetVersion) {
-      console.warn('🧹 [Nuclear Clear] Version mismatch! Purging and resetting...');
-      
+      console.warn('🧹 [Update] Version mismatch! Hard Resetting...');
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(registrations => {
           for (let r of registrations) r.unregister();
         });
       }
-      
       if ('caches' in window) {
         caches.keys().then(names => {
           for (let name of names) caches.delete(name);
         });
       }
-      
-      localStorage.clear(); // Complete reset
+      localStorage.clear();
       localStorage.setItem('last_version', targetVersion);
-      
-      // Delay and hard reload
-      setTimeout(() => {
-        window.location.href = window.location.origin + window.location.pathname + '?v=' + targetVersion;
-      }, 500);
+      setTimeout(() => { window.location.reload(); }, 200);
     }
     
     window.appVersion = targetVersion;
-    window.deferredPrompt = null;
-
-    // Stable Service Worker registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('service-worker.js').then(function (registration) {
-          console.log('✅ ServiceWorker registered');
-        }).catch(function (err) {
-          console.log('❌ ServiceWorker registration failed: ', err);
+        navigator.serviceWorker.register('service-worker.js').then(function (reg) {
+          console.log('✅ ServiceWorker enabled');
         });
       });
     }
-
-    window.isStandalone = function () {
-      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    };
   </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>

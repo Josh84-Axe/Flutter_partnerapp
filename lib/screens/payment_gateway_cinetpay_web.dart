@@ -6,6 +6,7 @@ import 'dart:html' as html;
 import 'dart:js' as js;
 import '../services/api/token_storage.dart';
 
+/// Sealed CinetPay Gateway with Unified Response Logic (v1.1.101)
 class PaymentGatewayCinetPay extends StatefulWidget {
   final String email;
   final double amount;
@@ -16,7 +17,7 @@ class PaymentGatewayCinetPay extends StatefulWidget {
   final String phoneNumber;
   final String siteId;
   final VoidCallback onRequestClose;
-  final VoidCallback onPortalCancel;
+  final Function(bool success, String? reference, String? message) onResult;
 
   const PaymentGatewayCinetPay({
     super.key,
@@ -28,7 +29,7 @@ class PaymentGatewayCinetPay extends StatefulWidget {
     required this.lastName,
     required this.phoneNumber,
     required this.onRequestClose,
-    required this.onPortalCancel,
+    required this.onResult,
     this.siteId = '105899723',
   });
 
@@ -47,15 +48,17 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     super.initState();
     _transactionId = 'TXW${DateTime.now().millisecondsSinceEpoch}';
     
-    js.context['onPaymentSuccess'] = js.allowInterop((data) {
+    js.context['onPaymentSuccess'] = js.allowInterop((transactionId) {
        if (mounted) setState(() => _status = 'SUCCESS');
-       Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.pop(context, {'success': true}); });
+       // Return transactionId as the reference for confirmation
+       Future.delayed(const Duration(seconds: 1), () { 
+          if (mounted) widget.onResult(true, transactionId ?? _transactionId, 'payment_success'.tr()); 
+       });
     });
     
-    // CinetPay Cancel/Error handling - use the portal cancel callback to bypass confirmation dialog
     js.context['onPaymentError'] = js.allowInterop((data) {
-       debugPrint('CinetPay Error/Cancel triggered from JS');
-       if (mounted) widget.onPortalCancel();
+       debugPrint('CinetPay Error/Cancel triggered from JS: $data');
+       if (mounted) widget.onResult(false, null, 'payment_cancelled'.tr());
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) { _launchPaymentGateway(); });
@@ -83,7 +86,9 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
       if (response.data != null && response.data['is_active'] == true) {
          _statusTimer?.cancel();
          if (mounted) setState(() => _status = 'SUCCESS');
-         Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.pop(context, {'success': true}); });
+         Future.delayed(const Duration(seconds: 1), () { 
+            if (mounted) widget.onResult(true, _transactionId, 'payment_success'.tr()); 
+         });
       }
     } catch (_) {}
   }
@@ -110,7 +115,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
           _startStatusPolling();
           html.window.location.assign(response.data['data']['payment_url']);
         } else { throw Exception(); }
-      } catch (e) { if (mounted) widget.onPortalCancel(); }
+      } catch (e) { if (mounted) widget.onResult(false, null, 'error_occurred'.tr()); }
     } else {
       js.context.callMethod('launchCinetPay', [
         js.JsObject.jsify({

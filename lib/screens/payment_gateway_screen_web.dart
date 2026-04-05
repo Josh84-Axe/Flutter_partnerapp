@@ -6,7 +6,7 @@ import 'dart:js' as js;
 import 'payment_gateway_cinetpay_web.dart';
 import '../services/api/token_storage.dart';
 
-/// Transparent Gateway Wrapper with Direct Exit logic (v1.1.99)
+/// Sealed Gateway Wrapper with Unified Response Logic (v1.1.101)
 class PaymentGatewayScreen extends StatefulWidget {
   final String email;
   final double amount;
@@ -33,16 +33,17 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
   bool _isExiting = false;
   final GlobalKey<PaymentGatewayPaystackWebState> _paystackKey = GlobalKey();
 
-  Future<void> _forceExitApp({bool success = false, String? reference}) async {
+  /// Unified finalizer to ensure consistent result map for SubscriptionManagementScreen
+  Future<void> _finalize({required bool success, String? reference, String? message}) async {
     if (mounted && !_isExiting) {
       setState(() => _isExiting = true);
-      // Wait for state to apply to satisfy PopScope
+      // Wait for state to apply to satisfy PopScope blocking
       await Future.delayed(Duration.zero);
       if (mounted) {
         Navigator.of(context).pop({
           'success': success, 
           'reference': reference,
-          'message': success ? 'payment_success'.tr() : 'payment_cancelled'.tr()
+          'message': message ?? (success ? 'payment_success'.tr() : 'payment_cancelled'.tr())
         });
       }
     }
@@ -116,7 +117,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
               onRequestClose: () => _handleManualPop(isPaystack: false).then((confirmed) {
                  if (confirmed && mounted) Navigator.of(context).pop();
               }),
-              onPortalCancel: () => _forceExitApp(success: false),
+              onResult: (success, reference, message) => _finalize(success: success, reference: reference, message: message),
             )
           : PaymentGatewayPaystackWeb(
               key: _paystackKey,
@@ -128,7 +129,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
               onRequestClose: () => _handleManualPop(isPaystack: true).then((confirmed) {
                  if (confirmed && mounted) Navigator.of(context).pop();
               }),
-              onPortalCancel: () => _forceExitApp(success: false),
+              onResult: (success, reference, message) => _finalize(success: success, reference: reference, message: message),
             ),
       ),
     );
@@ -142,7 +143,7 @@ class PaymentGatewayPaystackWeb extends StatefulWidget {
   final String planName;
   final String currency;
   final VoidCallback onRequestClose;
-  final VoidCallback onPortalCancel;
+  final Function(bool success, String? reference, String? message) onResult;
 
   const PaymentGatewayPaystackWeb({
     super.key,
@@ -152,7 +153,7 @@ class PaymentGatewayPaystackWeb extends StatefulWidget {
     required this.planName,
     required this.currency,
     required this.onRequestClose,
-    required this.onPortalCancel,
+    required this.onResult,
   });
 
   @override
@@ -169,13 +170,18 @@ class PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
   void initState() {
     super.initState();
     _transactionId = 'PSK${DateTime.now().millisecondsSinceEpoch}';
+    
     js.context['onPaystackSuccess'] = js.allowInterop((reference) {
        if (mounted) setState(() => _status = 'SUCCESS');
-       Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.of(context).pop({'success': true, 'reference': reference}); });
+       Future.delayed(const Duration(seconds: 1), () { 
+          if (mounted) widget.onResult(true, reference, 'payment_success'.tr());
+       });
     });
+    
     js.context['onPaystackCancel'] = js.allowInterop(() {
-       if (mounted) widget.onPortalCancel(); 
+       if (mounted) widget.onResult(false, null, 'payment_cancelled'.tr()); 
     });
+    
     WidgetsBinding.instance.addPostFrameCallback((_) { _launchPaystack(); });
   }
 
@@ -203,7 +209,9 @@ class PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
       if (response.data != null && response.data['is_active'] == true) {
          _statusTimer?.cancel();
          if (mounted) setState(() => _status = 'SUCCESS');
-         Future.delayed(const Duration(seconds: 1), () { if (mounted) Navigator.of(context).pop({'success': true}); });
+         Future.delayed(const Duration(seconds: 1), () { 
+            if (mounted) widget.onResult(true, _transactionId, 'payment_success'.tr()); 
+         });
       }
     } catch (_) {}
   }
