@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:dio/dio.dart';
+import '../services/api/token_storage.dart';
 
-/// Screen for handling Paystack inline payment popup (Mobile platforms)
+/// Screen for handling Payment Gateways on Mobile (WebView)
 class PaymentGatewayScreen extends StatefulWidget {
   final String email;
   final double amount;
@@ -28,30 +29,49 @@ class PaymentGatewayScreen extends StatefulWidget {
 }
 
 class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
-  bool _canPop = false;
+  bool _isExiting = false;
+
+  Future<bool> _handlePop() async {
+    if (_isExiting) return true;
+    
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('cancel_payment'.tr()),
+        content: Text('cancel_payment_confirm'.tr()),
+        actions: [
+          TextButton(child: Text('no'.tr()), onPressed: () => Navigator.of(dialogContext).pop(false)),
+          TextButton(child: Text('yes'.tr()), style: TextButton.styleFrom(foregroundColor: Colors.red), onPressed: () => Navigator.of(dialogContext).pop(true)),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => _isExiting = true);
+      return true;
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Determine target gateway based on currency OR user country
     final rawCountry = widget.userData?['country']?.toString()?.toLowerCase() ?? 'ci';
     final isFrancophoneCountry = rawCountry == 'ci' || rawCountry == 'sn' || rawCountry == 'ml' || rawCountry == 'bj' || 
                                  rawCountry == 'bf' || rawCountry == 'ne' || rawCountry == 'tg' || rawCountry == 'cm' || 
-                                 rawCountry == 'ga' || rawCountry == 'cg' || rawCountry == 'td' || rawCountry == 'gn' ||
-                                 rawCountry.contains('guinea') || rawCountry.contains('ivoire') || rawCountry.contains('senegal');
+                                 rawCountry == 'ga' || rawCountry == 'cg' || rawCountry == 'td' || rawCountry == 'gn';
 
     final isFrancophoneCurrency = widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'GNF' || 
                                   widget.currency == 'FG' || widget.currency == 'CFA';
 
-    // If either currency OR country matches a francophone region, use CinetPay
-    final isCinetPay = isFrancophoneCurrency || isFrancophoneCountry;
+    final bool isCinetPay = isFrancophoneCurrency || isFrancophoneCountry;
     
     return PopScope(
-      canPop: _canPop,
+      canPop: _isExiting,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        final bool? shouldPop = await _showCancelConfirmation(context);
-        if (shouldPop == true && mounted) {
-           setState(() => _canPop = true);
+        final confirmed = await _handlePop();
+        if (confirmed && mounted) {
            Navigator.of(context).pop(result);
         }
       },
@@ -65,6 +85,9 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
             description: 'Payment for ${widget.planName}',
             email: widget.email,
             userData: widget.userData,
+            onRequestClose: () => _handlePop().then((confirmed) {
+               if (confirmed && mounted) Navigator.of(context).pop();
+            }),
           )
         : _PaymentGatewayPaystackMobile(
             email: widget.email,
@@ -72,26 +95,13 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
             planId: widget.planId,
             planName: widget.planName,
             currency: widget.currency,
+            onRequestClose: () => _handlePop().then((confirmed) {
+               if (confirmed && mounted) Navigator.of(context).pop();
+            }),
           ),
     );
   }
-
-  Future<bool?> _showCancelConfirmation(BuildContext context) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('cancel_payment'.tr()),
-        content: Text('cancel_payment_confirm'.tr()),
-        actions: [
-          TextButton(child: Text('no'.tr()), onPressed: () => Navigator.pop(context, false)),
-          TextButton(child: Text('yes'.tr()), style: TextButton.styleFrom(foregroundColor: Colors.red), onPressed: () => Navigator.pop(context, true)),
-        ],
-      ),
-    );
-  }
 }
-
-// ================== PAYSTACK IMPLEMENTATION ==================
 
 class _PaymentGatewayPaystackMobile extends StatefulWidget {
   final String email;
@@ -99,6 +109,7 @@ class _PaymentGatewayPaystackMobile extends StatefulWidget {
   final String planId;
   final String planName;
   final String currency;
+  final VoidCallback onRequestClose;
 
   const _PaymentGatewayPaystackMobile({
     required this.email,
@@ -106,6 +117,7 @@ class _PaymentGatewayPaystackMobile extends StatefulWidget {
     required this.planId,
     required this.planName,
     required this.currency,
+    required this.onRequestClose,
   });
 
   @override
@@ -115,7 +127,6 @@ class _PaymentGatewayPaystackMobile extends StatefulWidget {
 class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMobile> {
   WebViewController? _controller;
   bool _isLoading = true;
-  String _status = 'INITIAL';
   Timer? _statusTimer;
   late String _transactionId;
 
@@ -123,169 +134,74 @@ class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMo
   void initState() {
     super.initState();
     _transactionId = 'PSK${DateTime.now().millisecondsSinceEpoch}';
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _initializeWebView();
-      }
-    });
-
+    WidgetsBinding.instance.addPostFrameCallback((_) { if (mounted) _initializeWebView(); });
     _startStatusPolling();
   }
 
   @override
-  void dispose() {
-    _statusTimer?.cancel();
-    super.dispose();
-  }
+  void dispose() { _statusTimer?.cancel(); super.dispose(); }
 
   void _startStatusPolling() {
-    _statusTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
-      _checkTransactionStatus();
-    });
+    _statusTimer = Timer.periodic(const Duration(seconds: 10), (timer) { _checkTransactionStatus(); });
   }
 
   Future<void> _checkTransactionStatus() async {
     try {
+      final token = await TokenStorage().getAccessToken();
       final dio = Dio();
-      final response = await dio.get('https://api.tiknetafrica.com/api/partner/subscription-plans/check/');
+      final response = await dio.get(
+        'https://api.tiknetafrica.com/api/partner/subscription-plans/check/',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
       if (response.data != null && response.data['is_active'] == true) {
         _statusTimer?.cancel();
-        if (mounted) {
-           Navigator.pop(context, {'success': true, 'reference': _transactionId});
-        }
+        if (mounted) Navigator.of(context).pop({'success': true, 'reference': _transactionId});
       }
-    } catch (e) {
-      // Periodic check fail is expected until payment is done
-    }
+    } catch (_) {}
   }
 
   void _initializeWebView() {
-    try {
-      debugPrint('🚀 [PaystackMobile] Initializing WebView...');
-      
-      final controller = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onPageStarted: (String url) {
-              if (mounted) setState(() => _isLoading = true);
-            },
-            onPageFinished: (String url) {
-              if (mounted) setState(() => _isLoading = false);
-            },
-            onWebResourceError: (WebResourceError error) {
-              debugPrint('❌ [PaystackMobile] WebView error: ${error.description}');
-            },
-          ),
-        )
-        ..addJavaScriptChannel(
-          'PaystackFlutter',
-          onMessageReceived: (JavaScriptMessage message) {
-            _handlePaymentResponse(message.message);
-          },
-        )
-        ..loadHtmlString(_buildPaystackHTML());
-      
-      if (mounted) {
-        setState(() {
-          _controller = controller;
-        });
-      }
-    } catch (e) {
-      debugPrint('❌ [PaystackMobile] Error: $e');
-    }
+    final controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(NavigationDelegate(
+        onPageStarted: (_) => setState(() => _isLoading = true),
+        onPageFinished: (_) => setState(() => _isLoading = false),
+      ))
+      ..addJavaScriptChannel('PaystackFlutter', onMessageReceived: (JavaScriptMessage message) {
+        final msg = message.message;
+        if (msg.contains('"success":true')) {
+          Navigator.of(context).pop({'success': true});
+        }
+      })
+      ..loadHtmlString(_buildPaystackHTML());
+    setState(() => _controller = controller);
   }
 
   String _buildPaystackHTML() {
-    final amountInKobo = (widget.amount * 100).toInt();
-    
     return '''
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://js.paystack.co/v1/inline.js"></script>
-    <style>body{display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif;background:#f0f2f5}</style>
-</head>
-<body>
-    <script>
-        function payWithPaystack() {
-            var handler = PaystackPop.setup({
-                key: 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
-                email: '${widget.email}',
-                amount: $amountInKobo,
-                currency: '${widget.currency}',
-                ref: 'PSK_' + Math.floor((Math.random() * 1000000000) + 1),
-                metadata: {
-                    plan_id: '${widget.planId}',
-                    plan_name: '${widget.planName}',
-                },
-                callback: function(response) {
-                    if (window.PaystackFlutter) {
-                        window.PaystackFlutter.postMessage(JSON.stringify({
-                            success: true,
-                            reference: response.reference
-                        }));
-                    }
-                },
-                onClose: function() {
-                    if (window.PaystackFlutter) {
-                        window.PaystackFlutter.postMessage(JSON.stringify({
-                            success: false,
-                            message: 'Payment cancelled'
-                        }));
-                    }
-                }
-            });
-            handler.openIframe();
-        }
-        window.onload = function() { setTimeout(payWithPaystack, 500); };
-    </script>
-</body>
-</html>
-    ''';
-  }
-
-  void _handlePaymentResponse(String message) {
-    try {
-      if (message.contains('"success":true')) {
-        final referenceMatch = RegExp(r'"reference":"([^"]+)"').firstMatch(message);
-        final reference = referenceMatch?.group(1);
-        if (reference != null) {
-          Navigator.pop(context, {'success': true, 'reference': reference});
-        }
-      } else {
-        Navigator.pop(context, {'success': false, 'message': 'Payment cancelled'});
-      }
-    } catch (e) {
-      Navigator.pop(context, {'success': false, 'message': 'Error processing payment'});
-    }
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://js.paystack.co/v1/inline.js"></script></head>
+<body style="background:#f0f2f5"><script>
+function pay() { PaystackPop.setup({
+  key: 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
+  email: '${widget.email}', amount: ${(widget.amount*100).toInt()},
+  currency: '${widget.currency}', ref: '$_transactionId',
+  callback: function(r){ window.PaystackFlutter.postMessage(JSON.stringify({success:true})); },
+  onClose: function(){ window.PaystackFlutter.postMessage(JSON.stringify({success:false})); }
+}).open(); }
+window.onload = function(){ setTimeout(pay, 500); };
+</script></body></html>''';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('payment'.tr()),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).maybePop({'success': false, 'message': 'Cancelled'}),
-        ),
-      ),
-      body: _controller == null
-          ? const Center(child: CircularProgressIndicator())
-          : Stack(
-              children: [
-                WebViewWidget(controller: _controller!),
-                if (_isLoading) const Center(child: CircularProgressIndicator()),
-              ],
-            ),
+      appBar: AppBar(title: Text('payment'.tr()), leading: IconButton(icon: const Icon(Icons.close), onPressed: widget.onRequestClose)),
+      body: _controller == null ? const Center(child: CircularProgressIndicator()) : WebViewWidget(controller: _controller!),
     );
   }
 }
-
-// ================== CINETPAY IMPLEMENTATION ==================
 
 class _PaymentGatewayCinetPayMobile extends StatefulWidget {
   final String apiKey;
@@ -296,16 +212,12 @@ class _PaymentGatewayCinetPayMobile extends StatefulWidget {
   final String description;
   final String email;
   final Map<String, dynamic>? userData;
+  final VoidCallback onRequestClose;
 
   const _PaymentGatewayCinetPayMobile({
-    required this.apiKey,
-    required this.siteId,
-    required this.transactionId,
-    required this.amount,
-    required this.currency,
-    required this.description,
-    required this.email,
-    this.userData,
+    required this.apiKey, required this.siteId, required this.transactionId,
+    required this.amount, required this.currency, required this.description,
+    required this.email, required this.onRequestClose, this.userData,
   });
 
   @override
@@ -319,165 +231,43 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _initializeWebView();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) { if (mounted) _initializeWebView(); });
   }
 
   void _initializeWebView() {
-    try {
-      debugPrint('🚀 [CinetPayMobile] Initializing WebView...');
-      
-      final controller = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onPageStarted: (String url) {
-              if (mounted) setState(() => _isLoading = true);
-            },
-            onPageFinished: (String url) {
-              if (mounted) setState(() => _isLoading = false);
-            },
-            onWebResourceError: (WebResourceError error) {
-              debugPrint('❌ [CinetPayMobile] WebView error: ${error.description}');
-            },
-          ),
-        )
-        ..addJavaScriptChannel(
-          'CinetPayFlutter',
-          onMessageReceived: (JavaScriptMessage message) {
-             _handlePaymentResponse(message.message);
-          },
-        )
-        // Set a valid base URL to avoid CORS/Origin issues with CinetPay
-        ..loadHtmlString(_buildCinetPayHTML(), baseUrl: 'https://cinetpay.com');
-      
-      if (mounted) {
-        setState(() {
-          _controller = controller;
-        });
-      }
-    } catch (e) {
-      debugPrint('❌ [CinetPayMobile] Error: $e');
-    }
+    final controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(NavigationDelegate(
+        onPageStarted: (_) => setState(() => _isLoading = true),
+        onPageFinished: (_) => setState(() => _isLoading = false),
+      ))
+      ..addJavaScriptChannel('CinetPayFlutter', onMessageReceived: (message) {
+        if (message.message.contains('"success":true')) Navigator.of(context).pop({'success': true});
+      })
+      ..loadHtmlString(_buildCinetPayHTML(), baseUrl: 'https://cinetpay.com');
+    setState(() => _controller = controller);
   }
 
   String _buildCinetPayHTML() {
-    // Extract user data with fallbacks
-    final fName = widget.userData?['firstName'] ?? '';
-    final lName = widget.userData?['lastName'] ?? '';
-    final addr = widget.userData?['address'] ?? 'Abidjan';
-    final city = widget.userData?['city'] ?? 'Abidjan';
-    final country = widget.userData?['country'] ?? 'CI';
-    final phone = widget.userData?['phone'] ?? '';
-    final zip = '00000';
-
     return '''
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://checkout.cinetpay.com/sdk/dist/cinetpay.min.js"></script>
-    <style>body{display:flex;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif;background:#f0f2f5}</style>
-</head>
-<body>
-    <script>
-        function checkout() {
-            var transId = '${widget.transactionId}';
-            
-            CinetPay.setConfig({
-                apiKey: '${widget.apiKey}',
-                site_id: '${widget.siteId}',
-                notify_url: 'https://api.tiknetafrica.com/api/payment/notify/',
-                mode: 'PRODUCTION'
-            });
-            
-            CinetPay.getCheckout({
-                transaction_id: transId,
-                amount: ${widget.amount.toInt()},
-                currency: '${widget.currency}',
-                channels: 'ALL',
-                description: '${widget.description}',
-                // Customer data
-                customer_name: '$fName',
-                customer_surname: '$lName',
-                customer_email: '${widget.email}',
-                customer_phone_number: '$phone',
-                customer_address: '$addr',
-                customer_city: '$city',
-                customer_country: '$country',
-                customer_state: '$country',
-                customer_zip_code: '$zip',
-            });
-            
-            CinetPay.waitResponse(function(data) {
-                if (window.CinetPayFlutter) {
-                    if (data.status == "ACCEPTED") {
-                         window.CinetPayFlutter.postMessage(JSON.stringify({
-                            success: true,
-                            reference: data.operator_id || transId, // CinetPay uses operator_id
-                            message: 'Payment verified'
-                        }));
-                    } else {
-                         window.CinetPayFlutter.postMessage(JSON.stringify({
-                            success: false,
-                            message: 'Payment failed status: ' + data.status
-                        }));
-                    }
-                }
-            });
-            
-            CinetPay.onError(function(data) {
-                if (window.CinetPayFlutter) {
-                    window.CinetPayFlutter.postMessage(JSON.stringify({
-                        success: false,
-                        message: 'Error: ' + data.description
-                    }));
-                }
-            });
-        }
-        
-        window.onload = function() { setTimeout(checkout, 1000); };
-    </script>
-</body>
-</html>
-    ''';
-  }
-
-  void _handlePaymentResponse(String message) {
-    try {
-      debugPrint('CinetPay Response: $message');
-      if (message.contains('"success":true')) {
-         final referenceMatch = RegExp(r'"reference":"([^"]+)"').firstMatch(message);
-         final reference = referenceMatch?.group(1) ?? widget.transactionId;
-         Navigator.pop(context, {'success': true, 'reference': reference});
-      } else {
-         Navigator.pop(context, {'success': false, 'message': 'Payment failed'});
-      }
-    } catch (e) {
-       Navigator.pop(context, {'success': false, 'message': 'Error processing payment'});
-    }
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://checkout.cinetpay.com/sdk/dist/cinetpay.min.js"></script></head>
+<body><script>
+function checkout() {
+  CinetPay.setConfig({ apiKey: '${widget.apiKey}', site_id: '${widget.siteId}', notify_url: 'https://api.tiknetafrica.com/api/payment/notify/', mode: 'PRODUCTION' });
+  CinetPay.getCheckout({ transaction_id: '${widget.transactionId}', amount: ${widget.amount.toInt()}, currency: '${widget.currency}', channels: 'ALL', description: '${widget.description}', customer_email: '${widget.email}' });
+  CinetPay.waitResponse(function(data) { if (data.status == "ACCEPTED") window.CinetPayFlutter.postMessage(JSON.stringify({success:true})); });
+}
+window.onload = function(){ setTimeout(checkout, 1000); };
+</script></body></html>''';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('payment'.tr()),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).maybePop({'success': false, 'message': 'Cancelled'}),
-        ),
-      ),
-      body: _controller == null
-          ? const Center(child: CircularProgressIndicator())
-          : Stack(
-              children: [
-                WebViewWidget(controller: _controller!),
-                if (_isLoading) const Center(child: CircularProgressIndicator()),
-              ],
-            ),
+      appBar: AppBar(title: Text('payment'.tr()), leading: IconButton(icon: const Icon(Icons.close), onPressed: widget.onRequestClose)),
+      body: _controller == null ? const Center(child: CircularProgressIndicator()) : WebViewWidget(controller: _controller!),
     );
   }
 }
