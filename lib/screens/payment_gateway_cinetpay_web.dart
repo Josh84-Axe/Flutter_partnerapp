@@ -77,7 +77,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     try {
       final token = await TokenStorage().getAccessToken();
       final response = await Dio().get(
-        'https://api.tiknetafrica.com/api/partner/subscription-plans/check/',
+        'https://api.tiknetafrica.com/v1/partner/subscription-plans/check/',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       if (response.data != null && response.data['is_active'] == true) {
@@ -101,7 +101,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
           data: {
             'apikey': '297929662685d35c4021b02.21438964', 'site_id': widget.siteId, 'transaction_id': _transactionId,
             'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
-            'description': widget.description, 'notify_url': 'https://api.tiknetafrica.com/api/partner/payment/notify/',
+            'description': widget.description, 'notify_url': 'https://api.tiknetafrica.com/v1/partner/payment/notify/',
             'return_url': returnUrl, 'customer_name': widget.firstName, 'customer_surname': widget.lastName,
             'customer_email': widget.email, 'customer_phone_number': widget.phoneNumber, 'channels': 'ALL', 'lang': 'fr'
           }
@@ -115,7 +115,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
       js.context.callMethod('launchCinetPay', [
         js.JsObject.jsify({
           'apiKey': '297929662685d35c4021b02.21438964', 'siteId': widget.siteId,
-          'notifyUrl': 'https://api.tiknetafrica.com/api/partner/payment/notify/', 'transactionId': _transactionId,
+          'notifyUrl': 'https://api.tiknetafrica.com/v1/partner/payment/notify/', 'transactionId': _transactionId,
           'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
           'description': widget.description, 'customerName': widget.firstName, 'customerSurname': widget.lastName,
           'customerEmail': widget.email, 'customerPhoneNumber': widget.phoneNumber, 'returnUrl': returnUrl,

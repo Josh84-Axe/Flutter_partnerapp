@@ -86,6 +86,11 @@
           console.error('CinetPay Error:', data);
           if (window.onPaymentError) window.onPaymentError(data);
         });
+
+        CinetPay.onClose(function(data) {
+          console.log('CinetPay Closed');
+          if (window.onPaymentError) window.onPaymentError(data);
+        });
       } catch (e) {
         console.error('Launch Error:', e);
       }

@@ -158,7 +158,7 @@ class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMo
     try {
       final token = await TokenStorage().getAccessToken();
       final response = await Dio().get(
-        'https://api.tiknetafrica.com/api/partner/subscription-plans/check/',
+        'https://api.tiknetafrica.com/v1/partner/subscription-plans/check/',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       if (response.data != null && response.data['is_active'] == true) {
@@ -254,7 +254,7 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
 <script src="https://checkout.cinetpay.com/sdk/dist/cinetpay.min.js"></script></head>
 <body><script>
 function checkout() {
-  CinetPay.setConfig({ apiKey: '${widget.apiKey}', site_id: '${widget.siteId}', notify_url: 'https://api.tiknetafrica.com/api/payment/notify/', mode: 'PRODUCTION' });
+  CinetPay.setConfig({ apiKey: '${widget.apiKey}', site_id: '${widget.siteId}', notify_url: 'https://api.tiknetafrica.com/v1/partner/payment/notify/', mode: 'PRODUCTION' });
   CinetPay.getCheckout({ transaction_id: '${widget.transactionId}', amount: ${widget.amount.toInt()}, currency: '${widget.currency}', channels: 'ALL', description: '${widget.description}', customer_email: '${widget.email}' });
   CinetPay.waitResponse(function(data) { 
     if (data.status == "ACCEPTED") window.CinetPayFlutter.postMessage(JSON.stringify({success:true}));
