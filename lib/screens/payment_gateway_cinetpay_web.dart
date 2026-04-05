@@ -6,7 +6,7 @@ import 'dart:html' as html;
 import 'dart:js' as js;
 import '../services/api/token_storage.dart';
 
-/// Sealed CinetPay Gateway with Unified Response Logic (v1.1.101)
+/// Sealed CinetPay Gateway with Seamless-Only Logic (v1.1.102)
 class PaymentGatewayCinetPay extends StatefulWidget {
   final String email;
   final double amount;
@@ -50,7 +50,6 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     
     js.context['onPaymentSuccess'] = js.allowInterop((transactionId) {
        if (mounted) setState(() => _status = 'SUCCESS');
-       // Return transactionId as the reference for confirmation
        Future.delayed(const Duration(seconds: 1), () { 
           if (mounted) widget.onResult(true, transactionId ?? _transactionId, 'payment_success'.tr()); 
        });
@@ -96,38 +95,26 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
   Future<void> _launchPaymentGateway() async {
     if (mounted) setState(() => _status = 'PENDING');
     final returnUrl = html.window.location.href.split('?').first;
-    final userAgent = html.window.navigator.userAgent.toLowerCase();
-    final isMobile = userAgent.contains('mobile') || userAgent.contains('android') || userAgent.contains('iphone');
 
-    if (isMobile) {
-      try {
-        final response = await Dio().post(
-          'https://api-checkout.cinetpay.com/v2/payment',
-          data: {
-            'apikey': '297929662685d35c4021b02.21438964', 'site_id': widget.siteId, 'transaction_id': _transactionId,
-            'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
-            'description': widget.description, 'notify_url': 'https://api.tiknetafrica.com/v1/partner/payment/notify/',
-            'return_url': returnUrl, 'customer_name': widget.firstName, 'customer_surname': widget.lastName,
-            'customer_email': widget.email, 'customer_phone_number': widget.phoneNumber, 'channels': 'ALL', 'lang': 'fr'
-          }
-        );
-        if (response.data['code'] == '201') {
-          _startStatusPolling();
-          html.window.location.assign(response.data['data']['payment_url']);
-        } else { throw Exception(); }
-      } catch (e) { if (mounted) widget.onResult(false, null, 'error_occurred'.tr()); }
-    } else {
-      js.context.callMethod('launchCinetPay', [
-        js.JsObject.jsify({
-          'apiKey': '297929662685d35c4021b02.21438964', 'siteId': widget.siteId,
-          'notifyUrl': 'https://api.tiknetafrica.com/v1/partner/payment/notify/', 'transactionId': _transactionId,
-          'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
-          'description': widget.description, 'customerName': widget.firstName, 'customerSurname': widget.lastName,
-          'customerEmail': widget.email, 'customerPhoneNumber': widget.phoneNumber, 'returnUrl': returnUrl,
-        })
-      ]);
-      _startStatusPolling();
-    }
+    // FIXED v1.1.102: Always use launchCinetPay (Seamless SDK) instead of html redirect.
+    // This maintains the Flutter app state on mobile browsers, allowing Navigator.pop to work on return.
+    js.context.callMethod('launchCinetPay', [
+      js.JsObject.jsify({
+        'apiKey': '297929662685d35c4021b02.21438964', 
+        'siteId': widget.siteId,
+        'notifyUrl': 'https://api.tiknetafrica.com/v1/partner/payment/notify/', 
+        'transactionId': _transactionId,
+        'amount': widget.amount.toInt(), 
+        'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
+        'description': widget.description, 
+        'customerName': widget.firstName, 
+        'customerSurname': widget.lastName,
+        'customerEmail': widget.email, 
+        'customerPhoneNumber': widget.phoneNumber, 
+        'returnUrl': returnUrl,
+      })
+    ]);
+    _startStatusPolling();
   }
 
   @override
