@@ -30,6 +30,8 @@ class PaymentGatewayScreen extends StatefulWidget {
 }
 
 class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
+  bool _canPop = false;
+
   @override
   Widget build(BuildContext context) {
     // Determine target gateway based on currency OR user country
@@ -47,12 +49,13 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
     
     // Add PopScope for resilience against accidental closures
     return PopScope(
-      canPop: false,
+      canPop: _canPop,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
         final bool? shouldPop = await _showCancelConfirmation(context);
-        if (shouldPop == true && context.mounted) {
-           Navigator.of(context).pop();
+        if (shouldPop == true && mounted) {
+           setState(() => _canPop = true);
+           Navigator.of(context).pop(result);
         }
       },
       child: isCinetPay 

@@ -28,6 +28,8 @@ class PaymentGatewayScreen extends StatefulWidget {
 }
 
 class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
+  bool _canPop = false;
+
   @override
   Widget build(BuildContext context) {
     // Determine target gateway based on currency OR user country
@@ -41,25 +43,50 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
                                   widget.currency == 'FG' || widget.currency == 'CFA';
 
     // If either currency OR country matches a francophone region, use CinetPay
-    if (isFrancophoneCurrency || isFrancophoneCountry) {
-       return _PaymentGatewayCinetPayMobile(
-          apiKey: '297929662685d35c4021b02.21438964',
-          siteId: '105899723',
-          transactionId: 'txn_${DateTime.now().millisecondsSinceEpoch}',
-          amount: widget.amount,
-          currency: (widget.currency == 'CFA' || widget.currency == 'USD') ? 'XOF' : widget.currency, // Ensure XOF if CFA or fallback for CI
-          description: 'Payment for ${widget.planName}',
-          email: widget.email,
-          userData: widget.userData,
-       );
-    }
+    final isCinetPay = isFrancophoneCurrency || isFrancophoneCountry;
     
-    return _PaymentGatewayPaystackMobile(
-      email: widget.email,
-      amount: widget.amount,
-      planId: widget.planId,
-      planName: widget.planName,
-      currency: widget.currency,
+    return PopScope(
+      canPop: _canPop,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final bool? shouldPop = await _showCancelConfirmation(context);
+        if (shouldPop == true && mounted) {
+           setState(() => _canPop = true);
+           Navigator.of(context).pop(result);
+        }
+      },
+      child: isCinetPay 
+        ? _PaymentGatewayCinetPayMobile(
+            apiKey: '297929662685d35c4021b02.21438964',
+            siteId: '105899723',
+            transactionId: 'txn_${DateTime.now().millisecondsSinceEpoch}',
+            amount: widget.amount,
+            currency: (widget.currency == 'CFA' || widget.currency == 'USD') ? 'XOF' : widget.currency,
+            description: 'Payment for ${widget.planName}',
+            email: widget.email,
+            userData: widget.userData,
+          )
+        : _PaymentGatewayPaystackMobile(
+            email: widget.email,
+            amount: widget.amount,
+            planId: widget.planId,
+            planName: widget.planName,
+            currency: widget.currency,
+          ),
+    );
+  }
+
+  Future<bool?> _showCancelConfirmation(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('cancel_payment'.tr()),
+        content: Text('cancel_payment_confirm'.tr()),
+        actions: [
+          TextButton(child: Text('no'.tr()), onPressed: () => Navigator.pop(context, false)),
+          TextButton(child: Text('yes'.tr()), style: TextButton.styleFrom(foregroundColor: Colors.red), onPressed: () => Navigator.pop(context, true)),
+        ],
+      ),
     );
   }
 }
@@ -243,52 +270,17 @@ class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMo
         title: Text('payment'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () async {
-            final shouldPop = await showDialog<bool>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text('cancel_payment'.tr()),
-                content: Text('cancel_payment_confirm'.tr()),
-                actions: [
-                  TextButton(child: Text('no'.tr()), onPressed: () => Navigator.pop(context, false)),
-                  TextButton(child: Text('yes'.tr()), style: TextButton.styleFrom(foregroundColor: Colors.red), onPressed: () => Navigator.pop(context, true)),
-                ],
-              ),
-            );
-            if (shouldPop == true && context.mounted) {
-              Navigator.pop(context, {'success': false, 'message': 'Cancelled'});
-            }
-          },
+          onPressed: () => Navigator.of(context).maybePop({'success': false, 'message': 'Cancelled'}),
         ),
       ),
-      body: PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, result) async {
-          if (didPop) return;
-          final bool? shouldPop = await showDialog<bool>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text('cancel_payment'.tr()),
-              content: Text('cancel_payment_confirm'.tr()),
-              actions: [
-                TextButton(child: Text('no'.tr()), onPressed: () => Navigator.pop(context, false)),
-                TextButton(child: Text('yes'.tr()), style: TextButton.styleFrom(foregroundColor: Colors.red), onPressed: () => Navigator.pop(context, true)),
+      body: _controller == null
+          ? const Center(child: CircularProgressIndicator())
+          : Stack(
+              children: [
+                WebViewWidget(controller: _controller!),
+                if (_isLoading) const Center(child: CircularProgressIndicator()),
               ],
             ),
-          );
-          if (shouldPop == true && context.mounted) {
-            Navigator.pop(context, {'success': false, 'message': 'Cancelled'});
-          }
-        },
-        child: _controller == null
-            ? const Center(child: CircularProgressIndicator())
-            : Stack(
-                children: [
-                  WebViewWidget(controller: _controller!),
-                  if (_isLoading) const Center(child: CircularProgressIndicator()),
-                ],
-              ),
-      ),
     );
   }
 }
@@ -475,7 +467,7 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
         title: Text('payment'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(context, {'success': false, 'message': 'Cancelled'}),
+          onPressed: () => Navigator.of(context).maybePop({'success': false, 'message': 'Cancelled'}),
         ),
       ),
       body: _controller == null
