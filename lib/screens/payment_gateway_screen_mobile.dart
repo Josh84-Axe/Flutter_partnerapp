@@ -31,7 +31,15 @@ class PaymentGatewayScreen extends StatefulWidget {
 class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
   bool _isExiting = false;
 
-  Future<bool> _handlePop() async {
+  Future<void> _forceExitApp() async {
+    if (mounted) {
+      setState(() => _isExiting = true);
+      await Future.delayed(Duration.zero);
+      if (mounted) Navigator.of(context).pop({'success': false, 'message': 'payment_cancelled'.tr()});
+    }
+  }
+
+  Future<bool> _handlePop({bool isPaystack = true}) async {
     if (_isExiting) return true;
     
     final bool? confirmed = await showDialog<bool>(
@@ -41,7 +49,11 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
         title: Text('cancel_payment'.tr()),
         content: Text('cancel_payment_confirm'.tr()),
         actions: [
-          TextButton(child: Text('no'.tr()), onPressed: () => Navigator.of(dialogContext).pop(false)),
+          TextButton(child: Text('no'.tr()), onPressed: () {
+            Navigator.of(dialogContext).pop(false);
+            // On mobile, if we are in the webview, there isn't a direct 'reload' method easily exposed without GlobalKey,
+            // but usually the webview state remains.
+          }),
           TextButton(child: Text('yes'.tr()), style: TextButton.styleFrom(foregroundColor: Colors.red), onPressed: () => Navigator.of(dialogContext).pop(true)),
         ],
       ),
@@ -70,10 +82,8 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
       canPop: _isExiting,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        final confirmed = await _handlePop();
-        if (confirmed && mounted) {
-           Navigator.of(context).pop(result);
-        }
+        final confirmed = await _handlePop(isPaystack: !isCinetPay);
+        if (confirmed && mounted) Navigator.of(context).pop(result);
       },
       child: isCinetPay 
         ? _PaymentGatewayCinetPayMobile(
@@ -81,13 +91,12 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
             siteId: '105899723',
             transactionId: 'txn_${DateTime.now().millisecondsSinceEpoch}',
             amount: widget.amount,
-            currency: (widget.currency == 'CFA' || widget.currency == 'USD') ? 'XOF' : widget.currency,
+            currency: widget.currency == 'CFA' ? 'XOF' : widget.currency,
             description: 'Payment for ${widget.planName}',
             email: widget.email,
             userData: widget.userData,
-            onRequestClose: () => _handlePop().then((confirmed) {
-               if (confirmed && mounted) Navigator.of(context).pop();
-            }),
+            onRequestClose: () => _handlePop(isPaystack: false).then((conf) { if (conf && mounted) Navigator.of(context).pop(); }),
+            onPortalCancel: _forceExitApp,
           )
         : _PaymentGatewayPaystackMobile(
             email: widget.email,
@@ -95,9 +104,8 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
             planId: widget.planId,
             planName: widget.planName,
             currency: widget.currency,
-            onRequestClose: () => _handlePop().then((confirmed) {
-               if (confirmed && mounted) Navigator.of(context).pop();
-            }),
+            onRequestClose: () => _handlePop(isPaystack: true).then((conf) { if (conf && mounted) Navigator.of(context).pop(); }),
+            onPortalCancel: _forceExitApp,
           ),
     );
   }
@@ -110,6 +118,7 @@ class _PaymentGatewayPaystackMobile extends StatefulWidget {
   final String planName;
   final String currency;
   final VoidCallback onRequestClose;
+  final VoidCallback onPortalCancel;
 
   const _PaymentGatewayPaystackMobile({
     required this.email,
@@ -118,6 +127,7 @@ class _PaymentGatewayPaystackMobile extends StatefulWidget {
     required this.planName,
     required this.currency,
     required this.onRequestClose,
+    required this.onPortalCancel,
   });
 
   @override
@@ -126,7 +136,6 @@ class _PaymentGatewayPaystackMobile extends StatefulWidget {
 
 class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMobile> {
   WebViewController? _controller;
-  bool _isLoading = true;
   Timer? _statusTimer;
   late String _transactionId;
 
@@ -148,14 +157,13 @@ class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMo
   Future<void> _checkTransactionStatus() async {
     try {
       final token = await TokenStorage().getAccessToken();
-      final dio = Dio();
-      final response = await dio.get(
+      final response = await Dio().get(
         'https://api.tiknetafrica.com/api/partner/subscription-plans/check/',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       if (response.data != null && response.data['is_active'] == true) {
         _statusTimer?.cancel();
-        if (mounted) Navigator.of(context).pop({'success': true, 'reference': _transactionId});
+        if (mounted) Navigator.of(context).pop({'success': true});
       }
     } catch (_) {}
   }
@@ -163,15 +171,9 @@ class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMo
   void _initializeWebView() {
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(NavigationDelegate(
-        onPageStarted: (_) => setState(() => _isLoading = true),
-        onPageFinished: (_) => setState(() => _isLoading = false),
-      ))
       ..addJavaScriptChannel('PaystackFlutter', onMessageReceived: (JavaScriptMessage message) {
-        final msg = message.message;
-        if (msg.contains('"success":true')) {
-          Navigator.of(context).pop({'success': true});
-        }
+        if (message.message.contains('"success":true')) Navigator.of(context).pop({'success': true});
+        else if (message.message.contains('"success":false')) widget.onPortalCancel();
       })
       ..loadHtmlString(_buildPaystackHTML());
     setState(() => _controller = controller);
@@ -213,11 +215,12 @@ class _PaymentGatewayCinetPayMobile extends StatefulWidget {
   final String email;
   final Map<String, dynamic>? userData;
   final VoidCallback onRequestClose;
+  final VoidCallback onPortalCancel;
 
   const _PaymentGatewayCinetPayMobile({
     required this.apiKey, required this.siteId, required this.transactionId,
     required this.amount, required this.currency, required this.description,
-    required this.email, required this.onRequestClose, this.userData,
+    required this.email, required this.onRequestClose, required this.onPortalCancel, this.userData,
   });
 
   @override
@@ -226,7 +229,6 @@ class _PaymentGatewayCinetPayMobile extends StatefulWidget {
 
 class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMobile> {
   WebViewController? _controller;
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -237,12 +239,9 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
   void _initializeWebView() {
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(NavigationDelegate(
-        onPageStarted: (_) => setState(() => _isLoading = true),
-        onPageFinished: (_) => setState(() => _isLoading = false),
-      ))
       ..addJavaScriptChannel('CinetPayFlutter', onMessageReceived: (message) {
         if (message.message.contains('"success":true')) Navigator.of(context).pop({'success': true});
+        else if (message.message.contains('"success":false')) widget.onPortalCancel();
       })
       ..loadHtmlString(_buildCinetPayHTML(), baseUrl: 'https://cinetpay.com');
     setState(() => _controller = controller);
@@ -257,7 +256,11 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
 function checkout() {
   CinetPay.setConfig({ apiKey: '${widget.apiKey}', site_id: '${widget.siteId}', notify_url: 'https://api.tiknetafrica.com/api/payment/notify/', mode: 'PRODUCTION' });
   CinetPay.getCheckout({ transaction_id: '${widget.transactionId}', amount: ${widget.amount.toInt()}, currency: '${widget.currency}', channels: 'ALL', description: '${widget.description}', customer_email: '${widget.email}' });
-  CinetPay.waitResponse(function(data) { if (data.status == "ACCEPTED") window.CinetPayFlutter.postMessage(JSON.stringify({success:true})); });
+  CinetPay.waitResponse(function(data) { 
+    if (data.status == "ACCEPTED") window.CinetPayFlutter.postMessage(JSON.stringify({success:true}));
+    else window.CinetPayFlutter.postMessage(JSON.stringify({success:false}));
+  });
+  CinetPay.onError(function(data) { window.CinetPayFlutter.postMessage(JSON.stringify({success:false})); });
 }
 window.onload = function(){ setTimeout(checkout, 1000); };
 </script></body></html>''';
