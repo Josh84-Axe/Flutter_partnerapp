@@ -94,8 +94,9 @@ class BillingProvider with ChangeNotifier {
   List<dynamic> get assignedWalletTransactions => _assignedWalletTransactions;
   List<dynamic> get withdrawals => _withdrawals;
 
-  // Wallet History Getters
-  List<Map<String, dynamic>> get walletHistory {
+  /// Get combined wallet history.
+  /// If [restrictToRouters] is provided, only transactions matching those routers are returned.
+  List<Map<String, dynamic>> walletHistory({List<String>? restrictToRouters}) {
     final combined = <Map<String, dynamic>>[];
     
     // Add wallet transactions as "IN"
@@ -105,7 +106,7 @@ class BillingProvider with ChangeNotifier {
       '_source': 'wallet',
     }));
     
-    // Add withdrawals as "OUT"
+    // Add withdrawals as "OUT" (Usually kept for partner only, but here for completeness)
     combined.addAll(_withdrawals.map((withdrawal) => {
       ...withdrawal as Map<String, dynamic>,
       '_direction': 'out',
@@ -122,6 +123,15 @@ class BillingProvider with ChangeNotifier {
         return 0;
       }
     });
+
+    // Apply RBAC Filter
+    if (restrictToRouters != null && restrictToRouters.isNotEmpty) {
+      combined.removeWhere((t) {
+        final rName = (t['router_name'] ?? '').toString();
+        if (rName.isEmpty) return true; // Hide global/system transactions from restricted users
+        return !restrictToRouters.contains(rName);
+      });
+    }
     
     return combined;
   }

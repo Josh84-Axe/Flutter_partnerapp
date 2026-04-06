@@ -93,7 +93,29 @@ class NetworkProvider with ChangeNotifier {
   List<dynamic> get validityPeriods => _validityPeriods;
   List<dynamic> get idleTimeouts => _idleTimeouts;
   List<dynamic> get sharedUsers => _sharedUsers;
-  List<PlanModel> get plans => _plans;
+  List<PlanModel> get plans {
+    // Note: We don't filter here because we want the raw list for various uses.
+    // The screen should use a filtered getter if needed.
+    return _plans;
+  }
+
+  /// Get plans filtered by assigned routers for a specific user
+  List<PlanModel> getPlansForUser(String? role, List<String>? assignedRouters) {
+    if (role == null || role.toLowerCase() == 'partner' || role.toLowerCase() == 'owner' || role.toLowerCase() == 'admin') {
+      return _plans;
+    }
+    
+    if (assignedRouters == null || assignedRouters.isEmpty) {
+      return [];
+    }
+
+    return _plans.where((plan) {
+      return plan.routers.any((router) => 
+        assignedRouters.contains(router.name) || 
+        assignedRouters.contains(router.id.toString())
+      );
+    }).toList();
+  }
   bool get isLoading => _isLoading;
   String? get error => _error;
 

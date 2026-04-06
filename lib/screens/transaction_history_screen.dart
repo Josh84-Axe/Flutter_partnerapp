@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/billing_provider.dart';
+import '../providers/split/user_provider.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -182,7 +183,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
   Widget build(BuildContext context) {
     // Watch state to trigger rebuilds on data change
     final billingProvider = context.watch<BillingProvider>();
-    
+    final userProvider = context.watch<UserProvider>();
+    final user = userProvider.currentUser;
+    final assignedRouters = user?.assignedRouters ?? [];
+    final isRestricted = user?.role == 'worker' || user?.role == 'manager';
+
     List<dynamic> allTxnsSafe = [];
     try {
        // Create safe copies
@@ -190,6 +195,17 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
        final safeWallet = billingProvider.walletTransactions.map((e) => safeMap(e, 'wallet')).toList();
        
        allTxnsSafe = [...safeAssigned, ...safeWallet];
+       
+       // RBAC Filter: Only show transactions from assigned routers if user is restricted
+       if (isRestricted && assignedRouters.isNotEmpty) {
+          allTxnsSafe = allTxnsSafe.where((t) {
+             final rName = (t['router_name'] ?? '').toString();
+             // System actions with no router hidden from workers
+             if (rName.isEmpty) return false; 
+             return assignedRouters.contains(rName);
+          }).toList();
+       }
+       
        allTxnsSafe.sort((a, b) => safeDateCompare(a, b));
     } catch (e) {
        if (kDebugMode) print('Error building allTxns: $e');
@@ -443,22 +459,27 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
               if (type.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: [
-                      _buildTypeBadge(type),
-                      // Backend returns assigned_by. If null, it's a Voucher.
-                      _buildTagBadge(
-                        transaction['assigned_by'] ?? transaction['tag'] ?? transaction['worker_name'],
-                        isAssigned: type == 'assigned',
-                      ),
-                      // New details: Plan Name and Router Name
-                      if (transaction['plan_name'] != null)
-                        _buildDetailChip(Icons.wifi_tethering, transaction['plan_name'].toString()),
-                      if (transaction['router_name'] != null)
-                        _buildDetailChip(Icons.router, transaction['router_name'].toString()),
-                    ],
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildTypeBadge(type),
+                        const SizedBox(width: 8),
+                        // Backend returns assigned_by. If null, it's a Voucher.
+                        _buildTagBadge(
+                          transaction['assigned_by'] ?? transaction['tag'] ?? transaction['worker_name'],
+                          isAssigned: type == 'assigned',
+                        ),
+                        const SizedBox(width: 8),
+                        // New details: Plan Name and Router Name
+                        if (transaction['plan_name'] != null) ...[
+                          _buildDetailChip(Icons.wifi_tethering, transaction['plan_name'].toString()),
+                          const SizedBox(width: 8),
+                        ],
+                        if (transaction['router_name'] != null)
+                          _buildDetailChip(Icons.router, transaction['router_name'].toString()),
+                      ],
+                    ),
                   ),
                 ),
             ],

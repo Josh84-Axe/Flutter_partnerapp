@@ -41,7 +41,9 @@ class _PlansScreenState extends State<PlansScreen> {
     final networkProvider = context.watch<NetworkProvider>();
     final userProvider = context.watch<UserProvider>();
     final authProvider = context.watch<AuthProvider>();
-    final filteredPlans = networkProvider.plans.where((plan) {
+    final user = userProvider.currentUser;
+    final allPlans = networkProvider.getPlansForUser(user?.role, user?.assignedRouters);
+    final filteredPlans = allPlans.where((plan) {
       // Apply Search filter
       bool matchesSearch = _searchQuery.isEmpty || 
           plan.name.toLowerCase().contains(_searchQuery.toLowerCase());
