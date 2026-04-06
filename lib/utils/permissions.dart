@@ -10,6 +10,16 @@ class Permissions {
            lowerRole == 'owner' || 
            lowerRole == 'admin';
   }
+
+  static bool isWorker(String role) {
+    final lowerRole = role.toLowerCase();
+    return lowerRole == 'worker' || lowerRole == 'agent';
+  }
+
+  static bool isManager(String role) {
+    final lowerRole = role.toLowerCase();
+    return lowerRole == 'manager';
+  }
   
   // Legacy methods (kept for backward compatibility)
   static bool canCreateWorkers(String role) => isOwner(role);

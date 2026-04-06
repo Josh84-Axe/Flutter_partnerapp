@@ -33,20 +33,35 @@ class _RouterResourcesScreenState extends State<RouterResourcesScreen> {
 
     try {
       final provider = context.read<NetworkProvider>();
-      // Ensure we have a valid slug/id. Use 'slug' if available (preferred), otherwise 'id'.
       final slug = widget.router['slug']?.toString() ?? widget.router['id']?.toString() ?? '';
+      final routerName = widget.router['name']?.toString() ?? '';
+      final routerIp = widget.router['ip_address']?.toString() ?? '';
       
-      if (slug.isEmpty) throw Exception('Invalid router configuration: Missing slug/ID'); 
+      if (slug.isEmpty && routerIp.isEmpty) throw Exception('Invalid router config: Missing ID/IP'); 
       
       final resourcesPromise = provider.fetchRouterResources(slug);
-      final sessionsPromise = provider.fetchActiveUsers(slug);
+      final sessionsPromise = provider.fetchActiveSessionsGlobal();
       
       final results = await Future.wait([resourcesPromise, sessionsPromise]);
       
+      final allSessions = results[1] as List<dynamic>? ?? [];
+      final routerSessions = allSessions.where((s) {
+        final sName = s['router_name']?.toString().toLowerCase() ?? '';
+        final sIp = s['router_ip']?.toString() ?? '';
+        
+        // Exact IP match is most reliable
+        if (routerIp.isNotEmpty && sIp == routerIp) return true;
+        // Fallback to name/slug contains
+        if (routerName.isNotEmpty && sName.contains(routerName.toLowerCase())) return true;
+        if (slug.isNotEmpty && sName.contains(slug.toLowerCase())) return true;
+        
+        return false;
+      }).toList();
+
       if (mounted) {
         setState(() {
           _resources = results[0] as Map<String, dynamic>?;
-          _activeSessionsCount = (results[1] as List<dynamic>?)?.length ?? 0;
+          _activeSessionsCount = routerSessions.length;
           _isLoading = false;
         });
       }
@@ -141,8 +156,8 @@ class _RouterResourcesScreenState extends State<RouterResourcesScreen> {
         const SizedBox(height: 16),
         _buildResourceCard(
           title: 'memory_usage'.tr(),
-          value: '${freeMemory.toStringAsFixed(0)} MB / ${totalMemory.toStringAsFixed(0)} MB',
-          subtitle: 'free_memory'.tr(),
+          value: '${(100.0 - (freeMemory / totalMemory * 100.0)).toStringAsFixed(1)}%',
+          subtitle: '${freeMemory.toStringAsFixed(0)} MB / ${totalMemory.toStringAsFixed(0)} MB',
           icon: Icons.storage,
           color: Colors.orange,
           percentage: 1.0 - (freeMemory / totalMemory),
@@ -150,8 +165,8 @@ class _RouterResourcesScreenState extends State<RouterResourcesScreen> {
         const SizedBox(height: 16),
         _buildResourceCard(
           title: 'disk_usage'.tr(),
-          value: '${freeDisk.toStringAsFixed(0)} MB / ${totalDisk.toStringAsFixed(0)} MB',
-          subtitle: 'free_space'.tr(),
+          value: '${(100.0 - (freeDisk / totalDisk * 100.0)).toStringAsFixed(1)}%',
+          subtitle: '${freeDisk.toStringAsFixed(0)} MB / ${totalDisk.toStringAsFixed(0)} MB',
           icon: Icons.sd_storage,
           color: Colors.green,
           percentage: 1.0 - (freeDisk / totalDisk),

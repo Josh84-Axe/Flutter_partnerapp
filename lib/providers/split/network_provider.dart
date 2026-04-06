@@ -334,6 +334,17 @@ class NetworkProvider with ChangeNotifier {
     }
   }
 
+  Future<List<dynamic>> fetchActiveSessionsGlobal() async {
+    if (_sessionRepository == null) return [];
+    try {
+      if (kDebugMode) print('📡 [NetworkProvider] Fetching global active sessions...');
+      return await _sessionRepository!.fetchActiveSessions();
+    } catch (e) {
+      if (kDebugMode) print('❌ [NetworkProvider] Error fetching global sessions: $e');
+      return [];
+    }
+  }
+
   Future<void> loadActiveSessions() async {
     if (_sessionRepository == null) return;
     
