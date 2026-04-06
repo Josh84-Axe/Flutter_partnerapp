@@ -4,6 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/user_provider.dart';
 import '../utils/app_theme.dart';
 import '../models/role_model.dart';
+import '../providers/split/auth_provider.dart';
+import '../utils/permissions.dart';
 
 class RolePermissionScreen extends StatefulWidget {
   const RolePermissionScreen({super.key});
@@ -26,7 +28,10 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     final userProvider = context.watch<UserProvider>();
+    final currentUser = context.watch<AuthProvider>().currentUser;
     final roles = userProvider.roles;
+    
+    final isAuthorized = currentUser != null && Permissions.isOwner(currentUser.role);
 
     return Scaffold(
       appBar: AppBar(
@@ -148,10 +153,12 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
                               color: colorScheme.onSurfaceVariant,
                             ),
                           ),
-                          if (role.name.toLowerCase() == 'worker') ...[
+                          if (role.name.toLowerCase() == 'worker' && isAuthorized) ...[
                             const SizedBox(height: 12),
                             OutlinedButton.icon(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.of(context).pushNamed('/collaborators-management');
+                              },
                               icon: const Icon(Icons.router, size: 18),
                               label: Text('manage_assigned_routers'.tr()),
                               style: OutlinedButton.styleFrom(

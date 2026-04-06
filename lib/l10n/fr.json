@@ -143,6 +143,8 @@
   "registration_date": "Date d'Inscription",
   "plan_information": "Informations du Plan",
   "active_plan": "Plan Actif",
+  "allowance": "Quota",
+  "no_expiry": "Pas d'expiration",
   "change_plan": "Changer de Plan",
   "more": "Plus",
   "user_data_usage": "Utilisation des Données Utilisateur",

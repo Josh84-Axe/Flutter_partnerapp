@@ -455,7 +455,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
       child: InkWell(
         onTap: () {
           final transactionId = transaction['id']?.toString();
-          final transactionType = type.isNotEmpty ? type : 'wallet';
+          final transactionType = transaction['_source']?.toString() ?? (type.isNotEmpty ? type : 'wallet');
           
           if (kDebugMode) {
             print('🔍 [TransactionHistory] Navigating to details:');

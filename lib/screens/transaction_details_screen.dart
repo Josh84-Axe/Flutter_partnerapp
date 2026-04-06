@@ -41,8 +41,36 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       return;
     }
 
-    final id = args['id']?.toString();
-    final type = args['type']?.toString() ?? 'wallet';
+    final idFromArgs = args?['id']?.toString();
+    final typeFromArgs = args?['type']?.toString();
+
+    String? id = idFromArgs;
+    String type = typeFromArgs ?? 'wallet';
+
+    // Extraction from browser URL (Web fragment or query params)
+    if (kIsWeb && (id == null || id == 'null' || id.isEmpty)) {
+      if (kDebugMode) print('🌐 [TransactionDetails] Searching for ID in URL...');
+      try {
+        final uri = Uri.base;
+        if (uri.queryParameters.containsKey('id')) {
+          id = uri.queryParameters['id'];
+          if (kDebugMode) print('✅ [TransactionDetails] Found ID in query: $id');
+        }
+        if (uri.queryParameters.containsKey('type')) {
+          type = uri.queryParameters['type']!;
+        }
+        
+        // Handle fragment-based parameters (e.g. #/transaction-details?id=123)
+        if (id == null && uri.fragment.contains('?')) {
+          final fragmentUri = Uri.parse('http://dummy.com${uri.fragment.substring(uri.fragment.indexOf('?'))}');
+          id = fragmentUri.queryParameters['id'];
+          type = fragmentUri.queryParameters['type'] ?? type;
+          if (kDebugMode) print('✅ [TransactionDetails] Found ID in fragment: $id');
+        }
+      } catch (e) {
+        if (kDebugMode) print('❌ [TransactionDetails] URL parsing error: $e');
+      }
+    }
 
     if (kDebugMode) {
       print('   Transaction ID: $id');

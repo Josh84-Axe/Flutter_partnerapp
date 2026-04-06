@@ -143,6 +143,8 @@
   "registration_date": "Registration Date",
   "plan_information": "Plan Information",
   "active_plan": "Active Plan",
+  "allowance": "Allowance",
+  "no_expiry": "No expiry",
   "change_plan": "Change Plan",
   "more": "More",
   "user_data_usage": "User Data Usage",

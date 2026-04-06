@@ -123,6 +123,7 @@ import 'screens/voucher_list_screen.dart';
 import 'screens/hotspot_users_management_screen.dart';
 import 'screens/plan_assignment_screen.dart';
 import 'screens/session_management_screen.dart';
+import 'screens/collaborators_management_screen.dart';
 import 'screens/payment_methods_screen.dart';
 import 'screens/assigned_plans_list_screen.dart';
 import 'screens/active_sessions_screen.dart';
@@ -433,6 +434,7 @@ class HotspotPartnerApp extends StatelessWidget {
         '/hotspot-users-management': (context) => const HotspotUsersManagementScreen(),
         '/plan-assignment': (context) => const PlanAssignmentScreen(),
         '/session-management': (context) => const SessionManagementScreen(),
+        '/collaborators-management': (context) => const CollaboratorsManagementScreen(),
         '/payment-methods': (context) => const PaymentMethodsScreen(),
         '/assigned-plans-list': (context) => const AssignedPlansListScreen(),
         '/active-sessions': (context) => const ActiveSessionsScreen(),

@@ -309,4 +309,21 @@ class CustomerRepository {
       return [];
     }
   }
+
+  /// Get active or upcoming plan for a specific customer
+  Future<Map<String, dynamic>?> getCustomerActivePlan(String username) async {
+    try {
+      if (kDebugMode) print('🎫 [CustomerRepository] Fetching active plan for: $username');
+      final response = await _dio.get('/partner/customers/$username/get-active-plan/');
+      
+      final responseData = response.data;
+      if (responseData is Map && responseData['data'] != null) {
+        return responseData['data'] as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) print('❌ [CustomerRepository] Get active plan error: $e');
+      return null;
+    }
+  }
 }

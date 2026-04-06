@@ -383,6 +383,11 @@ class NetworkProvider with ChangeNotifier {
     return await _customerRepository!.getCustomerPurchasedPlans(username);
   }
 
+  Future<Map<String, dynamic>?> getCustomerActivePlan(String username) async {
+    if (_customerRepository == null) return null;
+    return await _customerRepository!.getCustomerActivePlan(username);
+  }
+
   // ==================== Sessions ====================
 
   Future<List<PlanModel>> loadAssignedPlans() async {

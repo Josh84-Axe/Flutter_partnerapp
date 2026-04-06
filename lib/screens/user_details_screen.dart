@@ -19,8 +19,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
   Map<String, dynamic>? _dataUsage;
   List<dynamic> _assignedTransactions = [];
   List<dynamic> _walletTransactions = [];
-  List<dynamic> _assignedPlans = [];
-  List<dynamic> _purchasedPlans = [];
+  Map<String, dynamic>? _activePlan;
 
   @override
   void initState() {
@@ -35,54 +34,48 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
     
     try {
       final networkProvider = context.read<NetworkProvider>();
-      final identifier = widget.user.username ?? widget.user.phone ?? widget.user.id;
+      // The backend strictly expects 'username' for these specific endpoints.
+      // We prioritize widget.user.username as the identifier.
+      final identifier = widget.user.username ?? widget.user.id;
       
-      // Load data usage
-      final dataUsage = await networkProvider.getCustomerDataUsage(identifier);
+      if (kDebugMode) {
+        print('👤 [UserDetailsScreen] Loading metadata for customer: $identifier (username: ${widget.user.username})');
+        if (widget.user.username == null) {
+          print('⚠️ [UserDetailsScreen] Warning: customer username is null, backend metadata requests may fail.');
+        }
+      }
       
-      // Load split transactions
-      final assignedTransactions = await networkProvider.getCustomerAssignedTransactions(identifier);
-      final walletTransactions = await networkProvider.getCustomerWalletTransactions(identifier);
-      
-      // Load plans
-      final assignedPlans = await networkProvider.getCustomerAssignedPlans(identifier);
-      final purchasedPlans = await networkProvider.getCustomerPurchasedPlans(identifier);
+      // Load and resolve concurrent calls
+      final results = await Future.wait([
+        networkProvider.getCustomerDataUsage(identifier).catchError((e) {
+          if (kDebugMode) print('⚠️ Usage error: $e');
+          return null;
+        }),
+        networkProvider.getCustomerActivePlan(identifier).catchError((e) {
+          if (kDebugMode) print('⚠️ Plan error: $e');
+          return null;
+        }),
+        networkProvider.getCustomerAssignedTransactions(identifier).catchError((e) {
+          if (kDebugMode) print('⚠️ Assigned Txn error: $e');
+          return [];
+        }),
+        networkProvider.getCustomerWalletTransactions(identifier).catchError((e) {
+          if (kDebugMode) print('⚠️ Wallet Txn error: $e');
+          return [];
+        }),
+      ]);
 
       if (mounted) {
         setState(() {
-          _dataUsage = dataUsage;
-          _assignedTransactions = assignedTransactions;
-          _walletTransactions = walletTransactions;
-          
-          // Filter plans: Only Active (is_active=true) or Future? 
-          // User requirement: "Active or upcoming plan should only appear"
-          // We assume 'is_active' covers active. For upcoming, check start_date?
-          // For now, filtering by is_active or is_assigned (if that implies active)
-          // Actually, let's filter by checking if it's NOT expired physically or is explicitly active.
-          
-          _assignedPlans = assignedPlans.where((p) {
-             final isActive = p['is_active'] == true;
-             // Check expiry if available
-             if (p['expires_at'] != null) {
-                final expiry = DateTime.tryParse(p['expires_at']);
-                if (expiry != null && expiry.isAfter(DateTime.now())) return true;
-             }
-             return isActive;
-          }).toList();
-
-          _purchasedPlans = purchasedPlans.where((p) {
-             final isActive = p['is_active'] == true;
-              if (p['expires_at'] != null) {
-                final expiry = DateTime.tryParse(p['expires_at']);
-                if (expiry != null && expiry.isAfter(DateTime.now())) return true;
-             }
-             return isActive;
-          }).toList();
-          
+          _dataUsage = results[0] as Map<String, dynamic>?;
+          _activePlan = results[1] as Map<String, dynamic>?;
+          _assignedTransactions = results[2] as List<dynamic>? ?? [];
+          _walletTransactions = results[3] as List<dynamic>? ?? [];
           _isLoading = false;
         });
       }
     } catch (e) {
+      if (kDebugMode) print('❌ [UserDetailsScreen] Error loading user details: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -233,38 +226,27 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                     const SizedBox(height: 24),
                   ],
 
-                  // Purchased Plans Section (Online/Gateway)
-                  if (_purchasedPlans.isNotEmpty) ...[
+                  // Active/Upcoming Plan Section
+                  if (_activePlan != null) ...[
                     Row(
                       children: [
-                        Icon(Icons.shopping_cart, color: colorScheme.primary),
+                        Icon(Icons.stars, color: colorScheme.primary),
                         const SizedBox(width: 8),
                          Text(
-                          'purchased_plans_online'.tr(), 
+                          'active_plan'.tr(), 
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    ..._purchasedPlans.map((plan) => _buildPlanCard(plan, isAssigned: false)),
+                    _buildPlanCard(_activePlan!),
                     const SizedBox(height: 24),
-                  ],
-
-                  // Assigned Plans Section (Partner)
-                  if (_assignedPlans.isNotEmpty) ...[
-                    Row(
-                      children: [
-                        Icon(Icons.assignment_ind, color: colorScheme.secondary),
-                        const SizedBox(width: 8),
-                        Text(
-                          'assigned_plans'.tr(),
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    ..._assignedPlans.map((plan) => _buildPlanCard(plan, isAssigned: true)),
-                    const SizedBox(height: 24),
+                  ] else ...[
+                     Text(
+                        'no_active_plan'.tr(),
+                        style: TextStyle(color: Colors.grey[600], fontStyle: FontStyle.italic),
+                      ),
+                      const SizedBox(height: 24),
                   ],
 
                   // Personal Info Section
@@ -394,10 +376,16 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
     );
   }
 
-  Widget _buildPlanCard(dynamic plan, {required bool isAssigned}) {
-    final isActive = plan['is_active'] == true;
+  Widget _buildPlanCard(Map<String, dynamic> plan) {
+    final isActive = plan['is_active'] == true || plan['status']?.toString().toLowerCase() == 'active';
+    final isUpcoming = plan['status']?.toString().toLowerCase() == 'upcoming' || plan['status']?.toString().toLowerCase() == 'future';
     final colorScheme = Theme.of(context).colorScheme;
     
+    // Status color
+    Color statusColor = Colors.grey;
+    if (isActive) statusColor = AppTheme.successGreen;
+    if (isUpcoming) statusColor = Colors.blue;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -410,10 +398,10 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    plan['plan_name'] ?? 'unknown_plan'.tr(),
+                    plan['plan_name'] ?? plan['name'] ?? 'unknown_plan'.tr(),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 18,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -421,66 +409,77 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isActive ? AppTheme.successGreen.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isActive ? AppTheme.successGreen : Colors.grey,
-                    ),
+                    border: Border.all(color: statusColor),
                   ),
                   child: Text(
-                    isActive ? 'active'.tr() : 'inactive'.tr(),
+                    (plan['status'] ?? (isActive ? 'active' : 'inactive')).toString().toUpperCase(),
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: isActive ? AppTheme.successGreen : Colors.grey,
+                      color: statusColor,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            // Router Info
-            if (plan['routers'] is List && (plan['routers'] as List).isNotEmpty) ...[
-              Row(
-                children: [
-                  const Icon(Icons.router, size: 16, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Text(
-                    (plan['routers'][0]['name'] ?? 'unknown_router'.tr()).toString(),
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-            ],
-            // Dates
+            const SizedBox(height: 12),
+            // Plan details (Usage/Limits)
             Row(
               children: [
-                const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                const SizedBox(width: 4),
-                Text(
-                  isAssigned 
-                      ? (plan['formatted_assigned_at'] ?? plan['formatted_purchased_at'] ?? 'not_available_short'.tr())
-                      : (plan['formatted_purchased_at'] ?? 'not_available_short'.tr()),
-                  style: const TextStyle(color: Colors.grey),
+                _buildPlanMetric(
+                  Icons.data_usage, 
+                  '${plan['data_limit'] ?? plan['total_limit'] ?? 0} GB',
+                  'allowance'.tr()
+                ),
+                const SizedBox(width: 24),
+                _buildPlanMetric(
+                  Icons.timer_outlined, 
+                  '${plan['validity'] ?? 0} ${_getTimeUnit(plan)}',
+                  'validity'.tr()
                 ),
               ],
             ),
-             // Price if available
-             if (plan['price'] != null) ...[
-                const SizedBox(height: 4),
+            const Divider(height: 24),
+            // Expiry/Date info
+            Row(
+              children: [
+                 const Icon(Icons.history, size: 16, color: Colors.grey),
+                 const SizedBox(width: 8),
                  Text(
-                  '${plan['currency_symbol'] ?? ''}${plan['price']}',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, 
-                      color: colorScheme.primary
-                  ),
+                   plan['expires_at'] != null 
+                    ? 'expires_on'.tr(namedArgs: {'date': _formatDate(DateTime.tryParse(plan['expires_at'].toString()) ?? DateTime.now())})
+                    : 'no_expiry'.tr(),
+                   style: const TextStyle(fontSize: 13, color: Colors.grey),
                  ),
-             ],
+              ],
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildPlanMetric(IconData icon, String value, String label) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String _getTimeUnit(Map<String, dynamic> plan) {
+    // Basic heuristic or check a field
+    return 'days';
   }
 
   Widget _buildTransactionList(List<dynamic> transactions) {
