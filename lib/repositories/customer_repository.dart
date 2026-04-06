@@ -38,8 +38,9 @@ class CustomerRepository {
   /// Get customer transactions
   Future<List<dynamic>> getCustomerTransactions(String username) async {
     try {
-      if (kDebugMode) print('💰 [CustomerRepository] Fetching transactions for customer: $username');
-      final response = await _dio.get('/partner/customers/$username/transactions/');
+      final encodedUsername = Uri.encodeComponent(username);
+      if (kDebugMode) print('💰 [CustomerRepository] Fetching transactions for customer: $username (encoded: $encodedUsername)');
+      final response = await _dio.get('/partner/customers/$encodedUsername/transactions/');
       final responseData = response.data;
       
       if (responseData is Map && responseData['data'] is List) {
@@ -103,8 +104,9 @@ class CustomerRepository {
   /// Delete a customer
   Future<void> deleteCustomer(String username) async {
     try {
+      final encodedUsername = Uri.encodeComponent(username);
       if (kDebugMode) print('🗑️ [CustomerRepository] Deleting customer: $username');
-      await _dio.delete('/partner/customers/$username/delete/');
+      await _dio.delete('/partner/customers/$encodedUsername/delete/');
       if (kDebugMode) print('✅ [CustomerRepository] Customer deleted successfully');
     } catch (e) {
       if (kDebugMode) print('❌ [CustomerRepository] Delete customer error: $e');
@@ -177,8 +179,9 @@ class CustomerRepository {
   /// Get customer assigned transactions
   Future<List<dynamic>> getCustomerAssignedTransactions(String username) async {
     try {
+      final encodedUsername = Uri.encodeComponent(username);
       if (kDebugMode) print('💳 [CustomerRepository] Fetching assigned transactions for: $username');
-      final response = await _dio.get('/partner/customers/$username/transactions/assigned/');
+      final response = await _dio.get('/partner/customers/$encodedUsername/transactions/assigned/');
       
       final responseData = response.data;
       if (responseData is Map && responseData['data'] is List) {
@@ -194,8 +197,9 @@ class CustomerRepository {
   /// Get customer wallet transactions
   Future<List<dynamic>> getCustomerWalletTransactions(String username) async {
     try {
+      final encodedUsername = Uri.encodeComponent(username);
       if (kDebugMode) print('💰 [CustomerRepository] Fetching wallet transactions for: $username');
-      final response = await _dio.get('/partner/customers/$username/transactions/wallet/');
+      final response = await _dio.get('/partner/customers/$encodedUsername/transactions/wallet/');
       
       final responseData = response.data;
       if (responseData is Map && responseData['data'] is List) {
@@ -254,8 +258,9 @@ class CustomerRepository {
   /// Fetch data usage for a specific customer
   Future<Map<String, dynamic>?> getCustomerDataUsage(String username) async {
     try {
+      final encodedUsername = Uri.encodeComponent(username);
       if (kDebugMode) print('📊 [CustomerRepository] Fetching data usage for: $username');
-      final response = await _dio.get('/partner/customers/$username/data-usage/');
+      final response = await _dio.get('/partner/customers/$encodedUsername/data-usage/');
       
       final responseData = response.data;
       if (responseData is Map && responseData['data'] != null) {
@@ -271,8 +276,9 @@ class CustomerRepository {
   /// Get customer assigned plans
   Future<List<dynamic>> getCustomerAssignedPlans(String username) async {
     try {
+      final encodedUsername = Uri.encodeComponent(username);
       if (kDebugMode) print('📋 [CustomerRepository] Fetching assigned plans for: $username');
-      final response = await _dio.get('/partner/customers/$username/plans/assigned/');
+      final response = await _dio.get('/partner/customers/$encodedUsername/plans/assigned/');
       
       final responseData = response.data;
       if (responseData is Map) {
@@ -292,8 +298,9 @@ class CustomerRepository {
   /// Get customer purchased plans
   Future<List<dynamic>> getCustomerPurchasedPlans(String username) async {
     try {
+      final encodedUsername = Uri.encodeComponent(username);
       if (kDebugMode) print('🛒 [CustomerRepository] Fetching purchased plans for: $username');
-      final response = await _dio.get('/partner/customers/$username/plans/purchased/');
+      final response = await _dio.get('/partner/customers/$encodedUsername/plans/purchased/');
       
       final responseData = response.data;
       if (responseData is Map) {
@@ -313,8 +320,9 @@ class CustomerRepository {
   /// Get active or upcoming plan for a specific customer
   Future<Map<String, dynamic>?> getCustomerActivePlan(String username) async {
     try {
+      final encodedUsername = Uri.encodeComponent(username);
       if (kDebugMode) print('🎫 [CustomerRepository] Fetching active plan for: $username');
-      final response = await _dio.get('/partner/customers/$username/get-active-plan/');
+      final response = await _dio.get('/partner/customers/$encodedUsername/get-active-plan/');
       
       final responseData = response.data;
       if (responseData is Map && responseData['data'] != null) {

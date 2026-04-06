@@ -422,7 +422,6 @@ class HotspotPartnerApp extends StatelessWidget {
         '/notification-router': (context) => const NotificationRouterScreen(),
         '/user-details': (context) {
           final user = ModalRoute.of(context)?.settings.arguments as UserModel;
-         if (kDebugMode) print('🚀 [Main] App starting... Version: 1.1.2');
           return UserDetailsScreen(user: user);
         },
         '/onboarding-old': (context) => const OnboardingFlow(),
