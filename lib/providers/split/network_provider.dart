@@ -133,6 +133,70 @@ class NetworkProvider with ChangeNotifier {
     return _routers;
   }
 
+  final Map<String, int> _routerActiveSessionsCount = {};
+  final Map<String, bool> _routerResourceAlive = {};
+  bool _isCheckingHealth = false;
+
+  bool get isCheckingHealth => _isCheckingHealth;
+
+  int getRouterActiveSessionsCount(String routerIdOrIp) {
+    return _routerActiveSessionsCount[routerIdOrIp] ?? 0;
+  }
+
+  bool isRouterAlive(String slug) {
+    return _routerResourceAlive[slug] ?? false;
+  }
+
+  Future<void> checkAllRoutersHealth() async {
+    if (_routers.isEmpty) return;
+    
+    _isCheckingHealth = true;
+    notifyListeners();
+
+    try {
+      // 1. Refresh global sessions
+      final globalSessions = await fetchActiveSessionsGlobal();
+      _routerActiveSessionsCount.clear();
+      
+      for (var session in globalSessions) {
+        final ip = session['router_ip']?.toString() ?? '';
+        final dns = session['router_name']?.toString() ?? '';
+        
+        if (ip.isNotEmpty) {
+          _routerActiveSessionsCount[ip] = (_routerActiveSessionsCount[ip] ?? 0) + 1;
+        }
+        if (dns.isNotEmpty) {
+          _routerActiveSessionsCount[dns] = (_routerActiveSessionsCount[dns] ?? 0) + 1;
+        }
+      }
+
+      // 2. Check resource availability for each router (parallel)
+      final List<Future<void>> tests = [];
+      for (var router in _routers) {
+        tests.add(_checkSingleRouterHealth(router));
+      }
+      await Future.wait(tests);
+      
+    } catch (e) {
+      if (kDebugMode) print('❌ [NetworkProvider] Error checking all routers health: $e');
+    } finally {
+      _isCheckingHealth = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _checkSingleRouterHealth(RouterModel router) async {
+    try {
+      final slug = router.slug;
+      if (slug.isEmpty) return;
+      
+      final resources = await fetchRouterResources(slug);
+      _routerResourceAlive[slug] = resources != null && resources.isNotEmpty;
+    } catch (e) {
+      _routerResourceAlive[router.slug] = false;
+    }
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

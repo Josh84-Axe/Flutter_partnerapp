@@ -17,8 +17,12 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<NetworkProvider>().loadRouters();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final provider = context.read<NetworkProvider>();
+      await provider.loadRouters();
+      if (mounted) {
+        provider.checkAllRoutersHealth();
+      }
     });
   }
 
@@ -33,6 +37,19 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
       appBar: AppBar(
         title: Text('router_health_check'.tr()),
         actions: [
+          if (networkProvider.isCheckingHealth)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => networkProvider.checkAllRoutersHealth(),
+          ),
           IconButton(
             icon: const Icon(Icons.more_vert),
             onPressed: () {},
@@ -72,30 +89,18 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
                   padding: const EdgeInsets.all(16.0),
                   children: [
                     ...routers.map((router) {
-                      final isOnline = router.status == 'online';
-                      final hasIssues = router.status == 'issues';
-                      final isOffline = router.status == 'offline';
+                      final isAlive = networkProvider.isRouterAlive(router.slug);
+                      final deviceCount = networkProvider.getRouterActiveSessionsCount(router.ipAddress ?? router.name);
                       
-                      Color statusColor = colorScheme.primary;
-                      Color containerColor = colorScheme.primaryContainer;
-                      String statusText = 'online'.tr();
-                      
-                      if (hasIssues) {
-                        statusColor = Colors.orange;
-                        containerColor = Colors.orange.withValues(alpha: 0.2);
-                        statusText = 'issues_detected'.tr();
-                      } else if (isOffline) {
-                        statusColor = Colors.red;
-                        containerColor = Colors.red.withValues(alpha: 0.2);
-                        statusText = 'offline'.tr();
-                      }
+                      Color statusColor = isAlive ? Colors.green : Colors.red;
+                      Color containerColor = statusColor.withValues(alpha: 0.1);
+                      String statusText = isAlive ? 'online'.tr() : 'offline'.tr();
                       
                       return Card(
                         margin: const EdgeInsets.only(bottom: 16),
                         elevation: 2,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
-                          side: hasIssues ? BorderSide(color: Colors.orange, width: 1) : BorderSide.none,
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -124,7 +129,7 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
                                         Text(
                                           router.name,
                                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                            fontWeight: FontWeight.w600,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                         const SizedBox(height: 4),
@@ -153,35 +158,38 @@ class _RouterHealthScreenState extends State<RouterHealthScreen> {
                                   ),
                                 ],
                               ),
-                              if (isOnline || hasIssues) ...[
-                                const SizedBox(height: 16),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      hasIssues ? Icons.signal_cellular_alt_1_bar : Icons.signal_cellular_alt,
-                                      size: 20,
-                                      color: hasIssues ? Colors.orange : Colors.grey[600],
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.signal_cellular_alt,
+                                    size: 20,
+                                    color: isAlive ? Colors.green : Colors.grey[400],
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    isAlive ? 'strong'.tr() : 'unavailable'.tr(),
+                                    style: TextStyle(
+                                      color: isAlive ? Colors.green : Colors.grey[600],
+                                      fontWeight: isAlive ? FontWeight.w500 : FontWeight.normal,
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      hasIssues ? 'weak'.tr() : 'strong'.tr(),
-                                      style: TextStyle(
-                                        color: hasIssues ? Colors.orange : Colors.grey[600],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 24),
-                                    Icon(
-                                      Icons.devices,
-                                      size: 20,
+                                  ),
+                                  const SizedBox(width: 24),
+                                  Icon(
+                                    Icons.devices,
+                                    size: 20,
+                                    color: Colors.grey[600],
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '$deviceCount ${'devices'.tr()}',
+                                    style: TextStyle(
                                       color: Colors.grey[600],
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '${router.connectedUsers} ${'devices'.tr()}',
-                                      style: TextStyle(color: Colors.grey[600]),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
+                              ),
                                 const SizedBox(height: 16),
                                 Row(
                                   children: [
