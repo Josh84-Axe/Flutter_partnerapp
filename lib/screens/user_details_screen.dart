@@ -35,15 +35,22 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
     
     try {
       final networkProvider = context.read<NetworkProvider>();
-      // The backend strictly expects 'username' for these specific endpoints.
-      // We prioritize widget.user.username as the identifier.
-      final identifier = widget.user.username ?? widget.user.id;
+      
+      // Strict identifier check: Backend requires the exact username string.
+      // If username is null, metadata requests will likely 404.
+      final String identifier = (widget.user.username?.isNotEmpty == true) 
+          ? widget.user.username! 
+          : widget.user.id;
       
       if (kDebugMode) {
-        print('👤 [UserDetailsScreen] Loading metadata for customer: $identifier (username: ${widget.user.username})');
-        if (widget.user.username == null) {
-          print('⚠️ [UserDetailsScreen] Warning: customer username is null, backend metadata requests may fail.');
+        print('--- 👤 Customer Metadata Debug ---');
+        print('Identifier used: "$identifier"');
+        print('Field source: ${widget.user.username?.isNotEmpty == true ? 'USERNAME' : 'fallback ID'}');
+        print('Full User Object: {id: ${widget.user.id}, username: ${widget.user.username}, name: ${widget.user.name}}');
+        if (widget.user.username == null || widget.user.username!.isEmpty) {
+          print('❌ ERROR: Customer missing username. Metadata endpoints will likely fail.');
         }
+        print('----------------------------------');
       }
       
       // Load and resolve concurrent calls
