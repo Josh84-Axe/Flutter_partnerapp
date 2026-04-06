@@ -131,15 +131,6 @@ class SettingsScreen extends StatelessWidget {
                   Navigator.of(context).pushNamed('/role-permissions');
                 },
               ),
-              _buildSettingItem(
-                context,
-                icon: Icons.people_outline,
-                title: 'collaborators_management'.tr(),
-                subtitle: 'manage_team_desc'.tr(),
-                onTap: () {
-                  Navigator.of(context).pushNamed('/collaborators-management');
-                },
-              ),
             ],
           ),
           _buildSection(

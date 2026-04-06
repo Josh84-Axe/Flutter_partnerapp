@@ -137,6 +137,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
 
     // Apply search filter
     if (_searchQuery.isNotEmpty) {
+      final queryTerms = _searchQuery.toLowerCase().split(' ').where((t) => t.isNotEmpty).toList();
+      
       filtered = filtered.where((txn) {
         final description = (txn['description'] ?? '').toString().toLowerCase();
         final id = (txn['id'] ?? '').toString();
@@ -159,25 +161,29 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
         final isRevenue = !isPayout && amountValue >= 0;
         
         // Localized labels for better search
-        final String localizedStatus = status == 'success' || status == 'completed' ? 'success'.tr() : (status == 'pending' ? 'pending'.tr() : 'failed'.tr());
+        final String localizedStatus = (status == 'success' || status == 'completed') ? 'success'.tr() : (status == 'pending' ? 'pending'.tr() : 'failed'.tr());
         final String localizedType = typeField == 'assigned' ? 'assigned'.tr() : 'wallet'.tr();
         
-        final query = _searchQuery.toLowerCase();
-        
-        return description.contains(query) ||
-               amountSearch.contains(query) ||
-               id.contains(query) ||
-               status.contains(query) ||
-               localizedStatus.toLowerCase().contains(query) ||
-               typeField.contains(query) ||
-               localizedType.toLowerCase().contains(query) ||
-               routerName.contains(query) ||
-               planName.contains(query) ||
-               workerName.contains(query) ||
-               tag.contains(query) ||
-               (isRevenue && 'revenue'.tr().toLowerCase().contains(query)) ||
-               (isPayout && 'payout'.tr().toLowerCase().contains(query)) ||
-               (isPayout && 'withdrawal'.tr().toLowerCase().contains(query));
+        // Combine all searchable content into one searchable block
+        final searchableContent = [
+          description,
+          id,
+          status,
+          localizedStatus.toLowerCase(),
+          typeField,
+          localizedType.toLowerCase(),
+          routerName,
+          planName,
+          workerName,
+          tag,
+          amountSearch,
+          if (isRevenue) 'revenue'.tr().toLowerCase(),
+          if (isPayout) 'payout'.tr().toLowerCase(),
+          if (isPayout) 'withdrawal'.tr().toLowerCase(),
+        ].join('|');
+
+        // Check if EVERY search term is present in this transaction's searchable content
+        return queryTerms.every((term) => searchableContent.contains(term));
       }).toList();
     }
 
