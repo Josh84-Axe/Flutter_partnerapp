@@ -293,7 +293,9 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (Permissions.isWorker(collaborator.roleSlug ?? '') || 
-                                  Permissions.isManager(collaborator.roleSlug ?? ''))
+                                  Permissions.isWorker(collaborator.roleName ?? '') ||
+                                  Permissions.isManager(collaborator.roleSlug ?? '') ||
+                                  Permissions.isManager(collaborator.roleName ?? ''))
                                 IconButton(
                                   icon: const Icon(Icons.router),
                                   color: colorScheme.primary,
