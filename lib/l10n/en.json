@@ -990,5 +990,7 @@
   "voucher": "Voucher",
   "remember_me": "Remember Me",
   "cancel_payment": "Cancel Payment",
-  "payment_redirecting": "Redirecting to your plan..."
+  "payment_redirecting": "Redirecting to your plan...",
+  "filter_by_router": "Filter by Router (Optional)",
+  "filter_by_assigned_by": "Filter by Assigned By (Optional)"
 }

@@ -17,6 +17,8 @@ class InternetPlansSettingsScreen extends StatefulWidget {
 }
 
 class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScreen> {
+  String _selectedRouter = 'all';
+  String _searchQuery = '';
   @override
   void initState() {
     super.initState();
@@ -115,7 +117,23 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
   Widget build(BuildContext context) {
     final networkProvider = context.watch<NetworkProvider>();
     final userProvider = context.watch<UserProvider>();
-    final plans = networkProvider.plans;
+    
+    // Filter logic
+    final plans = networkProvider.plans.where((plan) {
+      final matchesSearch = _searchQuery.isEmpty || 
+          plan.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      final matchesRouter = _selectedRouter == 'all' || 
+          plan.routers.any((r) => r.name == _selectedRouter);
+      return matchesSearch && matchesRouter;
+    }).toList();
+
+    // Unique router names for filtering
+    final allRouterNames = networkProvider.plans
+        .expand((plan) => plan.routers.map((r) => r.name))
+        .toSet()
+        .toList()
+      ..sort();
+
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -125,6 +143,57 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                // Search
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'search_plans'.tr(),
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    onChanged: (val) => setState(() => _searchQuery = val),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Router Filter
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedRouter,
+                        isExpanded: true,
+                        style: const TextStyle(color: Colors.black, fontSize: 13),
+                        items: [
+                          DropdownMenuItem(value: 'all', child: Text('all_routers'.tr())),
+                          ...allRouterNames.map((name) => DropdownMenuItem(value: name, child: Text(name))),
+                        ],
+                        onChanged: (val) => setState(() => _selectedRouter = val ?? 'all'),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       body: networkProvider.isLoading
           ? const Center(child: CircularProgressIndicator())

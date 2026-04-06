@@ -949,5 +949,7 @@
   "voucher": "Coupon",
   "remember_me": "Se souvenir de moi",
   "cancel_payment": "Annuler le paiement",
-  "payment_redirecting": "Redirection vers votre forfait..."
+  "payment_redirecting": "Redirection vers votre forfait...",
+  "filter_by_router": "Filtrer par routeur (optionnel)",
+  "filter_by_assigned_by": "Filtrer par assigné par (optionnel)"
 }

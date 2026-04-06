@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../providers/split/billing_provider.dart';
 import '../providers/split/auth_provider.dart';
 import '../providers/split/user_provider.dart';
+import '../providers/split/network_provider.dart';
 import '../utils/file_handler/file_handler.dart';
 
 class ReportingScreen extends StatefulWidget {
@@ -21,6 +22,8 @@ class _ReportingScreenState extends State<ReportingScreen> {
   bool _isGenerating = false;
   String? _selectedCollaborator;
   List<String> _collaboratorOptions = [];
+  String? _selectedRouterFilter;
+  List<String> _routerOptions = [];
 
   final List<String> _reportTypes = [
     'report_user_data_usage'.tr(),
@@ -39,6 +42,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
       end: now,
     );
     _loadCollaborators();
+    _loadRouterOptions();
   }
 
   @override
@@ -87,6 +91,31 @@ class _ReportingScreenState extends State<ReportingScreen> {
       });
     } catch (e) {
       if (kDebugMode) debugPrint('Error loading collaborators for filter: $e');
+    }
+  }
+
+  Future<void> _loadRouterOptions() async {
+    try {
+      final networkProvider = context.read<NetworkProvider>();
+      
+      // Load plans/routers if needed
+      await networkProvider.loadPlans();
+      
+      if (!mounted) return;
+
+      // Extract unique router names from plans
+      final routerNames = networkProvider.plans
+          .expand((plan) => plan.routers.map((r) => r.name))
+          .toSet()
+          .toList()
+        ..sort();
+
+      setState(() {
+        _routerOptions = ['all'.tr(), ...routerNames];
+        _selectedRouterFilter = _routerOptions.first;
+      });
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error loading routers for report filter: $e');
     }
   }
 
@@ -164,6 +193,9 @@ class _ReportingScreenState extends State<ReportingScreen> {
         assignedBy: (_selectedCollaborator == null || _selectedCollaborator == 'all'.tr()) 
             ? null 
             : _selectedCollaborator,
+        routerName: (_selectedRouterFilter == null || _selectedRouterFilter == 'all'.tr())
+            ? null
+            : _selectedRouterFilter,
       );
       
       if (!mounted) return;
@@ -292,7 +324,7 @@ class _ReportingScreenState extends State<ReportingScreen> {
           
           if (_selectedReportType == 'report_transaction_history'.tr()) ...[
             Text(
-              'Filter by Assigned By (Optional)'.tr(),
+              'filter_by_assigned_by'.tr(),
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -319,6 +351,40 @@ class _ReportingScreenState extends State<ReportingScreen> {
                   onChanged: (String? newValue) {
                     setState(() {
                       _selectedCollaborator = newValue;
+                    });
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'filter_by_router'.tr(),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _selectedRouterFilter,
+                  isExpanded: true,
+                  hint: Text('select_item'.tr(namedArgs: {'item': 'router'.tr()})),
+                  items: _routerOptions.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedRouterFilter = newValue;
                     });
                   },
                 ),

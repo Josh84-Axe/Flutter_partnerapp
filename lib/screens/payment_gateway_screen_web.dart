@@ -6,7 +6,7 @@ import 'dart:js' as js;
 import 'payment_gateway_cinetpay_web.dart';
 import '../services/api/token_storage.dart';
 
-/// Sealed Gateway Wrapper with Unified Response Logic (v1.1.101)
+/// Sealed Gateway Wrapper with Unified Response Logic (v1.1.103)
 class PaymentGatewayScreen extends StatefulWidget {
   final String email;
   final double amount;
@@ -33,11 +33,10 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
   bool _isExiting = false;
   final GlobalKey<PaymentGatewayPaystackWebState> _paystackKey = GlobalKey();
 
-  /// Unified finalizer to ensure consistent result map for SubscriptionManagementScreen
+  /// Unified finalizer ensures consistent results for SubscriptionManagementScreen
   Future<void> _finalize({required bool success, String? reference, String? message}) async {
     if (mounted && !_isExiting) {
       setState(() => _isExiting = true);
-      // Wait for state to apply to satisfy PopScope blocking
       await Future.delayed(Duration.zero);
       if (mounted) {
         Navigator.of(context).pop({

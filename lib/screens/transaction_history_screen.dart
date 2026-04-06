@@ -12,16 +12,40 @@ class TransactionHistoryScreen extends StatefulWidget {
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> with SingleTickerProviderStateMixin {
+  // Helper for inline detail chips
+  Widget _buildDetailChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 10, color: Colors.grey[600]),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey[700],
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedDateFilter = 'all'; // all, today, week, month
   bool _isLoading = false;
   
-  // Cached lists to prevent rebuild logic issues
+  // Cached list for total history
   List<dynamic> _allTransactions = [];
-  List<dynamic> _assignedTransactions = [];
-  List<dynamic> _walletTransactions = [];
 
   @override
   void initState() {
@@ -81,8 +105,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
         Map<String, dynamic>.from(txn)..['transaction_type'] = 'wallet'
       ).toList();
 
-      _assignedTransactions = assigned;
-      _walletTransactions = wallet;
       
       _allTransactions = [...assigned, ...wallet];
       
@@ -421,15 +443,21 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
               if (type.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
-                  child: Row(
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
                     children: [
                       _buildTypeBadge(type),
-                      const SizedBox(width: 8),
                       // Backend returns assigned_by. If null, it's a Voucher.
                       _buildTagBadge(
                         transaction['assigned_by'] ?? transaction['tag'] ?? transaction['worker_name'],
                         isAssigned: type == 'assigned',
                       ),
+                      // New details: Plan Name and Router Name
+                      if (transaction['plan_name'] != null)
+                        _buildDetailChip(Icons.wifi_tethering, transaction['plan_name'].toString()),
+                      if (transaction['router_name'] != null)
+                        _buildDetailChip(Icons.router, transaction['router_name'].toString()),
                     ],
                   ),
                 ),

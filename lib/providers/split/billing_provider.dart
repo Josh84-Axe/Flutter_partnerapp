@@ -475,6 +475,7 @@ class BillingProvider with ChangeNotifier {
     required DateTimeRange dateRange,
     required String format,
     String? assignedBy,
+    String? routerName,
   }) async {
     try {
       if (_reportRepository == null) {

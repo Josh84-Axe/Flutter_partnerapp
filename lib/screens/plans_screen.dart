@@ -17,6 +17,7 @@ class PlansScreen extends StatefulWidget {
 class _PlansScreenState extends State<PlansScreen> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  String _selectedRouter = 'all'; // Filter state
 
   @override
   void initState() {
@@ -41,9 +42,23 @@ class _PlansScreenState extends State<PlansScreen> {
     final userProvider = context.watch<UserProvider>();
     final authProvider = context.watch<AuthProvider>();
     final filteredPlans = networkProvider.plans.where((plan) {
-      if (_searchQuery.isEmpty) return true;
-      return plan.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      // Apply Search filter
+      bool matchesSearch = _searchQuery.isEmpty || 
+          plan.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      
+      // Apply Router filter
+      bool matchesRouter = _selectedRouter == 'all' || 
+          plan.routers.any((r) => r.name == _selectedRouter);
+          
+      return matchesSearch && matchesRouter;
     }).toList();
+
+    // Group unique router names for filter dropdown
+    final allRouterNames = networkProvider.plans
+        .expand((plan) => plan.routers.map((r) => r.name))
+        .toSet()
+        .toList()
+      ..sort();
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -70,23 +85,56 @@ class _PlansScreenState extends State<PlansScreen> {
       ),
       body: Column(
         children: [
-          // Search Bar
+          // Filter Bar
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'search_plans'.tr(),
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                // Search Field
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'search_plans'.tr(),
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      fillColor: isDark ? colorScheme.surfaceContainerHighest : Colors.white,
+                    ),
+                    onChanged: (value) => setState(() => _searchQuery = value),
+                  ),
                 ),
-                filled: true,
-                fillColor: isDark ? colorScheme.surfaceContainerHighest : Colors.white,
-              ),
-              onChanged: (value) => setState(() => _searchQuery = value),
+                const SizedBox(width: 8),
+                // Router Dropdown
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? colorScheme.surfaceContainerHighest : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[400]!),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedRouter,
+                        isExpanded: true,
+                        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 13),
+                        items: [
+                          DropdownMenuItem(value: 'all', child: Text('all_routers'.tr())),
+                          ...allRouterNames.map((name) => DropdownMenuItem(value: name, child: Text(name))),
+                        ],
+                        onChanged: (val) => setState(() => _selectedRouter = val ?? 'all'),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+          const SizedBox(height: 8),
 
           // Plans List
           Expanded(
