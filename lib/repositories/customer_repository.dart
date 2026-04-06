@@ -184,8 +184,13 @@ class CustomerRepository {
       final response = await _dio.get('/partner/customers/$encodedUsername/transactions/assigned/');
       
       final responseData = response.data;
-      if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+      if (responseData is Map && responseData['data'] != null) {
+        final data = responseData['data'];
+        if (data is Map && data['paginate_data'] is List) {
+          return data['paginate_data'] as List;
+        } else if (data is List) {
+          return data;
+        }
       }
       return [];
     } catch (e) {
@@ -202,8 +207,13 @@ class CustomerRepository {
       final response = await _dio.get('/partner/customers/$encodedUsername/transactions/wallet/');
       
       final responseData = response.data;
-      if (responseData is Map && responseData['data'] is List) {
-        return responseData['data'] as List;
+      if (responseData is Map && responseData['data'] != null) {
+        final data = responseData['data'];
+        if (data is Map && data['paginate_data'] is List) {
+          return data['paginate_data'] as List;
+        } else if (data is List) {
+          return data;
+        }
       }
       return [];
     } catch (e) {
@@ -264,7 +274,14 @@ class CustomerRepository {
       
       final responseData = response.data;
       if (responseData is Map && responseData['data'] != null) {
-        return responseData['data'] as Map<String, dynamic>;
+        final data = responseData['data'] as Map<String, dynamic>;
+        // Map backend fields to UI keys (removing " GB" for calculation if needed, though UI appends it)
+        return {
+          ...data,
+          'total_used': data['total_data_convert_bytes']?.toString().replaceAll(' GB', ''),
+          'total_limit': data['total_limit_convert_bytes']?.toString().replaceAll(' GB', '') ?? '0',
+          'remaining': data['total_remaining_convert_bytes']?.toString().replaceAll(' GB', '') ?? '0',
+        };
       }
       return null;
     } catch (e) {
@@ -326,7 +343,12 @@ class CustomerRepository {
       
       final responseData = response.data;
       if (responseData is Map && responseData['data'] != null) {
-        return responseData['data'] as Map<String, dynamic>;
+        final data = responseData['data'] as Map<String, dynamic>;
+        // The backend returns a data: { "active_plan": { ... } } structure
+        if (data.containsKey('active_plan') && data['active_plan'] != null) {
+          return data['active_plan'] as Map<String, dynamic>?;
+        }
+        return data; // Fallback
       }
       return null;
     } catch (e) {
