@@ -16,6 +16,7 @@ class RouterResourcesScreen extends StatefulWidget {
 class _RouterResourcesScreenState extends State<RouterResourcesScreen> {
   bool _isLoading = true;
   Map<String, dynamic>? _resources;
+  int _activeSessionsCount = 0;
   String? _error;
 
   @override
@@ -37,11 +38,15 @@ class _RouterResourcesScreenState extends State<RouterResourcesScreen> {
       
       if (slug.isEmpty) throw Exception('Invalid router configuration: Missing slug/ID'); 
       
-      final data = await provider.fetchRouterResources(slug);
+      final resourcesPromise = provider.fetchRouterResources(slug);
+      final sessionsPromise = provider.fetchActiveUsers(slug);
+      
+      final results = await Future.wait([resourcesPromise, sessionsPromise]);
       
       if (mounted) {
         setState(() {
-          _resources = data;
+          _resources = results[0] as Map<String, dynamic>?;
+          _activeSessionsCount = (results[1] as List<dynamic>?)?.length ?? 0;
           _isLoading = false;
         });
       }
@@ -151,6 +156,8 @@ class _RouterResourcesScreenState extends State<RouterResourcesScreen> {
           color: Colors.green,
           percentage: 1.0 - (freeDisk / totalDisk),
         ),
+        const SizedBox(height: 16),
+        _buildActiveSessionsCard(),
         const SizedBox(height: 24),
         Card(
           child: Padding(
@@ -163,12 +170,12 @@ class _RouterResourcesScreenState extends State<RouterResourcesScreen> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const Divider(),
-                _buildInfoRow('model'.tr(), getField('model')?.toString() ?? 'Unknown'),
-                _buildInfoRow('version'.tr(), getField('version')?.toString() ?? 'Unknown'),
-                _buildInfoRow('uptime'.tr(), getField('uptime')?.toString() ?? 'Unknown'),
-                _buildInfoRow('board_name'.tr(), getField('board-name', 'board_name')?.toString() ?? 'Unknown'),
-                _buildInfoRow('cpu_count'.tr(), getField('cpu-count', 'cpu_count')?.toString() ?? 'N/A'),
-                _buildInfoRow('frequency'.tr(), '${getField('cpu-frequency', 'cpu_frequency')?.toString() ?? 'N/A'} MHz'),
+                _buildInfoRow('model'.tr(), getField('model')?.toString() ?? 'unknown'.tr()),
+                _buildInfoRow('version'.tr(), getField('version')?.toString() ?? 'unknown'.tr()),
+                _buildInfoRow('uptime'.tr(), getField('uptime')?.toString() ?? 'unknown'.tr()),
+                _buildInfoRow('board_name'.tr(), getField('board-name', 'board_name')?.toString() ?? 'unknown'.tr()),
+                _buildInfoRow('cpu_count'.tr(), getField('cpu-count', 'cpu_count')?.toString() ?? 'not_available'.tr()),
+                _buildInfoRow('frequency'.tr(), '${getField('cpu-frequency', 'cpu_frequency')?.toString() ?? 'not_available'.tr()} MHz'),
               ],
             ),
           ),
@@ -248,13 +255,55 @@ class _RouterResourcesScreenState extends State<RouterResourcesScreen> {
     );
   }
 
+  Widget _buildActiveSessionsCard() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.purple.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.people, color: Colors.purple),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'active_sessions'.tr(),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$_activeSessionsCount',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildInfoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+          Expanded(child: Text(label, style: const TextStyle(fontWeight: FontWeight.w500))),
           Text(value),
         ],
       ),

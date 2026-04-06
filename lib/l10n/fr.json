@@ -954,5 +954,14 @@
   "filter_by_assigned_by": "Filtrer par assigné par (optionnel)",
   "cpu_count": "Nombre de cœurs CPU",
   "frequency": "Fréquence CPU",
-  "system_resources": "Ressources système"
+  "system_resources": "Ressources système",
+  "cpu_usage": "Utilisation CPU",
+  "memory_usage": "Utilisation mémoire",
+  "disk_usage": "Utilisation disque",
+  "device_info": "Informations sur l'appareil",
+  "board_name": "Nom de la carte",
+  "free_memory": "Mémoire libre",
+  "free_space": "Espace libre",
+  "unknown": "Inconnu",
+  "not_available": "N/D"
 }

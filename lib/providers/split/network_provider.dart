@@ -252,6 +252,16 @@ class NetworkProvider with ChangeNotifier {
       return false;
     }
   }
+
+  Future<List<dynamic>> fetchActiveUsers(String slug) async {
+    if (_routerRepository == null) return [];
+    try {
+      return await _routerRepository!.fetchActiveUsers(slug);
+    } catch (e) {
+      if (kDebugMode) print('❌ [NetworkProvider] Error fetching active users: $e');
+      return [];
+    }
+  }
   Future<void> blockDevice(String deviceId) async {
     if (_customerRepository == null) return;
     _setLoading(true);

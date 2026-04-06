@@ -995,5 +995,14 @@
   "filter_by_assigned_by": "Filter by Assigned By (Optional)",
   "cpu_count": "CPU Core Count",
   "frequency": "CPU Frequency",
-  "system_resources": "System Resources"
+  "system_resources": "System Resources",
+  "cpu_usage": "CPU Usage",
+  "memory_usage": "Memory Usage",
+  "disk_usage": "Disk Usage",
+  "device_info": "Device Information",
+  "board_name": "Board Name",
+  "free_memory": "Free Memory",
+  "free_space": "Free Space",
+  "unknown": "Unknown",
+  "not_available": "N/A"
 }
