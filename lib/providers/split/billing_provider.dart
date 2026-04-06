@@ -259,7 +259,8 @@ class BillingProvider with ChangeNotifier {
       if (_transactionRepository == null) return;
       
       if (kDebugMode) debugPrint('💳 [BillingProvider] Loading wallet transactions...');
-      _walletTransactions = await _transactionRepository!.getWalletTransactions();
+      final results = await _transactionRepository!.getWalletTransactions();
+      _walletTransactions = results.map((t) => Map<String, dynamic>.from(t as Map)..['_source'] = 'wallet').toList();
       
       if (kDebugMode) debugPrint('✅ [BillingProvider] Wallet transactions loaded: ${_walletTransactions.length}');
       notifyListeners();
@@ -275,7 +276,8 @@ class BillingProvider with ChangeNotifier {
       if (_transactionRepository == null) return;
       
       if (kDebugMode) debugPrint('💳 [BillingProvider] Loading assigned transactions...');
-      _assignedTransactions = await _transactionRepository!.fetchAssignedPlanTransactions();
+      final results = await _transactionRepository!.fetchAssignedPlanTransactions();
+      _assignedTransactions = results.map((t) => Map<String, dynamic>.from(t as Map)..['_source'] = 'assigned').toList();
       
       if (kDebugMode) debugPrint('✅ [BillingProvider] Assigned transactions loaded: ${_assignedTransactions.length}');
       notifyListeners();

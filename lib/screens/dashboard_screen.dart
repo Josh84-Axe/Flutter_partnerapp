@@ -419,7 +419,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 QuickActionButton(
                   icon: Icons.history,
-                  label: 'billing_history'.tr(),
+                  label: 'billing'.tr(),
                   onTap: () => Navigator.pushNamed(context, '/transaction-history'),
                 ),
               ],

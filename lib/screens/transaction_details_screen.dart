@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/billing_provider.dart';
 import '../providers/split/auth_provider.dart';
@@ -91,7 +92,28 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
     try {
       if (kDebugMode) print('📡 [TransactionDetails] Fetching details from API...');
       final billingProvider = context.read<BillingProvider>();
-      final details = await billingProvider.getTransactionDetails(id, type);
+      
+      Map<String, dynamic>? details;
+      try {
+        details = await billingProvider.getTransactionDetails(id, type);
+      } catch (e) {
+        if (kDebugMode) print('⚠️ [TransactionDetails] First try failed ($type): $e');
+        
+        bool is404 = false;
+        if (e is DioException) {
+          is404 = e.response?.statusCode == 404;
+        } else if (e.toString().contains('404')) {
+          is404 = true;
+        }
+
+        if (is404) {
+          final retryType = type == 'wallet' ? 'assigned' : 'wallet';
+          if (kDebugMode) print('🔄 [TransactionDetails] Retrying with type: $retryType');
+          details = await billingProvider.getTransactionDetails(id, retryType);
+        } else {
+          rethrow;
+        }
+      }
       
       if (kDebugMode) {
         print('✅ [TransactionDetails] Details received:');
@@ -99,7 +121,7 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       }
       
       setState(() {
-        _transactionDetails = details['data'] as Map<String, dynamic>?;
+        _transactionDetails = details?['data'] as Map<String, dynamic>? ?? (details?['id'] != null ? details : null);
         _isLoading = false;
       });
       

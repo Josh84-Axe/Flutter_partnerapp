@@ -153,7 +153,7 @@ class _RolePermissionScreenState extends State<RolePermissionScreen> {
                               color: colorScheme.onSurfaceVariant,
                             ),
                           ),
-                          if (role.name.toLowerCase() == 'worker' && isAuthorized) ...[
+                          if ((role.name.toLowerCase() == 'worker' || role.name.toLowerCase() == 'manager') && isAuthorized) ...[
                             const SizedBox(height: 12),
                             OutlinedButton.icon(
                               onPressed: () {

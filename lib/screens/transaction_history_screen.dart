@@ -99,14 +99,17 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
     try {
       // Safely map and merge
       final assigned = billingProvider.assignedTransactions.map((txn) => 
-        Map<String, dynamic>.from(txn)..['transaction_type'] = 'assigned'
+        Map<String, dynamic>.from(txn)
+          ..['transaction_type'] = 'assigned'
+          ..['_source'] = 'assigned'
       ).toList();
       
       final wallet = billingProvider.walletTransactions.map((txn) => 
-        Map<String, dynamic>.from(txn)..['transaction_type'] = 'wallet'
+        Map<String, dynamic>.from(txn)
+          ..['transaction_type'] = 'wallet'
+          ..['_source'] = 'wallet'
       ).toList();
 
-      
       _allTransactions = [...assigned, ...wallet];
       
       // Sort desc by date

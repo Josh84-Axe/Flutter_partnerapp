@@ -326,12 +326,14 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> with SingleTi
           } else {
             // For payments, show transaction details
             final transactionId = transaction['id']?.toString();
+            final type = transaction['_source']?.toString() ?? 'wallet';
+            
             Navigator.pushNamed(
               context,
               '/transaction-details',
               arguments: {
                 'id': transactionId,
-                'type': 'wallet',
+                'type': type,
               },
             );
           }
