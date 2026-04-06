@@ -692,8 +692,8 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 },
               ),
             // Assign Routers
-            if (Permissions.isWorker(worker.roleSlug ?? '') || 
-                Permissions.isManager(worker.roleSlug ?? ''))
+            if (Permissions.isWorker((worker.roleSlug ?? worker.roleName ?? '').toString()) || 
+                Permissions.isManager((worker.roleSlug ?? worker.roleName ?? '').toString()))
               ListTile(
                 leading: Icon(Icons.router, color: Theme.of(context).colorScheme.primary),
                 title: Text('assign_routers'.tr()),
