@@ -6,6 +6,7 @@ import '../providers/split/network_provider.dart';
 import '../utils/app_theme.dart';
 import 'assign_routers_screen.dart';
 import '../utils/permissions.dart';
+import '../widgets/skeleton_loader.dart';
 
 class CollaboratorsManagementScreen extends StatefulWidget {
   const CollaboratorsManagementScreen({super.key});
@@ -191,7 +192,7 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
         ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? _buildSkeletonList()
           : collaborators.isEmpty
               ? Center(
                   child: Column(
@@ -331,6 +332,35 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
         icon: const Icon(Icons.person_add),
         label: Text('add_collaborator'.tr()),
         backgroundColor: colorScheme.primary,
+      ),
+    );
+  }
+
+  Widget _buildSkeletonList() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: 8,
+      itemBuilder: (context, index) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              const SkeletonLoader(width: 40, height: 40, borderRadius: BorderRadius.all(Radius.circular(20))),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonText(width: 120),
+                    SizedBox(height: 8),
+                    SkeletonLoader(width: 100, height: 20),
+                  ],
+                ),
+              ),
+              const SkeletonLoader(width: 24, height: 24),
+            ],
+          ),
+        ),
       ),
     );
   }

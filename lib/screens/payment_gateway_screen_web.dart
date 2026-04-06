@@ -85,7 +85,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final rawCountry = widget.userData?['country']?.toString()?.toLowerCase() ?? '';
+    final rawCountry = widget.userData?['country']?.toString().toLowerCase() ?? '';
     final isFrancophoneCountry = rawCountry == 'ci' || rawCountry == 'sn' || rawCountry == 'ml' || rawCountry == 'bj' || 
                                  rawCountry == 'bf' || rawCountry == 'ne' || rawCountry == 'tg' || rawCountry == 'cm' || 
                                  rawCountry == 'ga' || rawCountry == 'cg' || rawCountry == 'td' || rawCountry == 'gn';
@@ -192,8 +192,11 @@ class PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
   void _startStatusPolling() {
     _statusTimer?.cancel();
     _statusTimer = Timer.periodic(const Duration(seconds: 8), (timer) {
-      if (_status == 'PENDING') _checkTransactionStatus();
-      else timer.cancel();
+      if (_status == 'PENDING') {
+        _checkTransactionStatus();
+      } else {
+        timer.cancel();
+      }
     });
   }
 

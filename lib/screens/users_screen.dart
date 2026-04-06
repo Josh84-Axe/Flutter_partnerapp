@@ -11,6 +11,7 @@ import '../providers/split/network_provider.dart';
 import '../utils/app_theme.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/create_worker_dialog.dart';
+import '../widgets/skeleton_loader.dart';
 import 'assign_routers_screen.dart';
 import '../utils/permissions.dart';
 import '../utils/permission_mapping.dart';
@@ -249,7 +250,7 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
           ),
           Expanded(
             child: userProvider.isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? _buildSkeletonList()
                 : TabBarView(
                     controller: _tabController,
                     children: [
@@ -974,6 +975,39 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     );
   }
 
-
-
+  Widget _buildSkeletonList() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: 8,
+      itemBuilder: (context, index) => Card(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              const SkeletonLoader(width: 40, height: 40, borderRadius: BorderRadius.all(Radius.circular(20))),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonText(width: 120),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        SkeletonLoader(width: 60, height: 20),
+                        SizedBox(width: 8),
+                        SkeletonLoader(width: 80, height: 20),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SkeletonLoader(width: 24, height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

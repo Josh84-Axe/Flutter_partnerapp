@@ -191,7 +191,7 @@ class NetworkProvider with ChangeNotifier {
       if (slug.isEmpty) return;
       
       final resources = await fetchRouterResources(slug);
-      _routerResourceAlive[slug] = resources != null && resources.isNotEmpty;
+      _routerResourceAlive[slug] = resources.isNotEmpty;
     } catch (e) {
       _routerResourceAlive[router.slug] = false;
     }

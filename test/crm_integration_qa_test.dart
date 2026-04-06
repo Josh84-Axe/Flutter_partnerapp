@@ -1,9 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import 'package:hotspot_partner_app/services/api/api_config.dart';
 import 'package:hotspot_partner_app/services/support_ticket_service.dart';
 
 void main() {

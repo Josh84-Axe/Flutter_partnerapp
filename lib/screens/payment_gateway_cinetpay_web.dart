@@ -79,8 +79,11 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
   void _startStatusPolling() {
     _statusTimer?.cancel();
     _statusTimer = Timer.periodic(const Duration(seconds: 8), (timer) {
-      if (_status == 'PENDING' || _status == 'INITIAL') _checkTransactionStatus();
-      else timer.cancel();
+      if (_status == 'PENDING' || _status == 'INITIAL') {
+        _checkTransactionStatus();
+      } else {
+        timer.cancel();
+      }
     });
   }
 

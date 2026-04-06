@@ -71,7 +71,7 @@ class _SupportTicketScreenState extends State<SupportTicketScreen> {
 
               // Priority Dropdown
               DropdownButtonFormField<String>(
-                value: _priority,
+                initialValue: _priority,
                 decoration: InputDecoration(
                   labelText: 'priority'.tr(),
                   border: OutlineInputBorder(),

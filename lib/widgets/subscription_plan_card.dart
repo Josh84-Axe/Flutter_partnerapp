@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'skeleton_loader.dart';
 
 import 'dart:async';
 
@@ -62,90 +63,108 @@ class _SubscriptionPlanCardState extends State<SubscriptionPlanCard> {
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'subscription_plan'.tr(),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.planName,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: isLifetime 
-                          ? colorScheme.primaryContainer 
-                          : (_timeLeft.inDays < 3 
-                              ? colorScheme.errorContainer 
-                              : colorScheme.primaryContainer),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          isLifetime ? Icons.all_inclusive : Icons.timer_outlined,
-                          size: 16,
-                          color: isLifetime 
-                              ? colorScheme.onPrimaryContainer
-                              : (_timeLeft.inDays < 3 
-                                  ? colorScheme.onErrorContainer 
-                                  : colorScheme.onPrimaryContainer),
+        child: widget.isLoading 
+          ? const Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonText(width: 100),
+                    SizedBox(height: 12),
+                    SkeletonText(width: 150, height: 24),
+                    SizedBox(height: 12),
+                    SkeletonLoader(width: 120, height: 28, borderRadius: BorderRadius.all(Radius.circular(20))),
+                  ],
+                ),
+              ),
+              SkeletonLoader(width: 64, height: 64, borderRadius: BorderRadius.all(Radius.circular(16))),
+            ],
+          )
+          : Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'subscription_plan'.tr(),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
                         ),
-                        const SizedBox(width: 6),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        widget.planName,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isLifetime 
+                              ? colorScheme.primaryContainer 
+                              : (_timeLeft.inDays < 3 
+                                  ? colorScheme.errorContainer 
+                                  : colorScheme.primaryContainer),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isLifetime ? Icons.all_inclusive : Icons.timer_outlined,
+                              size: 16,
+                              color: isLifetime 
+                                  ? colorScheme.onPrimaryContainer
+                                  : (_timeLeft.inDays < 3 
+                                      ? colorScheme.onErrorContainer 
+                                      : colorScheme.onPrimaryContainer),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              isLifetime ? 'lifetime'.tr() : _formatTimeLeft(),
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: isLifetime 
+                                    ? colorScheme.onPrimaryContainer
+                                    : (_timeLeft.inDays < 3 
+                                        ? colorScheme.onErrorContainer 
+                                        : colorScheme.onPrimaryContainer),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      if (!isLifetime)
                         Text(
-                          isLifetime ? 'lifetime'.tr() : _formatTimeLeft(),
+                          'renews'.tr(namedArgs: {
+                            'date': DateFormat('MMM d, yyyy').format(widget.renewalDate!)
+                          }),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: isLifetime 
-                                ? colorScheme.onPrimaryContainer
-                                : (_timeLeft.inDays < 3 
-                                    ? colorScheme.onErrorContainer 
-                                    : colorScheme.onPrimaryContainer),
-                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
-                      ],
-                    ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  if (!isLifetime)
-                    Text(
-                      'renews'.tr(namedArgs: {
-                        'date': DateFormat('MMM d, yyyy').format(widget.renewalDate!)
-                      }),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                ],
-              ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.wifi,
+                    size: 32,
+                    color: colorScheme.onPrimaryContainer,
+                  ),
+                ),
+              ],
             ),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(
-                Icons.wifi,
-                size: 32,
-                color: colorScheme.onPrimaryContainer,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

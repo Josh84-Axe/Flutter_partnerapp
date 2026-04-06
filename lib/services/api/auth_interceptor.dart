@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'token_storage.dart';
 import 'package:flutter/foundation.dart';
 
@@ -7,11 +8,12 @@ import 'package:flutter/foundation.dart';
 class AuthInterceptor extends Interceptor {
   final TokenStorage _tokenStorage;
   final String _baseUrl;
+  final VoidCallback? onLogout;
   
   bool _isRefreshing = false;
   Completer<void>? _refreshCompleter;
 
-  AuthInterceptor(this._tokenStorage, this._baseUrl);
+  AuthInterceptor(this._tokenStorage, this._baseUrl, {this.onLogout});
 
   @override
   void onRequest(
@@ -32,15 +34,23 @@ class AuthInterceptor extends Interceptor {
       if (isMainApiRequest) {
         final accessToken = await _tokenStorage.getAccessToken();
         if (accessToken != null) {
-          if (kDebugMode) print('🔑 [AuthInterceptor] Adding token to request: ${options.path}');
           options.headers['Authorization'] = 'Bearer $accessToken';
-        } else {
-          if (kDebugMode) print('⚠️ [AuthInterceptor] No access token found for request: ${options.path}');
         }
-      } else {
-        if (kDebugMode) print('🌐 [AuthInterceptor] Skipping token for external request: ${options.uri}');
       }
     }
+
+    // Add Sentry breadcrumb
+    Sentry.addBreadcrumb(
+      Breadcrumb(
+        type: 'http',
+        category: 'dio',
+        message: 'Request: ${options.method} ${options.path}',
+        data: {
+          'url': options.uri.toString(),
+          'method': options.method,
+        },
+      ),
+    );
 
     handler.next(options);
   }
@@ -50,12 +60,21 @@ class AuthInterceptor extends Interceptor {
     // Handle 401 Unauthorized - token expired
     if (err.response?.statusCode == 401 && !_isRefreshRequest(err.requestOptions)) {
       if (kDebugMode) print('🔄 [AuthInterceptor] 401 detected on ${err.requestOptions.path}, attempting token refresh...');
+      
+      Sentry.addBreadcrumb(
+        Breadcrumb(
+          message: '401 Unauthorized on ${err.requestOptions.path}, triggering refresh',
+          level: SentryLevel.warning,
+        ),
+      );
+
       try {
         final refreshToken = await _tokenStorage.getRefreshToken();
         if (refreshToken == null) {
           if (kDebugMode) print('ℹ️ [AuthInterceptor] No refresh token available, clearing session.');
           await _tokenStorage.clearTokens();
-          return handler.next(err); // Let it fail normally
+          onLogout?.call();
+          return handler.next(err); 
         }
 
         // Wait for refresh if already in progress
@@ -69,18 +88,41 @@ class AuthInterceptor extends Interceptor {
         requestOptions.headers['Authorization'] = 'Bearer $accessToken';
 
         if (kDebugMode) print('🔁 [AuthInterceptor] Retrying ${err.requestOptions.path} with new token');
-        // Create a new Dio instance to avoid interceptor loops
-        final dio = Dio(BaseOptions(baseUrl: _baseUrl));
-        final response = await dio.fetch(requestOptions);
         
+        // Use a clean Dio instance to retry to avoid recursion
+        final dio = Dio(BaseOptions(
+          baseUrl: _baseUrl,
+          connectTimeout: const Duration(seconds: 15),
+        ));
+        
+        final response = await dio.fetch(requestOptions);
         return handler.resolve(response);
       } catch (refreshError) {
         if (kDebugMode) print('❌ [AuthInterceptor] Token refresh failed or aborted: $refreshError');
+        
+        Sentry.captureException(refreshError, hint: Hint.withMap({'reason': 'Token refresh failure'}));
+        
         // Refresh failed, clear tokens and let the error propagate
         await _tokenStorage.clearTokens();
+        onLogout?.call();
         return handler.next(err);
       }
     }
+
+    // Add Sentry error breadcrumb
+    Sentry.addBreadcrumb(
+      Breadcrumb(
+        type: 'error',
+        category: 'dio',
+        message: 'Error: ${err.requestOptions.method} ${err.requestOptions.path}',
+        level: SentryLevel.error,
+        data: {
+          'status_code': err.response?.statusCode,
+          'error_message': err.message,
+          'type': err.type.toString(),
+        },
+      ),
+    );
 
     if (kDebugMode) {
       print('❌ [AuthInterceptor] Error on ${err.requestOptions.path}: ${err.response?.statusCode} ${err.message}');

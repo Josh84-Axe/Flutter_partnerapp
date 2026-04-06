@@ -56,7 +56,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
         content: Text('cancel_payment_confirm'.tr()),
         actions: [
           TextButton(child: Text('no'.tr()), onPressed: () => Navigator.of(dialogContext).pop(false)),
-          TextButton(child: Text('yes'.tr()), style: TextButton.styleFrom(foregroundColor: Colors.red), onPressed: () => Navigator.of(dialogContext).pop(true)),
+          TextButton(style: TextButton.styleFrom(foregroundColor: Colors.red), onPressed: () => Navigator.of(dialogContext).pop(true), child: Text('yes'.tr())),
         ],
       ),
     );
@@ -70,7 +70,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final rawCountry = widget.userData?['country']?.toString()?.toLowerCase() ?? 'ci';
+    final rawCountry = widget.userData?['country']?.toString().toLowerCase() ?? 'ci';
     final isFrancophoneCountry = rawCountry == 'ci' || rawCountry == 'sn' || rawCountry == 'ml' || rawCountry == 'bj' || 
                                  rawCountry == 'bf' || rawCountry == 'ne' || rawCountry == 'tg' || rawCountry == 'cm' || 
                                  rawCountry == 'ga' || rawCountry == 'cg' || rawCountry == 'td' || rawCountry == 'gn';

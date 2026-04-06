@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/services.dart';
 
 
 import '../providers/split/user_provider.dart';
 import '../providers/split/network_provider.dart';
 import '../providers/split/billing_provider.dart';
 import '../utils/app_theme.dart';
+import '../locator.dart';
 import '../widgets/metric_card.dart';
 import '../widgets/subscription_plan_card.dart';
 import '../widgets/quick_action_button.dart';
 import '../widgets/guest_mode_banner.dart';
 import '../widgets/data_usage_card.dart';
+import '../widgets/skeleton_loader.dart';
 import '../services/update_service.dart';
 import '../services/pwa_service.dart';
 import 'package:flutter/foundation.dart';
@@ -36,7 +36,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _checkForUpdates() async {
-    final updateService = UpdateService();
+    final updateService = locator<UpdateService>();
     final updateInfo = await updateService.checkUpdate();
 
     if (updateInfo != null && mounted) {
@@ -73,7 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               });
 
               try {
-                final updateService = UpdateService();
+                final updateService = locator<UpdateService>();
                 await updateService.performUpdate(
                   downloadUrl,
                   onProgress: (received, total) {
@@ -533,34 +533,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   size: 32,
                   color: colorScheme.primary,
                 ),
-                if (isLoading)
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: colorScheme.primary,
-                    ),
-                  ),
+                // Small indicator can still be shown, but skeleton is better for content
               ],
             ),
             const SizedBox(height: 16),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                value,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+            isLoading 
+              ? const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonText(width: 80),
+                    SizedBox(height: 8),
+                    SkeletonText(width: 120, height: 24),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        value,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
           ],
         ),
       ),

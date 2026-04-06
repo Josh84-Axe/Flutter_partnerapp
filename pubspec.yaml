@@ -67,6 +67,7 @@ dependencies:
   sentry_flutter: ^8.13.0
   integration_test:
     sdk: flutter
+  get_it: ^9.2.1
 
 dev_dependencies:
   flutter_test:

@@ -42,8 +42,8 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> {
       return;
     }
 
-    final idFromArgs = args?['id']?.toString();
-    final typeFromArgs = args?['type']?.toString();
+    final idFromArgs = args['id']?.toString();
+    final typeFromArgs = args['type']?.toString();
 
     String? id = idFromArgs;
     String type = typeFromArgs ?? 'wallet';

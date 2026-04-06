@@ -76,8 +76,6 @@ class ApiLoggingInterceptor extends Interceptor {
       }
     }
     
-    if (err.stackTrace != null) {
-      debugPrint('Stacktrace: ${err.stackTrace.toString().split('\n').take(3).join('\n')}');
+    debugPrint('Stacktrace: ${err.stackTrace.toString().split('\n').take(3).join('\n')}');
     }
-  }
 }
