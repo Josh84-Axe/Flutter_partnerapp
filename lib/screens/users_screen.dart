@@ -11,6 +11,7 @@ import '../providers/split/network_provider.dart';
 import '../utils/app_theme.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/create_worker_dialog.dart';
+import 'assign_routers_screen.dart';
 import '../utils/permissions.dart';
 import '../utils/permission_mapping.dart';
 import '../widgets/permission_denied_dialog.dart';
@@ -688,6 +689,22 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
                 onTap: () {
                   Navigator.pop(context);
                   _showEditWorkerDialog(context, worker);
+                },
+              ),
+            // Assign Routers
+            if (Permissions.isWorker(worker.roleSlug ?? '') || 
+                Permissions.isManager(worker.roleSlug ?? ''))
+              ListTile(
+                leading: Icon(Icons.router, color: Theme.of(context).colorScheme.primary),
+                title: Text('assign_routers'.tr()),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AssignRoutersScreen(worker: worker),
+                    ),
+                  );
                 },
               ),
             // Assign/Change Role

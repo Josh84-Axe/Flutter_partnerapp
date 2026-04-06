@@ -418,6 +418,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onTap: () => Navigator.of(context).pushNamed('/reporting'),
                 ),
                 QuickActionButton(
+                  icon: Icons.people_outline,
+                  label: 'collaborators'.tr(),
+                  onTap: () => Navigator.of(context).pushNamed('/collaborators-management'),
+                ),
+                QuickActionButton(
                   icon: Icons.settings,
                   label: 'settings'.tr(),
                   onTap: () => Navigator.of(context).pushNamed('/settings'),

@@ -511,6 +511,7 @@ class NetworkProvider with ChangeNotifier {
         _loadIdleTimeouts(),
         _loadSharedUsers(),
         loadRouters(),
+        loadRouterAssignments(),
       ]);
       _error = null;
     } catch (e) {

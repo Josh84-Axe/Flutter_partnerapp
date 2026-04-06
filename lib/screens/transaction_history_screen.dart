@@ -139,12 +139,45 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> wit
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((txn) {
         final description = (txn['description'] ?? '').toString().toLowerCase();
-        final amount = (txn['amount'] ?? '').toString();
-        // Handle potentially null ID
         final id = (txn['id'] ?? '').toString();
-        return description.contains(_searchQuery.toLowerCase()) ||
-               amount.contains(_searchQuery) ||
-               id.contains(_searchQuery);
+        final status = (txn['status'] ?? '').toString().toLowerCase();
+        final typeField = (txn['transaction_type'] ?? txn['type'] ?? '').toString().toLowerCase();
+        final routerName = (txn['router_name'] ?? '').toString().toLowerCase();
+        final planName = (txn['plan_name'] ?? '').toString().toLowerCase();
+        final workerName = (txn['worker_name'] ?? txn['assigned_by'] ?? '').toString().toLowerCase();
+        final tag = (txn['tag'] ?? '').toString().toLowerCase();
+        
+        // Visual indicators virtual keywords
+        final amountPaid = txn['amount_paid'];
+        final amountValue = amountPaid != null 
+            ? (double.tryParse(amountPaid.toString()) ?? 0.0)
+            : (double.tryParse(txn['amount']?.toString() ?? '0') ?? 0.0);
+        final amountSearch = amountValue.toString();
+        
+        final rawType = (txn['type'] ?? '').toString().toLowerCase();
+        final isPayout = rawType == 'payout' || rawType == 'withdrawal' || rawType == 'debit';
+        final isRevenue = !isPayout && amountValue >= 0;
+        
+        // Localized labels for better search
+        final String localizedStatus = status == 'success' || status == 'completed' ? 'success'.tr() : (status == 'pending' ? 'pending'.tr() : 'failed'.tr());
+        final String localizedType = typeField == 'assigned' ? 'assigned'.tr() : 'wallet'.tr();
+        
+        final query = _searchQuery.toLowerCase();
+        
+        return description.contains(query) ||
+               amountSearch.contains(query) ||
+               id.contains(query) ||
+               status.contains(query) ||
+               localizedStatus.toLowerCase().contains(query) ||
+               typeField.contains(query) ||
+               localizedType.toLowerCase().contains(query) ||
+               routerName.contains(query) ||
+               planName.contains(query) ||
+               workerName.contains(query) ||
+               tag.contains(query) ||
+               (isRevenue && 'revenue'.tr().toLowerCase().contains(query)) ||
+               (isPayout && 'payout'.tr().toLowerCase().contains(query)) ||
+               (isPayout && 'withdrawal'.tr().toLowerCase().contains(query));
       }).toList();
     }
 

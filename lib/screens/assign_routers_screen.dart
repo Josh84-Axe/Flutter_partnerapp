@@ -211,51 +211,69 @@ class _AssignRoutersScreenState extends State<AssignRoutersScreen> {
                       final isSelected = _selectedRouterIds.contains(router.id);
                       final isOnline = router.status.toLowerCase() == 'online';
 
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        elevation: isSelected ? 2 : 0,
-                        color: isSelected 
-                            ? colorScheme.primaryContainer.withValues(alpha: 0.3)
-                            : null,
-                        child: CheckboxListTile(
-                          value: isSelected,
-                          onChanged: (value) => _toggleRouter(router.id),
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected ? colorScheme.primaryContainer.withAlpha(20) : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected ? colorScheme.primary : Colors.grey[200]!,
+                            width: isSelected ? 2 : 1,
+                          ),
+                          boxShadow: isSelected ? [
+                            BoxShadow(
+                              color: colorScheme.primary.withAlpha(30),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            )
+                          ] : null,
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          leading: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: isSelected ? colorScheme.primary : colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.router_outlined,
+                              color: isSelected ? Colors.white : colorScheme.onSurfaceVariant,
+                            ),
+                          ),
                           title: Row(
                             children: [
                               Expanded(
                                 child: Text(
                                   router.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
+                                  style: TextStyle(
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: isOnline
-                                      ? Colors.green.withValues(alpha: 0.1)
-                                      : Colors.grey.withValues(alpha: 0.1),
+                                  color: (isOnline ? Colors.green : Colors.grey).withAlpha(30),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      Icons.circle,
-                                      size: 8,
-                                      color: isOnline ? Colors.green : Colors.grey,
+                                      Icons.circle, 
+                                      size: 8, 
+                                      color: isOnline ? Colors.green : Colors.grey
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
                                       router.status,
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
                                         color: isOnline ? Colors.green : Colors.grey,
-                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ],
@@ -263,28 +281,15 @@ class _AssignRoutersScreenState extends State<AssignRoutersScreen> {
                               ),
                             ],
                           ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 4),
-                              if (router.ipAddress != null)
-                                Text(
-                                  'IP: ${router.ipAddress}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${router.connectedUsers} ${'users'.tr()} • ${router.dataUsageGB.toStringAsFixed(1)} GB',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
+                          subtitle: Text(
+                            'ID: ${router.id} • IP: ${router.ipAddress ?? 'N/A'}',
+                            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
                           ),
+                          trailing: Icon(
+                            isSelected ? Icons.check_circle : Icons.circle_outlined,
+                            color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant.withAlpha(50),
+                          ),
+                          onTap: () => _toggleRouter(router.id),
                         ),
                       );
                     },

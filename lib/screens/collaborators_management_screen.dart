@@ -245,15 +245,44 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 4),
-                              Text(collaborator.email),
+                              Row(
+                                children: [
+                                  Icon(Icons.email_outlined, size: 14, color: Colors.grey[600]),
+                                  const SizedBox(width: 4),
+                                  Expanded(child: Text(collaborator.email, style: TextStyle(color: Colors.grey[600]))),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
                               Consumer<NetworkProvider>(
                                 builder: (context, networkProvider, child) {
                                   final assignedCount = networkProvider.getAssignedRouters(collaborator.username).length;
-                                  return Text(
-                                    '${'role'.tr()}: ${collaborator.roleName} • $assignedCount ${'routers'.tr()}',
-                                    style: TextStyle(
-                                      color: assignedCount > 0 ? colorScheme.primary : null,
-                                      fontWeight: assignedCount > 0 ? FontWeight.w500 : null,
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: assignedCount > 0 ? colorScheme.primary.withAlpha(25) : Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: assignedCount > 0 ? colorScheme.primary.withAlpha(50) : Colors.transparent,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.router, 
+                                          size: 14, 
+                                          color: assignedCount > 0 ? colorScheme.primary : Colors.grey[600]
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '${'role'.tr()}: ${collaborator.roleName} • $assignedCount ${'routers'.tr()}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: assignedCount > 0 ? colorScheme.primary : Colors.grey[600],
+                                            fontWeight: assignedCount > 0 ? FontWeight.w600 : FontWeight.normal,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   );
                                 }

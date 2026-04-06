@@ -192,6 +192,8 @@
   "security_settings_desc": "2FA, gestion des mots de passe",
   "user_roles_permissions": "Rôles et Permissions des Utilisateurs",
   "manage_access_desc": "Gérer les niveaux d'accès utilisateur",
+  "collaborators_management": "Gestion des Collaborateurs",
+  "manage_team_desc": "Gérez les membres de votre équipe et les attributions de routeurs",
   "data_privacy": "Confidentialité des Données",
   "privacy_policy_desc": "Politique de confidentialité et paramètres",
   "data_tools": "Données et Outils",
