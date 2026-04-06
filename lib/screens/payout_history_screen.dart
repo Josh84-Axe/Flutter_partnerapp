@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/billing_provider.dart';
+import '../providers/split/user_provider.dart';
 import '../utils/app_theme.dart';
 
 class PayoutHistoryScreen extends StatefulWidget {
@@ -201,12 +202,24 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> with SingleTi
   }
 
   Widget _buildAllTab(BillingProvider billingProvider) {
-    final filtered = _filterTransactions(billingProvider.walletHistory);
+    final userProvider = context.read<UserProvider>();
+    final user = userProvider.currentUser;
+    final isRestricted = user?.role == 'worker' || user?.role == 'manager';
+    
+    final filtered = _filterTransactions(billingProvider.walletHistory(
+      restrictToRouters: isRestricted ? user?.assignedRouters : null,
+    ));
     return _buildTransactionList(filtered, billingProvider);
   }
 
   Widget _buildPaymentsInTab(BillingProvider billingProvider) {
-    final paymentsIn = billingProvider.walletHistory
+    final userProvider = context.read<UserProvider>();
+    final user = userProvider.currentUser;
+    final isRestricted = user?.role == 'worker' || user?.role == 'manager';
+
+    final paymentsIn = billingProvider.walletHistory(
+      restrictToRouters: isRestricted ? user?.assignedRouters : null,
+    )
         .where((txn) => txn['_direction'] == 'in')
         .toList();
     final filtered = _filterTransactions(paymentsIn);
@@ -214,7 +227,13 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> with SingleTi
   }
 
   Widget _buildPayoutsOutTab(BillingProvider billingProvider) {
-    final payoutsOut = billingProvider.walletHistory
+    final userProvider = context.read<UserProvider>();
+    final user = userProvider.currentUser;
+    final isRestricted = user?.role == 'worker' || user?.role == 'manager';
+
+    final payoutsOut = billingProvider.walletHistory(
+      restrictToRouters: isRestricted ? user?.assignedRouters : null,
+    )
         .where((txn) => txn['_direction'] == 'out')
         .toList();
     final filtered = _filterTransactions(payoutsOut);
