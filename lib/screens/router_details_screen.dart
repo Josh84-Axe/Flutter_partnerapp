@@ -96,7 +96,8 @@ class RouterDetailsScreen extends StatelessWidget {
                 label: 'restart_router'.tr(),
                 onTap: () async {
                   final networkProvider = context.read<NetworkProvider>();
-                  final success = await networkProvider.rebootRouter(router.id);
+                  // Pass the slug as requested
+                  final success = await networkProvider.rebootRouter(router.slug);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(success ? 'router_restart_initiated'.tr() : 'error_occurred'.tr())),
@@ -111,7 +112,8 @@ class RouterDetailsScreen extends StatelessWidget {
                 label: 'restart_hotspot'.tr(),
                 onTap: () async {
                   final networkProvider = context.read<NetworkProvider>();
-                  final success = await networkProvider.restartHotspot(router.id);
+                  // Pass the slug as requested
+                  final success = await networkProvider.restartHotspot(router.slug);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(success ? 'hotspot_restart_initiated'.tr() : 'error_occurred'.tr())),
@@ -243,6 +245,8 @@ class RouterDetailsScreen extends StatelessWidget {
               final networkProvider = context.read<NetworkProvider>();
               Navigator.pop(context); // Close dialog
               try {
+                // Use slug for delete if required, but repository says routerId. 
+                // We'll keep id for delete unless slug is better.
                 await networkProvider.deleteRouter(router.id);
                 if (context.mounted) {
                   Navigator.pop(context); // Close details screen

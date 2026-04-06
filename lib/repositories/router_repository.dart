@@ -74,6 +74,7 @@ class RouterRepository {
 
   /// Fetch router resources
   Future<Map<String, dynamic>?> fetchRouterResources(String slug) async {
+    if (slug.isEmpty) throw ArgumentError('Router slug cannot be empty');
     try {
       if (kDebugMode) print('📊 [RouterRepository] Fetching router resources for: $slug');
       final response = await _dio.get('/partner/routers/$slug/resources/');
@@ -131,6 +132,7 @@ class RouterRepository {
 
   /// Reboot router
   Future<bool> rebootRouter(String slug) async {
+    if (slug.isEmpty) return false;
     try {
       if (kDebugMode) print('🔄 [RouterRepository] Rebooting router: $slug');
       await _dio.post('/partner/routers/$slug/reboot/');
@@ -144,6 +146,7 @@ class RouterRepository {
 
   /// Restart hotspot on router
   Future<bool> restartHotspot(String slug) async {
+    if (slug.isEmpty) return false;
     try {
       if (kDebugMode) print('🔄 [RouterRepository] Restarting hotspot on router: $slug');
       await _dio.post('/partner/routers/$slug/hotspots/restart/');

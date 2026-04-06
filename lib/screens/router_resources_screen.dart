@@ -103,35 +103,53 @@ class _RouterResourcesScreenState extends State<RouterResourcesScreen> {
     }
     
     // Extract nested data if necessary, based on API response structure
-    final data = _resources!['data'] ?? _resources;
+    // Backend may wrap MikroTik response in data, results, or directly under resource keys
+    final data = _resources!['data'] ?? 
+                 _resources!['results'] ?? 
+                 _resources!['resource'] ?? 
+                 _resources!['system-resource'] ?? 
+                 _resources!;
+
+    // Robust field extraction helper (handles both MikroTik hyphens and project underscores)
+    dynamic getField(String primaryKey, [String? fallbackKey]) {
+      return data[primaryKey] ?? (fallbackKey != null ? data[fallbackKey] : null);
+    }
+
+    final cpuLoad = double.tryParse(getField('cpu-load', 'cpu_load')?.toString() ?? '0') ?? 0.0;
+    
+    final freeMemory = double.tryParse(getField('free-memory', 'free_memory')?.toString() ?? '0') ?? 0.0;
+    final totalMemory = double.tryParse(getField('total-memory', 'total_memory')?.toString() ?? '1') ?? 1.0;
+    
+    final freeDisk = double.tryParse(getField('free-hdd-space', 'free_hdd_space')?.toString() ?? '0') ?? 0.0;
+    final totalDisk = double.tryParse(getField('total-hdd-space', 'total_hdd_space')?.toString() ?? '1') ?? 1.0;
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         _buildResourceCard(
           title: 'cpu_usage'.tr(),
-          value: '${data['cpu_load'] ?? 0}%',
+          value: '${cpuLoad.toStringAsFixed(1)}%',
           icon: Icons.memory,
           color: Colors.blue,
-          percentage: (data['cpu_load'] ?? 0) / 100.0,
+          percentage: cpuLoad / 100.0,
         ),
         const SizedBox(height: 16),
         _buildResourceCard(
           title: 'memory_usage'.tr(),
-          value: '${data['free_memory'] ?? 0} MB / ${data['total_memory'] ?? 0} MB',
+          value: '${freeMemory.toStringAsFixed(0)} MB / ${totalMemory.toStringAsFixed(0)} MB',
           subtitle: 'free_memory'.tr(),
           icon: Icons.storage,
           color: Colors.orange,
-          percentage: 1.0 - ((data['free_memory'] ?? 1) / (data['total_memory'] ?? 1)),
+          percentage: 1.0 - (freeMemory / totalMemory),
         ),
         const SizedBox(height: 16),
         _buildResourceCard(
           title: 'disk_usage'.tr(),
-          value: '${data['free_hdd_space'] ?? 0} MB / ${data['total_hdd_space'] ?? 0} MB',
+          value: '${freeDisk.toStringAsFixed(0)} MB / ${totalDisk.toStringAsFixed(0)} MB',
           subtitle: 'free_space'.tr(),
           icon: Icons.sd_storage,
           color: Colors.green,
-          percentage: 1.0 - ((data['free_hdd_space'] ?? 1) / (data['total_hdd_space'] ?? 1)),
+          percentage: 1.0 - (freeDisk / totalDisk),
         ),
         const SizedBox(height: 24),
         Card(
@@ -145,10 +163,12 @@ class _RouterResourcesScreenState extends State<RouterResourcesScreen> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const Divider(),
-                _buildInfoRow('model'.tr(), data['model']?.toString() ?? 'Unknown'),
-                _buildInfoRow('version'.tr(), data['version']?.toString() ?? 'Unknown'),
-                _buildInfoRow('uptime'.tr(), data['uptime']?.toString() ?? 'Unknown'),
-                _buildInfoRow('board_name'.tr(), data['board_name']?.toString() ?? 'Unknown'),
+                _buildInfoRow('model'.tr(), getField('model')?.toString() ?? 'Unknown'),
+                _buildInfoRow('version'.tr(), getField('version')?.toString() ?? 'Unknown'),
+                _buildInfoRow('uptime'.tr(), getField('uptime')?.toString() ?? 'Unknown'),
+                _buildInfoRow('board_name'.tr(), getField('board-name', 'board_name')?.toString() ?? 'Unknown'),
+                _buildInfoRow('cpu_count'.tr(), getField('cpu-count', 'cpu_count')?.toString() ?? 'N/A'),
+                _buildInfoRow('frequency'.tr(), '${getField('cpu-frequency', 'cpu_frequency')?.toString() ?? 'N/A'} MHz'),
               ],
             ),
           ),

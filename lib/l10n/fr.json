@@ -951,5 +951,8 @@
   "cancel_payment": "Annuler le paiement",
   "payment_redirecting": "Redirection vers votre forfait...",
   "filter_by_router": "Filtrer par routeur (optionnel)",
-  "filter_by_assigned_by": "Filtrer par assigné par (optionnel)"
+  "filter_by_assigned_by": "Filtrer par assigné par (optionnel)",
+  "cpu_count": "Nombre de cœurs CPU",
+  "frequency": "Fréquence CPU",
+  "system_resources": "Ressources système"
 }
