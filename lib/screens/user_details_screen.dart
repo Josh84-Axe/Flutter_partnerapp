@@ -225,7 +225,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                                 final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => AssignRoutersScreen(worker: user),
+                                    builder: (context) => AssignRoutersScreen(worker: user.toWorkerModel()),
                                   ),
                                 );
                                 if (result == true) _loadUserDetails();

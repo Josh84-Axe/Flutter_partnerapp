@@ -1,4 +1,5 @@
 import '../utils/permissions.dart';
+import 'worker_model.dart';
 
 class UserModel {
   final String id;
@@ -166,6 +167,20 @@ class UserModel {
       acquisitionType: acquisitionType ?? this.acquisitionType,
       planName: planName ?? this.planName,
       isVoucherEnabled: isVoucherEnabled ?? this.isVoucherEnabled,
+    );
+  }
+
+  WorkerModel toWorkerModel() {
+    return WorkerModel(
+      id: id,
+      username: username ?? email,
+      fullName: name,
+      email: email,
+      roleSlug: role,
+      permissions: permissions,
+      assignedRouters: assignedRouters,
+      isActive: isActive,
+      createdAt: createdAt,
     );
   }
 
