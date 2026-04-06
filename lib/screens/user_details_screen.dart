@@ -316,9 +316,40 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         ),
                      ),
                   const SizedBox(height: 32),
+                  
+                  // Diagnostic Section (Temporary for QA)
+                  if (kDebugMode) ...[
+                    const Divider(),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('🛠️ Diagnostic Info (QA)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
+                          const SizedBox(height: 8),
+                          _buildDiagnosticRow('Username Field:', user.username ?? 'NULL'),
+                          _buildDiagnosticRow('ID Field:', user.id),
+                          _buildDiagnosticRow('Primary Identifier:', (user.username?.isNotEmpty == true ? user.username! : user.id)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildDiagnosticRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+          const SizedBox(width: 4),
+          Text(value, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+        ],
+      ),
     );
   }
 
