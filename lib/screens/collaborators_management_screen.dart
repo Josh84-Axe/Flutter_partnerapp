@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-
 import '../providers/split/user_provider.dart';
+import '../providers/split/network_provider.dart';
 import '../utils/app_theme.dart';
+import 'assign_routers_screen.dart';
+import '../utils/permissions.dart';
 
 class CollaboratorsManagementScreen extends StatefulWidget {
   const CollaboratorsManagementScreen({super.key});
@@ -23,6 +25,7 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
   Future<void> _loadData() async {
     await context.read<UserProvider>().loadWorkers();
     await context.read<UserProvider>().loadRoles();
+    await context.read<NetworkProvider>().loadRouters();
   }
 
   Future<void> _showCreateCollaboratorDialog() async {
@@ -243,14 +246,48 @@ class _CollaboratorsManagementScreenState extends State<CollaboratorsManagementS
                             children: [
                               const SizedBox(height: 4),
                               Text(collaborator.email),
-                              Text('${'role'.tr()}: ${collaborator.roleName}'),
+                              Consumer<NetworkProvider>(
+                                builder: (context, networkProvider, child) {
+                                  final assignedCount = networkProvider.getAssignedRouters(collaborator.username).length;
+                                  return Text(
+                                    '${'role'.tr()}: ${collaborator.roleName} • $assignedCount ${'routers'.tr()}',
+                                    style: TextStyle(
+                                      color: assignedCount > 0 ? colorScheme.primary : null,
+                                      fontWeight: assignedCount > 0 ? FontWeight.w500 : null,
+                                    ),
+                                  );
+                                }
+                              ),
                             ],
                           ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            color: Colors.red,
-                            onPressed: () => _deleteCollaborator(collaborator.username),
-                            tooltip: 'delete'.tr(),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (Permissions.isWorker(collaborator.roleSlug ?? '') || 
+                                  Permissions.isManager(collaborator.roleSlug ?? ''))
+                                IconButton(
+                                  icon: const Icon(Icons.router),
+                                  color: colorScheme.primary,
+                                  onPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AssignRoutersScreen(worker: collaborator),
+                                      ),
+                                    );
+                                    if (result == true) {
+                                      _loadData();
+                                    }
+                                  },
+                                  tooltip: 'assign_routers'.tr(),
+                                ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline),
+                                color: Colors.red,
+                                onPressed: () => _deleteCollaborator(collaborator.username),
+                                tooltip: 'delete'.tr(),
+                              ),
+                            ],
                           ),
                           isThreeLine: true,
                         ),
