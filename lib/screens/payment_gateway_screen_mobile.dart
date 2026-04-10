@@ -277,6 +277,17 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
           onPageFinished: (url) {
             if (mounted) setState(() => _isInitializing = false);
           },
+          onNavigationRequest: (NavigationRequest request) {
+            // Allow standard web URLs
+            if (request.url.startsWith('http') || request.url.startsWith('https')) {
+              return NavigationDecision.navigate;
+            }
+            // Block or handle others (like wave://, intent://, etc.)
+            // Note: On real devices, you'd use url_launcher here if needed, 
+            // but for CinetPay's internal redirects, allowing 'navigate' is safer for their JS logic.
+            // If the URL is an intent, we can also manually launch it.
+            return NavigationDecision.navigate;
+          },
         ),
       )
       ..loadHtmlString(_buildCinetPayHTML(), baseUrl: 'https://cinetpay.com');
