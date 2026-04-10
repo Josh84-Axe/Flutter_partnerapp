@@ -309,6 +309,7 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
     final String address = (widget.userData?['address'] ?? 'Main Street').toString().replaceAll('"', "'");
     final String city = (widget.userData?['city'] ?? 'Abidjan').toString().replaceAll('"', "'");
     final String country = (widget.userData?['country'] ?? 'CI').toString().toUpperCase();
+    final String email = (widget.userData?['email'] ?? widget.email ?? 'support@tiknet.ci').toString().replaceAll('"', "'");
     
     // Universal Phone Sanitization: Remove everything except digits
     String phone = (widget.userData?['phone'] ?? '').toString().replaceAll(RegExp(r'\D'), '');
@@ -347,17 +348,17 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
 
                 CinetPay.getCheckout({
                     transaction_id: '${widget.transactionId}',
-                    amount: ${widget.amount.toInt()},
+                    amount: ${((widget.amount / 5).round() * 5).toInt()},
                     currency: '${widget.currency}',
                     channels: 'ALL',
-                    description: '${widget.description}',
-                    customer_email: '${widget.email}',
-                    customer_name: "$firstName",
-                    customer_surname: "$lastName",
+                    description: '${widget.description.replaceAll(RegExp(r'[^a-zA-Z0-9 ]'), '')}',
+                    customer_email: '$email',
+                    customer_name: '${firstName.isEmpty ? "Client" : firstName}',
+                    customer_surname: '${lastName.isEmpty ? "Tiknet" : lastName}',
                     customer_phone_number: "$phone",
-                    customer_address: "$address",
-                    customer_city: "$city",
-                    customer_country: "$country"
+                    customer_address: '${address.isEmpty ? "Abidjan" : address}',
+                    customer_city: '${city.isEmpty ? "Abidjan" : city}',
+                    customer_country: '$country'
                 });
 
                 CinetPay.waitResponse(function(data) {
