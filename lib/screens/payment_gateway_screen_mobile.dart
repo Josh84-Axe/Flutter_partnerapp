@@ -224,9 +224,16 @@ class _PaymentGatewayCinetPayMobile extends StatefulWidget {
   final Function(bool success, String? reference, String? message) onResult;
 
   const _PaymentGatewayCinetPayMobile({
-    required this.apiKey, required this.siteId, required this.transactionId,
-    required this.amount, required this.currency, required this.description,
-    required this.email, required this.onRequestClose, required this.onResult, this.userData,
+    required this.apiKey,
+    required this.siteId,
+    required this.transactionId,
+    required this.amount,
+    required this.currency,
+    required this.description,
+    required this.email,
+    required this.onRequestClose,
+    required this.onResult,
+    this.userData,
   });
 
   @override
@@ -235,51 +242,146 @@ class _PaymentGatewayCinetPayMobile extends StatefulWidget {
 
 class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMobile> {
   WebViewController? _controller;
+  bool _isInitializing = true;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) { if (mounted) _initializeWebView(); });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _initializeWebView();
+    });
   }
 
   void _initializeWebView() {
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..addJavaScriptChannel('CinetPayFlutter', onMessageReceived: (message) {
-        if (message.message.contains('"success":true')) {
-           widget.onResult(true, widget.transactionId, 'payment_success'.tr());
-        } else if (message.message.contains('"success":false')) {
-           widget.onResult(false, null, 'payment_cancelled'.tr());
-        }
-      })
+      ..setBackgroundColor(const Color(0x00000000))
+      ..addJavaScriptChannel(
+        'CinetPayFlutter',
+        onMessageReceived: (message) {
+          try {
+            final data = jsonDecode(message.message);
+            if (data['success'] == true) {
+              widget.onResult(true, widget.transactionId, 'payment_success'.tr());
+            } else {
+              widget.onResult(false, null, data['message'] ?? 'payment_failed'.tr());
+            }
+          } catch (e) {
+            widget.onResult(false, null, 'error_occurred'.tr());
+          }
+        },
+      )
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (url) {
+            if (mounted) setState(() => _isInitializing = false);
+          },
+        ),
+      )
       ..loadHtmlString(_buildCinetPayHTML(), baseUrl: 'https://cinetpay.com');
+    
     setState(() => _controller = controller);
   }
 
   String _buildCinetPayHTML() {
+    final String firstName = (widget.userData?['firstName'] ?? 'Customer').toString().replaceAll('"', "'");
+    final String lastName = (widget.userData?['lastName'] ?? 'User').toString().replaceAll('"', "'");
+    final String address = (widget.userData?['address'] ?? 'Main Street').toString().replaceAll('"', "'");
+    final String city = (widget.userData?['city'] ?? 'Abidjan').toString().replaceAll('"', "'");
+    final String country = (widget.userData?['country'] ?? 'CI').toString().toUpperCase();
+    
+    // Universal Phone Sanitization: Remove everything except digits
+    String phone = (widget.userData?['phone'] ?? '').toString().replaceAll(RegExp(r'\D'), '');
+    
+    // Smart Prefixing if not international
+    if (phone.length >= 8 && phone.length <= 10) {
+      if (country == 'CI') phone = '225$phone';
+      else if (country == 'SN') phone = '221$phone';
+      else if (country == 'ML') phone = '223$phone';
+      else if (country == 'BJ') phone = '229$phone';
+      else if (country == 'TG') phone = '228$phone';
+      else if (country == 'BF') phone = '226$phone';
+    }
+
     return '''
-<!DOCTYPE html><html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://checkout.cinetpay.com/sdk/dist/cinetpay.min.js"></script></head>
-<body><script>
-function checkout() {
-  CinetPay.setConfig({ apiKey: '${widget.apiKey}', site_id: '${widget.siteId}', notify_url: 'https://api.tiknetafrica.com/v1/partner/payment/notify/', mode: 'PRODUCTION' });
-  CinetPay.getCheckout({ transaction_id: '${widget.transactionId}', amount: ${widget.amount.toInt()}, currency: '${widget.currency}', channels: 'ALL', description: '${widget.description}', customer_email: '${widget.email}' });
-  CinetPay.waitResponse(function(data) { 
-    if (data.status == "ACCEPTED") window.CinetPayFlutter.postMessage(JSON.stringify({success:true}));
-    else window.CinetPayFlutter.postMessage(JSON.stringify({success:false}));
-  });
-  CinetPay.onError(function(data) { window.CinetPayFlutter.postMessage(JSON.stringify({success:false})); });
-}
-window.onload = function(){ setTimeout(checkout, 1000); };
-</script></body></html>''';
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://checkout.cinetpay.com/sdk/dist/cinetpay.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: white; }
+    </style>
+</head>
+<body>
+    <script>
+        function checkout() {
+            try {
+                CinetPay.setConfig({
+                    apiKey: '${widget.apiKey}',
+                    site_id: '${widget.siteId}',
+                    notify_url: 'https://api.tiknetafrica.com/v1/partner/payment/notify/',
+                    mode: 'PRODUCTION'
+                });
+
+                CinetPay.getCheckout({
+                    transaction_id: '${widget.transactionId}',
+                    amount: ${widget.amount.toInt()},
+                    currency: '${widget.currency}',
+                    channels: 'ALL',
+                    description: '${widget.description}',
+                    customer_email: '${widget.email}',
+                    customer_name: "$firstName",
+                    customer_surname: "$lastName",
+                    customer_phone_number: "$phone",
+                    customer_address: "$address",
+                    customer_city: "$city",
+                    customer_country: "$country"
+                });
+
+                CinetPay.waitResponse(function(data) {
+                    if (data.status == "ACCEPTED") {
+                        window.CinetPayFlutter.postMessage(JSON.stringify({success: true}));
+                    } else {
+                        window.CinetPayFlutter.postMessage(JSON.stringify({success: false, message: "Status: " + data.status}));
+                    }
+                });
+
+                CinetPay.onError(function(data) {
+                    window.CinetPayFlutter.postMessage(JSON.stringify({
+                        success: false, 
+                        message: data.description || "Payment failed",
+                        code: data.code
+                    }));
+                });
+            } catch (e) {
+                window.CinetPayFlutter.postMessage(JSON.stringify({success: false, message: "SDK Error"}));
+            }
+        }
+        window.onload = function(){ setTimeout(checkout, 500); };
+    </script>
+</body>
+</html>''';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('payment'.tr()), leading: IconButton(icon: const Icon(Icons.close), onPressed: widget.onRequestClose)),
-      body: _controller == null ? const Center(child: CircularProgressIndicator()) : WebViewWidget(controller: _controller!),
+      appBar: AppBar(
+        title: Text('payment'.tr()),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: widget.onRequestClose,
+        ),
+      ),
+      body: Stack(
+        children: [
+          if (_controller != null) WebViewWidget(controller: _controller!),
+          if (_controller == null || _isInitializing)
+            const Center(child: CircularProgressIndicator()),
+        ],
+      ),
     );
   }
 }
