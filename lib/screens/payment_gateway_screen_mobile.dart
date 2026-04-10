@@ -350,7 +350,7 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
                     transaction_id: '${widget.transactionId}',
                     amount: ${((widget.amount / 5).round() * 5).toInt()},
                     currency: '${widget.currency}',
-                    channels: 'ALL',
+                    channels: 'MOBILE_MONEY,WALLET,CARD',
                     description: '${widget.description.replaceAll(RegExp(r'[^a-zA-Z0-9 ]'), '')}',
                     customer_email: '$email',
                     customer_name: '${firstName.isEmpty ? "Client" : firstName}',
@@ -362,13 +362,20 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
                 });
 
                 CinetPay.waitResponse(function(data) {
-                    if (data.status == "ACCEPTED") {
-                        window.CinetPayFlutter.postMessage(JSON.stringify({success: true}));
-                    } else {
-                        window.CinetPayFlutter.postMessage(JSON.stringify({success: false, message: "Status: " + data.status}));
+                    console.log("CinetPay Response: " + JSON.stringify(data));
+                    if (data.status == "REFUSED") {
+                        console.error("Payment Refused: " + data.description);
+                    }
+                    if (window.CinetPayFlutter) {
+                        window.CinetPayFlutter.postMessage(JSON.stringify({
+                            'success': data.status == 'ACCEPTED',
+                            'message': data.description,
+                            'operator_id': data.operator_id,
+                            'payment_method': data.payment_method
+                        }));
                     }
                 });
-
+                
                 CinetPay.onError(function(data) {
                     window.CinetPayFlutter.postMessage(JSON.stringify({
                         success: false, 
