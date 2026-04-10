@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:dio/dio.dart';
 import '../services/api/token_storage.dart';
 
@@ -277,15 +278,22 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
           onPageFinished: (url) {
             if (mounted) setState(() => _isInitializing = false);
           },
-          onNavigationRequest: (NavigationRequest request) {
+          onNavigationRequest: (NavigationRequest request) async {
             // Allow standard web URLs
-            if (request.url.startsWith('http') || request.url.startsWith('https')) {
+            if (request.url.startsWith('http')) {
               return NavigationDecision.navigate;
             }
-            // Block or handle others (like wave://, intent://, etc.)
-            // Note: On real devices, you'd use url_launcher here if needed, 
-            // but for CinetPay's internal redirects, allowing 'navigate' is safer for their JS logic.
-            // If the URL is an intent, we can also manually launch it.
+            
+            // Handle external apps (Wave, MTN, Moov, Tel, etc.)
+            try {
+              final Uri uri = Uri.parse(request.url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                return NavigationDecision.prevent;
+              }
+            } catch (e) {
+              debugPrint('Error launching external URL: $e');
+            }
             return NavigationDecision.navigate;
           },
         ),
