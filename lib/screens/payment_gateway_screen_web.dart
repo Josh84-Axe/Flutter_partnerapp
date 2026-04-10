@@ -105,15 +105,18 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: isCinetPay 
-          ? PaymentGatewayCinetPay(
-              email: widget.email,
-              amount: widget.amount,
-              currency: widget.currency == 'CFA' ? 'XOF' : widget.currency,
-              description: 'Payment for ${widget.planName}',
-              firstName: widget.userData?['firstName'] ?? '',
-              lastName: widget.userData?['lastName'] ?? '',
-              phoneNumber: widget.userData?['phone'] ?? '',
-              onRequestClose: () => _handleManualPop(isPaystack: false).then((confirmed) {
+            ? PaymentGatewayCinetPay(
+                email: widget.email,
+                amount: widget.amount,
+                currency: widget.currency == 'CFA' ? 'XOF' : widget.currency,
+                description: 'Payment for ${widget.planName}',
+                firstName: widget.userData?['firstName'] ?? '',
+                lastName: widget.userData?['lastName'] ?? '',
+                phoneNumber: widget.userData?['phone'] ?? '',
+                address: widget.userData?['address'] ?? 'Main Street',
+                city: widget.userData?['city'] ?? 'Abidjan',
+                country: widget.userData?['country'] ?? 'CI',
+                onRequestClose: () => _handleManualPop(isPaystack: false).then((confirmed) {
                  if (confirmed && mounted) Navigator.of(context).pop();
               }),
               onResult: (success, reference, message) => _finalize(success: success, reference: reference, message: message),

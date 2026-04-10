@@ -17,6 +17,9 @@ class PaymentGatewayCinetPay extends StatefulWidget {
   final String firstName;
   final String lastName;
   final String phoneNumber;
+  final String address;
+  final String city;
+  final String country;
   final String siteId;
   final VoidCallback onRequestClose;
   final Function(bool success, String? reference, String? message) onResult;
@@ -30,6 +33,9 @@ class PaymentGatewayCinetPay extends StatefulWidget {
     required this.firstName,
     required this.lastName,
     required this.phoneNumber,
+    this.address = 'Main Street',
+    this.city = 'Abidjan',
+    this.country = 'CI',
     required this.onRequestClose,
     required this.onResult,
     this.siteId = '105899723',
@@ -108,10 +114,21 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
   Future<void> _launchPaymentGateway() async {
     if (mounted) setState(() => _status = 'PENDING');
     
+    // Universal Phone Sanitization & Prefixing
+    String phone = widget.phoneNumber.replaceAll(RegExp(r'\D'), '');
+    final country = widget.country.toUpperCase();
+    if (phone.length >= 8 && phone.length <= 10) {
+      if (country == 'CI') phone = '225$phone';
+      else if (country == 'SN') phone = '221$phone';
+      else if (country == 'ML') phone = '223$phone';
+      else if (country == 'BJ') phone = '229$phone';
+      else if (country == 'TG') phone = '228$phone';
+      else if (country == 'BF') phone = '226$phone';
+    }
+
     final userAgent = html.window.navigator.userAgent.toLowerCase();
     final isMobile = userAgent.contains('mobile') || userAgent.contains('android') || userAgent.contains('iphone');
 
-    // PRESERVE REVERT: Use redirect for mobile to allow bank/SIM-toolkit popups to function
     if (isMobile) {
       try {
         final response = await Dio().post(
@@ -120,9 +137,11 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
             'apikey': '297929662685d35c4021b02.21438964', 'site_id': widget.siteId, 'transaction_id': _transactionId,
             'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
             'description': widget.description, 'notify_url': 'https://api.tiknetafrica.com/v1/partner/payment/notify/',
-            'return_url': html.window.location.href, // Return to this exact page
+            'return_url': html.window.location.href, 
             'customer_name': widget.firstName, 'customer_surname': widget.lastName,
-            'customer_email': widget.email, 'customer_phone_number': widget.phoneNumber, 'channels': 'ALL', 'lang': 'fr'
+            'customer_email': widget.email, 'customer_phone_number': phone, 
+            'customer_address': widget.address, 'customer_city': widget.city, 'customer_country': country,
+            'channels': 'ALL', 'lang': 'fr'
           }
         );
         if (response.data['code'] == '201') {
@@ -137,7 +156,8 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
           'notifyUrl': 'https://api.tiknetafrica.com/v1/partner/payment/notify/', 'transactionId': _transactionId,
           'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
           'description': widget.description, 'customerName': widget.firstName, 'customerSurname': widget.lastName,
-          'customerEmail': widget.email, 'customerPhoneNumber': widget.phoneNumber, 'returnUrl': html.window.location.href,
+          'customerEmail': widget.email, 'customerPhoneNumber': phone, 'returnUrl': html.window.location.href,
+          'customerAddress': widget.address, 'customerCity': widget.city, 'customerCountry': country,
         })
       ]);
       _startStatusPolling();
