@@ -340,8 +340,8 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
         function checkout() {
             try {
                 CinetPay.setConfig({
-                    apiKey: '${widget.apiKey}',
-                    site_id: '${widget.siteId}',
+                    apikey: '${widget.apiKey}',
+                    site_id: ${widget.siteId},
                     notify_url: 'https://api.tiknetafrica.com/v1/partner/payment/notify/',
                     mode: 'PRODUCTION'
                 });
@@ -351,10 +351,10 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
                     amount: ${((widget.amount / 5).round() * 5).toInt()},
                     currency: '${widget.currency}',
                     channels: 'MOBILE_MONEY,WALLET,CARD',
-                    description: '${widget.description.replaceAll(RegExp(r'[^a-zA-Z0-9 ]'), '')}',
+                    description: '${widget.description.length > 30 ? widget.description.substring(0, 30) : widget.description.replaceAll(RegExp(r'[^a-zA-Z0-9 ]'), '')}',
                     customer_email: '$email',
-                    customer_name: '${firstName.isEmpty ? "Client" : firstName}',
-                    customer_surname: '${lastName.isEmpty ? "Tiknet" : lastName}',
+                    customer_name: '${lastName.isEmpty ? "Tiknet" : lastName}',
+                    customer_surname: '${firstName.isEmpty ? "Client" : firstName}',
                     customer_phone_number: "$phone",
                     customer_address: '${address.isEmpty ? "Abidjan" : address}',
                     customer_city: '${city.isEmpty ? "Abidjan" : city}',
