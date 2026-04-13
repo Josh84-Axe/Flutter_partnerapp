@@ -346,16 +346,19 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
                     mode: 'PRODUCTION'
                 });
 
+                final String safeTransactionId = '${widget.transactionId}'.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+                final String finalPhone = phone.startsWith('+') ? phone : '+$phone';
+
                 CinetPay.getCheckout({
-                    transaction_id: '${widget.transactionId}',
+                    transaction_id: safeTransactionId,
                     amount: ${((widget.amount / 5).round() * 5).toInt()},
                     currency: '${widget.currency}',
-                    channels: 'MOBILE_MONEY,WALLET,CARD',
+                    channels: 'MOBILE_MONEY,WALLET,CREDIT_CARD',
                     description: '${widget.description.length > 30 ? widget.description.substring(0, 30) : widget.description.replaceAll(RegExp(r'[^a-zA-Z0-9 ]'), '')}',
                     customer_email: '$email',
                     customer_name: '${lastName.isEmpty ? "Tiknet" : lastName}',
                     customer_surname: '${firstName.isEmpty ? "Client" : firstName}',
-                    customer_phone_number: "$phone",
+                    customer_phone_number: finalPhone,
                     customer_address: '${address.isEmpty ? "Abidjan" : address}',
                     customer_city: '${city.isEmpty ? "Abidjan" : city}',
                     customer_country: '$country'
