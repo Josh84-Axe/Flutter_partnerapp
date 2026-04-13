@@ -158,17 +158,27 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
         } else { throw Exception(); }
       } catch (e) { if (mounted) widget.onResult(false, null, 'error_occurred'.tr()); }
     } else {
-      // Use Seamless for Desktop
+      // Use Seamless for Desktop - Triple-fielding for maximum compatibility
       js.context.callMethod('launchCinetPay', [
         js.JsObject.jsify({
-          'apikey': '297929662685d35c4021b02.21438964', 
-          'api_key': '297929662685d35c4021b02.21438964', // Doubling for safety
-          'siteId': widget.siteId,
-          'notifyUrl': 'https://api.tiknetafrica.com/v1/partner/payment/notify/', 'transactionId': safeTransactionId,
-          'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
-          'description': safeDesc, 'customerName': widget.lastName, 'customerSurname': widget.firstName,
-          'customerEmail': widget.email, 'customerPhoneNumber': finalPhone, 'returnUrl': html.window.location.href,
-          'customerAddress': widget.address, 'customerCity': widget.city, 'customerCountry': country,
+          'apiKey': '297929662685d35c4021b02.21438964',
+          'apikey': '297929662685d35c4021b02.21438964',
+          'api_key': '297929662685d35c4021b02.21438964',
+          'siteId': widget.siteId.toString(),
+          'site_id': widget.siteId.toString(),
+          'notifyUrl': 'https://api.tiknetafrica.com/v1/partner/payment/notify/', 
+          'transactionId': safeTransactionId.toString(),
+          'amount': widget.amount.toInt(), 
+          'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency.toString(),
+          'description': safeDesc.toString(), 
+          'customerName': widget.lastName.toString(), 
+          'customerSurname': widget.firstName.toString(),
+          'customerEmail': widget.email.toString(), 
+          'customerPhoneNumber': finalPhone.toString(), 
+          'returnUrl': html.window.location.href.toString(),
+          'customerAddress': widget.address.toString(), 
+          'customerCity': widget.city.toString(), 
+          'customerCountry': country.toString(),
           'channels': 'MOBILE_MONEY,WALLET,CREDIT_CARD',
         })
       ]);
