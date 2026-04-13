@@ -341,6 +341,7 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
             try {
                 CinetPay.setConfig({
                     apikey: '${widget.apiKey}',
+                    api_key: '${widget.apiKey}',
                     site_id: ${widget.siteId},
                     notify_url: 'https://api.tiknetafrica.com/v1/partner/payment/notify/',
                     mode: 'PRODUCTION'

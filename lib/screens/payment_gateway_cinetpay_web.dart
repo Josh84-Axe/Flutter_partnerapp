@@ -141,7 +141,8 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
         final response = await Dio().post(
           'https://api-checkout.cinetpay.com/v2/payment',
           data: {
-            'apikey': '297929662685d35c4021b02.21438964', 'site_id': int.tryParse(widget.siteId) ?? widget.siteId, 
+            'api_key': '297929662685d35c4021b02.21438964', // Strictly required as api_key for REST
+            'site_id': '${widget.siteId}', 
             'transaction_id': safeTransactionId,
             'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
             'description': safeDesc, 'notify_url': 'https://api.tiknetafrica.com/v1/partner/payment/notify/',
@@ -160,7 +161,9 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
       // Use Seamless for Desktop
       js.context.callMethod('launchCinetPay', [
         js.JsObject.jsify({
-          'apikey': '297929662685d35c4021b02.21438964', 'siteId': int.tryParse(widget.siteId) ?? widget.siteId,
+          'apikey': '297929662685d35c4021b02.21438964', 
+          'api_key': '297929662685d35c4021b02.21438964', // Doubling for safety
+          'siteId': widget.siteId,
           'notifyUrl': 'https://api.tiknetafrica.com/v1/partner/payment/notify/', 'transactionId': safeTransactionId,
           'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
           'description': safeDesc, 'customerName': widget.lastName, 'customerSurname': widget.firstName,
