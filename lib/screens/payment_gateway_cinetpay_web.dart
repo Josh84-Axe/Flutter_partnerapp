@@ -129,19 +129,27 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
     final userAgent = html.window.navigator.userAgent.toLowerCase();
     final isMobile = userAgent.contains('mobile') || userAgent.contains('android') || userAgent.contains('iphone');
 
+    // Hardened Payload Preparation
+    final String safeTransactionId = _transactionId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+    final String finalPhone = phone.startsWith('+') ? phone : '+$phone';
+    final String safeDesc = widget.description.length > 30 
+        ? widget.description.substring(0, 30) 
+        : widget.description.replaceAll(RegExp(r'[^a-zA-Z0-9 ]'), '');
+
     if (isMobile) {
       try {
         final response = await Dio().post(
           'https://api-checkout.cinetpay.com/v2/payment',
           data: {
-            'apikey': '297929662685d35c4021b02.21438964', 'site_id': widget.siteId, 'transaction_id': _transactionId,
+            'apikey': '297929662685d35c4021b02.21438964', 'site_id': int.tryParse(widget.siteId) ?? widget.siteId, 
+            'transaction_id': safeTransactionId,
             'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
-            'description': widget.description, 'notify_url': 'https://api.tiknetafrica.com/v1/partner/payment/notify/',
+            'description': safeDesc, 'notify_url': 'https://api.tiknetafrica.com/v1/partner/payment/notify/',
             'return_url': html.window.location.href, 
-            'customer_name': widget.firstName, 'customer_surname': widget.lastName,
-            'customer_email': widget.email, 'customer_phone_number': phone, 
+            'customer_name': widget.lastName, 'customer_surname': widget.firstName,
+            'customer_email': widget.email, 'customer_phone_number': finalPhone, 
             'customer_address': widget.address, 'customer_city': widget.city, 'customer_country': country,
-            'channels': 'ALL', 'lang': 'fr'
+            'channels': 'MOBILE_MONEY,WALLET,CREDIT_CARD', 'lang': 'fr'
           }
         );
         if (response.data['code'] == '201') {
@@ -152,12 +160,13 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
       // Use Seamless for Desktop
       js.context.callMethod('launchCinetPay', [
         js.JsObject.jsify({
-          'apiKey': '297929662685d35c4021b02.21438964', 'siteId': widget.siteId,
-          'notifyUrl': 'https://api.tiknetafrica.com/v1/partner/payment/notify/', 'transactionId': _transactionId,
+          'apikey': '297929662685d35c4021b02.21438964', 'siteId': int.tryParse(widget.siteId) ?? widget.siteId,
+          'notifyUrl': 'https://api.tiknetafrica.com/v1/partner/payment/notify/', 'transactionId': safeTransactionId,
           'amount': widget.amount.toInt(), 'currency': widget.currency == 'CFA' ? 'XOF' : widget.currency,
-          'description': widget.description, 'customerName': widget.firstName, 'customerSurname': widget.lastName,
-          'customerEmail': widget.email, 'customerPhoneNumber': phone, 'returnUrl': html.window.location.href,
+          'description': safeDesc, 'customerName': widget.lastName, 'customerSurname': widget.firstName,
+          'customerEmail': widget.email, 'customerPhoneNumber': finalPhone, 'returnUrl': html.window.location.href,
           'customerAddress': widget.address, 'customerCity': widget.city, 'customerCountry': country,
+          'channels': 'MOBILE_MONEY,WALLET,CREDIT_CARD',
         })
       ]);
       _startStatusPolling();
