@@ -355,14 +355,14 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
       children: [
         Row(
           children: [
-            const Icon(Icons.palette_outlined, size: 20, color: AppTheme.textPrimary),
+            const Icon(Icons.palette_outlined, size: 20, color: AppTheme.textDark),
             const SizedBox(width: 8),
             Text(
               'branding'.tr(),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimary,
+                color: AppTheme.textDark,
               ),
             ),
           ],
@@ -386,7 +386,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
           style: const TextStyle(
             fontSize: 15, 
             fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
+            color: AppTheme.textDark,
           ),
         ),
         const SizedBox(height: 12),
@@ -449,7 +449,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
           style: const TextStyle(
             fontSize: 15, 
             fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
+            color: AppTheme.textDark,
           ),
         ),
         const SizedBox(height: 12),
