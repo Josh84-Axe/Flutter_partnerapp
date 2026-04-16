@@ -108,10 +108,10 @@ class UserModel {
         assignedRouters: json['assignedRouters'] != null
             ? List<String>.from(json['assignedRouters'])
             : null,
-        country: json['country'],
-        address: json['address'],
+        country: json['country'] ?? json['country_name'],
+        address: json['address'] ?? json['addresse'],
         city: json['city'],
-        numberOfRouters: json['numberOfRouters'],
+        numberOfRouters: json['numberOfRouters'] ?? json['number_of_router'] ?? json['number_of_routers'],
         heroImageUrl: json['heroImageUrl'],
         primaryHex: json['primaryHex'],
         isBlocked: json['isBlocked'],

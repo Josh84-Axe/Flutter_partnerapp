@@ -133,7 +133,10 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
             backgroundColor: AppTheme.successGreen,
           ),
         );
-        Navigator.of(context).pop(); // Exit profile screen
+        // Re-load user profile to get the updated data (including new hero image URL)
+        await authProvider.checkAuthStatus();
+        // Refresh local state with new data from provider
+        _loadData();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -283,17 +286,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 32),
-                Text(
-                  'branding'.tr(),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildImagePicker(),
-                const SizedBox(height: 16),
-                _buildColorPalette(),
+                _buildBrandingSection(),
                 const SizedBox(height: 32),
               ],
               ),
@@ -356,6 +349,32 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     );
   }
 
+  Widget _buildBrandingSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.palette_outlined, size: 20, color: AppTheme.textPrimary),
+            const SizedBox(width: 8),
+            Text(
+              'branding'.tr(),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildImagePicker(),
+        const SizedBox(height: 24),
+        _buildColorPalette(),
+      ],
+    );
+  }
+
   Widget _buildColorPalette() {
     final colorScheme = Theme.of(context).colorScheme;
     
@@ -364,43 +383,56 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
       children: [
         Text(
           'portal_color_hex'.tr(),
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          style: const TextStyle(
+            fontSize: 15, 
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textPrimary,
+          ),
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: _presetColors.map((hex) {
-            final color = Color(int.parse(hex.replaceFirst('#', '0xFF')));
-            final isSelected = _selectedHexCode == hex;
-            
-            return GestureDetector(
-              onTap: () => setState(() => _selectedHexCode = hex),
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected ? colorScheme.primary : Colors.transparent,
-                    width: 3,
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+          ),
+          child: Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            children: _presetColors.map((hex) {
+              final color = Color(int.parse(hex.replaceFirst('#', '0xFF')));
+              final isSelected = _selectedHexCode == hex;
+              
+              return GestureDetector(
+                onTap: () => setState(() => _selectedHexCode = hex),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected ? colorScheme.primary : Colors.transparent,
+                      width: 4,
+                    ),
+                    boxShadow: [
+                      if (isSelected)
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.4),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                    ],
                   ),
-                  boxShadow: [
-                    if (isSelected)
-                      BoxShadow(
-                        color: color.withValues(alpha: 0.4),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                  ],
+                  child: isSelected
+                      ? const Icon(Icons.check, color: Colors.white, size: 28)
+                      : null,
                 ),
-                child: isSelected
-                    ? const Icon(Icons.check, color: Colors.white, size: 24)
-                    : null,
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );
@@ -414,49 +446,90 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
       children: [
         Text(
           'portal_hero_image'.tr(),
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          style: const TextStyle(
+            fontSize: 15, 
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textPrimary,
+          ),
         ),
-        const SizedBox(height: 8),
-        InkWell(
+        const SizedBox(height: 12),
+        GestureDetector(
           onTap: _pickImage,
-          borderRadius: BorderRadius.circular(12),
           child: Container(
-            height: 150,
+            height: 180,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colorScheme.outlineVariant),
-              image: _selectedImage != null
-                  ? (kIsWeb 
-                      ? DecorationImage(image: NetworkImage(_selectedImage!.path), fit: BoxFit.cover)
-                      : DecorationImage(image: FileImage(io.File(_selectedImage!.path)), fit: BoxFit.cover))
-                  : (_currentHeroImageUrl != null
-                      ? DecorationImage(image: NetworkImage(_currentHeroImageUrl!), fit: BoxFit.cover)
-                      : null),
+              color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                style: _selectedImage == null && _currentHeroImageUrl == null 
+                    ? BorderStyle.solid 
+                    : BorderStyle.none,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: _selectedImage == null && _currentHeroImageUrl == null
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.add_photo_alternate_outlined, size: 40, color: colorScheme.primary),
-                      const SizedBox(height: 8),
-                      Text('tap_to_select_image'.tr()),
-                    ],
-                  )
-                : Stack(
-                    children: [
-                      Positioned(
-                        right: 8,
-                        top: 8,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.black54,
-                          radius: 16,
-                          child: Icon(Icons.edit, size: 16, color: Colors.white),
-                        ),
+            child: Stack(
+              children: [
+                // Image Display
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: _selectedImage != null
+                      ? (kIsWeb 
+                          ? Image.network(_selectedImage!.path, width: double.infinity, height: 180, fit: BoxFit.cover)
+                          : Image.file(io.File(_selectedImage!.path), width: double.infinity, height: 180, fit: BoxFit.cover))
+                      : (_currentHeroImageUrl != null
+                          ? Image.network(_currentHeroImageUrl!, width: double.infinity, height: 180, fit: BoxFit.cover)
+                          : Container(
+                              width: double.infinity,
+                              height: 180,
+                              color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.image_outlined, size: 48, color: colorScheme.onSurfaceVariant),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'tap_to_select_image'.tr(),
+                                    style: TextStyle(color: colorScheme.onSurfaceVariant),
+                                  ),
+                                ],
+                              ),
+                            )),
+                ),
+                
+                // Edit Overlay
+                if (_selectedImage != null || _currentHeroImageUrl != null)
+                  Positioned(
+                    bottom: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.edit_outlined, size: 16, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(
+                            'change'.tr(),
+                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
+              ],
+            ),
           ),
         ),
       ],
