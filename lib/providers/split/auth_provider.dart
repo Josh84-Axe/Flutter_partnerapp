@@ -223,8 +223,8 @@ class AuthProvider with ChangeNotifier {
         isVoucherEnabled: userData['enable_smart_vouchers'] == true || 
                          Permissions.isOwner(userRole),
         country: _partnerCountry,
-        heroImageUrl: userData['partner']?['hero_image_url'],
-        primaryHex: userData['partner']?['primary_hex'],
+        heroImageUrl: userData['hero_image_url'] ?? userData['partner']?['hero_image_url'],
+        primaryHex: userData['primary_hex'] ?? userData['partner']?['primary_hex'],
       );
       
       notifyListeners();

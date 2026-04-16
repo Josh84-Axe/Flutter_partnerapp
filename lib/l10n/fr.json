@@ -739,6 +739,8 @@
   "faq_add_router_a": "Actuellement, les routeurs sont attribués par l'administrateur. Veuillez contacter le support si vous devez ajouter un nouvel appareil à votre compte.",
   "faq_payout_q": "Quand suis-je payé ?",
   "faq_payout_a": "Les paiements sont traités chaque semaine. Vous pouvez consulter l'historique de vos transactions et l'état des paiements dans la section 'Rapports'.",
+  "change": "Modifier",
+  "profile_update_failed": "Échec de la mise à jour",
   "faq_update_profile_q": "Comment mettre à jour mon profil ?",
   "faq_update_profile_a": "Allez dans Paramètres > Profil Partenaire. Vous pouvez y mettre à jour vos coordonnées. Certains champs peuvent nécessiter l'approbation de l'administrateur.",
   "unlimited": "Illimité",

@@ -803,6 +803,8 @@
   "portal_color_hex": "Portal Color (Hex)",
   "portal_hero_image": "Portal Hero Image",
   "tap_to_select_image": "Tap to select image",
+  "change": "Change",
+  "profile_update_failed": "Failed to update profile",
   "faq_update_profile_q": "How do I update my profile?",
   "faq_update_profile_a": "Go to Settings > Partner Profile. You can update your contact information there. Some fields may require admin approval.",
   "unlimited": "Unlimited",
