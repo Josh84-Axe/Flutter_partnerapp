@@ -308,15 +308,24 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: _updateProfile,
+                  onPressed: authProvider.isLoading ? null : _updateProfile,
                   style: FilledButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text(
-                    'Save Changes',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
+                  child: authProvider.isLoading 
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Save Changes',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
                 ),
               ),
             ),
@@ -511,26 +520,38 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                   borderRadius: BorderRadius.circular(16),
                   child: _selectedImage != null
                       ? (kIsWeb 
-                          ? Image.network(_selectedImage!.path, width: double.infinity, height: 180, fit: BoxFit.cover)
-                          : Image.file(io.File(_selectedImage!.path), width: double.infinity, height: 180, fit: BoxFit.cover))
-                      : (_currentHeroImageUrl != null
-                          ? Image.network(_currentHeroImageUrl!, width: double.infinity, height: 180, fit: BoxFit.cover)
-                          : Container(
-                              width: double.infinity,
-                              height: 180,
-                              color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.image_outlined, size: 48, color: colorScheme.onSurfaceVariant),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'tap_to_select_image'.tr(),
-                                    style: TextStyle(color: colorScheme.onSurfaceVariant),
+                          ? Image.network(
+                              _selectedImage!.path, 
+                              width: double.infinity, 
+                              height: 180, 
+                              fit: BoxFit.cover,
+                            )
+                          : Image.file(
+                              io.File(_selectedImage!.path), 
+                              width: double.infinity, 
+                              height: 180, 
+                              fit: BoxFit.cover,
+                            ))
+                      : (_currentHeroImageUrl != null && _currentHeroImageUrl!.isNotEmpty
+                          ? Image.network(
+                              _currentHeroImageUrl!, 
+                              width: double.infinity, 
+                              height: 180, 
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                        : null,
+                                    strokeWidth: 2,
                                   ),
-                                ],
-                              ),
-                            )),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+                            )
+                          : _buildPlaceholder()),
                 ),
                 
                 // Edit Overlay
@@ -567,12 +588,20 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
-    
-    if (image != null) {
-      setState(() {
-        _selectedImage = image;
-      });
+    try {
+      final image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1600,
+        imageQuality: 75,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _selectedImage = image;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking image: $e');
     }
   }
 
