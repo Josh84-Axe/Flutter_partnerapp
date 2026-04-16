@@ -444,12 +444,41 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'portal_hero_image'.tr(),
+              style: const TextStyle(
+                fontSize: 15, 
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textDark,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'hero_image_specs'.tr(),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: colorScheme.onSecondaryContainer,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
         Text(
-          'portal_hero_image'.tr(),
-          style: const TextStyle(
-            fontSize: 15, 
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textDark,
+          'hero_image_tip'.tr(),
+          style: TextStyle(
+            fontSize: 12,
+            color: colorScheme.onSurfaceVariant,
+            fontStyle: FontStyle.italic,
           ),
         ),
         const SizedBox(height: 12),

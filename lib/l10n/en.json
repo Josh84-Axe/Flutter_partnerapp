@@ -802,6 +802,8 @@
   "branding": "Branding",
   "portal_color_hex": "Portal Color (Hex)",
   "portal_hero_image": "Portal Hero Image",
+  "hero_image_specs": "Optimal: 1600x600px | WebP/JPG < 150KB",
+  "hero_image_tip": "Keep the main subject centered to avoid cropping on mobile.",
   "tap_to_select_image": "Tap to select image",
   "change": "Change",
   "profile_update_failed": "Failed to update profile",
