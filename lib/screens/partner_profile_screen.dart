@@ -749,4 +749,24 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
       context.read<BillingProvider>().loadPaymentMethods();
     }
   }
+
+  Widget _buildPlaceholder() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      height: 180,
+      color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.image_outlined, size: 48, color: colorScheme.onSurfaceVariant),
+          const SizedBox(height: 8),
+          Text(
+            'tap_to_select_image'.tr(),
+            style: TextStyle(color: colorScheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+    );
+  }
 }
