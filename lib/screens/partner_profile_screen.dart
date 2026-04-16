@@ -7,6 +7,9 @@ import '../providers/split/auth_provider.dart';
 import '../providers/split/billing_provider.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import '../utils/country_utils.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io' as io;
 
 class PartnerProfileScreen extends StatefulWidget {
   const PartnerProfileScreen({super.key});
@@ -24,6 +27,25 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
   final _cityController = TextEditingController();
   final _countryController = TextEditingController();
   final _routersController = TextEditingController();
+  
+  XFile? _selectedImage;
+  String? _currentHeroImageUrl;
+  String? _selectedHexCode;
+
+  final List<String> _presetColors = [
+    '#D32F2F', // Red
+    '#C2185B', // Pink
+    '#7B1FA2', // Purple
+    '#303F9F', // Indigo
+    '#1976D2', // Blue
+    '#0097A7', // Cyan
+    '#00796B', // Teal
+    '#388E3C', // Green
+    '#FBC02D', // Yellow
+    '#F57C00', // Orange
+    '#5D4037', // Brown
+    '#000000', // Black
+  ];
 
   @override
   void initState() {
@@ -47,6 +69,8 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     _cityController.text = user?.city ?? '';
     _countryController.text = user?.country ?? '';
     _routersController.text = user?.numberOfRouters?.toString() ?? '';
+    _selectedHexCode = user?.primaryHex;
+    _currentHeroImageUrl = user?.heroImageUrl;
     
     // Load payment methods
     await billingProvider.loadPaymentMethods();
@@ -84,7 +108,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     // Construct address
     final fullAddress = _addressController.text.trim();
     
-    final success = await authProvider.updateProfile({
+    final Map<String, dynamic> updateData = {
       'first_name': firstName,
       'last_name': lastName,
       'business_name': _companyNameController.text,
@@ -93,7 +117,11 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
       'city': _cityController.text,
       'country': _countryController.text,
       'number_of_routers': int.tryParse(_routersController.text) ?? 0,
-    });
+      'portal_primary_hex': _selectedHexCode,
+      'portal_hero_image': _selectedImage,
+    };
+    
+    final success = await authProvider.updateProfile(updateData);
 
     if (mounted) {
       Navigator.of(context).pop(); // Close loading dialog
@@ -248,14 +276,25 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                   label: 'Country',
                   icon: Icons.flag,
                 ),
-                const SizedBox(height: 16),
                 _buildTextField(
                   controller: _routersController,
                   label: 'Number of Routers',
                   icon: Icons.router,
                   keyboardType: TextInputType.number,
                 ),
-
+                const SizedBox(height: 32),
+                Text(
+                  'branding'.tr(),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildImagePicker(),
+                const SizedBox(height: 16),
+                _buildColorPalette(),
+                const SizedBox(height: 32),
               ],
               ),
             ),
@@ -317,11 +356,130 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     );
   }
 
+  Widget _buildColorPalette() {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'portal_color_hex'.tr(),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: _presetColors.map((hex) {
+            final color = Color(int.parse(hex.replaceFirst('#', '0xFF')));
+            final isSelected = _selectedHexCode == hex;
+            
+            return GestureDetector(
+              onTap: () => setState(() => _selectedHexCode = hex),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? colorScheme.primary : Colors.transparent,
+                    width: 3,
+                  ),
+                  boxShadow: [
+                    if (isSelected)
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                  ],
+                ),
+                child: isSelected
+                    ? const Icon(Icons.check, color: Colors.white, size: 24)
+                    : null,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImagePicker() {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'portal_hero_image'.tr(),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: _pickImage,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            height: 150,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceVariant.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colorScheme.outlineVariant),
+              image: _selectedImage != null
+                  ? (kIsWeb 
+                      ? DecorationImage(image: NetworkImage(_selectedImage!.path), fit: BoxFit.cover)
+                      : DecorationImage(image: FileImage(io.File(_selectedImage!.path)), fit: BoxFit.cover))
+                  : (_currentHeroImageUrl != null
+                      ? DecorationImage(image: NetworkImage(_currentHeroImageUrl!), fit: BoxFit.cover)
+                      : null),
+            ),
+            child: _selectedImage == null && _currentHeroImageUrl == null
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add_photo_alternate_outlined, size: 40, color: colorScheme.primary),
+                      const SizedBox(height: 8),
+                      Text('tap_to_select_image'.tr()),
+                    ],
+                  )
+                : Stack(
+                    children: [
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.black54,
+                          radius: 16,
+                          child: Icon(Icons.edit, size: 16, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image != null) {
+      setState(() {
+        _selectedImage = image;
+      });
+    }
+  }
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
     required IconData icon,
     TextInputType? keyboardType,
+    String? hintText,
     String? Function(String?)? validator,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -330,6 +488,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
+        hintText: hintText,
         prefixIcon: Icon(icon, color: colorScheme.primary),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

@@ -969,5 +969,9 @@
   "free_memory": "Mémoire libre",
   "free_space": "Espace libre",
   "unknown": "Inconnu",
-  "not_available": "N/D"
+  "not_available": "N/D",
+  "branding": "Branding",
+  "portal_color_hex": "Couleur du Portail (Hex)",
+  "portal_hero_image": "Image d'en-tête du Portail",
+  "tap_to_select_image": "Appuyez pour sélectionner une image"
 }

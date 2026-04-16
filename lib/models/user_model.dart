@@ -15,6 +15,8 @@ class UserModel {
   final String? address;
   final String? city;
   final int? numberOfRouters;
+  final String? heroImageUrl;
+  final String? primaryHex;
   
   // New fields for status tracking
   final bool? isBlocked;
@@ -40,6 +42,8 @@ class UserModel {
     this.address,
     this.city,
     this.numberOfRouters,
+    this.heroImageUrl,
+    this.primaryHex,
     this.isBlocked,
     this.isConnected,
     this.username,
@@ -70,6 +74,8 @@ class UserModel {
         address: null,
         city: null,
         numberOfRouters: null,
+        heroImageUrl: json['partner']?['hero_image_url'],
+        primaryHex: json['partner']?['primary_hex'],
         isBlocked: json['blocked'],
         isConnected: isConnected,
         username: json['username'] ?? json['login'] ?? json['identifier'] ?? (json['role'] == 'user' ? json['phone'] : null),
@@ -106,6 +112,8 @@ class UserModel {
         address: json['address'],
         city: json['city'],
         numberOfRouters: json['numberOfRouters'],
+        heroImageUrl: json['heroImageUrl'],
+        primaryHex: json['primaryHex'],
         isBlocked: json['isBlocked'],
         isConnected: isConnected ?? json['isConnected'],
         username: json['username'] ?? json['login'] ?? json['identifier'],
@@ -144,6 +152,8 @@ class UserModel {
     String? acquisitionType,
     String? planName,
     bool? isVoucherEnabled,
+    String? heroImageUrl,
+    String? primaryHex,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -159,6 +169,8 @@ class UserModel {
       address: address ?? this.address,
       city: city ?? this.city,
       numberOfRouters: numberOfRouters ?? this.numberOfRouters,
+      heroImageUrl: heroImageUrl ?? this.heroImageUrl,
+      primaryHex: primaryHex ?? this.primaryHex,
       isBlocked: isBlocked ?? this.isBlocked,
       isConnected: isConnected ?? this.isConnected,
       username: username ?? this.username,
@@ -199,6 +211,8 @@ class UserModel {
       'address': address,
       'city': city,
       'numberOfRouters': numberOfRouters,
+      'heroImageUrl': heroImageUrl,
+      'primaryHex': primaryHex,
       'isBlocked': isBlocked,
       'isConnected': isConnected,
       'username': username,

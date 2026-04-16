@@ -38,12 +38,63 @@ class PartnerRepository {
   Future<bool> updateProfile(Map<String, dynamic> profileData) async {
     try {
       if (kDebugMode) print('✏️ [PartnerRepository] Updating partner profile');
-      if (kDebugMode) print('📦 [PartnerRepository] Profile data: $profileData');
-      await _dio.put('/partner/profile/update/', data: profileData);
+      
+      // Transform keys to match API expectations
+      final Map<String, dynamic> data = Map<String, dynamic>.from(profileData);
+      
+      if (data.containsKey('address')) {
+        data['addresse'] = data.remove('address');
+      }
+      if (data.containsKey('number_of_routers')) {
+        data['number_of_router'] = data.remove('number_of_routers');
+      }
+
+      // Handle image upload if portal_hero_image is a local file path
+      dynamic requestData;
+      bool isMultipart = false;
+
+      if (data['portal_hero_image'] != null) {
+        final heroImage = data['portal_hero_image'];
+        
+        if (heroImage is XFile) {
+          if (kIsWeb) {
+            final bytes = await heroImage.readAsBytes();
+            data['portal_hero_image'] = MultipartFile.fromBytes(
+              bytes,
+              filename: heroImage.name,
+            );
+          } else {
+            data['portal_hero_image'] = await MultipartFile.fromFile(heroImage.path);
+          }
+          isMultipart = true;
+        } else if (heroImage is String && heroImage.startsWith('http')) {
+          // If it's already a URL, we don't need to send it back to the update endpoint
+          data.remove('portal_hero_image');
+        } else if (heroImage is String) {
+          // Backward compatibility for path strings
+          if (!heroImage.startsWith('http')) {
+            data['portal_hero_image'] = await MultipartFile.fromFile(heroImage);
+            isMultipart = true;
+          }
+        }
+      }
+
+      if (isMultipart) {
+        requestData = FormData.fromMap(data);
+      } else {
+        requestData = data;
+      }
+
+      if (kDebugMode) print('📦 [PartnerRepository] Request data: $requestData');
+      
+      await _dio.put('/partner/profile/update/', data: requestData);
       if (kDebugMode) print('✅ [PartnerRepository] Profile updated successfully');
       return true;
     } catch (e) {
       if (kDebugMode) print('❌ [PartnerRepository] Update profile error: $e');
+      if (e is DioException) {
+        if (kDebugMode) print('❌ [PartnerRepository] Detail: ${e.response?.data}');
+      }
       return false;
     }
   }
