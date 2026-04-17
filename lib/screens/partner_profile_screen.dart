@@ -533,11 +533,17 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                               height: 180, 
                               fit: BoxFit.cover,
                             )
-                          : Image.file(
-                              io.File(_selectedImage!.path), 
-                              width: double.infinity, 
-                              height: 180, 
+                          : Image.network( // On mobile XFile.path works with Image.network too in many cases, or we use File
+                              _selectedImage!.path,
+                              width: double.infinity,
+                              height: 180,
                               fit: BoxFit.cover,
+                              errorBuilder: (ctx, _, __) => Image.file(
+                                io.File(_selectedImage!.path),
+                                width: double.infinity,
+                                height: 180,
+                                fit: BoxFit.cover,
+                              ),
                             ))
                       : (_currentHeroImageUrl != null && _currentHeroImageUrl!.isNotEmpty
                           ? Image.network(

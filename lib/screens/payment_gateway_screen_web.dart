@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:dio/dio.dart';
-import 'dart:js' as js;
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'payment_gateway_cinetpay_web.dart';
 import '../services/api/token_storage.dart';
 
@@ -173,16 +174,16 @@ class PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
     super.initState();
     _transactionId = 'PSK${DateTime.now().millisecondsSinceEpoch}';
     
-    js.context['onPaystackSuccess'] = js.allowInterop((reference) {
+    globalContext.setProperty('onPaystackSuccess'.toJS, ((JSString reference) {
        if (mounted) setState(() => _status = 'SUCCESS');
        Future.delayed(const Duration(seconds: 1), () { 
-          if (mounted) widget.onResult(true, reference, 'payment_success'.tr());
+          if (mounted) widget.onResult(true, reference.toDart, 'payment_success'.tr());
        });
-    });
+    }).toJS);
     
-    js.context['onPaystackCancel'] = js.allowInterop(() {
+    globalContext.setProperty('onPaystackCancel'.toJS, (() {
        if (mounted) widget.onResult(false, null, 'payment_cancelled'.tr()); 
-    });
+    }).toJS);
     
     WidgetsBinding.instance.addPostFrameCallback((_) { _launchPaystack(); });
   }
@@ -223,13 +224,17 @@ class PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
 
   void _launchPaystack() {
      if (mounted) setState(() => _status = 'PENDING');
-     js.context.callMethod('launchPaystack', [
-       js.JsObject.jsify({
-         'key': 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
-         'email': widget.email, 'amount': (widget.amount * 100).toInt(), 'currency': widget.currency,
-         'ref': _transactionId, 'planId': widget.planId, 'planName': widget.planName,
-       })
-     ]);
+     
+     final jsData = JSObject();
+     jsData.setProperty('key'.toJS, 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426'.toJS);
+     jsData.setProperty('email'.toJS, widget.email.toJS);
+     jsData.setProperty('amount'.toJS, (widget.amount * 100).toInt().toJS);
+     jsData.setProperty('currency'.toJS, widget.currency.toJS);
+     jsData.setProperty('ref'.toJS, _transactionId.toJS);
+     jsData.setProperty('planId'.toJS, widget.planId.toJS);
+     jsData.setProperty('planName'.toJS, widget.planName.toJS);
+
+     globalContext.callMethod('launchPaystack'.toJS, jsData);
      _startStatusPolling();
   }
 
