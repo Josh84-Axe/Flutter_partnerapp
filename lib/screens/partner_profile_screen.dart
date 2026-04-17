@@ -464,32 +464,39 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                 color: AppTheme.textDark,
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'hero_image_specs'.tr(),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: colorScheme.onSecondaryContainer,
-                ),
-              ),
+            IconButton(
+              icon: Icon(Icons.info_outline, size: 18, color: colorScheme.primary),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('portal_hero_image'.tr()),
+                    content: Text('hero_image_specs'.tr()),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text('ok'.tr()),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          'hero_image_tip'.tr(),
-          style: TextStyle(
-            fontSize: 12,
-            color: colorScheme.onSurfaceVariant,
-            fontStyle: FontStyle.italic,
+        if (_selectedImage == null && _currentHeroImageUrl == null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'hero_image_tip'.tr(),
+            style: TextStyle(
+              fontSize: 12,
+              color: colorScheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
           ),
-        ),
+        ],
         const SizedBox(height: 12),
         GestureDetector(
           onTap: _pickImage,
