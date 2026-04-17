@@ -244,7 +244,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                     formatInput: true,
                     keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
                     inputDecoration: InputDecoration(
-                      labelText: 'Contact Number',
+                      labelText: 'contact_number'.tr(),
                       prefixIcon: Icon(Icons.phone_outlined, color: colorScheme.primary),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -256,7 +256,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Contact Number is required';
+                        return 'contact_number_required'.tr();
                       }
                       return null;
                     },
@@ -264,24 +264,24 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _addressController,
-                  label: 'Business Address',
+                  label: 'business_address'.tr(),
                   icon: Icons.location_on_outlined,
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _cityController,
-                  label: 'City',
+                  label: 'city'.tr(),
                   icon: Icons.location_city,
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _countryController,
-                  label: 'Country',
+                  label: 'country'.tr(),
                   icon: Icons.flag,
                 ),
                 _buildTextField(
                   controller: _routersController,
-                  label: 'Number of Routers',
+                  label: 'number_of_routers'.tr(),
                   icon: Icons.router,
                   keyboardType: TextInputType.number,
                 ),
@@ -322,9 +322,9 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
-                        'Save Changes',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    : Text(
+                        'save_changes'.tr(),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                 ),
               ),

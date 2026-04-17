@@ -977,5 +977,13 @@
   "portal_hero_image": "Image d'en-tête du portail",
   "hero_image_specs": "Optimal: 1600x600px | WebP/JPG < 150Ko",
   "hero_image_tip": "Centrez le sujet principal pour éviter un recadrage sur mobile.",
-  "tap_to_select_image": "Appuyez pour sélectionner l'image"
+  "tap_to_select_image": "Appuyez pour sélectionner l'image",
+  "change": "Modifier",
+  "save_changes": "Enregistrer les modifications",
+  "contact_number": "Numéro de contact",
+  "contact_number_required": "Le numéro de contact est requis",
+  "business_address": "Adresse de l'entreprise",
+  "city": "Ville",
+  "country": "Pays",
+  "number_of_routers": "Nombre de routeurs"
 }
