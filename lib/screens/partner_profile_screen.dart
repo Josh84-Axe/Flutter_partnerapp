@@ -298,7 +298,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
               color: Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -402,9 +402,9 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+            color: colorScheme.surfaceVariant.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+            border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
           ),
           child: Wrap(
             spacing: 16,
@@ -429,7 +429,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                     boxShadow: [
                       if (isSelected)
                         BoxShadow(
-                          color: color.withValues(alpha: 0.4),
+                          color: color.withOpacity(0.4),
                           blurRadius: 10,
                           spreadRadius: 2,
                         ),
@@ -504,17 +504,17 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
             height: 180,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+              color: colorScheme.surfaceVariant.withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                color: colorScheme.outlineVariant.withOpacity(0.5),
                 style: _selectedImage == null && _currentHeroImageUrl == null 
                     ? BorderStyle.solid 
                     : BorderStyle.none,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -569,7 +569,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
+                        color: Colors.black.withOpacity(0.6),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -665,7 +665,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+              backgroundColor: colorScheme.primary.withOpacity(0.1),
               child: Icon(iconData, color: colorScheme.primary),
             ),
             const SizedBox(width: 16),
@@ -762,7 +762,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     return Container(
       width: double.infinity,
       height: 180,
-      color: colorScheme.surfaceVariant.withValues(alpha: 0.1),
+      color: colorScheme.surfaceVariant.withOpacity(0.1),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
