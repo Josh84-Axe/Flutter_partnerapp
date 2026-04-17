@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      VERSION: 1.1.${{ github.run_number }}
+      VERSION: 1.2.${{ github.run_number }}
       API_HOST: https://api.tiknetafrica.com
       CRM_API_KEY: ${{ secrets.CRM_API_KEY }}
       USE_REMOTE_API: true
@@ -33,7 +33,7 @@ jobs:
       
       - name: Inject Version into index.html
         run: |
-          sed -i 's/BUILD v1\.1\.[0-9]*/BUILD v'"${{ env.VERSION }}"'/g' web/index.html
+          sed -i 's/BUILD v[0-9.]*/BUILD v'"${{ env.VERSION }}"'/g' web/index.html
           sed -i 's/v1\.1\.[0-9]*-fresh/v'"${{ env.VERSION }}"'/g' web/index.html
           echo "Updated web/index.html with version ${{ env.VERSION }}"
 
