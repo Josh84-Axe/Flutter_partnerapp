@@ -72,15 +72,12 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
         'dns_name': _dnsNameController.text.isEmpty ? null : _dnsNameController.text,
         'api_port': _apiPortController.text.isEmpty ? null : int.tryParse(_apiPortController.text),
         'coa_port': _coaPortController.text.isEmpty ? null : int.tryParse(_coaPortController.text),
-        //getRadiusSecret is not in the form but radius_secret is
-        'radius_secret': _radiusSecretController.text.isEmpty ? null : _radiusSecretController.text,
+        'secret': _radiusSecretController.text.isEmpty ? null : _radiusSecretController.text,
       };
 
       try {
         if (_existingConfig != null) {
-          // Assuming the slug is the name or we should have a slug in RouterConfigurationModel
-          // For now, using ID if available or name as fallback
-          await networkProvider.updateRouter(_existingConfig!.id, data);
+          await networkProvider.updateRouter(_existingConfig!.slug, data);
         } else {
           await networkProvider.addRouter(data);
         }

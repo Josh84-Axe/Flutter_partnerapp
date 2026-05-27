@@ -13,6 +13,14 @@ class RouterSettingsScreen extends StatefulWidget {
 }
 
 class _RouterSettingsScreenState extends State<RouterSettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<NetworkProvider>().loadRouters();
+    });
+  }
+
   void _showDeleteDialog(RouterConfigurationModel config) {
     showDialog(
       context: context,
@@ -67,9 +75,25 @@ class _RouterSettingsScreenState extends State<RouterSettingsScreen> {
           const SizedBox(width: 16),
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: configurations.length,
+      body: networkProvider.isLoading && configurations.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : configurations.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.router, size: 64, color: colorScheme.secondary.withValues(alpha: 0.5)),
+                      const SizedBox(height: 16),
+                      Text(
+                        'no_routers_found'.tr(),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: configurations.length,
         itemBuilder: (context, index) {
           final config = configurations[index];
           return Card(

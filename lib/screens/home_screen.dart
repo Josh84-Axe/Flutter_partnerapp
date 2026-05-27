@@ -107,6 +107,8 @@ class _HomeScreenState extends State<HomeScreen> {
           if (index == 0) {
             Navigator.of(context).pushNamed('/settings');
           } else if (index == 1) {
+            Navigator.of(context).pushNamed('/router-settings');
+          } else if (index == 2) {
             Navigator.of(context).pushNamed('/support');
           }
         },
@@ -150,6 +152,10 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationDrawerDestination(
             icon: const Icon(Icons.settings),
             label: Text('settings'.tr()),
+          ),
+          NavigationDrawerDestination(
+            icon: const Icon(Icons.router),
+            label: Text('router_configurations'.tr()),
           ),
           NavigationDrawerDestination(
             icon: const Icon(Icons.help),
