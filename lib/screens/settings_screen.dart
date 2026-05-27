@@ -46,6 +46,15 @@ class SettingsScreen extends StatelessWidget {
               ),
               _buildSettingItem(
                 context,
+                icon: Icons.router,
+                title: 'router_configurations'.tr(),
+                subtitle: 'configure_router_desc'.tr(),
+                onTap: () {
+                  Navigator.of(context).pushNamed('/router-settings');
+                },
+              ),
+              _buildSettingItem(
+                context,
                 icon: Icons.wifi,
                 title: 'internet_plan'.tr(),
                 subtitle: 'manage_plans_desc'.tr(),
