@@ -102,6 +102,17 @@ class _RouterSettingsScreenState extends State<RouterSettingsScreen> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
+                  // Router icon
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(Icons.router,
+                        color: colorScheme.primary, size: 24),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,28 +120,45 @@ class _RouterSettingsScreenState extends State<RouterSettingsScreen> {
                         Text(
                           config.name,
                           style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          config.ipAddress,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppTheme.textLight,
-                          ),
-                        ),
-                        if (config.apiPort != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            '${'port'.tr()}: ${config.apiPort}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.textLight,
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: (config.isActive ?? true)
+                                    ? Colors.green.withValues(alpha: 0.12)
+                                    : Colors.red.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                (config.isActive ?? true)
+                                    ? 'active'.tr()
+                                    : 'inactive'.tr(),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: (config.isActive ?? true)
+                                      ? Colors.green.shade700
+                                      : Colors.red.shade700,
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Text(
+                              'API: ${config.apiPort ?? 8728}  •  CoA: ${config.coaPort ?? 3799}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppTheme.textLight,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),

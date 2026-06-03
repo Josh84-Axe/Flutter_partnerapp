@@ -14,14 +14,13 @@ class AddRouterScreen extends StatefulWidget {
 class _AddRouterScreenState extends State<AddRouterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _ipAddressController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _apiPortController = TextEditingController();
-  final _dnsNameController = TextEditingController();
-  final _usernameController = TextEditingController();
   final _radiusSecretController = TextEditingController();
-  final _coaPortController = TextEditingController();
-  
+
+  // Constants — not shown to user, always sent to API
+  static const int _apiPort = 8728;
+  static const int _coaPort = 3799;
+
   bool _passwordVisible = false;
   bool _radiusSecretVisible = false;
   RouterConfigurationModel? _existingConfig;
@@ -35,13 +34,8 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
         setState(() {
           _existingConfig = args;
           _nameController.text = args.name;
-          _ipAddressController.text = args.ipAddress;
           _passwordController.text = args.password ?? '';
-          _apiPortController.text = args.apiPort?.toString() ?? '';
-          _dnsNameController.text = args.dnsName ?? '';
-          _usernameController.text = args.username ?? '';
           _radiusSecretController.text = args.radiusSecret ?? '';
-          _coaPortController.text = args.coaPort?.toString() ?? '';
         });
       }
     });
@@ -50,29 +44,22 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _ipAddressController.dispose();
     _passwordController.dispose();
-    _apiPortController.dispose();
-    _dnsNameController.dispose();
-    _usernameController.dispose();
     _radiusSecretController.dispose();
-    _coaPortController.dispose();
     super.dispose();
   }
 
   Future<void> _saveConfiguration() async {
     if (_formKey.currentState!.validate()) {
       final networkProvider = context.read<NetworkProvider>();
-      
+
       final data = {
-        'name': _nameController.text,
-        'ip_address': _ipAddressController.text,
-        'username': _usernameController.text,
+        'name': _nameController.text.trim(),
         'password': _passwordController.text,
-        'dns_name': _dnsNameController.text.isEmpty ? null : _dnsNameController.text,
-        'api_port': _apiPortController.text.isEmpty ? null : int.tryParse(_apiPortController.text),
-        'coa_port': _coaPortController.text.isEmpty ? null : int.tryParse(_coaPortController.text),
-        'secret': _radiusSecretController.text.isEmpty ? null : _radiusSecretController.text,
+        'secret': _radiusSecretController.text.trim(),
+        'api_port': _apiPort,
+        'coa_port': _coaPort,
+        'is_active': true,
       };
 
       try {
@@ -90,6 +77,7 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                     ? 'router_config_updated'.tr()
                     : 'router_config_saved'.tr(),
               ),
+              backgroundColor: Colors.green,
             ),
           );
           Navigator.of(context).pop();
@@ -97,7 +85,10 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('error_occurred'.tr())),
+            SnackBar(
+              content: Text('error_occurred'.tr()),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }
@@ -107,6 +98,7 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
   @override
   Widget build(BuildContext context) {
     final isEdit = _existingConfig != null;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -118,46 +110,65 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Info card
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: colorScheme.primary.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline,
+                              color: colorScheme.primary, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'router_config_info'.tr(),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Wifi Name
                     TextFormField(
                       controller: _nameController,
                       decoration: InputDecoration(
-                        labelText: 'router_name'.tr(),
-                        hintText: 'router_name_hint'.tr(),
+                        labelText: 'wifi_name'.tr(),
+                        hintText: 'wifi_name_hint'.tr(),
+                        prefixIcon: const Icon(Icons.wifi),
                         border: const OutlineInputBorder(),
                       ),
+                      textInputAction: TextInputAction.next,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'enter_router_name'.tr();
+                        if (value == null || value.trim().isEmpty) {
+                          return 'enter_wifi_name'.tr();
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _ipAddressController,
-                      decoration: InputDecoration(
-                        labelText: 'ip_address'.tr(),
-                        hintText: 'ip_address_hint'.tr(),
-                        border: const OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'enter_ip_address'.tr();
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+
+                    // MikroTik Password
                     TextFormField(
                       controller: _passwordController,
                       decoration: InputDecoration(
-                        labelText: 'password'.tr(),
-                        hintText: 'router_password'.tr(),
+                        labelText: 'mikrotik_password'.tr(),
+                        hintText: 'mikrotik_password_hint'.tr(),
+                        prefixIcon: const Icon(Icons.lock_outline),
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -173,41 +184,23 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                         ),
                       ),
                       obscureText: !_passwordVisible,
+                      textInputAction: TextInputAction.next,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'enter_mikrotik_password'.tr();
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _apiPortController,
-                      decoration: InputDecoration(
-                        labelText: 'api_port'.tr(),
-                        hintText: 'api_port_hint'.tr(),
-                        border: const OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.number,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _dnsNameController,
-                      decoration: InputDecoration(
-                        labelText: 'dns_name'.tr(),
-                        hintText: 'dns_name_hint'.tr(),
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _usernameController,
-                      decoration: InputDecoration(
-                        labelText: 'username'.tr(),
-                        hintText: 'username_hint'.tr(),
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+
+                    // Radius Secret
                     TextFormField(
                       controller: _radiusSecretController,
                       decoration: InputDecoration(
                         labelText: 'radius_secret'.tr(),
                         hintText: 'radius_secret_hint'.tr(),
+                        prefixIcon: const Icon(Icons.key_outlined),
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -223,21 +216,66 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                         ),
                       ),
                       obscureText: !_radiusSecretVisible,
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _saveConfiguration(),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'enter_radius_secret'.tr();
+                        }
+                        return null;
+                      },
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _coaPortController,
-                      decoration: InputDecoration(
-                        labelText: 'coa_port'.tr(),
-                        hintText: 'coa_port_hint'.tr(),
-                        border: const OutlineInputBorder(),
+                    const SizedBox(height: 24),
+
+                    // Constant values info (read-only display)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: colorScheme.outline.withValues(alpha: 0.3),
+                        ),
                       ),
-                      keyboardType: TextInputType.number,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'default_settings'.tr(),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurfaceVariant,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(Icons.settings_ethernet,
+                                  size: 16,
+                                  color: colorScheme.onSurfaceVariant),
+                              const SizedBox(width: 8),
+                              Text(
+                                'API Port: $_apiPort  •  CoA Port: $_coaPort',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
+
+            // Bottom action buttons
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -251,28 +289,46 @@ class _AddRouterScreenState extends State<AddRouterScreen> {
                 ],
               ),
               child: SafeArea(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Consumer<NetworkProvider>(
+                  builder: (context, provider, _) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: provider.isLoading
+                                ? null
+                                : () => Navigator.of(context).pop(),
+                            style: OutlinedButton.styleFrom(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: Text('cancel'.tr()),
+                          ),
                         ),
-                        child: Text('cancel'.tr()),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: _saveConfiguration,
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed:
+                                provider.isLoading ? null : _saveConfiguration,
+                            style: FilledButton.styleFrom(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: provider.isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text('save_configuration'.tr()),
+                          ),
                         ),
-                        child: Text(context.watch<NetworkProvider>().isLoading ? 'saving'.tr() : 'save_configuration'.tr()),
-                      ),
-                    ),
-                  ],
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
