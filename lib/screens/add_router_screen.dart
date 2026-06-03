@@ -144,260 +144,249 @@ class _AddRouterScreenState extends State<AddRouterScreen>
     );
   }
 
-  /// Flatten the server response into a list of human-readable command strings.
-  /// The API may return commands as a list, a map of steps, or raw text.
-  List<_CommandEntry> _parseCommands(Map<String, dynamic> response) {
-    final List<_CommandEntry> entries = [];
-
-    void addFromValue(dynamic value, String label) {
-      if (value is List) {
-        for (int i = 0; i < value.length; i++) {
-          entries.add(_CommandEntry(
-            index: entries.length + 1,
-            label: value.length > 1 ? '$label [${i + 1}]' : label,
-            command: value[i].toString(),
-          ));
-        }
-      } else if (value is Map) {
-        value.forEach((k, v) {
-          addFromValue(v, '$label › $k');
-        });
-      } else if (value != null && value.toString().isNotEmpty) {
-        entries.add(_CommandEntry(
-          index: entries.length + 1,
-          label: label,
-          command: value.toString(),
-        ));
+  List<String> _extractCommands(Map<String, dynamic> response) {
+    const keys = ['commands', 'mikrotik_commands', 'scripts', 'steps'];
+    for (var key in keys) {
+      if (response.containsKey(key) && response[key] is List) {
+        return (response[key] as List).map((e) => e.toString()).toList();
       }
     }
+    return [];
+  }
 
-    // Look for known command keys first
-    const commandKeys = [
-      'commands',
-      'mikrotik_commands',
-      'scripts',
-      'steps',
-      'config',
-      'configuration',
-      'setup_commands',
-    ];
+  Widget _buildInfoCard(String title, List<Widget> children, ColorScheme colorScheme) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest.withOpacity(0.4),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              border: Border(bottom: BorderSide(color: colorScheme.outline.withOpacity(0.1))),
+            ),
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Wrap(
+              spacing: 16,
+              runSpacing: 20,
+              children: children,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-    bool foundCommandKey = false;
-    for (final key in commandKeys) {
-      if (response.containsKey(key)) {
-        foundCommandKey = true;
-        addFromValue(response[key], key);
-      }
-    }
-
-    // If no known key found, flatten the entire response
-    if (!foundCommandKey) {
-      response.forEach((key, value) {
-        if (value is List || value is Map) {
-          addFromValue(value, key);
-        } else if (value != null && value.toString().isNotEmpty) {
-          entries.add(_CommandEntry(
-            index: entries.length + 1,
-            label: key,
-            command: value.toString(),
-          ));
-        }
-      });
-    }
-
-    return entries;
+  Widget _buildInfoField(String label, String value, {Color? valueColor}) {
+    // Determine roughly half width minus padding (mobile layout first)
+    final width = (MediaQuery.of(context).size.width - 40 - 32 - 16) / 2;
+    return SizedBox(
+      width: width > 120 ? width : null, // fallback if width too small
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value.isNotEmpty ? value : 'N/A',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: valueColor ?? Theme.of(context).colorScheme.onSurface,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildResponsePanel(ColorScheme colorScheme) {
     if (_serverResponse == null) return const SizedBox.shrink();
 
-    final commands = _parseCommands(_serverResponse!);
-    final rawJson =
-        const JsonEncoder.withIndent('  ').convert(_serverResponse);
+    final commands = _extractCommands(_serverResponse!);
+    final rawJson = const JsonEncoder.withIndent('  ').convert(_serverResponse);
+
+    // Extract General Info
+    final name = _serverResponse!['name']?.toString() ?? _nameController.text;
+    final ref = _serverResponse!['id']?.toString() ?? _serverResponse!['slug']?.toString() ?? '#N/A';
+    final partner = _serverResponse!['partner']?.toString() ?? _serverResponse!['username']?.toString() ?? 'Admin';
+    final statusRaw = _serverResponse!['status']?.toString();
+    final isActive = _serverResponse!['is_active'] == true || statusRaw?.toLowerCase() == 'online' || statusRaw?.toLowerCase() == 'actif';
+    final statusText = isActive ? 'Actif' : (statusRaw ?? 'Pending');
+    final dnsName = _serverResponse!['dns_name']?.toString() ?? '$name.net';
+    final ipAddress = _serverResponse!['ip_address']?.toString() ?? _serverResponse!['wireguard_ip']?.toString() ?? '10.0.0.X';
+
+    // Technical Info
+    final techUser = _serverResponse!['username']?.toString() ?? 'tiknet-admin';
+    final techPass = _passwordController.text.isNotEmpty ? _passwordController.text : '********';
+    final techSecret = _radiusSecretController.text.isNotEmpty ? _radiusSecretController.text : '********';
 
     return FadeTransition(
       opacity: _responseAnimation,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 28),
-
-          // ── Header bar ──────────────────────────────────────────────
-          InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () {
-              setState(() => _responseExpanded = !_responseExpanded);
-            },
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.green.shade800,
-                    Colors.teal.shade700,
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.terminal, color: Colors.white, size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Server Response — MikroTik Commands',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ),
-                  if (commands.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '${commands.length} cmd${commands.length != 1 ? 's' : ''}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    _responseExpanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: Colors.white,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Collapsible body ─────────────────────────────────────────
-          if (_responseExpanded) ...[
-            const SizedBox(height: 2),
-            Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF0D1117),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
-                ),
-                border: Border.all(
-                  color: Colors.green.shade800.withValues(alpha: 0.4),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Commands list
-                  if (commands.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(14, 14, 14, 4),
-                      child: Text(
-                        '// Execute the following commands on your MikroTik:',
-                        style: TextStyle(
-                          color: Colors.green.shade400,
-                          fontSize: 11,
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-                    ),
-                    ...commands.map((cmd) => _buildCommandTile(cmd)),
-                  ] else ...[
-                    Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Text(
-                        '// No commands found — raw response shown below.',
-                        style: TextStyle(
-                          color: Colors.amber.shade400,
-                          fontSize: 11,
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  // Divider + raw JSON toggle
-                  const Divider(color: Color(0xFF30363D), height: 1),
-                  _buildRawJsonSection(rawJson, colorScheme),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCommandTile(_CommandEntry cmd) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF30363D)),
-      ),
-      child: ListTile(
-        dense: true,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-        leading: Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            color: Colors.green.shade900,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              '${cmd.index}',
-              style: TextStyle(
-                color: Colors.green.shade300,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-        title: Text(
-          cmd.label,
-          style: TextStyle(
-            color: Colors.blue.shade300,
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.3,
-          ),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: SelectableText(
-            cmd.command,
+          const SizedBox(height: 32),
+          
+          Text(
+            'Routeur : $name',
             style: const TextStyle(
-              color: Color(0xFFE6EDF3),
-              fontSize: 12,
-              fontFamily: 'monospace',
-              height: 1.5,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ),
-        trailing: IconButton(
-          icon: const Icon(Icons.copy, size: 16),
-          color: Colors.grey.shade500,
-          tooltip: 'Copy command',
-          onPressed: () => _copyToClipboard(cmd.command),
-        ),
+          const SizedBox(height: 20),
+
+          // 1. Informations Générales
+          _buildInfoCard(
+            'Informations Générales',
+            [
+              _buildInfoField('Nom du routeur', name),
+              _buildInfoField('Référence', '#$ref'),
+              _buildInfoField('Partenaire', partner),
+              _buildInfoField('Statut', statusText, valueColor: isActive ? Colors.green.shade600 : Colors.amber.shade700),
+              _buildInfoField('Dns Name', dnsName),
+              _buildInfoField('WireGuard IP', ipAddress, valueColor: Colors.teal.shade600),
+            ],
+            colorScheme,
+          ),
+
+          // 2. Commande Bootstrap
+          if (commands.isNotEmpty)
+            _buildInfoCard(
+              'Commande Bootstrap',
+              [
+                SizedBox(
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () => _copyToClipboard(commands.join('\n')),
+                        icon: const Icon(Icons.copy, size: 14),
+                        label: const Text('Copier la commande', style: TextStyle(fontSize: 12)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF161B22),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFF30363D)),
+                        ),
+                        child: SelectableText(
+                          commands.join('\n'),
+                          style: const TextStyle(
+                            color: Color(0xFFE6EDF3),
+                            fontFamily: 'monospace',
+                            fontSize: 12,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          'Copiez cette commande et exécutez-la sur votre routeur MikroTik pour lancer le bootstrap.',
+                          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              colorScheme,
+            ),
+
+          // 3. Informations Techniques
+          _buildInfoCard(
+            'Informations Techniques',
+            [
+              _buildInfoField('Username', techUser),
+              _buildInfoField('Mot de passe', techPass, valueColor: Colors.blue.shade600),
+              Container(
+                width: double.infinity, // Full width for Secret to match design
+                margin: const EdgeInsets.only(top: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Radius Secret',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: SelectableText(
+                        techSecret,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            colorScheme,
+          ),
+
+          // Raw JSON (Fallback)
+          const SizedBox(height: 16),
+          _buildRawJsonSection(rawJson, colorScheme),
+        ],
       ),
     );
   }
@@ -406,14 +395,14 @@ class _AddRouterScreenState extends State<AddRouterScreen>
     return Theme(
       data: ThemeData(dividerColor: Colors.transparent),
       child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 14),
+        tilePadding: EdgeInsets.zero,
         childrenPadding: EdgeInsets.zero,
         iconColor: Colors.grey.shade500,
         collapsedIconColor: Colors.grey.shade600,
         title: Text(
-          'Raw JSON Response',
+          'Raw JSON Response (Debug)',
           style: TextStyle(
-            color: Colors.grey.shade400,
+            color: Colors.grey.shade500,
             fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
@@ -433,7 +422,11 @@ class _AddRouterScreenState extends State<AddRouterScreen>
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0D1117),
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: SelectableText(
               rawJson,
               style: const TextStyle(
@@ -712,17 +705,4 @@ class _AddRouterScreenState extends State<AddRouterScreen>
       ),
     );
   }
-}
-
-/// Simple data class for a parsed command entry.
-class _CommandEntry {
-  final int index;
-  final String label;
-  final String command;
-
-  const _CommandEntry({
-    required this.index,
-    required this.label,
-    required this.command,
-  });
 }

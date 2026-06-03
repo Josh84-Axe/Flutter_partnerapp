@@ -236,8 +236,21 @@ class NetworkProvider with ChangeNotifier {
     try {
       final response = await _routerRepository!.addRouter(routerData);
       await loadRouters();
+      
+      // Fetch the raw list to get the newly added router's full details (including commands)
+      final routersData = await _routerRepository!.fetchRouters();
+      Map<String, dynamic>? newRouterDetails;
+      final addedRouterName = routerData['name'];
+      
+      for (var data in routersData) {
+        if (data is Map<String, dynamic> && data['name'] == addedRouterName) {
+          newRouterDetails = data;
+          break;
+        }
+      }
+      
       _error = null;
-      return response;
+      return newRouterDetails ?? response;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error adding router: $e');
       _error = e.toString();
