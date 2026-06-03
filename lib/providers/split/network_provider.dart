@@ -230,13 +230,14 @@ class NetworkProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addRouter(Map<String, dynamic> routerData) async {
-    if (_routerRepository == null) return;
+  Future<Map<String, dynamic>?> addRouter(Map<String, dynamic> routerData) async {
+    if (_routerRepository == null) return null;
     _setLoading(true);
     try {
-      await _routerRepository!.addRouter(routerData);
+      final response = await _routerRepository!.addRouter(routerData);
       await loadRouters();
       _error = null;
+      return response;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error adding router: $e');
       _error = e.toString();
@@ -246,13 +247,14 @@ class NetworkProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updateRouter(String routerSlug, Map<String, dynamic> routerData) async {
-    if (_routerRepository == null) return;
+  Future<Map<String, dynamic>?> updateRouter(String routerSlug, Map<String, dynamic> routerData) async {
+    if (_routerRepository == null) return null;
     _setLoading(true);
     try {
-      await _routerRepository!.updateRouter(routerSlug, routerData);
+      final response = await _routerRepository!.updateRouter(routerSlug, routerData);
       await loadRouters();
       _error = null;
+      return response;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error updating router: $e');
       _error = e.toString();
