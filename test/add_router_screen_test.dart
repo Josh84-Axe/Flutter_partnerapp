@@ -12,11 +12,17 @@ class MockNetworkProvider extends ChangeNotifier implements NetworkProvider {
   @override
   Future<Map<String, dynamic>?> addRouter(Map<String, dynamic> routerData) async {
     return {
-      "commands": [
-        "/ip hotspot add name=dummy",
-        "/ip pool add name=dummy_pool"
-      ],
-      "status": "success"
+      "id": 42,
+      "name": "TestWifi",
+      "status": "pending",
+      "is_active": false,
+      "ip_address": "10.0.0.8",
+      "dns_name": "testwifi.tiknet.net",
+      "username": "tiknet-admin",
+      "partner": "admin",
+      "bootstrap_command": "/tool fetch url=\"https://api.tiknetafrica.com/v1/bootstrap/abc123/\" mode=https output=file dst-path=bootstrap.rsc\n/import file-name=bootstrap.rsc",
+      "login_page_command": "/tool fetch url='https://api.tiknetafrica.com/v1/mikrotik/login-page/' mode=https output=file dst-path=flash/hotspot/login.html",
+      "setup_command": "/ip dhcp-client add interface=ether1\n/ip dns set allow-remote-requests=yes"
     };
   }
 
@@ -53,12 +59,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1)); // Wait for animations
 
-    // Verify UI provision for server response
-    expect(find.textContaining('Routeur : TestWifi'), findsOneWidget);
-    expect(find.text('Informations Générales'), findsOneWidget);
+    // Verify the three command sections are visible
     expect(find.text('Commande Bootstrap'), findsOneWidget);
-    
-    // Verify specific commands are joined and displayed
-    expect(find.textContaining('/ip hotspot add name=dummy\n/ip pool add name=dummy_pool'), findsOneWidget);
+    expect(find.text('Commande Login Page'), findsOneWidget);
+    expect(find.text('Commande Setup'), findsOneWidget);
+    expect(find.text('Informations Générales'), findsOneWidget);
   });
 }

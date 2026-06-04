@@ -237,7 +237,6 @@ class _AddRouterScreenState extends State<AddRouterScreen>
   Widget _buildResponsePanel(ColorScheme colorScheme) {
     if (_serverResponse == null) return const SizedBox.shrink();
 
-    final commands = _extractCommands(_serverResponse!);
     final rawJson = const JsonEncoder.withIndent('  ').convert(_serverResponse);
 
     // Extract General Info
@@ -254,6 +253,11 @@ class _AddRouterScreenState extends State<AddRouterScreen>
     final techUser = _serverResponse!['username']?.toString() ?? 'tiknet-admin';
     final techPass = _passwordController.text.isNotEmpty ? _passwordController.text : '********';
     final techSecret = _radiusSecretController.text.isNotEmpty ? _radiusSecretController.text : '********';
+
+    // Extract the three specific commands
+    final bootstrapCmd = _serverResponse!['bootstrap_command']?.toString() ?? '';
+    final loginPageCmd = _serverResponse!['login_page_command']?.toString() ?? '';
+    final setupCmd = _serverResponse!['setup_command']?.toString() ?? '';
 
     return FadeTransition(
       opacity: _responseAnimation,
@@ -285,68 +289,44 @@ class _AddRouterScreenState extends State<AddRouterScreen>
             colorScheme,
           ),
 
-          // 2. Commande Bootstrap
-          if (commands.isNotEmpty)
-            _buildInfoCard(
-              'Commande Bootstrap',
-              [
-                SizedBox(
-                  width: double.infinity,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: () => _copyToClipboard(commands.join('\n')),
-                        icon: const Icon(Icons.copy, size: 14),
-                        label: const Text('Copier la commande', style: TextStyle(fontSize: 12)),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF161B22),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF30363D)),
-                        ),
-                        child: SelectableText(
-                          commands.join('\n'),
-                          style: const TextStyle(
-                            color: Color(0xFFE6EDF3),
-                            fontFamily: 'monospace',
-                            fontSize: 12,
-                            height: 1.5,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: Text(
-                          'Copiez cette commande et exécutez-la sur votre routeur MikroTik pour lancer le bootstrap.',
-                          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              colorScheme,
+          // 2. Bootstrap Command
+          if (bootstrapCmd.isNotEmpty)
+            _buildCommandCard(
+              title: 'Commande Bootstrap',
+              subtitle: 'Exécutez cette commande pour lancer le bootstrap du routeur.',
+              command: bootstrapCmd,
+              accentColor: Colors.teal.shade700,
+              colorScheme: colorScheme,
             ),
 
-          // 3. Informations Techniques
+          // 3. Login Page Command
+          if (loginPageCmd.isNotEmpty)
+            _buildCommandCard(
+              title: 'Commande Login Page',
+              subtitle: 'Exécutez pour télécharger la page de connexion hotspot.',
+              command: loginPageCmd,
+              accentColor: Colors.blue.shade700,
+              colorScheme: colorScheme,
+            ),
+
+          // 4. Setup Command
+          if (setupCmd.isNotEmpty)
+            _buildCommandCard(
+              title: 'Commande Setup',
+              subtitle: 'Exécutez pour configurer l\'interface DHCP et DNS.',
+              command: setupCmd,
+              accentColor: Colors.purple.shade700,
+              colorScheme: colorScheme,
+            ),
+
+          // 5. Informations Techniques
           _buildInfoCard(
             'Informations Techniques',
             [
               _buildInfoField('Username', techUser),
               _buildInfoField('Mot de passe', techPass, valueColor: Colors.blue.shade600),
               Container(
-                width: double.infinity, // Full width for Secret to match design
+                width: double.infinity,
                 margin: const EdgeInsets.only(top: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,6 +366,135 @@ class _AddRouterScreenState extends State<AddRouterScreen>
           // Raw JSON (Fallback)
           const SizedBox(height: 16),
           _buildRawJsonSection(rawJson, colorScheme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommandCard({
+    required String title,
+    required String subtitle,
+    required String command,
+    required Color accentColor,
+    required ColorScheme colorScheme,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header with accent color strip
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child: IntrinsicHeight(
+              child: Container(
+                color: colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Left accent strip
+                    Container(width: 4, color: accentColor),
+                    // Header content
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: colorScheme.outline.withOpacity(0.1)),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.terminal, size: 16, color: accentColor),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                title,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: colorScheme.onSurface,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ),
+                            // Copy button
+                            InkWell(
+                              onTap: () => _copyToClipboard(command),
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: accentColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: accentColor.withOpacity(0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.copy, size: 12, color: accentColor),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Copier',
+                                      style: TextStyle(fontSize: 11, color: accentColor, fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Terminal body
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0D1117),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF30363D)),
+                  ),
+                  child: SelectableText(
+                    command,
+                    style: const TextStyle(
+                      color: Color(0xFFE6EDF3),
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                      height: 1.6,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
