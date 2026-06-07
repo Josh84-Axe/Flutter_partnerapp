@@ -369,7 +369,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                     SizedBox(
                                       width: double.infinity,
                                       child: FilledButton(
-                                        onPressed: () => _purchasePlan(plan.id, plan.name, plan.price, plan.currency),
+                                        onPressed: () => _purchasePlan(plan.id, plan.priceId, plan.name, plan.price, plan.currency),
                                         style: FilledButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(vertical: 16),
                                           shape: RoundedRectangleBorder(
@@ -443,7 +443,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
     );
   }
 
-  Future<void> _purchasePlan(String planId, String planName, double amount, String? currencyCode) async {
+  Future<void> _purchasePlan(String planId, String? priceId, String planName, double amount, String? currencyCode) async {
     final userProvider = context.read<UserProvider>();
     
     final confirmed = await showDialog<bool>(
@@ -536,6 +536,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
         // Purchase subscription with payment reference
         final success = await userProvider.purchaseSubscriptionPlan(
           planId,
+          priceId,
           paymentReference,
         );
         

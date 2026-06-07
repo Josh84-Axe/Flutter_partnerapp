@@ -97,6 +97,7 @@ class SubscriptionModel {
 /// Model for available subscription plans
 class SubscriptionPlanModel {
   final String id;
+  final String? priceId;
   final String name;
   final String description;
   final double price;
@@ -109,6 +110,7 @@ class SubscriptionPlanModel {
 
   SubscriptionPlanModel({
     required this.id,
+    this.priceId,
     required this.name,
     required this.description,
     required this.price,
@@ -139,9 +141,11 @@ class SubscriptionPlanModel {
     final double price = parseDouble(priceInfo?['price'] ?? json['price']);
     final String? priceDisplay = (priceInfo?['price_display'] ?? json['price_display'])?.toString();
     final String? countryName = priceInfo?['country_name']?.toString();
+    final String? priceId = priceInfo?['id']?.toString();
 
     return SubscriptionPlanModel(
       id: (json['id'] ?? '').toString(),
+      priceId: priceId,
       name: (json['name'] ?? 'Unknown Plan').toString(),
       description: (json['description'] ?? '').toString(),
       price: price,

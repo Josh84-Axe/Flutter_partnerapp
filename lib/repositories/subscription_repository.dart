@@ -60,20 +60,28 @@ class SubscriptionRepository {
   /// Purchase a subscription plan with payment reference
   Future<Map<String, dynamic>?> purchaseSubscription(
     String planId,
+    String? priceId,
     String paymentReference,
   ) async {
     try {
       if (kDebugMode) {
         print('💳 [SubscriptionRepository] Purchasing plan: $planId');
+        print('   Price ID: $priceId');
         print('   Payment reference: $paymentReference');
+      }
+      
+      final payload = <String, dynamic>{
+        'subscription_plan_id': planId,
+        'payment_reference': paymentReference,
+      };
+      
+      if (priceId != null && priceId.isNotEmpty) {
+        payload['subscription_plan_price_id'] = priceId;
       }
       
       final response = await _dio.post(
         '/partner/subscription-plans/purchase/',
-        data: {
-          'subscription_plan_id': planId,
-          'payment_reference': paymentReference,
-        },
+        data: payload,
       );
       
       if (kDebugMode) print('✅ [SubscriptionRepository] Purchase response: ${response.data}');
