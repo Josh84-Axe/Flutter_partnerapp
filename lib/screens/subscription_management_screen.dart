@@ -554,6 +554,11 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             );
             // Reload data to show new subscription
             await _loadData();
+            
+            // Return to dashboard automatically
+            if (mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+            }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
