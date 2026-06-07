@@ -33,7 +33,7 @@ class PaymentGatewayScreen extends StatefulWidget {
 class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
   bool _isExiting = false;
 
-  Future<void> _finalize({required bool success, String? reference, String? message}) async {
+  Future<void> _finalize({required bool success, String? reference, String? message, String? provider}) async {
     if (mounted && !_isExiting) {
       setState(() => _isExiting = true);
       await Future.delayed(Duration.zero);
@@ -41,7 +41,8 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
         Navigator.of(context).pop({
           'success': success,
           'reference': reference,
-          'message': message ?? (success ? 'payment_success'.tr() : 'payment_cancelled'.tr())
+          'message': message ?? (success ? 'payment_success'.tr() : 'payment_cancelled'.tr()),
+          'provider': provider,
         });
       }
     }
@@ -100,7 +101,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
             email: widget.email,
             userData: widget.userData,
             onRequestClose: () => _handleManualPop(isPaystack: false).then((conf) { if (conf && mounted) Navigator.of(context).pop(); }),
-            onResult: (success, reference, message) => _finalize(success: success, reference: reference, message: message),
+            onResult: (success, reference, message) => _finalize(success: success, reference: reference, message: message, provider: 'cinetpay'),
           )
         : _PaymentGatewayPaystackMobile(
             email: widget.email,
@@ -109,7 +110,7 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
             planName: widget.planName,
             currency: widget.currency,
             onRequestClose: () => _handleManualPop(isPaystack: true).then((conf) { if (conf && mounted) Navigator.of(context).pop(); }),
-            onResult: (success, reference, message) => _finalize(success: success, reference: reference, message: message),
+            onResult: (success, reference, message) => _finalize(success: success, reference: reference, message: message, provider: 'paystack'),
           ),
     );
   }

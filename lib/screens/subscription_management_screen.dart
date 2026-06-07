@@ -518,6 +518,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
       // Process payment result
       if (paymentResult != null && paymentResult['success'] == true) {
         final paymentReference = paymentResult['reference'];
+        final paymentProvider = paymentResult['provider'] ?? 'paystack';
         
         if (paymentReference == null) {
           throw Exception('No payment reference received');
@@ -538,6 +539,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
           planId,
           priceId,
           paymentReference,
+          paymentProvider,
         );
         
         if (mounted) {

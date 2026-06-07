@@ -62,21 +62,25 @@ class SubscriptionRepository {
     String planId,
     String? priceId,
     String paymentReference,
+    String paymentProvider,
   ) async {
     try {
       if (kDebugMode) {
         print('💳 [SubscriptionRepository] Purchasing plan: $planId');
         print('   Price ID: $priceId');
         print('   Payment reference: $paymentReference');
+        print('   Payment provider: $paymentProvider');
       }
       
       final payload = <String, dynamic>{
-        'subscription_plan_id': planId,
         'payment_reference': paymentReference,
+        'payment_provider': paymentProvider,
       };
       
       if (priceId != null && priceId.isNotEmpty) {
-        payload['subscription_plan_price_id'] = priceId;
+        payload['subscription_plan_price_id'] = int.tryParse(priceId) ?? priceId;
+      } else {
+        payload['subscription_plan_price_id'] = int.tryParse(planId) ?? planId; // Fallback to planId if no priceId is found
       }
       
       final response = await _dio.post(

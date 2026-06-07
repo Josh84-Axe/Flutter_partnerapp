@@ -575,7 +575,7 @@ class UserProvider with ChangeNotifier {
   }
 
   /// Purchase a subscription plan
-  Future<bool> purchaseSubscriptionPlan(String planId, String? priceId, String paymentReference) async {
+  Future<bool> purchaseSubscriptionPlan(String planId, String? priceId, String paymentReference, String paymentProvider) async {
     if (_subscriptionRepository == null) return false;
     _setLoading(true);
     try {
@@ -583,8 +583,9 @@ class UserProvider with ChangeNotifier {
         debugPrint('💳 [UserProvider] Purchasing subscription plan: $planId');
         debugPrint('   Price ID: $priceId');
         debugPrint('   Payment reference: $paymentReference');
+        debugPrint('   Payment provider: $paymentProvider');
       }
-      final result = await _subscriptionRepository!.purchaseSubscription(planId, priceId, paymentReference);
+      final result = await _subscriptionRepository!.purchaseSubscription(planId, priceId, paymentReference, paymentProvider);
       
       if (result != null) {
         if (kDebugMode) debugPrint('✅ [UserProvider] Subscription purchase successful');
