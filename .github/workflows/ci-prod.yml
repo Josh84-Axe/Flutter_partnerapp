@@ -81,7 +81,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
            npx wrangler@3.101.0 pages deploy build/web \
-            --project-name=tiknet-partner-app \
+            --project-name=tiknet-partner-fresh \
             --branch=main \
             --commit-dirty=true
 
