@@ -237,20 +237,24 @@ class NetworkProvider with ChangeNotifier {
       final response = await _routerRepository!.addRouter(routerData);
       await loadRouters();
       
-      // Fetch the raw list to get the newly added router's full details (including commands)
-      final routersData = await _routerRepository!.fetchRouters();
-      Map<String, dynamic>? newRouterDetails;
-      final addedRouterName = routerData['name'];
-      
-      for (var data in routersData) {
-        if (data is Map<String, dynamic> && data['name'] == addedRouterName) {
-          newRouterDetails = data;
-          break;
+      // If the response from addRouter is missing the commands, try to fetch the full details
+      if (response != null && response['bootstrap_command'] == null) {
+        final slug = response['slug']?.toString() ?? response['id']?.toString();
+        if (slug != null) {
+          try {
+            final details = await _routerRepository!.fetchRouterDetails(slug);
+            if (details != null && details['bootstrap_command'] != null) {
+              _error = null;
+              return details;
+            }
+          } catch (e) {
+            if (kDebugMode) print('⚠️ [NetworkProvider] Could not fetch details for new router: $e');
+          }
         }
       }
       
       _error = null;
-      return newRouterDetails ?? response;
+      return response;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error adding router: $e');
       _error = e.toString();

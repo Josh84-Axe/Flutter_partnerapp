@@ -176,11 +176,20 @@ class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMo
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..addJavaScriptChannel('PaystackFlutter', onMessageReceived: (JavaScriptMessage message) {
-        if (message.message.contains('"success":true')) {
-           // Extract reference if possible or use transaction ID
-           widget.onResult(true, _transactionId, 'payment_success'.tr());
-        } else if (message.message.contains('"success":false')) {
-           widget.onResult(false, null, 'payment_cancelled'.tr());
+        try {
+          final data = jsonDecode(message.message);
+          if (data['success'] == true) {
+            widget.onResult(true, data['reference'] ?? _transactionId, 'payment_success'.tr());
+          } else {
+            widget.onResult(false, null, 'payment_cancelled'.tr());
+          }
+        } catch (_) {
+          // Fallback if JSON decoding fails
+          if (message.message.contains('"success":true')) {
+             widget.onResult(true, _transactionId, 'payment_success'.tr());
+          } else if (message.message.contains('"success":false')) {
+             widget.onResult(false, null, 'payment_cancelled'.tr());
+          }
         }
       })
       ..loadHtmlString(_buildPaystackHTML());

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/split/user_provider.dart';
 import '../utils/currency_utils.dart';
+import '../utils/error_message_helper.dart';
 import 'payment_gateway_screen.dart';
 
 class SubscriptionManagementScreen extends StatefulWidget {
@@ -573,10 +574,12 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
+        final errorMessage = ErrorMessageHelper.getDetailedError(e);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${'error_occurred'.tr()}: ${e.toString()}'),
+            content: Text('${'error_occurred'.tr()}: $errorMessage'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }

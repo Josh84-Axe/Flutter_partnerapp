@@ -594,6 +594,24 @@ class UserProvider with ChangeNotifier {
       return false;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [UserProvider] Purchase subscription error: $e');
+      
+      // Resilient fallback: If purchase failed (e.g., 400 because IPN already processed it),
+      // let's check the subscription status. If it's active now, we consider it a success!
+      try {
+        final subscriptionData = await _subscriptionRepository!.checkSubscriptionStatus();
+        if (subscriptionData != null) {
+          final data = subscriptionData['data'] is Map ? subscriptionData['data'] : subscriptionData;
+          final currentSub = SubscriptionModel.fromJson(data);
+          if (currentSub.isActive && currentSub.id.toString() == planId.toString()) {
+            if (kDebugMode) debugPrint('✅ [UserProvider] Subscription is already active (IPN processed it). Recovering...');
+            await loadSubscription();
+            return true;
+          }
+        }
+      } catch (_) {
+        // Ignore fallback errors
+      }
+
       _error = e.toString();
       rethrow;
     } finally {
