@@ -23,7 +23,7 @@ class AboutAppScreen extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Image.asset(
-                  'assets/icons/app_icon.png',
+                  'assets/images/logo_tiknet.png',
                   width: 96,
                   height: 96,
                   fit: BoxFit.cover,
@@ -40,7 +40,7 @@ class AboutAppScreen extends StatelessWidget {
                   const Divider(),
                   _buildInfoRow('build_number'.tr(), '#1234'),
                   const Divider(),
-                  _buildInfoRow('developer_credits'.tr(), 'Tiknet Inc.'),
+                  _buildInfoRow('developer_credits'.tr(), 'Tiknetafrica'),
                 ],
               ),
             ),
