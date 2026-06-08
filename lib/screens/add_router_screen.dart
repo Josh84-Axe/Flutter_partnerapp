@@ -239,25 +239,28 @@ class _AddRouterScreenState extends State<AddRouterScreen>
 
     final rawJson = const JsonEncoder.withIndent('  ').convert(_serverResponse);
 
+    // Extract the actual router data, handling the nested 'data' field if present from API response
+    final routerData = _serverResponse!['data'] is Map ? _serverResponse!['data'] as Map<String, dynamic> : _serverResponse!;
+
     // Extract General Info
-    final name = _serverResponse!['name']?.toString() ?? _nameController.text;
-    final ref = _serverResponse!['id']?.toString() ?? _serverResponse!['slug']?.toString() ?? '#N/A';
-    final partner = _serverResponse!['partner']?.toString() ?? _serverResponse!['username']?.toString() ?? 'Admin';
-    final statusRaw = _serverResponse!['status']?.toString();
-    final isActive = _serverResponse!['is_active'] == true || statusRaw?.toLowerCase() == 'online' || statusRaw?.toLowerCase() == 'actif';
+    final name = routerData['name']?.toString() ?? _nameController.text;
+    final ref = routerData['id']?.toString() ?? routerData['slug']?.toString() ?? '#N/A';
+    final partner = routerData['partner']?.toString() ?? routerData['username']?.toString() ?? 'Admin';
+    final statusRaw = routerData['status']?.toString();
+    final isActive = routerData['is_active'] == true || statusRaw?.toLowerCase() == 'online' || statusRaw?.toLowerCase() == 'actif';
     final statusText = isActive ? 'Actif' : (statusRaw ?? 'Pending');
-    final dnsName = _serverResponse!['dns_name']?.toString() ?? '$name.net';
-    final ipAddress = _serverResponse!['ip_address']?.toString() ?? _serverResponse!['wireguard_ip']?.toString() ?? '10.0.0.X';
+    final dnsName = routerData['dns_name']?.toString() ?? '$name.net';
+    final ipAddress = routerData['ip_address']?.toString() ?? routerData['wireguard_ip']?.toString() ?? '10.0.0.X';
 
     // Technical Info
-    final techUser = _serverResponse!['username']?.toString() ?? 'tiknet-admin';
+    final techUser = routerData['username']?.toString() ?? 'tiknet-admin';
     final techPass = _passwordController.text.isNotEmpty ? _passwordController.text : '********';
     final techSecret = _radiusSecretController.text.isNotEmpty ? _radiusSecretController.text : '********';
 
     // Extract the three specific commands
-    final bootstrapCmd = _serverResponse!['bootstrap_command']?.toString() ?? '';
-    final loginPageCmd = _serverResponse!['login_page_command']?.toString() ?? '';
-    final setupCmd = _serverResponse!['setup_command']?.toString() ?? '';
+    final bootstrapCmd = routerData['bootstrap_command']?.toString() ?? '';
+    final loginPageCmd = routerData['login_page_command']?.toString() ?? '';
+    final setupCmd = routerData['setup_command']?.toString() ?? '';
 
     return FadeTransition(
       opacity: _responseAnimation,
