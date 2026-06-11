@@ -35,7 +35,7 @@ class VoucherProvider with ChangeNotifier {
     }
   }
 
-  Future<void> generateVouchers(String planId, int quantity) async {
+  Future<List<VoucherModel>> generateVouchers(String planId, int quantity) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -48,8 +48,11 @@ class VoucherProvider with ChangeNotifier {
       
       final currentVouchers = _planVouchers[planId] ?? [];
       _planVouchers[planId] = [...filteredNew, ...currentVouchers];
+      
+      return filteredNew;
     } catch (e) {
       _error = e.toString();
+      return [];
     } finally {
       _isLoading = false;
       notifyListeners();

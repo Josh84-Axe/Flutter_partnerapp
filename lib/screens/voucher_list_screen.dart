@@ -5,6 +5,7 @@ import '../providers/voucher_provider.dart';
 import '../providers/split/network_provider.dart';
 import '../services/voucher_export_service.dart';
 import '../widgets/voucher_ticket_card.dart';
+import '../models/voucher_model.dart';
 
 class VoucherListScreen extends StatefulWidget {
   final String planId;
@@ -62,7 +63,7 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
             onPressed: () => provider.loadVouchers(widget.planId),
           ),
           PopupMenuButton<String>(
-            onSelected: (value) => _handleExport(value, provider),
+            onSelected: (value) => _handleExport(value, vouchers),
             itemBuilder: (context) => [
               PopupMenuItem(value: 'local_pdf', child: Text('download_pdf_local'.tr())),
               PopupMenuItem(value: 'local_csv', child: Text('download_csv_local'.tr())),
@@ -167,8 +168,15 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
     );
   }
 
-  Future<void> _handleExport(String format, VoucherProvider provider) async {
-    final vouchers = provider.getVouchersForPlan(widget.planId);
+  Future<void> _handleExport(String format, List<VoucherModel> vouchers) async {
+    if (vouchers.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('no_vouchers_found'.tr())),
+        );
+      }
+      return;
+    }
     
     if (format == 'local_pdf') {
       await VoucherExportService.exportToPDF(vouchers, widget.planName);
@@ -185,7 +193,7 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
     int quantity = 10;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text('generate_vouchers'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -210,19 +218,20 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () async {
-              Navigator.pop(context);
-              await provider.generateVouchers(widget.planId, quantity);
+              final messenger = ScaffoldMessenger.of(context);
+              Navigator.pop(dialogContext);
+              final newVouchers = await provider.generateVouchers(widget.planId, quantity);
               if (provider.error != null && mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(content: Text(provider.error!)),
                 );
               } else if (mounted) {
-                _showSuccessDialog(quantity);
+                _showSuccessDialog(quantity, newVouchers);
               }
             },
             child: Text('generate'.tr()),
@@ -232,10 +241,10 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
     );
   }
   
-  void _showSuccessDialog(int quantity) {
+  void _showSuccessDialog(int quantity, List<VoucherModel> newVouchers) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         icon: const Icon(Icons.check_circle, color: Colors.green, size: 48),
         title: Text('success'.tr()),
         content: Text(
@@ -244,13 +253,13 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text('later'.tr()),
           ),
           FilledButton.icon(
             onPressed: () async {
-              Navigator.pop(context);
-              await _handleExport('local_pdf', context.read<VoucherProvider>());
+              Navigator.pop(dialogContext);
+              await _handleExport('local_pdf', newVouchers);
             },
             icon: const Icon(Icons.picture_as_pdf),
             label: Text('download_pdf'.tr()),
