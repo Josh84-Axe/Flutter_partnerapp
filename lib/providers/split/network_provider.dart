@@ -101,7 +101,7 @@ class NetworkProvider with ChangeNotifier {
 
   /// Get plans filtered by assigned routers for a specific user
   List<PlanModel> getPlansForUser(String? role, List<String>? assignedRouters) {
-    if (role == null || role.toLowerCase() == 'partner' || role.toLowerCase() == 'owner' || role.toLowerCase() == 'admin') {
+    if (role == null || role.toLowerCase() == 'partner' || role.toLowerCase() == 'owner' || role.toLowerCase() == 'admin' || role.toLowerCase() == 'administrator') {
       return _plans;
     }
     
