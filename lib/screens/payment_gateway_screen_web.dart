@@ -226,7 +226,8 @@ class PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
      if (mounted) setState(() => _status = 'PENDING');
      
      final jsData = JSObject();
-     jsData.setProperty('key'.toJS, 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426'.toJS);
+     final paystackKey = widget.currency == 'NGN' ? 'pk_live_17ec7671a46b89cb2cc5314eb69e93d21e9afa9e' : 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426';
+     jsData.setProperty('key'.toJS, paystackKey.toJS);
      jsData.setProperty('email'.toJS, widget.email.toJS);
      jsData.setProperty('amount'.toJS, (widget.amount * 100).toInt().toJS);
      jsData.setProperty('currency'.toJS, widget.currency.toJS);
