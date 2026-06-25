@@ -85,13 +85,14 @@
 
     // Global helper for Paystack SDK launch
     window.launchPaystack = function (config) {
+      console.log('PAYSTACK LAUNCH CONFIG:', JSON.stringify(config));
       if (!window.PaystackPop) {
         alert("Paystack SDK not loaded! Please check your internet connection.");
         return;
       }
       try {
         const handler = PaystackPop.setup({
-          key: config.key, email: config.email, amount: config.amount, currency: config.currency, ref: config.ref,
+          key: config.key, email: config.email, amount: config.amount, ref: config.ref,
           metadata: {
             custom_fields: [
               { display_name: "Plan ID", variable_name: "plan_id", value: config.planId },

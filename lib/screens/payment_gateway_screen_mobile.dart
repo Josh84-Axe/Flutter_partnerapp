@@ -204,9 +204,9 @@ class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMo
 <script src="https://js.paystack.co/v1/inline.js"></script></head>
 <body style="background:#f0f2f5"><script>
 function pay() { PaystackPop.setup({
-  key: '${widget.currency == 'NGN' ? 'pk_live_17ec7671a46b89cb2cc5314eb69e93d21e9afa9e' : 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426'}',
+  key: '${widget.currency.trim().toUpperCase() == 'NGN' ? 'pk_live_17ec7671a46b89cb2cc5314eb69e93d21e9afa9e' : 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426'}',
   email: '${widget.email}', amount: ${(widget.amount*100).toInt()},
-  currency: '${widget.currency}', ref: '$_transactionId',
+  ref: '$_transactionId',
   callback: function(r){ window.PaystackFlutter.postMessage(JSON.stringify({success:true, reference: r.reference})); },
   onClose: function(){ window.PaystackFlutter.postMessage(JSON.stringify({success:false})); }
 }).open(); }
