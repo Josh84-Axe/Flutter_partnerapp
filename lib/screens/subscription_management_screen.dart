@@ -390,19 +390,20 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                     SizedBox(
                                       width: double.infinity,
                                       child: OutlinedButton(
-                                        onPressed: null,
+                                        onPressed: () => _purchasePlan(plan.id, plan.priceId, plan.name, plan.price, plan.currency),
                                         style: OutlinedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(vertical: 16),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(12),
                                           ),
-                                          side: BorderSide(color: colorScheme.primary.withOpacity(0.5)),
+                                          side: BorderSide(color: colorScheme.primary),
                                         ),
                                         child: Text(
-                                          'your_current_plan'.tr(),
+                                          'renew_plan'.tr(),
                                           style: TextStyle(
                                             color: colorScheme.primary,
                                             fontWeight: FontWeight.bold,
+                                            fontSize: 16,
                                           ),
                                         ),
                                       ),
