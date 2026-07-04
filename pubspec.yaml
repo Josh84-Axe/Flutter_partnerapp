@@ -68,7 +68,6 @@ dependencies:
   integration_test:
     sdk: flutter
   get_it: ^9.2.1
-  pinput: ^6.0.2
 
 dev_dependencies:
   flutter_test:

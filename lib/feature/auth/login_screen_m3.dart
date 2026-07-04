@@ -7,7 +7,6 @@ import '../../motion/m3_motion.dart';
 import '../../providers/split/auth_provider.dart';
 import '../../services/api/token_storage.dart';
 import '../../services/api/pin_vault.dart';
-import 'package:pinput/pinput.dart';
 import 'package:flutter/foundation.dart';
 
 /// Material 3 login screen with unified theme components
@@ -233,28 +232,28 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
-                  Pinput(
-                    length: 6,
+                  TextFormField(
                     controller: _pinController,
                     focusNode: _pinFocusNode,
                     obscureText: true,
-                    obscuringCharacter: '•',
-                    onCompleted: _handlePinLogin,
-                    enabled: !_isLoading,
-                    defaultPinTheme: PinTheme(
-                      width: 56,
-                      height: 56,
-                      textStyle: TextStyle(
-                        fontSize: 22,
-                        color: scheme.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: scheme.outline),
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(letterSpacing: 8, fontSize: 24, fontWeight: FontWeight.bold),
+                    decoration: InputDecoration(
+                      hintText: '••••••',
+                      counterText: '', // Hide the max length counter
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        color: scheme.surface,
                       ),
                     ),
+                    onChanged: (value) {
+                      if (value.length == 6) {
+                        _handlePinLogin(value);
+                      }
+                    },
+                    enabled: !_isLoading,
                   ),
                   const SizedBox(height: 32),
                   if (_isLoading)

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/auth_provider.dart';
@@ -81,26 +80,6 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     
-    final defaultPinTheme = PinTheme(
-      width: 56,
-      height: 56,
-      textStyle: TextStyle(
-        fontSize: 22,
-        color: colorScheme.onSurface,
-        fontWeight: FontWeight.w600,
-      ),
-      decoration: BoxDecoration(
-        border: Border.all(color: isError ? Colors.red : colorScheme.outline),
-        borderRadius: BorderRadius.circular(12),
-        color: colorScheme.surface,
-      ),
-    );
-
-    final focusedPinTheme = defaultPinTheme.copyDecorationWith(
-      border: Border.all(color: colorScheme.primary, width: 2),
-      borderRadius: BorderRadius.circular(12),
-    );
-
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
@@ -144,15 +123,35 @@ class _SetupPinScreenState extends State<SetupPinScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
-              Pinput(
-                length: 6,
+              TextFormField(
                 controller: pinController,
                 focusNode: focusNode,
-                defaultPinTheme: defaultPinTheme,
-                focusedPinTheme: focusedPinTheme,
                 obscureText: true,
-                obscuringCharacter: '•',
-                onCompleted: _onCompleted,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                textAlign: TextAlign.center,
+                style: const TextStyle(letterSpacing: 8, fontSize: 24, fontWeight: FontWeight.bold),
+                decoration: InputDecoration(
+                  hintText: '••••••',
+                  counterText: '', // Hide the max length counter
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: isError ? Colors.red : colorScheme.outline),
+                  ),
+                ),
+                onChanged: (value) {
+                  if (value.length == 6) {
+                    _onCompleted(value);
+                  }
+                },
                 autofocus: true,
               ),
             ],

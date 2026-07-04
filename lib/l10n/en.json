@@ -1035,5 +1035,13 @@
   "free_memory": "Free Memory",
   "free_space": "Free Space",
   "unknown": "Unknown",
-  "not_available": "N/A"
+  "not_available": "N/A",
+  "setup_smart_access": "Setup Smart Access",
+  "create_pin": "Create a 6-digit PIN",
+  "confirm_pin": "Confirm your 6-digit PIN",
+  "pin_description": "This PIN will securely log you into the app next time without needing your password.",
+  "pin_setup_success": "PIN setup successfully!",
+  "pin_mismatch": "PINs do not match. Try again.",
+  "enter_pin": "Enter your PIN",
+  "login_with_password": "Login with Email/Password instead"
 }
