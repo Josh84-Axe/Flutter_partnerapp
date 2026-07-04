@@ -152,6 +152,37 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                   ? DateFormat('MMM d, yyyy').format(subscription.renewalDate!)
                                   : 'lifetime'.tr(),
                             ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  try {
+                                    final matchingPlan = availablePlans.firstWhere(
+                                      (p) => p.id == subscription.id || p.name.toLowerCase() == subscription.tier.toLowerCase()
+                                    );
+                                    _purchasePlan(matchingPlan.id, matchingPlan.priceId, matchingPlan.name, matchingPlan.price, matchingPlan.currency);
+                                  } catch (e) {
+                                    _purchasePlan(subscription.id, null, subscription.tier, subscription.monthlyFee, null);
+                                  }
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  side: BorderSide(color: colorScheme.primary),
+                                ),
+                                child: Text(
+                                  'renew_plan'.tr(),
+                                  style: TextStyle(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
