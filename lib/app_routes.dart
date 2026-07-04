@@ -87,8 +87,6 @@ import 'screens/payment_methods_screen.dart';
 import 'screens/assigned_plans_list_screen.dart';
 import 'screens/active_sessions_screen.dart';
 import 'screens/help_support_screen.dart';
-import 'screens/about_screen.dart';
-import 'screens/app_version_management_screen.dart';
 import 'screens/setup_pin_screen.dart';
 
 class AppRoutes {
