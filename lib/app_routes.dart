@@ -87,6 +87,9 @@ import 'screens/payment_methods_screen.dart';
 import 'screens/assigned_plans_list_screen.dart';
 import 'screens/active_sessions_screen.dart';
 import 'screens/help_support_screen.dart';
+import 'screens/about_screen.dart';
+import 'screens/app_version_management_screen.dart';
+import 'screens/setup_pin_screen.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
@@ -94,6 +97,7 @@ class AppRoutes {
         '/onboarding': (context) => const OnboardingScreen(),
         '/auth-wrapper': (context) => const AuthWrapper(),
         '/login': (context) => const LoginScreenM3(),
+        '/setup-pin': (context) => const SetupPinScreen(),
         '/login-old': (context) => const LoginScreen(),
         '/register': (context) => const RegistrationScreen(),
         '/home': (context) => const HomeScreen(),

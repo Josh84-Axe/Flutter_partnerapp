@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../motion/m3_motion.dart';
 import '../../providers/split/auth_provider.dart';
 import '../../services/api/token_storage.dart';
+import '../../services/api/pin_vault.dart';
+import 'package:pinput/pinput.dart';
 import 'package:flutter/foundation.dart';
 
 /// Material 3 login screen with unified theme components
@@ -25,21 +27,34 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _rememberMe = true;
+  bool _showPinLogin = false;
+
+  final _pinController = TextEditingController();
+  final _pinFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _loadRememberedEmail();
+    _loadInitData();
   }
 
-  Future<void> _loadRememberedEmail() async {
+  Future<void> _loadInitData() async {
+    final isPinConfigured = await PinVault.isPinConfigured();
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('remembered_email');
-    if (email != null && mounted) {
+    
+    if (mounted) {
       setState(() {
-        _emailController.text = email;
-        _rememberMe = true;
+        if (email != null) {
+          _emailController.text = email;
+          _rememberMe = true;
+        }
+        _showPinLogin = isPinConfigured;
       });
+      
+      if (_showPinLogin) {
+        _pinFocusNode.requestFocus();
+      }
     }
   }
 
@@ -105,13 +120,53 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
         return;
       }
 
-      if (kDebugMode) print('🔐 [LoginScreenM3] Login successful - navigating to /home');
-      // Navigate to home on successful login
-      Navigator.of(context).pushReplacementNamed('/home');
+      if (kDebugMode) print('🔐 [LoginScreenM3] Login successful');
+      
+      final isPinConfigured = await PinVault.isPinConfigured();
+      if (!mounted) return;
+      
+      if (!isPinConfigured) {
+        Navigator.of(context).pushReplacementNamed('/setup-pin');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
     } catch (e) {
       if (kDebugMode) print('🔐 [LoginScreenM3] Exception during login: $e');
       if (!mounted) return;
 
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('error_generic'.tr(args: [e.toString()]))),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handlePinLogin(String pin) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final success = await context.read<AuthProvider>().loginWithPin(pin);
+      if (!mounted) return;
+      
+      if (success) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        final error = context.read<AuthProvider>().error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error ?? 'invalid_credentials'.tr())),
+        );
+        _pinController.clear();
+        _pinFocusNode.requestFocus();
+      }
+    } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('error_generic'.tr(args: [e.toString()]))),
       );
@@ -169,33 +224,81 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
               key: _formKey,
               child: Column(
                 children: [
-                  // Email field
+                  if (_showPinLogin) ...[
+                    Text(
+                    'enter_pin'.tr(),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  Pinput(
+                    length: 6,
+                    controller: _pinController,
+                    focusNode: _pinFocusNode,
+                    obscureText: true,
+                    obscuringCharacter: '•',
+                    onCompleted: _handlePinLogin,
+                    enabled: !_isLoading,
+                    defaultPinTheme: PinTheme(
+                      width: 56,
+                      height: 56,
+                      textStyle: TextStyle(
+                        fontSize: 22,
+                        color: scheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: scheme.outline),
+                        borderRadius: BorderRadius.circular(12),
+                        color: scheme.surface,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  if (_isLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else
+                    TextButton(
+                      onPressed: () {
+                        setState(() => _showPinLogin = false);
+                      },
+                      child: Text('login_with_password'.tr()),
+                    ),
+                ] else ...[
+                  // Email Field
                   TextFormField(
                     controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       labelText: 'email'.tr(),
-                      prefixIcon: const Icon(Icons.mail),
+                      prefixIcon: const Icon(Icons.email_outlined),
                     ),
-                    keyboardType: TextInputType.emailAddress,
-                    enabled: !_isLoading,
                     validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'enter_email'.tr();
-                        }
+                      if (value == null || value.isEmpty) {
+                        return 'enter_email'.tr();
+                      }
+                      if (!value.contains('@')) {
+                        return 'invalid_email'.tr();
+                      }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   // Password field
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _handleLogin(),
                     decoration: InputDecoration(
                       labelText: 'password'.tr(),
-                      prefixIcon: const Icon(Icons.lock),
+                      prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                          _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                         ),
                         onPressed: () {
                           setState(() {
@@ -204,16 +307,15 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                         },
                       ),
                     ),
-                    enabled: !_isLoading,
-                    onFieldSubmitted: (_) => _handleLogin(),
                     validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'enter_password'.tr();
-                        }
+                      if (value == null || value.isEmpty) {
+                        return 'enter_password'.tr();
+                      }
                       return null;
                     },
                   ),
                   const SizedBox(height: 8),
+                  // Remember me
                   CheckboxListTile(
                     value: _rememberMe,
                     onChanged: (value) {
@@ -224,9 +326,9 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                     title: Text('remember_me'.tr()),
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
-                    activeColor: scheme.primary,
                   ),
-                ],
+                ], // end of else ...[
+                ], // end of children: [
               ),
             ),
             const SizedBox(height: 8),

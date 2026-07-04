@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../repositories/auth_repository.dart';
+import '../../services/api/pin_vault.dart';
 import '../../repositories/partner_repository.dart';
 import '../../services/api/token_storage.dart';
 import '../../services/cache_service.dart';
@@ -88,6 +89,9 @@ class AuthProvider with ChangeNotifier {
   /// Toggle between mock and real API (proxy to global config or ignored if strictly remote)
   // Logic from AppState: "FORCE REMOTE API: Always use real API for login"
   
+  String? lastLoginEmail;
+  String? lastLoginPassword;
+  
   Future<bool> login(String email, String password) async {
     if (kDebugMode) print('🔐 [AuthProvider] login() called with email: $email');
     
@@ -102,6 +106,9 @@ class AuthProvider with ChangeNotifier {
       );
       
       if (result['success'] == true) {
+        lastLoginEmail = email;
+        lastLoginPassword = password;
+        
         // Extract user data from login response if available
         final loginData = result['data'];
         Map<String, dynamic>? userData;
@@ -137,13 +144,38 @@ class AuthProvider with ChangeNotifier {
         _setLoading(false);
         return false;
       }
-    } catch (e) {
+      } catch (e) {
       if (kDebugMode) print('🔐 [AuthProvider] Login error: $e');
       String errorMessage = e.toString();
       if (errorMessage.toLowerCase().contains('401')) {
         errorMessage = 'invalid_credentials'.tr();
       }
       _setError(errorMessage);
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  /// Attempts to log in using a 6-digit PIN that decrypts the local secure vault
+  Future<bool> loginWithPin(String pin) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+      
+      final creds = await PinVault.getCredentialsWithPin(pin);
+      if (creds != null && creds['email'] != null && creds['password'] != null) {
+        // We have the decrypted credentials, trigger the normal network login
+        if (kDebugMode) print('🔐 [AuthProvider] PIN match! Executing network login for ${creds['email']}');
+        
+        // Use the existing login function which handles the network request and user mapping
+        return await login(creds['email']!, creds['password']!);
+      } else {
+        _setError('Invalid PIN');
+        _setLoading(false);
+        return false;
+      }
+    } catch (e) {
+      _setError('Error verifying PIN');
       _setLoading(false);
       return false;
     }
