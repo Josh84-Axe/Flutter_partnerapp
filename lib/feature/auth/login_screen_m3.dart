@@ -195,13 +195,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                 width: 120,
                 height: 120,
                 fit: BoxFit.contain,
-              )
-                  .animate()
-                  .fadeIn(duration: M3Motion.splashFade)
-                  .scale(
-                    duration: M3Motion.splashScale,
-                    curve: M3Motion.decel,
-                  ),
+              ),
             ),
             const SizedBox(height: 24),
             // Title
@@ -331,7 +325,8 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
               ),
             ),
             const SizedBox(height: 8),
-            // Forgot Password link
+            if (!_showPinLogin) ...[
+              // Forgot Password link
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -396,6 +391,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
               icon: const Icon(Icons.visibility, size: 18),
               label: Text('continue_as_guest'.tr()),
             ),
+            ],
           ],
         ),
       ),
