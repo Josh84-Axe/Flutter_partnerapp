@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:hotspot_partner_app/utils/error_handler.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../repositories/router_repository.dart';
@@ -224,7 +225,7 @@ class NetworkProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error loading routers: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       _setLoading(false);
     }
@@ -257,7 +258,7 @@ class NetworkProvider with ChangeNotifier {
       return response;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error adding router: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
       rethrow;
     } finally {
       _setLoading(false);
@@ -274,7 +275,7 @@ class NetworkProvider with ChangeNotifier {
       return response;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error updating router: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
       rethrow;
     } finally {
       _setLoading(false);
@@ -290,7 +291,7 @@ class NetworkProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error deleting router: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
       rethrow;
     } finally {
       _setLoading(false);
@@ -352,7 +353,7 @@ class NetworkProvider with ChangeNotifier {
       await _customerRepository!.blockCustomer(deviceId);
       _error = null;
     } catch (e) {
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
       rethrow;
     } finally {
       _setLoading(false);
@@ -366,7 +367,7 @@ class NetworkProvider with ChangeNotifier {
       await _customerRepository!.unblockCustomer(deviceId);
       _error = null;
     } catch (e) {
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
       rethrow;
     } finally {
       _setLoading(false);
@@ -465,7 +466,7 @@ class NetworkProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error loading sessions: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       _setLoading(false);
     }
@@ -499,7 +500,7 @@ class NetworkProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error loading hotspot users: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       _setLoading(false);
     }
@@ -516,7 +517,7 @@ class NetworkProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error loading hotspot profiles: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       _setLoading(false);
     }
@@ -540,7 +541,7 @@ class NetworkProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error loading configurations: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       _setLoading(false);
     }
@@ -736,7 +737,7 @@ class NetworkProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error loading plans: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -752,7 +753,7 @@ class NetworkProvider with ChangeNotifier {
       await loadPlans();
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error creating plan: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
       rethrow;
     } finally {
       _isLoading = false;
@@ -769,7 +770,7 @@ class NetworkProvider with ChangeNotifier {
       await loadPlans();
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error updating plan: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
       rethrow;
     } finally {
       _isLoading = false;
@@ -786,7 +787,7 @@ class NetworkProvider with ChangeNotifier {
       await loadPlans();
     } catch (e) {
       if (kDebugMode) print('❌ [NetworkProvider] Error deleting plan: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
       rethrow;
     } finally {
       _isLoading = false;

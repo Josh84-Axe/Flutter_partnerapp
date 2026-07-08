@@ -23,6 +23,9 @@ class _PlansScreenState extends State<PlansScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = context.read<AuthProvider>();
+      if (authProvider.isGuestMode) return;
+
       final networkProvider = context.read<NetworkProvider>();
       networkProvider.loadPlans();
       networkProvider.loadAllConfigurations();

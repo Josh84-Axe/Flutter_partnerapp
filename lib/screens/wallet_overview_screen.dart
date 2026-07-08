@@ -18,6 +18,9 @@ class _WalletOverviewScreenState extends State<WalletOverviewScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = context.read<AuthProvider>();
+      if (authProvider.isGuestMode) return;
+
       final billingProvider = context.read<BillingProvider>();
       billingProvider.loadAllWalletBalances();
       billingProvider.loadAllTransactions();

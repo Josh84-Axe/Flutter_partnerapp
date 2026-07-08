@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotspot_partner_app/utils/error_handler.dart';
 import 'package:flutter/foundation.dart';
 import '../../repositories/wallet_repository.dart';
 import '../../repositories/transaction_repository.dart';
@@ -176,7 +177,7 @@ class BillingProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Load transactions error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
     }
   }
   
@@ -205,7 +206,7 @@ class BillingProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       if (kDebugMode) print('❌ [BillingProvider] Load wallet balance error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
     }
   }
 
@@ -241,7 +242,7 @@ class BillingProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Load counters error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
     }
   }
 
@@ -266,7 +267,7 @@ class BillingProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Load wallet transactions error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
     }
   }
 
@@ -283,7 +284,7 @@ class BillingProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Load assigned transactions error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
     }
   }
 
@@ -299,7 +300,7 @@ class BillingProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Load assigned wallet transactions error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
     }
   }
 
@@ -341,7 +342,7 @@ class BillingProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Load withdrawals error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
     }
   }
 
@@ -361,7 +362,7 @@ class BillingProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Load payment methods error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
     }
   }
 
@@ -387,7 +388,7 @@ class BillingProvider with ChangeNotifier {
       return null;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Request OTP error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       _setLoading(false);
       return null;
     }
@@ -421,7 +422,7 @@ class BillingProvider with ChangeNotifier {
       return false;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Verify OTP error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       _setLoading(false);
       return false;
     }
@@ -443,7 +444,7 @@ class BillingProvider with ChangeNotifier {
       return success;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Delete payment method error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       _setLoading(false);
       return false;
     }
@@ -478,7 +479,7 @@ class BillingProvider with ChangeNotifier {
       return true;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Request payout error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       return false;
     }
   }
@@ -505,7 +506,7 @@ class BillingProvider with ChangeNotifier {
       );
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [BillingProvider] Generate report error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       rethrow;
     }
   }

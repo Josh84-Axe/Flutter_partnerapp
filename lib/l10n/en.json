@@ -1043,5 +1043,11 @@
   "pin_setup_success": "PIN setup successfully!",
   "pin_mismatch": "PINs do not match. Try again.",
   "enter_pin": "Enter your PIN",
-  "login_with_password": "Login with Email/Password instead"
+  "login_with_password": "Login with Email/Password instead",
+  "error_data_parsing": "We encountered an issue processing the data.",
+  "error_connection_timeout": "The connection timed out. Please check your internet and try again.",
+  "error_connection": "A network error occurred. Please check your internet connection.",
+  "error_request_cancelled": "The request was cancelled.",
+  "error_network_generic": "A network error occurred.",
+  "error_generic_fallback": "An unexpected error occurred. Please try again."
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotspot_partner_app/utils/error_handler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -134,7 +135,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('error_generic'.tr(args: [e.toString()]))),
+        SnackBar(content: Text(ErrorHandler.getUserFriendlyMessage(e))),
       );
     } finally {
       if (mounted) {
@@ -167,7 +168,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('error_generic'.tr(args: [e.toString()]))),
+        SnackBar(content: Text(ErrorHandler.getUserFriendlyMessage(e))),
       );
     } finally {
       if (mounted) {
@@ -226,23 +227,29 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _pinController,
-                    focusNode: _pinFocusNode,
-                    obscureText: true,
-                    keyboardType: TextInputType.number,
-                    maxLength: 6,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(letterSpacing: 8, fontSize: 24, fontWeight: FontWeight.bold),
-                    decoration: InputDecoration(
-                      hintText: '••••••',
-                      counterText: '', // Hide the max length counter
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  Container(
+                    width: 280,
+                    child: TextFormField(
+                      controller: _pinController,
+                      focusNode: _pinFocusNode,
+                      obscureText: true,
+                      obscuringCharacter: '●',
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        letterSpacing: 24,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                        color: scheme.primary,
                       ),
-                    ),
-                    onChanged: (value) {
+                      decoration: const InputDecoration(
+                        counterText: '', // Hide the max length counter
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                      ),
+                      onChanged: (value) {
                       if (value.length == 6) {
                         _handlePinLogin(value);
                       }
@@ -327,43 +334,52 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
             const SizedBox(height: 8),
             if (!_showPinLogin) ...[
               // Forgot Password link
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          Navigator.of(context).pushNamed('/forgot-password');
+                        },
+                  child: Text('forgot_password'.tr()),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Login button
+              FilledButton(
+                onPressed: _isLoading ? null : _handleLogin,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : Text('login'.tr()),
+              ),
+              const SizedBox(height: 12),
+              // Create account button
+              OutlinedButton(
                 onPressed: _isLoading
                     ? null
                     : () {
-                        Navigator.of(context).pushNamed('/forgot-password');
+                        Navigator.of(context).pushNamed('/register');
                       },
-                child: Text('forgot_password'.tr()),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Login button
-            FilledButton(
-              onPressed: _isLoading ? null : _handleLogin,
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text('login'.tr()),
-            ).animate().scale(
-                  duration: M3Motion.buttonBounce,
-                  curve: M3Motion.bounce,
-                  // delay: 200.ms, 
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-            const SizedBox(height: 12),
-            // Create account button
-            OutlinedButton(
-              onPressed: _isLoading
-                  ? null
-                  : () {
-                      Navigator.of(context).pushNamed('/register');
-                    },
-              child: Text('create_account'.tr()),
-            ),
+                child: Text('create_account'.tr()),
+              ),
+            ],
             const SizedBox(height: 12),
             // Guest button
             TextButton.icon(
@@ -380,7 +396,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                         if (kDebugMode) print('❌ [LoginScreenM3] Guest mode error: $e');
                         if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error entering guest mode: ${e.toString()}')),
+                          SnackBar(content: Text(ErrorHandler.getUserFriendlyMessage(e))),
                         );
                       } finally {
                         if (mounted) {
@@ -391,7 +407,6 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
               icon: const Icon(Icons.visibility, size: 18),
               label: Text('continue_as_guest'.tr()),
             ),
-            ],
           ],
         ),
       ),

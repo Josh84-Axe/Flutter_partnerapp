@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotspot_partner_app/utils/error_handler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -70,7 +71,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('error_generic'.tr(args: [e.toString()]))),
+        SnackBar(content: Text(ErrorHandler.getUserFriendlyMessage(e))),
       );
     } finally {
       if (mounted) {

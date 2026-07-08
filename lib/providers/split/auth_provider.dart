@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:hotspot_partner_app/utils/error_handler.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../repositories/auth_repository.dart';
 import '../../services/api/pin_vault.dart';
@@ -146,7 +147,7 @@ class AuthProvider with ChangeNotifier {
       }
       } catch (e) {
       if (kDebugMode) print('🔐 [AuthProvider] Login error: $e');
-      String errorMessage = e.toString();
+      String errorMessage = ErrorHandler.getUserFriendlyMessage(e);
       if (errorMessage.toLowerCase().contains('401')) {
         errorMessage = 'invalid_credentials'.tr();
       }
@@ -207,7 +208,7 @@ class AuthProvider with ChangeNotifier {
       } else if (userData['permissions'] is List) {
         mappedPermissions = (userData['permissions'] as List).map((e) {
           final constant = PermissionMapping.getConstant(e.toString());
-          return constant ?? e.toString();
+          return constant ?? ErrorHandler.getUserFriendlyMessage(e);
         }).toList();
       }
       
@@ -337,7 +338,7 @@ class AuthProvider with ChangeNotifier {
       return true;
     } catch (e) {
       if (kDebugMode) print('❌ [AuthProvider] Register error: $e');
-      _setError('Registration error: ${e.toString()}');
+      _setError('Registration error: ${ErrorHandler.getUserFriendlyMessage(e)}');
       _setLoading(false);
       return false;
     }
@@ -356,7 +357,7 @@ class AuthProvider with ChangeNotifier {
       return success;
     } catch (e) {
       if (kDebugMode) print('❌ [AuthProvider] Update profile error: $e');
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       _setLoading(false);
       return false;
     }
@@ -391,7 +392,7 @@ class AuthProvider with ChangeNotifier {
       _setLoading(false);
       return result;
     } catch (e) {
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       _setLoading(false);
       return null;
     }
@@ -411,7 +412,7 @@ class AuthProvider with ChangeNotifier {
       _setLoading(false);
       return result;
     } catch (e) {
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       _setLoading(false);
       return false;
     }
@@ -433,7 +434,7 @@ class AuthProvider with ChangeNotifier {
       }
       return success;
     } catch (e) {
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       _setLoading(false);
       return false;
     }
@@ -479,7 +480,7 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       _setLoading(false);
       return false;
     }
@@ -493,7 +494,7 @@ class AuthProvider with ChangeNotifier {
       _setLoading(false);
       return success;
     } catch (e) {
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       _setLoading(false);
       return false;
     }
@@ -507,7 +508,7 @@ class AuthProvider with ChangeNotifier {
       _setLoading(false);
       return result;
     } catch (e) {
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       _setLoading(false);
       return null;
     }
@@ -537,9 +538,9 @@ class AuthProvider with ChangeNotifier {
       _setLoading(false);
       return result;
     } catch (e) {
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       _setLoading(false);
-      return {'success': false, 'message': e.toString()};
+      return {'success': false, 'message': ErrorHandler.getUserFriendlyMessage(e)};
     }
   }
 
@@ -579,7 +580,7 @@ class AuthProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) print('❌ [AuthProvider] Error loading profile: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       // notifyListeners called inside _mapUserData
     }
@@ -602,7 +603,7 @@ class AuthProvider with ChangeNotifier {
       _setLoading(false);
       return success;
     } catch (e) {
-      _setError(e.toString());
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
       _setLoading(false);
       return false;
     }

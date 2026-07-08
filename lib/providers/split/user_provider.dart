@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:hotspot_partner_app/utils/error_handler.dart';
 import '../../repositories/customer_repository.dart';
 import '../../repositories/collaborator_repository.dart';
 import '../../repositories/role_repository.dart';
@@ -81,7 +82,9 @@ class UserProvider with ChangeNotifier {
          if (kDebugMode) debugPrint('❌ [UserProvider] Error mapping pre-loaded subscription: $e');
        }
     }
-    notifyListeners();
+    Future.microtask(() {
+      notifyListeners();
+    });
   }
 
   List<dynamic> _assignedPlans = [];
@@ -190,7 +193,7 @@ class UserProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [UserProvider] Error loading assigned plans: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       notifyListeners();
     }
@@ -205,7 +208,7 @@ class UserProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [UserProvider] Error loading purchased plans: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       notifyListeners();
     }
@@ -304,7 +307,7 @@ class UserProvider with ChangeNotifier {
       }
     } catch (e) {
       if (kDebugMode) print('❌ [UserProvider] Error loading users: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       _setLoading(false);
     }
@@ -343,7 +346,7 @@ class UserProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [UserProvider] Error loading workers: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       _setLoading(false);
     }
@@ -432,7 +435,7 @@ class UserProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [UserProvider] Error loading roles: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       _setLoading(false);
     }
@@ -516,7 +519,7 @@ class UserProvider with ChangeNotifier {
       _isSubscriptionLoaded = true;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [UserProvider] Error loading subscription: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
       _isSubscriptionLoaded = true; // Still marked as loaded even on error to stop infinite loading
     } finally {
       notifyListeners();
@@ -568,7 +571,7 @@ class UserProvider with ChangeNotifier {
       _error = null;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [UserProvider] Load available subscription plans error: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
     } finally {
       notifyListeners();
     }
@@ -614,7 +617,7 @@ class UserProvider with ChangeNotifier {
         // Ignore fallback errors
       }
 
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
       rethrow;
     } finally {
       _setLoading(false);
@@ -699,7 +702,7 @@ class UserProvider with ChangeNotifier {
       return true;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [UserProvider] Assign plan error: $e');
-      _error = e.toString();
+      _error = ErrorHandler.getUserFriendlyMessage(e);
       rethrow;
     } finally {
       _setLoading(false);

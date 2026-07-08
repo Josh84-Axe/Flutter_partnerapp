@@ -1003,5 +1003,11 @@
   "pin_setup_success": "Configuration du code PIN réussie !",
   "pin_mismatch": "Les codes PIN ne correspondent pas. Réessayez.",
   "enter_pin": "Entrez votre code PIN",
-  "login_with_password": "Se connecter avec Email/Mot de passe"
+  "login_with_password": "Se connecter avec Email/Mot de passe",
+  "error_data_parsing": "Nous avons rencontré un problème lors du traitement des données.",
+  "error_connection_timeout": "La connexion a expiré. Veuillez vérifier votre accès internet et réessayer.",
+  "error_connection": "Une erreur réseau s'est produite. Veuillez vérifier votre connexion internet.",
+  "error_request_cancelled": "La requête a été annulée.",
+  "error_network_generic": "Une erreur réseau s'est produite.",
+  "error_generic_fallback": "Une erreur inattendue s'est produite. Veuillez réessayer."
 }

@@ -54,6 +54,9 @@ class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStat
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = context.read<AuthProvider>();
+      if (authProvider.isGuestMode) return;
+
       context.read<UserProvider>().loadUsers();
       context.read<UserProvider>().loadWorkers();
       context.read<UserProvider>().loadRoles();

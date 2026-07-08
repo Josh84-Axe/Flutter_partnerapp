@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotspot_partner_app/utils/error_handler.dart';
 import 'package:flutter/foundation.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -127,7 +128,7 @@ class _VerifyPasswordResetOtpScreenState
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+        SnackBar(content: Text(ErrorHandler.getUserFriendlyMessage(e))),
       );
     } finally {
       if (mounted) {
@@ -167,7 +168,7 @@ class _VerifyPasswordResetOtpScreenState
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+        SnackBar(content: Text(ErrorHandler.getUserFriendlyMessage(e))),
       );
     } finally {
       if (mounted) {
