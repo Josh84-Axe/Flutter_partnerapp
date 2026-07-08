@@ -250,11 +250,12 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                         focusedBorder: InputBorder.none,
                       ),
                       onChanged: (value) {
-                      if (value.length == 6) {
-                        _handlePinLogin(value);
-                      }
-                    },
-                    enabled: !_isLoading,
+                        if (value.length == 6) {
+                          _handlePinLogin(value);
+                        }
+                      },
+                      enabled: !_isLoading,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   if (_isLoading)
