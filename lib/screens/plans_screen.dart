@@ -222,6 +222,15 @@ class _PlansScreenState extends State<PlansScreen> {
                                     'Validity',
                                     plan.formattedValidity,
                                   ),
+                                  if (plan.networkPolicy != null && plan.networkPolicy != 0 && _getNetworkPolicyName(plan.networkPolicy!, networkProvider) != 'Unknown Policy') ...[
+                                    const SizedBox(height: 8),
+                                    _buildInfoChip(
+                                      context,
+                                      Icons.security,
+                                      'Network Policy',
+                                      _getNetworkPolicyName(plan.networkPolicy!, networkProvider),
+                                    ),
+                                  ],
                                   const SizedBox(height: 16),
                                   
                                   // Actions row
@@ -372,6 +381,18 @@ class _PlansScreenState extends State<PlansScreen> {
     
     // Fallback if not found (might be legacy value or just the ID)
     return '$dataLimitId GB'; 
+  }
+
+  String _getNetworkPolicyName(int policyId, NetworkProvider provider) {
+    try {
+      final policy = provider.networkPolicies.firstWhere((p) {
+        final pId = int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null);
+        return pId == policyId;
+      });
+      return policy['name']?.toString() ?? 'Unknown Policy';
+    } catch (e) {
+      return 'Unknown Policy';
+    }
   }
 }
 

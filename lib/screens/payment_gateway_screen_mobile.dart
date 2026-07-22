@@ -163,7 +163,7 @@ class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMo
     try {
       final token = await TokenStorage().getAccessToken();
       final response = await Dio().get(
-        'https://api.tiknetafrica.com/v1/partner/subscription-plans/check/',
+        'https://staging.wifi-4u.net/v1/partner/subscription-plans/check/',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       if (response.data != null && response.data['is_active'] == true) {
@@ -326,8 +326,9 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
     
     // Smart Prefixing if not international
     if (phone.length >= 8 && phone.length <= 10) {
-      if (country == 'CI') phone = '225$phone';
-      else if (country == 'SN') phone = '221$phone';
+      if (country == 'CI') {
+        phone = '225$phone';
+      } else if (country == 'SN') phone = '221$phone';
       else if (country == 'ML') phone = '223$phone';
       else if (country == 'BJ') phone = '229$phone';
       else if (country == 'TG') phone = '228$phone';
@@ -354,7 +355,7 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
                     api_key: '${widget.apiKey}',
                     apiKey: '${widget.apiKey}',
                     site_id: ${widget.siteId},
-                    notify_url: 'https://api.tiknetafrica.com/v1/partner/payment/notify/',
+                    notify_url: 'https://staging.wifi-4u.net/v1/partner/payment/notify/',
                     mode: 'PRODUCTION'
                 });
 

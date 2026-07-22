@@ -34,7 +34,7 @@ class VoucherExportService {
       final blob = html.Blob([bytes]);
       final url = html.Url.createObjectUrlFromBlob(blob);
       final anchor = html.AnchorElement(href: url)
-        ..setAttribute("download", "vouchers_${planName.replaceAll(' ', '_')}.csv")
+        ..setAttribute('download', "vouchers_${planName.replaceAll(' ', '_')}.csv")
         ..click();
       html.Url.revokeObjectUrl(url);
 
@@ -45,7 +45,7 @@ class VoucherExportService {
   }
   
   /// Export vouchers to PDF (Web implementation using Printing package)
-  static Future<void> exportToPDF(List<VoucherModel> vouchers, String planName) async {
+  static Future<void> exportToPDF(List<VoucherModel> vouchers, String planName, {String? networkPolicyName}) async {
     try {
       final pdf = pw.Document();
       
@@ -60,7 +60,14 @@ class VoucherExportService {
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Text('Tiknet Partner - Vouchers', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.blue900)),
-                  pw.Text(planName, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    children: [
+                      pw.Text(planName, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                      if (networkPolicyName != null)
+                        pw.Text('Policy: $networkPolicyName', style: pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
+                    ]
+                  ),
                 ],
               ),
             ),
@@ -82,6 +89,12 @@ class VoucherExportService {
                       style: pw.TextStyle(fontSize: 6, color: PdfColors.grey800),
                       maxLines: 1,
                     ),
+                    if (networkPolicyName != null)
+                      pw.Text(
+                        'P: $networkPolicyName',
+                        style: pw.TextStyle(fontSize: 5, color: PdfColors.grey600),
+                        maxLines: 1,
+                      ),
                     pw.SizedBox(height: 1),
                     pw.Text(
                       v.code,

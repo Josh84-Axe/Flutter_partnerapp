@@ -402,7 +402,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceVariant.withOpacity(0.1),
+            color: colorScheme.surfaceContainerHighest.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.3)),
           ),
@@ -504,7 +504,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
             height: 180,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withOpacity(0.1),
+              color: colorScheme.surfaceContainerHighest.withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: colorScheme.outlineVariant.withOpacity(0.5),
@@ -768,7 +768,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     return Container(
       width: double.infinity,
       height: 180,
-      color: colorScheme.surfaceVariant.withOpacity(0.1),
+      color: colorScheme.surfaceContainerHighest.withOpacity(0.1),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

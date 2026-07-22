@@ -231,6 +231,14 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                                 if (result == true) _loadUserDetails();
                               },
                             ),
+                            _buildActionCard(
+                              context,
+                              title: 'assign_network_policy'.tr(),
+                              subtitle: 'manage_network_policy_subtitle'.tr(),
+                              icon: Icons.security,
+                              color: Colors.green,
+                              onTap: () => _showAssignNetworkPolicyModal(context),
+                            ),
                             const SizedBox(height: 24),
                           ],
 
@@ -636,5 +644,93 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
   String _getMonth(int month) {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return months[month - 1];
+  }
+
+  void _showAssignNetworkPolicyModal(BuildContext context) {
+    final networkProvider = context.read<NetworkProvider>();
+    int? selectedPolicyId;
+    
+    // Ensure policies are loaded
+    if (networkProvider.networkPolicies.isEmpty) {
+      networkProvider.loadNetworkPolicies();
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'assign_network_policy'.tr(),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (networkProvider.networkPolicies.isEmpty)
+                    const Center(child: CircularProgressIndicator())
+                  else
+                    DropdownButtonFormField<int>(
+                      value: selectedPolicyId,
+                      decoration: InputDecoration(
+                        labelText: 'select_network_policy'.tr(),
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: [
+                        DropdownMenuItem<int>(value: null, child: Text('none'.tr())),
+                        ...networkProvider.networkPolicies
+                            .map((p) => DropdownMenuItem<int>(
+                                  value: p['id'] as int?,
+                                  child: Text(p['name']?.toString() ?? 'Unknown'),
+                                ))
+                            .toList(),
+                      ],
+                      onChanged: (value) => setModalState(() => selectedPolicyId = value),
+                    ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () async {
+                        try {
+                          final identifier = (widget.user.username?.isNotEmpty == true) 
+                              ? widget.user.username! 
+                              : widget.user.id;
+                          await networkProvider.assignNetworkPolicy(identifier, selectedPolicyId);
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('network_policy_assigned'.tr())),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: $e')),
+                            );
+                          }
+                        }
+                      },
+                      child: Text('assign'.tr()),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }

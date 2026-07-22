@@ -7,6 +7,8 @@ import '../utils/app_theme.dart';
 import '../utils/ip_geolocation.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import '../utils/error_message_helper.dart';
+import '../models/theme_config_model.dart';
+import '../providers/theme_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -170,6 +172,19 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
       }
+      
+      // Setup dynamic theme if available
+      final themeProvider = context.read<ThemeProvider>();
+      final appVariant = authProvider.currentUser?.appVariant;
+      if (appVariant == 'family') {
+        themeProvider.setDynamicTheme(ThemeConfig.defaultFamilyTheme);
+      } else if (appVariant == 'campus') {
+        // Fallback for campus (can define defaultCampusTheme later)
+        themeProvider.setDynamicTheme(ThemeConfig.defaultPartnerTheme);
+      } else {
+        themeProvider.setDynamicTheme(ThemeConfig.defaultPartnerTheme);
+      }
+
       Navigator.of(context).pushReplacementNamed('/home');
     }
   }
@@ -467,7 +482,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextButton(
                     onPressed: () {
                       if (_isLogin) {
-                        Navigator.of(context).pushNamed('/register');
+                        Navigator.of(context).pushNamed('/smart-welcome');
                       } else {
                         setState(() {
                           _isLogin = !_isLogin;

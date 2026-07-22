@@ -16,7 +16,7 @@ class ApiClientFactory {
     String? baseUrl,
     this.onLogout,
   })  : _tokenStorage = tokenStorage,
-        _baseUrl = baseUrl ?? 'https://api.tiknetafrica.com/v1' {
+        _baseUrl = baseUrl ?? 'https://staging.wifi-4u.net/v1' {
     // Print BASE_URL at initialization for debugging
     if (kDebugMode) {
       print('');

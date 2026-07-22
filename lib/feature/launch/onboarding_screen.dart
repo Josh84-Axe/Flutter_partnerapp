@@ -35,12 +35,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
   ];
 
-  Future<void> _completeOnboarding() async {
+  Future<void> _goToLogin() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('onboarding_completed', true);
-    
     if (!mounted) return;
     Navigator.of(context).pushReplacementNamed('/login');
+  }
+
+  Future<void> _goToVariantSelection() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_completed', true);
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed('/variant-selection');
   }
 
   @override
@@ -140,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: _completeOnboarding,
+                      onPressed: _goToLogin,
                       child: Text('login'.tr()),
                     ).animate().scale(
                           duration: M3Motion.buttonBounce,
@@ -150,7 +156,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: FilledButton(
-                      onPressed: _completeOnboarding,
+                      onPressed: _goToVariantSelection,
                       child: Text('get_started'.tr()),
                     ).animate().scale(
                           duration: M3Motion.buttonBounce,

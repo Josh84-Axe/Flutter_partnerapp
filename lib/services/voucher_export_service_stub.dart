@@ -5,7 +5,7 @@ class VoucherExportService {
     throw UnimplementedError();
   }
   
-  static Future<void> exportToPDF(List<VoucherModel> vouchers, String planName) async {
+  static Future<void> exportToPDF(List<VoucherModel> vouchers, String planName, {String? networkPolicyName}) async {
     throw UnimplementedError();
   }
 }

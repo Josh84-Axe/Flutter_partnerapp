@@ -16,6 +16,8 @@ import 'providers/split/network_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/ticket_provider.dart';
 import 'providers/voucher_provider.dart';
+import 'providers/family_provider.dart';
+import 'providers/campus_provider.dart';
 import 'theme/tiknet_themes.dart';
 
 // Services & Repositories
@@ -81,6 +83,8 @@ void _runApp() {
       child: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider(create: (_) => FamilyProvider()),
+          ChangeNotifierProvider(create: (_) => CampusProvider()),
           ChangeNotifierProvider(
             create: (_) => AuthProvider(
               authRepository: locator<AuthRepository>(),
@@ -187,7 +191,7 @@ class HotspotPartnerApp extends StatelessWidget {
     final themeProvider = context.watch<ThemeProvider>();
     
     return MaterialApp(
-      title: 'Tiknet Partner App',
+      title: themeProvider.getVariantName(themeProvider.currentVariant),
       theme: themeProvider.currentTheme,
       darkTheme: TiknetThemes.getPillRoundedDarkTheme(),
       themeMode: themeProvider.themeMode,
@@ -196,7 +200,7 @@ class HotspotPartnerApp extends StatelessWidget {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       navigatorKey: navigatorKey,
-      home: const SplashScreen(),
+      initialRoute: '/splash',
       routes: AppRoutes.routes,
       onGenerateRoute: AppRoutes.onGenerateRoute,
     );

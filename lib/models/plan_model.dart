@@ -34,6 +34,7 @@ class PlanModel {
   final String? description;
   final String? profileName;
   final int? profileId;
+  final int? networkPolicy;
   final List<PlanRouter> routers;
 
   // Computed property for backward compatibility or convenience
@@ -56,6 +57,7 @@ class PlanModel {
     this.description,
     this.profileName,
     this.profileId,
+    this.networkPolicy,
     this.routers = const [],
   });
 
@@ -91,6 +93,9 @@ class PlanModel {
       description: json['description'],
       profileName: json['profile_name'],
       profileId: json['profile'],
+      networkPolicy: json['network_policy'] != null 
+          ? int.tryParse(json['network_policy'].toString()) ?? (json['network_policy'] is int ? json['network_policy'] : null)
+          : null,
       routers: routersList,
     );
   }
@@ -112,6 +117,7 @@ class PlanModel {
       'description': description,
       'profile_name': profileName,
       'profile': profileId,
+      'network_policy': networkPolicy,
       'routers': routers.map((r) => {'id': r.id, 'name': r.name, 'dns_name': r.dnsName}).toList(),
     };
   }

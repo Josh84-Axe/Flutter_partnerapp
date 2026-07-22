@@ -494,13 +494,19 @@ class UserProvider with ChangeNotifier {
   // ==================== Subscription ====================
 
   Future<void> loadSubscription() async {
-    if (_subscriptionRepository == null) return;
+    if (_subscriptionRepository == null) {
+      _isSubscriptionLoaded = true;
+      notifyListeners();
+      return;
+    }
     
     // Workaround: Workers/Managers usually inherit subscription from Partner
     // If they have it already and are not partners, don't try to fetch (avoids 403 Forbidden)
     final userRole = _authProvider?.currentUser?.role.toLowerCase();
     if (userRole != 'partner' && userRole != 'owner' && _subscription != null) {
       if (kDebugMode) debugPrint('ℹ️ [UserProvider] Skipping subscription fetch for $userRole (using inherited plan)');
+      _isSubscriptionLoaded = true;
+      notifyListeners();
       return;
     }
 
@@ -564,7 +570,7 @@ class UserProvider with ChangeNotifier {
       }
 
       _availableSubscriptionPlans = allPlans
-          .where((plan) => plan.price > 0 || plan.name == "Free Access") // Keep valid paid plans OR free plans (price might comprise 0 or 1)
+          .where((plan) => plan.price > 0 || plan.name == 'Free Access') // Keep valid paid plans OR free plans (price might comprise 0 or 1)
           .toList();
       
       if (kDebugMode) debugPrint('✅ [UserProvider] Loaded ${_availableSubscriptionPlans.length} subscription plans');

@@ -5,6 +5,7 @@ enum TiknetThemeVariant {
   flatLightGreen,
   elevatedDynamicBlue,
   pillRoundedDark,
+  vibrantOrange,
 }
 
 class TiknetThemes {
@@ -159,6 +160,15 @@ class TiknetThemes {
     return _base(scheme);
   }
 
+  // Vibrant Orange Theme - warm, energetic for Campus
+  static ThemeData getVibrantOrangeTheme() {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFFE65100), // Deep energetic orange
+      brightness: Brightness.light,
+    );
+    return _base(scheme);
+  }
+
   static ThemeData getThemeForVariant(TiknetThemeVariant variant) {
     switch (variant) {
       case TiknetThemeVariant.flatLightGreen:
@@ -167,6 +177,8 @@ class TiknetThemes {
         return getElevatedDynamicBlueTheme();
       case TiknetThemeVariant.pillRoundedDark:
         return getPillRoundedDarkTheme();
+      case TiknetThemeVariant.vibrantOrange:
+        return getVibrantOrangeTheme();
     }
   }
 

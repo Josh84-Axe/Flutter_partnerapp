@@ -35,6 +35,7 @@ class NetworkProvider with ChangeNotifier {
   
   List<dynamic> _hotspotUsers = [];
   List<HotspotProfileModel> _hotspotProfiles = [];
+  List<dynamic> _networkPolicies = [];
   Map<String, List<String>> _routerAssignments = {};
   
   List<dynamic> _rateLimits = [];
@@ -94,6 +95,7 @@ class NetworkProvider with ChangeNotifier {
   List<dynamic> get validityPeriods => _validityPeriods;
   List<dynamic> get idleTimeouts => _idleTimeouts;
   List<dynamic> get sharedUsers => _sharedUsers;
+  List<dynamic> get networkPolicies => _networkPolicies;
   List<PlanModel> get plans {
     // Note: We don't filter here because we want the raw list for various uses.
     // The screen should use a filtered getter if needed.
@@ -408,6 +410,22 @@ class NetworkProvider with ChangeNotifier {
     return await _customerRepository!.getCustomerActivePlan(username);
   }
 
+  Future<void> assignNetworkPolicy(String username, int? networkPolicyId) async {
+    if (_customerRepository == null) return;
+    try {
+      _setLoading(true);
+      await _customerRepository!.assignNetworkPolicy(username, networkPolicyId);
+      _error = null;
+    } catch (e) {
+      if (kDebugMode) print('❌ [NetworkProvider] Error assigning network policy: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+      rethrow;
+    } finally {
+      _setLoading(false);
+      notifyListeners();
+    }
+  }
+
   // ==================== Sessions ====================
 
   Future<List<PlanModel>> loadAssignedPlans() async {
@@ -523,6 +541,23 @@ class NetworkProvider with ChangeNotifier {
     }
   }
 
+  Future<void> loadNetworkPolicies() async {
+    if (_planRepository == null) return;
+    
+    _setLoading(true);
+    try {
+      if (kDebugMode) print('📡 [NetworkProvider] Loading network policies...');
+      _networkPolicies = await _planRepository!.fetchNetworkPolicies();
+      _error = null;
+    } catch (e) {
+      if (kDebugMode) print('❌ [NetworkProvider] Error loading network policies: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+    } finally {
+      _setLoading(false);
+      notifyListeners();
+    }
+  }
+
   Future<void> loadAllConfigurations() async {
     if (_planConfigRepository == null) return;
     
@@ -537,6 +572,7 @@ class NetworkProvider with ChangeNotifier {
         _loadSharedUsers(),
         loadRouters(),
         loadRouterAssignments(),
+        loadNetworkPolicies(),
       ]);
       _error = null;
     } catch (e) {

@@ -7,9 +7,9 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Tiknet Africa Partner Management App">
-  <meta name="theme-color" content="#121212">
+  <meta name="theme-color" content="#FFFFFF">
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.cinetpay.com https://*.paystack.com https://*.paystack.co https://*.gstatic.com https://*.cloudflareinsights.com https://apis.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://paystack.com https://*.paystack.com https://*.paystack.co; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://paystack.com https://*.paystack.com https://*.paystack.co; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://* blob:; frame-src 'self' https://*.paystack.com https://*.paystack.co https://*.cinetpay.com; connect-src 'self' blob: https://*.cinetpay.com https://cinetpay.com https://*.paystack.com https://*.paystack.co https://*.tiknetafrica.com https://*.coleah.com https://*.sentry.io https://raw.githubusercontent.com https://*.cloudflareinsights.com https://*.gstatic.com https://cdnjs.cloudflare.com wss://*.cinetpay.com wss://*.paystack.co https://*.posthog.com;">
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.cinetpay.com https://paystack.com https://*.paystack.com https://paystack.co https://*.paystack.co https://*.gstatic.com https://*.cloudflareinsights.com https://apis.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://paystack.com https://*.paystack.com https://*.paystack.co; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://paystack.com https://*.paystack.com https://*.paystack.co; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://* blob:; frame-src 'self' https://paystack.com https://*.paystack.com https://paystack.co https://*.paystack.co https://*.cinetpay.com; connect-src 'self' blob: https://*.cinetpay.com https://cinetpay.com https://paystack.com https://*.paystack.com https://paystack.co https://*.paystack.co https://*.tiknetafrica.com https://*.wifi-4u.net https://staging.wifi-4u.net https://*.coleah.com https://*.sentry.io https://raw.githubusercontent.com https://*.cloudflareinsights.com https://*.gstatic.com https://cdnjs.cloudflare.com wss://*.cinetpay.com wss://paystack.co wss://*.paystack.co https://*.posthog.com;">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -35,9 +35,65 @@
 </head>
 
 <body>
+  <style>
+    body {
+      background-color: #FFFFFF;
+      margin: 0;
+      padding: 0;
+    }
+    #loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      background-color: #FFFFFF;
+    }
+    .logo {
+      width: 120px;
+      height: 120px;
+      animation: pulse 2s infinite ease-in-out;
+    }
+    .loader-bar {
+      margin-top: 24px;
+      width: 150px;
+      height: 4px;
+      background-color: #E0E0E0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .loader-progress {
+      width: 30%;
+      height: 100%;
+      background-color: #2E7D32;
+      border-radius: 4px;
+      animation: progress 1.5s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    @keyframes progress {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(300%); }
+    }
+  </style>
+  <div id="loading">
+    <img src="assets/assets/images/logo_tiknet.png" class="logo" alt="Tiknet" />
+    <div class="loader-bar">
+      <div class="loader-progress"></div>
+    </div>
+  </div>
+
   <script>
-    // FINAL BUILD v1.2.164 - ROUTER UX REDESIGN
-    const targetVersion = '1.2.164';
+    // FINAL BUILD v1.2.197 - FIX POLICY VISIBILITY AND ICON
+    const targetVersion = '1.2.197';
     console.log('🚀 WIFI-4U PARTNER APP - BUILD ' + targetVersion + ' (ROUTER UX REDESIGN)');
     
     // Global helper for CinetPay official SDK launch

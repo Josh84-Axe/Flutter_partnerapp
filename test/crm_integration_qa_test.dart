@@ -29,6 +29,7 @@ void main() {
         description: testDescription,
         contactEmail: testEmail,
         contactName: testName,
+        contactPhone: '+224123456789',
         partnerCountry: 'GN',
         priority: 'LOW',
       );

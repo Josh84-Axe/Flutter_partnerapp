@@ -177,9 +177,13 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
                 Navigator.of(context).pushReplacementNamed('/home');
               } else {
                 // Return to login so user can sign in with their new credentials
+                final appVariant = args != null && args is Map ? args['app_variant'] : null;
                 Navigator.of(context).pushReplacementNamed(
                   '/login',
-                  arguments: {'email': email},
+                  arguments: {
+                    'email': email,
+                    if (appVariant != null) 'app_variant': appVariant,
+                  },
                 );
               }
             }
@@ -327,7 +331,7 @@ class _OtpValidationScreenState extends State<OtpValidationScreen> {
               Column(
                 children: [
                   Text(
-                    "didn_t_receive_code".tr(),
+                    'didn_t_receive_code'.tr(),
                     style: TextStyle(color: AppTheme.textLight, fontSize: 14),
                   ),
                   const SizedBox(height: 4),

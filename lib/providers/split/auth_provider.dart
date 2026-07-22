@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:hotspot_partner_app/utils/error_handler.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../repositories/auth_repository.dart';
 import '../../services/api/pin_vault.dart';
 import '../../repositories/partner_repository.dart';
@@ -60,6 +61,21 @@ class AuthProvider with ChangeNotifier {
 
   // Getters
   UserModel? get currentUser => _currentUser;
+  // Add a dummy method for QA testing without real backend
+  void setDummyUserForQA(String appVariant) {
+    _currentUser = UserModel(
+      id: 'qa_user_1',
+      name: 'QA Family Admin',
+      email: 'qa@family.net',
+      role: 'admin',
+      isActive: true,
+      permissions: [],
+      appVariant: appVariant,
+      createdAt: DateTime.now(),
+    );
+    notifyListeners();
+  }
+
   bool get isAuthenticated => _currentUser != null && _currentUser!.id != 'guest';
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -93,7 +109,7 @@ class AuthProvider with ChangeNotifier {
   String? lastLoginEmail;
   String? lastLoginPassword;
   
-  Future<bool> login(String email, String password) async {
+  Future<bool> login(String email, String password, {String? overrideVariant}) async {
     if (kDebugMode) print('🔐 [AuthProvider] login() called with email: $email');
     
     _setLoading(true);
@@ -125,6 +141,9 @@ class AuthProvider with ChangeNotifier {
         }
 
         if (userData != null) {
+          if (overrideVariant != null) {
+            userData['app_variant'] = overrideVariant;
+          }
           await _mapUserData(userData, email);
         }
 
@@ -158,7 +177,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   /// Attempts to log in using a 6-digit PIN that decrypts the local secure vault
-  Future<bool> loginWithPin(String pin) async {
+  Future<bool> loginWithPin(String pin, {String? overrideVariant}) async {
     try {
       _setLoading(true);
       _setError(null);
@@ -169,7 +188,7 @@ class AuthProvider with ChangeNotifier {
         if (kDebugMode) print('🔐 [AuthProvider] PIN match! Executing network login for ${creds['email']}');
         
         // Use the existing login function which handles the network request and user mapping
-        return await login(creds['email']!, creds['password']!);
+        return await login(creds['email']!, creds['password']!, overrideVariant: overrideVariant);
       } else {
         _setError('Invalid PIN');
         _setLoading(false);
@@ -244,6 +263,19 @@ class AuthProvider with ChangeNotifier {
         _subscriptionData = userData['partner']['subscription'];
       }
 
+      final newAppVariant = userData['app_variant'] ?? userData['appVariant'];
+      String? finalAppVariant = newAppVariant;
+
+      // Try to load from cache if API didn't provide it
+      if (finalAppVariant == null) {
+        final prefs = await SharedPreferences.getInstance();
+        finalAppVariant = prefs.getString('cached_app_variant');
+      } else {
+        // Save to cache for future sessions where /me might omit it
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('cached_app_variant', finalAppVariant);
+      }
+
       _currentUser = UserModel(
         id: userData['id']?.toString() ?? '1',
         name: '${userData['first_name'] ?? ''} ${userData['last_name'] ?? ''}'.trim(),
@@ -258,6 +290,7 @@ class AuthProvider with ChangeNotifier {
         country: _partnerCountry,
         heroImageUrl: userData['hero_image_url'] ?? userData['partner']?['hero_image_url'],
         primaryHex: userData['primary_hex'] ?? userData['partner']?['primary_hex'],
+        appVariant: finalAppVariant,
       );
       
       notifyListeners();
@@ -313,6 +346,7 @@ class AuthProvider with ChangeNotifier {
     required String city,
     required String country,
     required int numberOfRouters,
+    String appVariant = 'partner',
   }) async {
     _setLoading(true);
     _registrationEmail = email; // Store email for verification
@@ -332,6 +366,7 @@ class AuthProvider with ChangeNotifier {
         city: city,
         country: country,
         numberOfRouters: numberOfRouters,
+        appVariant: appVariant,
       );
       
       _setLoading(false);

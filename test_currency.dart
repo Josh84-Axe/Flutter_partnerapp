@@ -26,6 +26,6 @@ void main() {
     }
   }
 
-  print("Result for '₦': " + normalizeCurrencyCode('₦'));
-  print("Result for 'NGN': " + normalizeCurrencyCode('NGN'));
+  print("Result for '₦': ${normalizeCurrencyCode('₦')}");
+  print("Result for 'NGN': ${normalizeCurrencyCode('NGN')}");
 }

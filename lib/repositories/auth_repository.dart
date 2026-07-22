@@ -146,6 +146,7 @@ class AuthRepository {
     required String city,
     required String country,
     required int numberOfRouters,
+    String appVariant = 'partner',
   }) async {
     try {
       if (kDebugMode) print('📝 [AuthRepository] Register request for: $email');
@@ -160,6 +161,7 @@ class AuthRepository {
         'city': city,
         'country': country,
         'number_of_router': numberOfRouters,
+        'app_variant': appVariant, // Self-service variant selection
       };
       if (kDebugMode) print('📦 [AuthRepository] Register request data: $requestData');
       

@@ -4,7 +4,7 @@ class ApiConfig {
   /// Can be overridden with --dart-define=API_HOST=https://api.tiknetafrica.com
   static const String apiHost = String.fromEnvironment(
     'API_HOST',
-    defaultValue: 'https://api.tiknetafrica.com',
+    defaultValue: 'https://staging.wifi-4u.net',
   );
 
   /// Full base URL including version path

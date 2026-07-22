@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../motion/m3_motion.dart';
 
 /// Splash screen with logo fade+scale animation
@@ -24,8 +27,27 @@ class _SplashScreenState extends State<SplashScreen> {
     final prefs = await SharedPreferences.getInstance();
     final hasCompletedOnboarding = prefs.getBool('onboarding_completed') ?? false;
     
-    // Wait for splash animation to complete (1.6s total)
-    await Future.delayed(const Duration(milliseconds: 1600));
+    // Perform IP Detection for language
+    try {
+      final dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 1)));
+      final response = await dio.get('https://api.country.is/');
+      if (response.data != null && response.data['country'] != null) {
+        final countryCode = response.data['country'] as String;
+        const francophoneCountries = [
+          'FR', 'CI', 'SN', 'CM', 'ML', 'BF', 'NE', 'TG', 'BJ', 'CD', 'CG', 'GA', 'MG', 'GN', 'BI', 'RW', 'TD', 'CF', 'GQ', 'DJ', 'KM', 'HT'
+        ];
+        if (francophoneCountries.contains(countryCode.toUpperCase())) {
+          if (mounted) context.setLocale(const Locale('fr'));
+        } else {
+          if (mounted) context.setLocale(const Locale('en'));
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) print('IP Localization error: $e');
+    }
+
+    // Wait for splash animation to complete (just briefly so it doesn't flash)
+    await Future.delayed(const Duration(milliseconds: 400));
     
     if (!mounted) return;
     
@@ -34,8 +56,8 @@ class _SplashScreenState extends State<SplashScreen> {
       // Navigate to root which will trigger AuthWrapper
       Navigator.of(context).pushReplacementNamed('/auth-wrapper');
     } else {
-      // First launch, show onboarding
-      Navigator.of(context).pushReplacementNamed('/onboarding');
+      // First launch, show smart welcome screen
+      Navigator.of(context).pushReplacementNamed('/smart-welcome');
     }
   }
 

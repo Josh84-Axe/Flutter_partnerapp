@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import '../models/voucher_model.dart';
 import '../models/plan_model.dart';
+import '../providers/split/network_provider.dart';
 
 class VoucherTicketCard extends StatefulWidget {
   final VoucherModel voucher;
@@ -53,6 +55,21 @@ class _VoucherTicketCardState extends State<VoucherTicketCard> {
     final statusColor = _getStatusColor();
     final theme = Theme.of(context);
     final isUsed = widget.voucher.isUsed;
+    final networkProvider = context.watch<NetworkProvider>();
+
+    String? policyName;
+    if (widget.plan?.networkPolicy != null && widget.plan?.networkPolicy != 0) {
+      try {
+        final policy = networkProvider.networkPolicies.firstWhere((p) {
+          final pId = int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null);
+          return pId == widget.plan!.networkPolicy;
+        });
+        policyName = policy['name']?.toString();
+        if (policyName == 'Unknown Policy') policyName = null;
+      } catch (e) {
+        // Ignore
+      }
+    }
 
     return GestureDetector(
       onTap: _handleCopy,
@@ -194,16 +211,18 @@ class _VoucherTicketCardState extends State<VoucherTicketCard> {
                       ],
                     ),
                   ] else */ if (widget.plan != null) ...[
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         if (widget.plan?.dataLimit != null)
                           _FeatureBadge(icon: Icons.cloud_download, label: '${widget.plan!.dataLimit! ~/ 1024} GB'), // Assuming MB
-                        const SizedBox(width: 8),
                         if (widget.plan?.sharedUsersLabel != null) // changed from deviceLimit
                           _FeatureBadge(icon: Icons.devices, label: widget.plan!.sharedUsersLabel),
-                        const SizedBox(width: 8),
                         if (widget.plan?.formattedValidity != null) // changed from validity
                           _FeatureBadge(icon: Icons.timer, label: widget.plan!.formattedValidity),
+                        if (policyName != null)
+                          _FeatureBadge(icon: Icons.security, label: policyName),
                       ],
                     ),
                   ],

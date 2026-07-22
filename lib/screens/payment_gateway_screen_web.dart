@@ -209,7 +209,7 @@ class PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
     try {
       final token = await TokenStorage().getAccessToken();
       final response = await Dio().get(
-        'https://api.tiknetafrica.com/v1/partner/subscription-plans/check/',
+        'https://staging.wifi-4u.net/v1/partner/subscription-plans/check/',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       if (response.data != null && response.data['is_active'] == true) {

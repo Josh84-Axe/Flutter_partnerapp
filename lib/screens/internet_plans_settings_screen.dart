@@ -270,6 +270,13 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
                                     Icons.calendar_today_outlined,
                                     plan.formattedValidity,
                                   ),
+                                  if (plan.networkPolicy != null && plan.networkPolicy != 0 && _getNetworkPolicyName(plan.networkPolicy!, networkProvider) != 'Unknown Policy') ...[
+                                    const SizedBox(height: 4),
+                                    _buildInfoRow(
+                                      Icons.security,
+                                      _getNetworkPolicyName(plan.networkPolicy!, networkProvider),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),
@@ -335,7 +342,6 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
       ],
     );
   }
-  
   String _getDataLimitLabel(int? dataLimitId, NetworkProvider networkProvider) {
     if (dataLimitId == null) return 'Unlimited';
     
@@ -355,7 +361,19 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
       // Ignore error and fallback
     }
     
-    // Fallback if not found (might be legacy value or just the ID)
+    // Fallback if not found
     return '$dataLimitId GB'; 
+  }
+
+  String _getNetworkPolicyName(int policyId, NetworkProvider provider) {
+    try {
+      final policy = provider.networkPolicies.firstWhere((p) {
+        final pId = int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null);
+        return pId == policyId;
+      });
+      return policy['name']?.toString() ?? 'Unknown Policy';
+    } catch (e) {
+      return 'Unknown Policy';
+    }
   }
 }

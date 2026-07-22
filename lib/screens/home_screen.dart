@@ -6,6 +6,14 @@ import 'dashboard_screen.dart';
 import 'users_screen.dart';
 import 'plans_screen.dart';
 import 'wallet_overview_screen.dart';
+import 'family_dashboard_screen.dart';
+import 'campus_dashboard_screen.dart';
+
+import 'family_profiles_screen.dart';
+import 'family_network_zones_screen.dart';
+import 'campus_map_screen.dart';
+import 'campus_support_screen.dart';
+import '../widgets/app_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,12 +25,24 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
-  late final List<Widget> _screens;
-
-  @override
-  void initState() {
-    super.initState();
-    _screens = [
+  List<Widget> _getScreens(String? appVariant) {
+    if (appVariant == 'campus') {
+      return [
+        const CampusDashboardScreen(),
+        const CampusMapScreen(),
+        const CampusSupportScreen(),
+      ];
+    }
+    if (appVariant == 'family') {
+      return [
+        const FamilyDashboardScreen(),
+        const FamilyProfilesScreen(),
+        const Center(child: Text('Screen Time Rules (Coming Soon)')),
+        const FamilyNetworkZonesScreen(),
+      ];
+    }
+    // Default Partner Screens
+    return [
       const DashboardScreen(),
       const UsersScreen(),
       PlansScreen(onBack: () => setState(() => _currentIndex = 0)),
@@ -30,45 +50,86 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
   }
 
+  List<NavigationDestination> _getDestinations(String? appVariant) {
+    if (appVariant == 'campus') {
+      return [
+        NavigationDestination(icon: const Icon(Icons.school), label: 'Campus Home'),
+        NavigationDestination(icon: const Icon(Icons.map), label: 'Map'),
+        NavigationDestination(icon: const Icon(Icons.help), label: 'Support'),
+      ];
+    }
+    if (appVariant == 'family') {
+      return [
+        NavigationDestination(icon: const Icon(Icons.home), label: 'Home'),
+        NavigationDestination(icon: const Icon(Icons.family_restroom), label: 'Family'),
+        NavigationDestination(icon: const Icon(Icons.timer), label: 'Rules'),
+        NavigationDestination(icon: const Icon(Icons.router), label: 'Network'),
+      ];
+    }
+    // Default Partner Destinations
+    return [
+      NavigationDestination(icon: const Icon(Icons.dashboard), label: 'dashboard_title'.tr()),
+      NavigationDestination(icon: const Icon(Icons.people), label: 'users'.tr()),
+      NavigationDestination(icon: const Icon(Icons.wifi), label: 'plans'.tr()),
+      NavigationDestination(icon: const Icon(Icons.account_balance_wallet), label: 'wallet'.tr()),
+    ];
+  }
+
+  List<NavigationRailDestination> _getRailDestinations(String? appVariant) {
+    if (appVariant == 'campus') {
+      return [
+        NavigationRailDestination(icon: const Icon(Icons.school), label: const Text('Campus Home')),
+        NavigationRailDestination(icon: const Icon(Icons.map), label: const Text('Map')),
+        NavigationRailDestination(icon: const Icon(Icons.help), label: const Text('Support')),
+      ];
+    }
+    if (appVariant == 'family') {
+      return [
+        NavigationRailDestination(icon: const Icon(Icons.home), label: const Text('Home')),
+        NavigationRailDestination(icon: const Icon(Icons.family_restroom), label: const Text('Family')),
+        NavigationRailDestination(icon: const Icon(Icons.timer), label: const Text('Rules')),
+        NavigationRailDestination(icon: const Icon(Icons.router), label: const Text('Network')),
+      ];
+    }
+    // Default Partner Destinations
+    return [
+      NavigationRailDestination(icon: const Icon(Icons.dashboard), label: Text('dashboard_title'.tr())),
+      NavigationRailDestination(icon: const Icon(Icons.people), label: Text('users'.tr())),
+      NavigationRailDestination(icon: const Icon(Icons.wifi), label: Text('plans'.tr())),
+      NavigationRailDestination(icon: const Icon(Icons.account_balance_wallet), label: Text('wallet'.tr())),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final isTablet = MediaQuery.of(context).size.width >= 600;
+    final appVariant = context.watch<AuthProvider>().currentUser?.appVariant;
+    final screens = _getScreens(appVariant);
 
     return Scaffold(
       body: Row(
         children: [
           if (isTablet)
-            NavigationRail(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-              labelType: NavigationRailLabelType.all,
-              destinations: [
-                NavigationRailDestination(
-                  icon: const Icon(Icons.dashboard),
-                  label: Text('dashboard_title'.tr()),
+            Builder(
+              builder: (context) => NavigationRail(
+                leading: IconButton(
+                  icon: const Icon(Icons.menu),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
-                NavigationRailDestination(
-                  icon: const Icon(Icons.people),
-                  label: Text('users'.tr()),
-                ),
-                NavigationRailDestination(
-                  icon: const Icon(Icons.wifi),
-                  label: Text('plans'.tr()),
-                ),
-                NavigationRailDestination(
-                  icon: const Icon(Icons.account_balance_wallet),
-                  label: Text('wallet'.tr()),
-                ),
-              ],
+                selectedIndex: _currentIndex,
+                onDestinationSelected: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+                labelType: NavigationRailLabelType.all,
+                destinations: _getRailDestinations(appVariant),
+              ),
             ),
           Expanded(
             child: IndexedStack(
               index: _currentIndex,
-              children: _screens,
+              children: screens,
             ),
           ),
         ],
@@ -82,105 +143,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   _currentIndex = index;
                 });
               },
-              destinations: [
-                NavigationDestination(
-                  icon: const Icon(Icons.dashboard),
-                  label: 'dashboard_title'.tr(),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.people),
-                  label: 'users'.tr(),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.wifi),
-                  label: 'plans'.tr(),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.account_balance_wallet),
-                  label: 'wallet'.tr(),
-                ),
-              ],
+              destinations: _getDestinations(appVariant),
             ),
-      drawer: NavigationDrawer(
-        onDestinationSelected: (index) {
-          Navigator.pop(context);
-          if (index == 0) {
-            Navigator.of(context).pushNamed('/settings');
-          } else if (index == 1) {
-            Navigator.of(context).pushNamed('/router-settings');
-          } else if (index == 2) {
-            Navigator.of(context).pushNamed('/support');
-          }
-        },
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.person,
-                    size: 40,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  context.watch<AuthProvider>().currentUser?.name ?? 'partner'.tr(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  context.watch<AuthProvider>().currentUser?.email ?? '',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          NavigationDrawerDestination(
-            icon: const Icon(Icons.settings),
-            label: Text('settings'.tr()),
-          ),
-          NavigationDrawerDestination(
-            icon: const Icon(Icons.router),
-            label: Text('router_configurations'.tr()),
-          ),
-          NavigationDrawerDestination(
-            icon: const Icon(Icons.help),
-            label: Text('help_support'.tr()),
-          ),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: FilledButton.icon(
-              onPressed: () async {
-                await context.read<AuthProvider>().logout();
-                if (context.mounted) {
-                  Navigator.of(context).pushReplacementNamed('/login');
-                }
-              },
-              icon: const Icon(Icons.logout),
-              label: Text('logout'.tr()),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
+      drawer: const AppDrawer(),
     );
   }
 }

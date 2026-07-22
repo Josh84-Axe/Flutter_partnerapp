@@ -22,6 +22,7 @@ class UserModel {
   final bool? isBlocked;
   final bool? isConnected;
   final String? username;
+  final String? appVariant;
   final String? lastConnection;
   final int? totalSessions;
   final String? acquisitionType;
@@ -47,6 +48,7 @@ class UserModel {
     this.isBlocked,
     this.isConnected,
     this.username,
+    this.appVariant,
     this.lastConnection,
     this.totalSessions,
     this.acquisitionType,
@@ -79,6 +81,7 @@ class UserModel {
         isBlocked: json['blocked'],
         isConnected: isConnected,
         username: json['username'] ?? json['login'] ?? json['identifier'] ?? (json['role'] == 'user' ? json['phone'] : null),
+        appVariant: json['app_variant'] ?? json['appVariant'],
         lastConnection: null,
         totalSessions: null,
         acquisitionType: json['acquisition_type'],
@@ -117,6 +120,7 @@ class UserModel {
         isBlocked: json['isBlocked'],
         isConnected: isConnected ?? json['isConnected'],
         username: json['username'] ?? json['login'] ?? json['identifier'],
+        appVariant: json['app_variant'] ?? json['appVariant'],
         lastConnection: json['lastConnection'],
         totalSessions: json['totalSessions'],
         acquisitionType: json['acquisitionType'],
@@ -147,6 +151,7 @@ class UserModel {
     bool? isBlocked,
     bool? isConnected,
     String? username,
+    String? appVariant,
     String? lastConnection,
     int? totalSessions,
     String? acquisitionType,
@@ -174,6 +179,7 @@ class UserModel {
       isBlocked: isBlocked ?? this.isBlocked,
       isConnected: isConnected ?? this.isConnected,
       username: username ?? this.username,
+      appVariant: appVariant ?? this.appVariant,
       lastConnection: lastConnection ?? this.lastConnection,
       totalSessions: totalSessions ?? this.totalSessions,
       acquisitionType: acquisitionType ?? this.acquisitionType,
@@ -216,6 +222,7 @@ class UserModel {
       'isBlocked': isBlocked,
       'isConnected': isConnected,
       'username': username,
+      'appVariant': appVariant,
       'lastConnection': lastConnection,
       'totalSessions': totalSessions,
       'acquisitionType': acquisitionType,

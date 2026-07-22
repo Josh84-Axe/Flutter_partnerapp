@@ -172,4 +172,27 @@ class PlanRepository {
       rethrow;
     }
   }
+  /// Fetch network policies
+  Future<List<dynamic>> fetchNetworkPolicies() async {
+    try {
+      if (kDebugMode) print('📋 [PlanRepository] Fetching network policies');
+      final response = await _dio.get('/partner/network-policies/list/');
+      
+      final responseData = response.data;
+      if (responseData is List) {
+        if (kDebugMode) print('✅ [PlanRepository] Found ${responseData.length} network policies');
+        return responseData;
+      } else if (responseData is Map && responseData['data'] is List) {
+        final policies = responseData['data'] as List;
+        if (kDebugMode) print('✅ [PlanRepository] Found ${policies.length} network policies');
+        return policies;
+      }
+      
+      if (kDebugMode) print('⚠️ [PlanRepository] No network policies found in response');
+      return [];
+    } catch (e) {
+      if (kDebugMode) print('❌ [PlanRepository] Fetch network policies error: $e');
+      return [];
+    }
+  }
 }

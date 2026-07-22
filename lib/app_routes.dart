@@ -5,10 +5,23 @@ import 'package:hotspot_partner_app/screens/home_screen.dart';
 // Screens
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
+import 'screens/family_registration_screen.dart';
+import 'screens/campus_registration_screen.dart';
+import 'screens/campus_schedules_screen.dart';
+import 'screens/family_add_device_screen.dart';
+import 'screens/family_content_policy_screen.dart';
+import 'screens/campus_dashboard_screen.dart';
+import 'screens/family_schedule_manager_screen.dart';
+import 'screens/family_profiles_screen.dart';
+import 'screens/family_network_zones_screen.dart';
+import 'screens/campus_map_screen.dart';
+import 'screens/campus_support_screen.dart';
 import 'screens/plans_screen.dart';
 import 'screens/settings_screen.dart';
 import 'feature/launch/splash_screen.dart';
 import 'feature/launch/onboarding_screen.dart';
+import 'screens/onboarding/smart_welcome_screen.dart';
+import 'screens/onboarding/dynamic_tour_screen.dart';
 import 'feature/auth/login_screen_m3.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/language_screen.dart';
@@ -88,16 +101,66 @@ import 'screens/assigned_plans_list_screen.dart';
 import 'screens/active_sessions_screen.dart';
 import 'screens/help_support_screen.dart';
 import 'screens/setup_pin_screen.dart';
+import 'screens/onboarding/variant_selection_screen.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
         '/splash': (context) => const SplashScreen(),
-        '/onboarding': (context) => const OnboardingScreen(),
+        '/smart-welcome': (context) => const SmartWelcomeScreen(),
+        '/dynamic-tour': (context) {
+          final variant = ModalRoute.of(context)?.settings.arguments as String?;
+          return DynamicTourScreen(appVariant: variant ?? 'partner');
+        },
+        '/onboarding-old': (context) => const OnboardingScreen(),
         '/auth-wrapper': (context) => const AuthWrapper(),
-        '/login': (context) => const LoginScreenM3(),
+        '/login': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          String appVariant = 'partner';
+          if (args is Map) {
+            appVariant = args['app_variant']?.toString() ?? 'partner';
+          } else if (args is String) {
+            appVariant = args;
+          }
+          return LoginScreenM3(appVariant: appVariant);
+        },
         '/setup-pin': (context) => const SetupPinScreen(),
+        '/family-add-device': (context) => const FamilyAddDeviceScreen(),
+        '/family-schedules': (context) => const FamilyScheduleManagerScreen(),
+        '/family-profiles': (context) => const FamilyProfilesScreen(),
+        '/family-network-zones': (context) => const FamilyNetworkZonesScreen(),
+        '/family-content-policy': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return FamilyContentPolicyScreen(device: args['device']);
+        },
+        '/campus-schedules': (context) => const CampusSchedulesScreen(),
+        '/campus-map': (context) => const CampusMapScreen(),
+        '/campus-support': (context) => const CampusSupportScreen(),
         '/login-old': (context) => const LoginScreen(),
-        '/register': (context) => const RegistrationScreen(),
+        '/register': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          String appVariant = 'partner';
+          if (args is Map) {
+            appVariant = args['app_variant']?.toString() ?? 'partner';
+          } else if (args is String) {
+            appVariant = args;
+          }
+          
+          if (appVariant == 'family') {
+            return const FamilyRegistrationScreen(appVariant: 'family');
+          } else if (appVariant == 'campus') {
+            return const CampusRegistrationScreen(appVariant: 'campus');
+          }
+          
+          return RegistrationScreen(appVariant: appVariant);
+        },
+        '/variant-selection': (context) => VariantSelectionScreen(
+          onVariantSelected: (variant) {
+            Navigator.of(context).pushReplacementNamed(
+              '/register',
+              arguments: {'app_variant': variant},
+            );
+          },
+        ),
         '/home': (context) => const HomeScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/notifications': (context) => const NotificationsScreen(),

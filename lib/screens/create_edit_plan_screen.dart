@@ -24,6 +24,7 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
   dynamic _selectedValidity;
   dynamic _selectedDeviceAllowed;
   int? _selectedProfile;
+  int? _selectedNetworkPolicy;
   bool _isLoading = false;
 
   @override
@@ -32,6 +33,10 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
     if (widget.planData != null) {
       _nameController.text = widget.planData!['name'] ?? '';
       _priceController.text = widget.planData!['price']?.toString() ?? '';
+      final np = widget.planData!['network_policy'];
+      if (np != null) {
+        _selectedNetworkPolicy = int.tryParse(np.toString());
+      }
       // Note: We'll need to match the selected values from the dropdowns after they load
     }
   }
@@ -213,6 +218,44 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 16),
+
+                  // Network Policy Dropdown
+                  Builder(
+                    builder: (context) {
+                      int? currentPolicy = _selectedNetworkPolicy;
+                      if (currentPolicy != null && networkProvider.networkPolicies.isNotEmpty) {
+                        final exists = networkProvider.networkPolicies.any((p) {
+                          final pId = int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null);
+                          return pId == currentPolicy;
+                        });
+                        if (!exists) {
+                          currentPolicy = null;
+                        }
+                      }
+                      
+                      return DropdownButtonFormField<int>(
+                        value: currentPolicy,
+                        decoration: InputDecoration(
+                          labelText: 'select_network_policy'.tr(),
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.policy),
+                        ),
+                        items: networkProvider.networkPolicies.isEmpty
+                            ? [DropdownMenuItem<int>(value: null, child: Text('no_network_policies_configured'.tr()))]
+                            : [
+                                DropdownMenuItem<int>(value: null, child: Text('none'.tr())),
+                                ...networkProvider.networkPolicies
+                                    .map((p) => DropdownMenuItem<int>(
+                                          value: int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null),
+                                          child: Text(p['name']?.toString() ?? 'Unknown'),
+                                        ))
+                                    .toList(),
+                              ],
+                        onChanged: (value) => setState(() => _selectedNetworkPolicy = value),
+                      );
+                    }
+                  ),
                   const SizedBox(height: 32),
 
                   // Action Buttons
@@ -317,6 +360,10 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
         'shared_users': sharedUsersId,
         'profile': _selectedProfile,
       };
+      
+      if (_selectedNetworkPolicy != null) {
+        data['network_policy'] = _selectedNetworkPolicy;
+      }
 
       if (kDebugMode) print('📦 [CreatePlan] Plan data: $data');
 

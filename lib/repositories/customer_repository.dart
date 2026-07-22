@@ -356,4 +356,19 @@ class CustomerRepository {
       return null;
     }
   }
+  /// Assign a network policy to a customer
+  Future<void> assignNetworkPolicy(String username, int? networkPolicyId) async {
+    try {
+      final encodedUsername = Uri.encodeComponent(username);
+      if (kDebugMode) print('🛡️ [CustomerRepository] Assigning network policy $networkPolicyId to $username');
+      await _dio.post(
+        '/partner/customers/$encodedUsername/assign-network-policy/',
+        data: {'network_policy_id': networkPolicyId},
+      );
+      if (kDebugMode) print('✅ [CustomerRepository] Network policy assigned successfully');
+    } catch (e) {
+      if (kDebugMode) print('❌ [CustomerRepository] Assign network policy error: $e');
+      rethrow;
+    }
+  }
 }

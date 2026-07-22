@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:hotspot_partner_app/screens/add_router_screen.dart';
 import 'package:hotspot_partner_app/providers/split/network_provider.dart';
 
@@ -12,23 +11,23 @@ class MockNetworkProvider extends ChangeNotifier implements NetworkProvider {
   @override
   Future<Map<String, dynamic>?> addRouter(Map<String, dynamic> routerData) async {
     return {
-      "id": 42,
-      "name": "TestWifi",
-      "status": "pending",
-      "is_active": false,
-      "ip_address": "10.0.0.8",
-      "dns_name": "testwifi.tiknet.net",
-      "username": "tiknet-admin",
-      "partner": "admin",
-      "bootstrap_command": "/tool fetch url=\"https://api.tiknetafrica.com/v1/bootstrap/abc123/\" mode=https output=file dst-path=bootstrap.rsc\n/import file-name=bootstrap.rsc",
-      "login_page_command": "/tool fetch url='https://api.tiknetafrica.com/v1/mikrotik/login-page/' mode=https output=file dst-path=flash/hotspot/login.html",
-      "setup_command": "/ip dhcp-client add interface=ether1\n/ip dns set allow-remote-requests=yes"
+      'id': 42,
+      'name': 'TestWifi',
+      'status': 'pending',
+      'is_active': false,
+      'ip_address': '10.0.0.8',
+      'dns_name': 'testwifi.tiknet.net',
+      'username': 'tiknet-admin',
+      'partner': 'admin',
+      'bootstrap_command': '/tool fetch url="https://api.tiknetafrica.com/v1/bootstrap/abc123/" mode=https output=file dst-path=bootstrap.rsc\n/import file-name=bootstrap.rsc',
+      'login_page_command': "/tool fetch url='https://api.tiknetafrica.com/v1/mikrotik/login-page/' mode=https output=file dst-path=flash/hotspot/login.html",
+      'setup_command': '/ip dhcp-client add interface=ether1\n/ip dns set allow-remote-requests=yes'
     };
   }
 
   // Implement required NetworkProvider methods as no-ops to satisfy the interface
   @override
-  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {

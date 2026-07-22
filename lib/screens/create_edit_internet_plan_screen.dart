@@ -23,6 +23,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
   String? _selectedDataLimit;
   String? _selectedAdditionalDevices;
   String? _selectedHotspotProfile;
+  int? _selectedNetworkPolicy;
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
       _selectedDataLimit = widget.planData!['dataLimitGB'];
       _selectedAdditionalDevices = widget.planData!['deviceAllowed'];
       _selectedHotspotProfile = widget.planData!['userProfile'];
+      _selectedNetworkPolicy = widget.planData!['network_policy'];
     }
   }
 
@@ -193,6 +195,26 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                             .toList(),
                     onChanged: (value) => setState(() => _selectedHotspotProfile = value),
                   ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<int>(
+                    initialValue: _selectedNetworkPolicy,
+                    decoration: InputDecoration(
+                      labelText: 'select_network_policy'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: networkProvider.networkPolicies.isEmpty
+                        ? [DropdownMenuItem<int>(value: null, child: Text('no_network_policies_configured'.tr()))]
+                        : [
+                            DropdownMenuItem<int>(value: null, child: Text('none'.tr())),
+                            ...networkProvider.networkPolicies
+                                .map((p) => DropdownMenuItem<int>(
+                                      value: p['id'] as int?,
+                                      child: Text(p['name']?.toString() ?? 'Unknown'),
+                                    ))
+                                .toList(),
+                          ],
+                    onChanged: (value) => setState(() => _selectedNetworkPolicy = value),
+                  ),
                   ],
                 ),
               ),
@@ -309,6 +331,10 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
       'profile': _selectedHotspotProfile ?? 'Basic',
       'profile_name': getProfileName(_selectedHotspotProfile),
     };
+
+    if (_selectedNetworkPolicy != null) {
+      data['network_policy'] = _selectedNetworkPolicy!;
+    }
 
     if (kDebugMode) {
       print('📦 [CreatePlan] Prepared plan data:');

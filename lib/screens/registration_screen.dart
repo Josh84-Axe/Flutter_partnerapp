@@ -11,7 +11,11 @@ import '../widgets/alerts/action_failed_alert.dart';
 import '../utils/error_message_helper.dart';
 
 class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({super.key});
+  /// The app variant selected by the user on VariantSelectionScreen.
+  /// Defaults to 'partner' (commercial) if not provided.
+  final String appVariant;
+
+  const RegistrationScreen({super.key, this.appVariant = 'partner'});
 
   @override
   State<RegistrationScreen> createState() => _RegistrationScreenState();
@@ -152,6 +156,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         city: _cityController.text.trim(),
         country: _selectedCountry ?? 'GH',
         numberOfRouters: int.tryParse(_numberOfRoutersController.text) ?? 1,
+        appVariant: widget.appVariant,
       );
 
       if (success && mounted) {
@@ -173,6 +178,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             arguments: {
               'type': 'registration',
               'email': _emailController.text.trim(),
+              'app_variant': widget.appVariant,
             },
           );
         } else {
@@ -600,7 +606,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       Text('register.label.already_have_account'.tr()),
                       TextButton(
                         onPressed: () {
-                          Navigator.of(context).pop();
+                          Navigator.of(context).pushReplacementNamed(
+                            '/login',
+                            arguments: {'app_variant': widget.appVariant},
+                          );
                         },
                         child: Text(
                           'register.button.login'.tr(),

@@ -22,7 +22,7 @@ fi
 # Build
 echo -e "${BLUE}📦 Building Flutter Web App...${NC}"
 flutter build web --release \
-  --dart-define=API_HOST=https://api.tiknetafrica.com \
+  --dart-define=API_HOST=https://staging.wifi-4u.net \
   --dart-define=CRM_API_KEY=aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE \
   --dart-define=USE_REMOTE_API=true
 

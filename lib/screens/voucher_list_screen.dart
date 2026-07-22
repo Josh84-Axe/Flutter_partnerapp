@@ -52,6 +52,19 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
       return _showUsed ? true : v.isActive;
     }).toList();
     
+    String? policyName;
+    if (planModel?.networkPolicy != null) {
+      try {
+        final policy = networkProvider.networkPolicies.firstWhere((p) {
+          final pId = int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null);
+          return pId == planModel!.networkPolicy;
+        });
+        policyName = policy['name']?.toString();
+      } catch (e) {
+        // Ignore
+      }
+    }
+
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -63,7 +76,7 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
             onPressed: () => provider.loadVouchers(widget.planId),
           ),
           PopupMenuButton<String>(
-            onSelected: (value) => _handleExport(value, vouchers),
+            onSelected: (value) => _handleExport(value, vouchers, policyName: policyName),
             itemBuilder: (context) => [
               PopupMenuItem(value: 'local_pdf', child: Text('download_pdf_local'.tr())),
               PopupMenuItem(value: 'local_csv', child: Text('download_csv_local'.tr())),
@@ -168,7 +181,7 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
     );
   }
 
-  Future<void> _handleExport(String format, List<VoucherModel> vouchers) async {
+  Future<void> _handleExport(String format, List<VoucherModel> vouchers, {String? policyName}) async {
     if (vouchers.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -179,7 +192,7 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
     }
     
     if (format == 'local_pdf') {
-      await VoucherExportService.exportToPDF(vouchers, widget.planName);
+      await VoucherExportService.exportToPDF(vouchers, widget.planName, networkPolicyName: policyName);
       return;
     }
     

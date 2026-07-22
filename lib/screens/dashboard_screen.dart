@@ -348,7 +348,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (userProvider.isGuestMode)
               GuestModeBanner(
                 onRegister: () {
-                  Navigator.of(context).pushReplacementNamed('/register');
+                  Navigator.of(context).pushReplacementNamed('/smart-welcome');
                 },
               ),
             

@@ -48,6 +48,26 @@ android {
         }
     }
 
+    flavorDimensions += "app"
+
+    productFlavors {
+        create("partner") {
+            dimension = "app"
+            applicationIdSuffix = ".partner"
+            resValue("string", "app_name", "Tiknet Partner")
+        }
+        create("family") {
+            dimension = "app"
+            applicationIdSuffix = ".family"
+            resValue("string", "app_name", "Tiknet Family")
+        }
+        create("campus") {
+            dimension = "app"
+            applicationIdSuffix = ".campus"
+            resValue("string", "app_name", "Tiknet Campus")
+        }
+    }
+
     buildTypes {
         getByName("release") {
             // Use the release signing config if key.properties exists, otherwise fallback to debug.
