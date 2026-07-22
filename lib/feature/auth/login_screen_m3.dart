@@ -35,7 +35,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
   final _pinFocusNode = FocusNode();
   
   late String _currentVariant;
-  bool _isLoading = true;
+  bool _isVariantLoading = true;
 
   @override
   void initState() {
@@ -59,7 +59,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
         } else {
           _currentVariant = 'partner'; // Default fallback
         }
-        _isLoading = false;
+        _isVariantLoading = false;
         
         if (email != null) {
           _emailController.text = email;
@@ -198,7 +198,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    if (_isVariantLoading) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
