@@ -59,7 +59,7 @@ jobs:
         run: |
           echo '{
               "latestVersion": "${{ env.VERSION }}",
-              "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v${{ env.VERSION }}/app-release.apk",
+              "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v${{ env.VERSION }}/app-partner-release.apk",
               "forceUpdate": false,
               "releaseNotes": "Automated update v${{ env.VERSION }}"
           }' > build/web/version.json
@@ -94,7 +94,7 @@ jobs:
 
       # --- ANDROID BUILD ---
       - name: Build Android APK
-        run: flutter build apk --release --no-pub --build-name=${{ env.VERSION }} --build-number=${{ github.run_number }}
+        run: flutter build apk --flavor partner --release --no-pub --build-name=${{ env.VERSION }} --build-number=${{ github.run_number }}
       
       - name: Create Release
         id: create_release
@@ -102,7 +102,7 @@ jobs:
         with:
           tag_name: v${{ env.VERSION }}
           name: Release v${{ env.VERSION }}
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: build/app/outputs/flutter-apk/app-partner-release.apk
           body: |
             Automated release for version ${{ env.VERSION }}
             Build Number: ${{ github.run_number }}
@@ -113,7 +113,7 @@ jobs:
         run: |
           echo '{
               "latestVersion": "${{ env.VERSION }}",
-              "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v${{ env.VERSION }}/app-release.apk",
+              "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v${{ env.VERSION }}/app-partner-release.apk",
               "forceUpdate": false,
               "releaseNotes": "Automated update v${{ env.VERSION }}"
           }' > version.json
