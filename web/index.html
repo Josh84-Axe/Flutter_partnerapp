@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Tiknet Africa Partner Management App">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.cinetpay.com https://paystack.com https://*.paystack.com https://paystack.co https://*.paystack.co https://*.gstatic.com https://*.cloudflareinsights.com https://apis.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://paystack.com https://*.paystack.com https://*.paystack.co; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://paystack.com https://*.paystack.com https://*.paystack.co; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://* blob:; frame-src 'self' https://paystack.com https://*.paystack.com https://paystack.co https://*.paystack.co https://*.cinetpay.com; connect-src 'self' blob: https://*.cinetpay.com https://cinetpay.com https://paystack.com https://*.paystack.com https://paystack.co https://*.paystack.co https://*.tiknetafrica.com https://*.wifi-4u.net https://staging.wifi-4u.net https://*.coleah.com https://*.sentry.io https://raw.githubusercontent.com https://*.cloudflareinsights.com https://*.gstatic.com https://cdnjs.cloudflare.com wss://*.cinetpay.com wss://paystack.co wss://*.paystack.co https://*.posthog.com https://api.country.is https://ipapi.co https://*.ipapi.co https://ioapi.co https://*.ioapi.co;">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Tiknet Partner">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/Icon-512.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/Icon-192.png">
+
+  <!-- Apple Splash Screens -->
+  <link rel="apple-touch-startup-image" href="icons/Icon-512.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <title>Tiknet App</title>
+  <script>
+    if (window.location.hostname.includes('family')) {
+      document.title = 'Tiknet Family';
+    } else if (window.location.hostname.includes('campus')) {
+      document.title = 'Tiknet Campus';
+    } else {
+      document.title = 'Tiknet Partner';
+    }
+  </script>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Payment SDKs Integration (Documentation Standard) -->
+  <script src="https://cdn.cinetpay.com/seamless/main.js" type="text/javascript"></script>
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+</head>
+
+<body>
+  <style>
+    body {
+      background-color: #FFFFFF;
+      margin: 0;
+      padding: 0;
+    }
+    #loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      background-color: #FFFFFF;
+    }
+    .logo {
+      width: 120px;
+      height: 120px;
+      animation: pulse 2s infinite ease-in-out;
+    }
+    .loader-bar {
+      margin-top: 24px;
+      width: 150px;
+      height: 4px;
+      background-color: #E0E0E0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .loader-progress {
+      width: 30%;
+      height: 100%;
+      background-color: #2E7D32;
+      border-radius: 4px;
+      animation: progress 1.5s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    @keyframes progress {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(300%); }
+    }
+  </style>
+  <div id="loading">
+    <img src="assets/assets/images/logo_tiknet.png" class="logo" alt="Tiknet" />
+    <div class="loader-bar">
+      <div class="loader-progress"></div>
+    </div>
+  </div>
+
+  <div id="build-version" style="position: fixed; bottom: 4px; right: 8px; font-family: monospace; font-size: 10px; color: rgba(255,255,255,0.4); z-index: 999999; pointer-events: none;">
+    WIFI-4U APP - BUILD 1.2.225 (ROUTER ZTP & LOGIN SYNTAX UPDATE)
+  </div>
+
+  <script>
+    // FINAL BUILD v1.2.225 - BUMP CACHE & FIX ROUTER ZTP SYNTAX
+    const targetVersion = '1.2.225';
+    console.log('🚀 WIFI-4U APP - BUILD ' + targetVersion + ' (ROUTER ZTP & LOGIN SYNTAX UPDATE)');
+    
+    // Global helper for CinetPay official SDK launch
+    window.launchCinetPay = function(config) {
+      if (!window.CinetPay) {
+        alert("CinetPay SDK not loaded! Please check your internet connection.");
+        return;
+      }
+      try {
+        CinetPay.setConfig({
+          apikey: config.apiKey, site_id: config.siteId, notify_url: config.notifyUrl, mode: 'PRODUCTION'
+        });
+        
+        CinetPay.getCheckout({
+          transaction_id: config.transactionId, amount: config.amount, currency: config.currency,
+          channels: 'ALL', description: config.description, customer_name: config.customerName,
+          customer_surname: config.customerSurname, customer_email: config.customerEmail,
+          customer_phone_number: config.customerPhoneNumber, customer_address: "Abidjan",
+          customer_city: "Abidjan", customer_country: "CI", customer_state: "CI",
+          customer_zip_code: "00225", return_url: config.returnUrl, wait_response: true
+        });
+
+        CinetPay.waitResponse(function(data) {
+           console.log('CinetPay Response:', data);
+           if (data.status == "ACCEPTED") {
+              if (window.onPaymentSuccess) window.onPaymentSuccess(config.transactionId);
+           } else {
+              if (window.onPaymentError) window.onPaymentError(data);
+           }
+        });
+
+        CinetPay.onError(function(data) {
+          console.error('CinetPay Error:', data);
+          if (window.onPaymentError) window.onPaymentError(data);
+        });
+
+        CinetPay.onClose(function(data) {
+          console.log('CinetPay Portal Closed');
+          if (window.onPaymentError) window.onPaymentError({message: "closed"});
+        });
+      } catch (e) {
+        console.error('CinetPay Launch Error:', e);
+      }
+    };
+
+    // Global helper for Paystack SDK launch
+    window.launchPaystack = function (config) {
+      console.log('PAYSTACK LAUNCH CONFIG:', JSON.stringify(config));
+      if (!window.PaystackPop) {
+        alert("Paystack SDK not loaded! Please check your internet connection.");
+        return;
+      }
+      try {
+        const handler = PaystackPop.setup({
+          key: config.key, email: config.email, amount: config.amount, ref: config.ref,
+          metadata: {
+            custom_fields: [
+              { display_name: "Plan ID", variable_name: "plan_id", value: config.planId },
+              { display_name: "Plan Name", variable_name: "plan_name", value: config.planName }
+            ]
+          },
+          callback: function (response) {
+            console.log('✅ Paystack Success:', response);
+            if (window.onPaystackSuccess) window.onPaystackSuccess(response.reference);
+          },
+          onClose: function () {
+            console.log('⚠️ Paystack Closed');
+            if (window.onPaystackCancel) window.onPaystackCancel();
+          }
+        });
+        handler.openIframe();
+      } catch (e) {
+        console.error('Paystack Launch Error:', e);
+      }
+    };
+
+    // Standalone and Version Management
+    if (localStorage.getItem('last_version') !== targetVersion) {
+      console.warn('🧹 [Update] Version mismatch! Hard Resetting...');
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          for (let r of registrations) r.unregister();
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          for (let name of names) caches.delete(name);
+        });
+      }
+      localStorage.clear();
+      localStorage.setItem('last_version', targetVersion);
+      setTimeout(() => { window.location.reload(); }, 200);
+    }
+    
+    window.appVersion = targetVersion;
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('service-worker.js?v=' + targetVersion).then(function (reg) {
+          console.log('✅ ServiceWorker enabled');
+        });
+      });
+    }
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+
+</html>

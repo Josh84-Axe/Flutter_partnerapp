@@ -1,0 +1,287 @@
+import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+import '../providers/split/user_provider.dart';
+import '../utils/app_theme.dart';
+import '../models/role_model.dart';
+import '../providers/split/auth_provider.dart';
+import '../utils/permissions.dart';
+
+class RolePermissionScreen extends StatefulWidget {
+  const RolePermissionScreen({super.key});
+
+  @override
+  State<RolePermissionScreen> createState() => _RolePermissionScreenState();
+}
+
+class _RolePermissionScreenState extends State<RolePermissionScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<UserProvider>().loadRoles();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final userProvider = context.watch<UserProvider>();
+    final currentUser = context.watch<AuthProvider>().currentUser;
+    final roles = userProvider.roles;
+    
+    final isAuthorized = currentUser != null && Permissions.isOwner(currentUser.role);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('user_roles_permissions'.tr()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'existing_roles'.tr(),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              FilledButton.icon(
+                onPressed: () {
+                  context.push('/create-role');
+                },
+                icon: const Icon(Icons.add, size: 18),
+                label: Text('create_new_role'.tr()),
+                style: FilledButton.styleFrom(
+                  backgroundColor: colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (userProvider.isLoading && roles.isEmpty)
+            const Center(child: CircularProgressIndicator())
+          else if (roles.isEmpty)
+             Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Text('no_roles_found'.tr()),
+              ),
+            )
+          else
+            ...roles.map((role) => Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _getRoleIcon(role.name),
+                        color: colorScheme.primary,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    role.name,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'team_members_count'.tr(namedArgs: {'count': _getTeamMemberCount(role).toString()}),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, size: 20),
+                                    onPressed: () {
+                                      context.push('/create-role', extra: role.toJson(),
+                                      );
+                                    },
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, size: 20),
+                                    onPressed: () => _showDeleteDialog(context, role),
+                                    color: colorScheme.error,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _getRoleDescription(role),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          if ((role.name.toLowerCase() == 'worker' || role.name.toLowerCase() == 'manager') && isAuthorized) ...[
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                context.push('/collaborators-management');
+                              },
+                              icon: const Icon(Icons.router, size: 18),
+                              label: Text('manage_assigned_routers'.tr()),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: colorScheme.primary,
+                                side: BorderSide(color: colorScheme.primary),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )),
+          const SizedBox(height: 32),
+          Text(
+            'team_access_management'.tr(),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: () {
+              context.push('/assign-role');
+            },
+            icon: const Icon(Icons.person_add),
+            label: Text('assign_role_to_user'.tr()),
+            style: FilledButton.styleFrom(
+              backgroundColor: colorScheme.surface,
+              foregroundColor: colorScheme.onSurface,
+              side: BorderSide(color: colorScheme.outline),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'assign_role_description'.tr(),
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getRoleIcon(String roleName) {
+    switch (roleName.toLowerCase()) {
+      case 'admin':
+      case 'administrator':
+        return Icons.admin_panel_settings;
+      case 'manager':
+        return Icons.shield;
+      case 'worker':
+        return Icons.support_agent;
+      default:
+        return Icons.person;
+    }
+  }
+
+  int _getTeamMemberCount(RoleModel role) {
+    if (role.memberCount != null) return role.memberCount!;
+    
+    switch (role.name.toLowerCase()) {
+      case 'admin':
+      case 'administrator':
+        return 2;
+      case 'manager':
+        return 3;
+      case 'worker':
+        return 5;
+      default:
+        return 0;
+    }
+  }
+
+  String _getRoleDescription(RoleModel role) {
+    if (role.description != null && role.description!.isNotEmpty) return role.description!;
+    
+    switch (role.name.toLowerCase()) {
+      case 'admin':
+      case 'administrator':
+        return 'role_admin_description'.tr();
+      case 'manager':
+        return 'role_manager_description'.tr();
+      case 'worker':
+        return 'role_worker_description'.tr();
+      default:
+        return 'role_default_description'.tr();
+    }
+  }
+
+  void _showDeleteDialog(BuildContext context, role) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('delete_role'.tr()),
+        content: Text('delete_role_confirm'.tr(namedArgs: {'name': role.name})),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text('cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () {
+              context.read<UserProvider>().deleteRole(role.slug);
+              context.pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('role_deleted'.tr())),
+              );
+            },
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
+            child: Text('delete'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+}

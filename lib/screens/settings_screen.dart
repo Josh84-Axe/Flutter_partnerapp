@@ -1,0 +1,330 @@
+import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+
+import '../providers/split/auth_provider.dart';
+import '../providers/theme_provider.dart';
+import '../theme/tiknet_themes.dart';
+
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+
+    final authProvider = context.watch<AuthProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'settings_preferences'.tr(),
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+      ),
+      body: ListView(
+        children: [
+          _buildSection(
+            context,
+            title: 'account'.tr(),
+            items: [
+              _buildSettingItem(
+                context,
+                icon: Icons.router_outlined,
+                title: 'hotspot_management'.tr(),
+                subtitle: 'manage_hotspot_desc'.tr(),
+                onTap: () {
+                  _showHotspotManagementDialog(context);
+                },
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.router,
+                title: 'router_configurations'.tr(),
+                subtitle: 'configure_router_desc'.tr(),
+                onTap: () {
+                  context.push('/router-settings');
+                },
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.wifi,
+                title: 'internet_plan'.tr(),
+                subtitle: 'manage_plans_desc'.tr(),
+                onTap: () {
+                  context.push('/internet-plans-settings');
+                },
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.card_membership_outlined,
+                title: 'subscription_management'.tr(),
+                subtitle: _getSubscriptionTier(authProvider),
+                onTap: () {
+                  context.push('/subscription-management');
+                },
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.health_and_safety_outlined,
+                title: 'router_health'.tr(),
+                subtitle: 'monitor_router_health_desc'.tr(),
+                onTap: () {
+                  context.push('/router-health');
+                },
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.notifications_outlined,
+                title: 'notifications_preferences'.tr(),
+                subtitle: 'configure_notifications_desc'.tr(),
+                onTap: () {
+                  context.push('/notification-settings');
+                },
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.language_outlined,
+                title: 'language'.tr(),
+                subtitle: context.locale.languageCode.toUpperCase(),
+                onTap: () {
+                  context.push('/language');
+                },
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.palette_outlined,
+                title: 'theme'.tr(),
+                subtitle: themeProvider.getVariantName(themeProvider.currentVariant),
+                onTap: () {
+                  _showThemeSelectionDialog(context, themeProvider);
+                },
+              ),
+            ],
+          ),
+          _buildSection(
+            context,
+            title: 'security'.tr(),
+            items: [
+              _buildSettingItem(
+                context,
+                icon: Icons.person_outline,
+                title: 'partner_profile'.tr(),
+                subtitle: 'manage_business_desc'.tr(),
+                onTap: () {
+                  context.push('/partner-profile');
+                },
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.security_outlined,
+                title: 'security_settings'.tr(),
+                subtitle: 'security_settings_desc'.tr(),
+                onTap: () {
+                  context.push('/security/password-2fa');
+                },
+              ),
+              _buildSettingItem(
+                context,
+                icon: Icons.admin_panel_settings_outlined,
+                title: 'user_roles_permissions'.tr(),
+                subtitle: 'manage_access_desc'.tr(),
+                onTap: () {
+                  context.push('/role-permissions');
+                },
+              ),
+            ],
+          ),
+          _buildSection(
+            context,
+            title: 'help_information'.tr(),
+            items: [
+              _buildSettingItem(
+                context,
+                icon: Icons.help_outline,
+                title: 'support_help'.tr(),
+                subtitle: 'get_help_desc'.tr(),
+                onTap: () {
+                  context.push('/support');
+                },
+              ),
+
+              _buildSettingItem(
+                context,
+                icon: Icons.info_outlined,
+                title: 'about'.tr(),
+                subtitle: 'about_version_desc'.tr(),
+                onTap: () {
+                  context.push('/about');
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: FilledButton(
+              onPressed: () async {
+                await authProvider.logout();
+                if (context.mounted) {
+                  context.go('/login');
+                }
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: Text(
+                'logout'.tr(),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection(BuildContext context, {required String title, required List<Widget> items}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+          ),
+        ),
+        ...items,
+        const Divider(height: 1),
+      ],
+    );
+  }
+
+  Widget _buildSettingItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    Widget? trailing,
+    VoidCallback? onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, color: colorScheme.primary, size: 24),
+      ),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: trailing ?? const Icon(Icons.chevron_right),
+      onTap: onTap,
+    );
+  }
+
+  void _showHotspotManagementDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'hotspot_management'.tr(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: Text('hotspot_user_profile'.tr()),
+              subtitle: Text('manage_hotspot_desc'.tr()),
+              onTap: () {
+                context.pop();
+                context.push('/hotspot-user');
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: Text('configurations'.tr()),
+              subtitle: Text('configure_speeds_desc'.tr()),
+              onTap: () {
+                context.pop();
+                context.push('/configurations');
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text('close'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getSubscriptionTier(AuthProvider authProvider) {
+    final routerCount = authProvider.currentUser?.numberOfRouters ?? 0;
+    if (routerCount == 1) return 'subscription_basic'.tr();
+    if (routerCount >= 2 && routerCount <= 4) return 'subscription_standard'.tr();
+    if (routerCount >= 5) return 'subscription_premium'.tr();
+    return 'subscription_none'.tr();
+  }
+
+  void _showThemeSelectionDialog(BuildContext context, ThemeProvider themeProvider) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'theme'.tr(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: TiknetThemeVariant.values.map((variant) {
+              return RadioListTile<TiknetThemeVariant>(
+                title: Text(themeProvider.getVariantName(variant)),
+                value: variant,
+                groupValue: themeProvider.currentVariant,
+                onChanged: (value) {
+                  if (value != null) {
+                    themeProvider.setThemeVariant(value);
+                    context.pop();
+                  }
+                },
+                activeColor: Theme.of(context).colorScheme.primary,
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text('close'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+}

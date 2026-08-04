@@ -1,0 +1,480 @@
+Analyzing Flutter_partnerapp...                                 
+
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:15:5 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:25:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:26:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:27:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:28:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:29:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:30:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:31:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:32:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:35:9 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:38:11 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:40:11 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:42:11 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:44:13 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:49:7 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:51:9 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:53:9 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:54:9 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:58:5 • avoid_print
+   info • Don't invoke 'print' in production code • check_user_permissions.dart:60:7 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:25:10 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:26:10 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:28:10 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:31:8 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:32:8 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:35:8 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:37:11 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:39:14 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:40:14 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:42:14 • avoid_print
+   info • Don't invoke 'print' in production code • debug_keys.dart:46:8 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:16:5 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:23:5 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:25:5 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:31:5 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:32:5 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:35:7 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:36:7 • avoid_print
+   info • Don't invoke 'print' in production code • fetch_profile.dart:38:7 • avoid_print
+   info • Don't invoke 'print' in production code • integration_test/app_test.dart:18:5 • avoid_print
+   info • Don't invoke 'print' in production code • integration_test/app_test.dart:26:7 • avoid_print
+   info • Don't invoke 'print' in production code • integration_test/app_test.dart:31:7 • avoid_print
+   info • Don't invoke 'print' in production code • integration_test/app_test.dart:41:8 • avoid_print
+   info • Don't invoke 'print' in production code • integration_test/app_test.dart:44:5 • avoid_print
+   info • Don't invoke 'print' in production code • integration_test/app_test.dart:59:7 • avoid_print
+   info • Don't invoke 'print' in production code • integration_test/app_test.dart:66:7 • avoid_print
+   info • Don't invoke 'print' in production code • integration_test/app_test.dart:72:7 • avoid_print
+   info • Don't invoke 'print' in production code • integration_test/app_test.dart:106:5 • avoid_print
+   info • Don't invoke 'print' in production code • integration_test/app_test.dart:113:5 • avoid_print
+   info • Don't invoke 'print' in production code • integration_test/app_test.dart:120:5 • avoid_print
+   info • Don't invoke 'print' in production code • integration_test/app_test.dart:125:5 • avoid_print
+   info • Don't use 'BuildContext's across async gaps • lib/feature/auth/login_screen_m3.dart:79:30 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/feature/auth/login_screen_m3.dart:87:20 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/feature/auth/login_screen_m3.dart:246:38 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/feature/auth/login_screen_m3.dart:250:46 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/feature/auth/verify_password_reset_otp_screen.dart:87:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:150:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:198:5 • avoid_print
+   info • Statements in an if should be enclosed in a block • lib/models/voucher_model.dart:39:27 • curly_braces_in_flow_control_structures
+warning • The value of the field '_partnerCurrencyCode' isn't used • lib/providers/split/auth_provider.dart:26:11 • unused_field
+warning • The value of the field '_passwordResetOtpId' isn't used • lib/providers/split/auth_provider.dart:30:11 • unused_field
+warning • The value of the field '_guestCountryCode' isn't used • lib/providers/split/auth_provider.dart:35:11 • unused_field
+   info • Don't invoke 'print' in production code • lib/providers/split/network_provider.dart:313:7 • avoid_print
+   info • 'Table.fromTextArray' is deprecated and shouldn't be used. Use TableHelper.fromTextArray() instead • lib/repositories/report_repository.dart:186:12 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/repositories/session_repository.dart:39:15 • avoid_print
+warning • The value of the field '_searchController' isn't used • lib/screens/active_sessions_screen.dart:18:31 • unused_field
+   info • Don't invoke 'print' in production code • lib/screens/active_sessions_screen.dart:42:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/active_sessions_screen.dart:44:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/active_sessions_screen.dart:48:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/active_sessions_screen.dart:52:7 • avoid_print
+warning • Dead code • lib/screens/active_sessions_screen.dart:143:56 • dead_code
+warning • The left operand can't be null, so the right operand is never executed • lib/screens/active_sessions_screen.dart:143:59 • dead_null_aware_expression
+warning • The left operand can't be null, so the right operand is never executed • lib/screens/active_sessions_screen.dart:143:89 • dead_null_aware_expression
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/active_sessions_screen.dart:385:44 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/active_sessions_screen.dart:386:55 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/active_sessions_screen.dart:386:86 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/active_sessions_screen.dart:425:60 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/screens/active_sessions_screen.dart:524:16 • use_build_context_synchronously
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/add_payout_method_screen.dart:45:11 • unused_local_variable
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/add_payout_method_screen.dart:392:13 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/add_payout_method_screen.dart:450:34 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/add_payout_method_screen.dart:456:27 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/add_payout_method_screen.dart:461:32 • use_build_context_synchronously
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/assign_role_screen.dart:27:11 • unused_local_variable
+warning • The value of the local variable 'isCurrent' isn't used • lib/screens/assign_role_screen.dart:191:27 • unused_local_variable
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/screens/assign_role_screen.dart:199:25 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/screens/assign_role_screen.dart:200:25 • deprecated_member_use
+warning • The declaration '_buildRoleOption' isn't referenced • lib/screens/assign_role_screen.dart:270:10 • unused_element
+   info • Don't invoke 'print' in production code • lib/screens/assign_user_screen.dart:163:7 • avoid_print
+warning • The declaration '_getStatusColor' isn't referenced • lib/screens/assigned_plans_list_screen.dart:72:10 • unused_element
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/assigned_plans_list_screen.dart:215:73 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/screens/collaborators_management_screen.dart:25:11 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/collaborators_management_screen.dart:97:28 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/collaborators_management_screen.dart:149:28 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:65:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:66:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:72:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:105:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:106:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:112:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:172:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:173:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/data_limit_config_screen.dart:179:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/idle_time_config_screen.dart:54:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/idle_time_config_screen.dart:55:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/idle_time_config_screen.dart:61:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/idle_time_config_screen.dart:94:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/idle_time_config_screen.dart:95:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/idle_time_config_screen.dart:101:40 • use_build_context_synchronously
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/config/idle_time_config_screen.dart:119:11 • unused_local_variable
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:54:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:55:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:61:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:94:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:95:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:101:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:151:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:152:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/plan_validity_config_screen.dart:158:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/rate_limit_config_screen.dart:54:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/rate_limit_config_screen.dart:55:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/rate_limit_config_screen.dart:61:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/rate_limit_config_screen.dart:94:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/rate_limit_config_screen.dart:95:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/rate_limit_config_screen.dart:101:40 • use_build_context_synchronously
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/config/rate_limit_config_screen.dart:119:11 • unused_local_variable
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:65:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:66:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:72:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:105:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:106:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:112:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:175:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:176:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/config/shared_user_config_screen.dart:182:42 • use_build_context_synchronously
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/configurations_screen.dart:9:11 • unused_local_variable
+warning • The value of the local variable 'billingProvider' isn't used • lib/screens/create_edit_plan_screen.dart:50:11 • unused_local_variable
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/create_edit_plan_screen.dart:51:11 • unused_local_variable
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/create_edit_user_profile_screen.dart:329:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/create_edit_user_profile_screen.dart:330:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/create_edit_user_profile_screen.dart:340:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/create_edit_user_profile_screen.dart:343:49 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/dashboard_screen.dart:89:45 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/dashboard_screen.dart:318:80 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/dashboard_screen.dart:623:30 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/hotspot_users_management_screen.dart:308:15 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/internet_plan_screen.dart:171:80 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/internet_plan_screen.dart:174:49 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/screens/internet_plans_settings_screen.dart:57:7 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/internet_plans_settings_screen.dart:218:74 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/internet_plans_settings_screen.dart:229:65 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/login_screen.dart:454:40 • use_build_context_synchronously
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/notifications_screen.dart:26:11 • unused_local_variable
+warning • The value of the local variable 'userProvider' isn't used • lib/screens/partner_profile_screen.dart:37:11 • unused_local_variable
+warning • The value of the local variable 'billingProvider' isn't used • lib/screens/partner_profile_screen.dart:124:11 • unused_local_variable
+warning • The declaration '_buildPaymentMethodCard' isn't referenced • lib/screens/partner_profile_screen.dart:351:10 • unused_element
+warning • The declaration '_addPaymentMethod' isn't referenced • lib/screens/partner_profile_screen.dart:463:8 • unused_element
+   info • 'dart:html' is deprecated and shouldn't be used. Use package:web and dart:js_interop instead • lib/screens/payment_gateway_cinetpay_web.dart:4:1 • deprecated_member_use
+warning • The value of the field '_viewId' isn't used • lib/screens/payment_gateway_cinetpay_web.dart:50:15 • unused_field
+warning • The value of the field '_scriptLoaded' isn't used • lib/screens/payment_gateway_cinetpay_web.dart:51:8 • unused_field
+   info • Don't use 'BuildContext's across async gaps • lib/screens/payment_gateway_cinetpay_web.dart:186:31 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/payment_gateway_cinetpay_web.dart:188:31 • use_build_context_synchronously
+   info • 'dart:html' is deprecated and shouldn't be used. Use package:web and dart:js_interop instead • lib/screens/payment_gateway_screen_web.dart:4:1 • deprecated_member_use
+   info • Don't use web-only libraries outside Flutter web plugins • lib/screens/payment_gateway_screen_web.dart:4:1 • avoid_web_libraries_in_flutter
+   info • Don't use 'BuildContext's across async gaps • lib/screens/payment_methods_screen.dart:89:31 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/payout_request_screen.dart:387:36 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/payout_request_screen.dart:389:44 • use_build_context_synchronously
+warning • The declaration '_buildMethodButton' isn't referenced • lib/screens/payout_request_screen.dart:415:10 • unused_element
+   info • Don't invoke 'print' in production code • lib/screens/plan_assignment_screen.dart:44:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/plan_assignment_screen.dart:49:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/plan_assignment_screen.dart:51:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/plan_assignment_screen.dart:71:16 • avoid_print
+warning • The value of the local variable 'billingProvider' isn't used • lib/screens/plan_assignment_screen.dart:121:11 • unused_local_variable
+warning • The value of the local variable 'currencySymbol' isn't used • lib/screens/plan_assignment_screen.dart:213:35 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/screens/registration_screen.dart:119:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/registration_screen.dart:122:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/registration_screen.dart:127:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/screens/registration_screen.dart:137:7 • avoid_print
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/registration_screen.dart:557:41 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/screens/reporting_screen.dart:126:30 • use_build_context_synchronously
+warning • The declaration '_buildTransactionItem' isn't referenced • lib/screens/revenue_breakdown_screen.dart:152:10 • unused_element
+warning • The value of the local variable 'colorScheme' isn't used • lib/screens/router_details_screen.dart:15:11 • unused_local_variable
+warning • The value of the field '_is2FAEnabled' isn't used • lib/screens/security/password_and_2fa_screen.dart:22:8 • unused_field
+   info • Don't use 'BuildContext's across async gaps • lib/screens/session_management_screen.dart:52:31 • use_build_context_synchronously
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/screens/settings_screen.dart:299:17 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/screens/settings_screen.dart:300:17 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/subscription_management_screen.dart:174:68 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/subscription_management_screen.dart:190:64 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/subscription_management_screen.dart:240:73 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/subscription_management_screen.dart:247:64 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/subscription_management_screen.dart:348:74 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/subscription_management_screen.dart:397:87 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/support_ticket_chat_screen.dart:116:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/support_ticket_chat_screen.dart:214:59 • deprecated_member_use
+warning • Dead code • lib/screens/support_ticket_screen.dart:160:32 • dead_code
+warning • The left operand can't be null, so the right operand is never executed • lib/screens/support_ticket_screen.dart:160:35 • dead_null_aware_expression
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/transaction_details_screen.dart:150:65 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/screens/transaction_details_screen.dart:375:22 • deprecated_member_use
+warning • The value of the field '_assignedTransactions' isn't used • lib/screens/transaction_history_screen.dart:23:17 • unused_field
+warning • The value of the field '_walletTransactions' isn't used • lib/screens/transaction_history_screen.dart:24:17 • unused_field
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/voucher_list_screen.dart:221:38 • use_build_context_synchronously
+warning • The operand can't be 'null', so the condition is always 'true' • lib/services/api/logging_interceptor.dart:79:24 • unnecessary_null_comparison
+   info • 'dart:html' is deprecated and shouldn't be used. Use package:web and dart:js_interop instead • lib/services/pwa_service_web.dart:3:1 • deprecated_member_use
+   info • Don't use web-only libraries outside Flutter web plugins • lib/services/pwa_service_web.dart:3:1 • avoid_web_libraries_in_flutter
+   info • Don't invoke 'print' in production code • lib/services/update_service_io.dart:121:19 • avoid_print
+   info • 'dart:html' is deprecated and shouldn't be used. Use package:web and dart:js_interop instead • lib/services/voucher_export_service_web.dart:2:1 • deprecated_member_use
+warning • The value of the local variable 'anchor' isn't used • lib/services/voucher_export_service_web.dart:36:13 • unused_local_variable
+   info • 'dart:html' is deprecated and shouldn't be used. Use package:web and dart:js_interop instead • lib/utils/file_handler/file_handler_web.dart:1:1 • deprecated_member_use
+   info • Don't use web-only libraries outside Flutter web plugins • lib/utils/file_handler/file_handler_web.dart:1:1 • avoid_web_libraries_in_flutter
+warning • The value of the local variable 'anchor' isn't used • lib/utils/file_handler/file_handler_web.dart:9:13 • unused_local_variable
+warning • Dead code • lib/widgets/create_ticket_dialog.dart:63:34 • dead_code
+warning • The left operand can't be null, so the right operand is never executed • lib/widgets/create_ticket_dialog.dart:63:37 • dead_null_aware_expression
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/guest_mode_banner.dart:39:33 • deprecated_member_use
+warning • The value of the local variable 'isUsed' isn't used • lib/widgets/voucher_ticket_card.dart:54:11 • unused_local_variable
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/voucher_ticket_card.dart:66:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/voucher_ticket_card.dart:72:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/voucher_ticket_card.dart:111:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/voucher_ticket_card.dart:133:72 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/voucher_ticket_card.dart:223:62 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/voucher_ticket_card.dart:225:43 • deprecated_member_use
+   info • Don't invoke 'print' in production code • test/check_profile.dart:11:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/check_profile.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/check_profile.dart:25:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/check_profile.dart:27:7 • avoid_print
+warning • Unused import: 'package:dio/dio.dart' • test/crm_integration_qa_test.dart:4:8 • unused_import
+warning • Unused import: 'package:hotspot_partner_app/services/api/api_config.dart' • test/crm_integration_qa_test.dart:6:8 • unused_import
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:11:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:28:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:42:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:43:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:44:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:51:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:53:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:54:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:57:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:59:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:60:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:63:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/crm_integration_qa_test.dart:66:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/debug_user_flag.dart:12:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/debug_user_flag.dart:19:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/debug_user_flag.dart:23:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/debug_user_flag.dart:25:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/debug_user_flag.dart:26:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/debug_user_flag.dart:28:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_api.dart:13:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_api.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_api.dart:21:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_api.dart:22:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_api.dart:26:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_api.dart:28:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_api.dart:29:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_api.dart:31:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_api.dart:33:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_api.dart:35:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_api.dart:37:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_api.dart:40:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:21:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:28:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:34:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:37:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:42:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:46:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:49:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:51:11 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:52:11 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:55:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:57:11 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:58:11 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:62:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/inspect_voucher_json.dart:66:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:15:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:18:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:24:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:26:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:32:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:37:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:39:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:42:8 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:48:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:53:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:56:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:58:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:60:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:63:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:68:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:69:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:72:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:75:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:78:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:80:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:83:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:87:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:92:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/smart_voucher_qa.dart:93:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:5:3 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:10:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:21:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:23:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_support_ticket.dart:26:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:10:3 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:23:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:24:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:27:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:28:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:30:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:34:3 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:47:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:48:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:51:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:52:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/test_ticket_listing.dart:54:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_crm_api.dart:5:3 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_crm_api.dart:11:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_crm_api.dart:31:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_crm_api.dart:33:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_crm_api.dart:37:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:9:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:14:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:25:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:26:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:27:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:30:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:32:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:35:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:39:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:50:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:51:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:54:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:56:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_feedback.dart:60:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_listing.dart:10:3 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_listing.dart:23:5 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_listing.dart:26:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_listing.dart:28:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_listing.dart:34:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_listing.dart:36:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_listing.dart:38:9 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_listing.dart:41:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/verify_ticket_listing.dart:44:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_customers_endpoint.dart:10:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_customers_endpoint.dart:18:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_customers_endpoint.dart:20:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_customers_endpoint.dart:21:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_customers_endpoint.dart:22:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:27:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:31:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:38:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:46:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:49:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:52:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:54:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:58:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:66:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:67:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:70:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:74:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:78:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:81:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:94:14 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:98:18 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:100:18 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:104:22 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:107:25 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:108:35 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:110:22 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:113:25 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:114:35 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:116:22 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:119:25 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:120:35 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:125:10 • avoid_print
+   info • Don't invoke 'print' in production code • test_details_probe.dart:131:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:13:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:26:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:29:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:30:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:32:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:33:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:37:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:40:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:42:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:44:13 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:47:15 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:49:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:50:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:56:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:58:13 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:59:13 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:66:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_hotspot_profiles.dart:68:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:17:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:18:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:19:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:24:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:30:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:31:37 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:35:18 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:36:42 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:38:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:39:17 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:42:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:45:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:48:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:49:37 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:51:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:66:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:68:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:88:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:89:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:91:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_new_apis_probe.dart:123:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:11:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:14:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:15:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:16:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:22:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:25:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:26:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:29:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:34:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:37:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:38:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:42:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:47:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:50:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:51:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:58:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:59:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:60:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:63:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:64:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:65:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:68:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_password_reset_endpoints.dart:79:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:13:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:26:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:30:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:31:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:35:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:38:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:41:13 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:43:15 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:44:15 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:48:13 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:50:15 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:51:15 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:57:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:59:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:64:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:65:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:66:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:69:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:70:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:73:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:74:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:76:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:79:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_plan_endpoints.dart:81:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:16:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:19:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:21:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:22:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:26:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:29:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:30:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:32:11 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:34:13 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:38:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:42:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:44:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_sessions_api.dart:45:7 • avoid_print
+

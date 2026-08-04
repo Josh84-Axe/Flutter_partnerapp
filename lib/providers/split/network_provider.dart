@@ -1,0 +1,1066 @@
+import 'dart:convert';
+import 'package:hotspot_partner_app/utils/error_handler.dart';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../repositories/router_repository.dart';
+import '../../repositories/hotspot_repository.dart';
+import '../../repositories/session_repository.dart';
+import '../../models/router_model.dart';
+import '../../models/hotspot_profile_model.dart';
+import '../../models/router_configuration_model.dart';
+import '../../repositories/customer_repository.dart';
+import '../../repositories/plan_config_repository.dart';
+import '../../repositories/plan_repository.dart';
+import '../../models/plan_model.dart';
+import '../../providers/split/auth_provider.dart';
+import '../../utils/permissions.dart';
+import '../../services/cache_service.dart';
+
+class NetworkProvider with ChangeNotifier {
+  RouterRepository? _routerRepository;
+  HotspotRepository? _hotspotRepository;
+  SessionRepository? _sessionRepository;
+  CustomerRepository? _customerRepository;
+  PlanConfigRepository? _planConfigRepository;
+  PlanRepository? _planRepository;
+  AuthProvider? _authProvider;
+  
+  List<RouterModel> _routers = [];
+  List<RouterConfigurationModel> _routerConfigurations = [];
+  List<PlanModel> _plans = [];
+  List<dynamic> _activeSessions = [];
+  final Map<String, double> _activeDataUsage = {'total_bytes': 0, 'limit_bytes': 0};
+  double _totalAccumulatedBytes = 0;
+  double _lastRefreshTotalBytes = 0;
+  bool _isFirstUsageLoad = true;
+  
+  List<dynamic> _hotspotUsers = [];
+  List<HotspotProfileModel> _hotspotProfiles = [];
+  List<dynamic> _networkPolicies = [];
+  Map<String, List<String>> _routerAssignments = {};
+  
+  List<dynamic> _rateLimits = [];
+  List<dynamic> _dataLimits = [];
+  List<dynamic> _validityPeriods = [];
+  List<dynamic> _idleTimeouts = [];
+  List<dynamic> _sharedUsers = [];
+  
+  bool _isLoading = false;
+  bool _isOffline = false;
+  String? _error;
+  final CacheService _cacheService = CacheService();
+
+  NetworkProvider({
+    RouterRepository? routerRepository,
+    HotspotRepository? hotspotRepository,
+    SessionRepository? sessionRepository,
+    CustomerRepository? customerRepository,
+    PlanConfigRepository? planConfigRepository,
+    PlanRepository? planRepository,
+    AuthProvider? authProvider,
+  }) : _routerRepository = routerRepository,
+       _hotspotRepository = hotspotRepository,
+       _sessionRepository = sessionRepository,
+       _customerRepository = customerRepository,
+       _planConfigRepository = planConfigRepository,
+       _planRepository = planRepository,
+       _authProvider = authProvider {
+    loadRouterAssignments();
+    _loadAccumulatedUsage();
+  }
+
+  void update({
+    RouterRepository? routerRepository,
+    HotspotRepository? hotspotRepository,
+    SessionRepository? sessionRepository,
+    CustomerRepository? customerRepository,
+    PlanConfigRepository? planConfigRepository,
+    PlanRepository? planRepository,
+    AuthProvider? authProvider,
+  }) {
+    _routerRepository = routerRepository;
+    _hotspotRepository = hotspotRepository;
+    _sessionRepository = sessionRepository;
+    _customerRepository = customerRepository;
+    _planConfigRepository = planConfigRepository;
+    _planRepository = planRepository;
+    _authProvider = authProvider;
+  }
+
+  List<RouterModel> get routers => _routers;
+  List<RouterConfigurationModel> get routerConfigurations => _routerConfigurations;
+  List<dynamic> get activeSessions => _activeSessions;
+  Map<String, double> get activeDataUsage => _activeDataUsage;
+  List<dynamic> get hotspotUsers => _hotspotUsers;
+  List<HotspotProfileModel> get hotspotProfiles => _hotspotProfiles;
+  List<dynamic> get rateLimits => _rateLimits;
+  List<dynamic> get dataLimits => _dataLimits;
+  List<dynamic> get validityPeriods => _validityPeriods;
+  List<dynamic> get idleTimeouts => _idleTimeouts;
+  List<dynamic> get sharedUsers => _sharedUsers;
+  List<dynamic> get networkPolicies => _networkPolicies;
+  List<PlanModel> get plans {
+    // Note: We don't filter here because we want the raw list for various uses.
+    // The screen should use a filtered getter if needed.
+    return _plans;
+  }
+
+  /// Get plans filtered by assigned routers for a specific user
+  List<PlanModel> getPlansForUser(String? role, List<String>? assignedRouters) {
+    if (role == null || role.toLowerCase() == 'partner' || role.toLowerCase() == 'owner' || role.toLowerCase() == 'admin' || role.toLowerCase() == 'administrator') {
+      return _plans;
+    }
+    
+    if (assignedRouters == null || assignedRouters.isEmpty) {
+      return [];
+    }
+
+    return _plans.where((plan) {
+      return plan.routers.any((router) => 
+        assignedRouters.contains(router.name) || 
+        assignedRouters.contains(router.id.toString())
+      );
+    }).toList();
+  }
+  bool get isLoading => _isLoading;
+  bool get isOffline => _isOffline;
+  String? get error => _error;
+
+  List<RouterModel> get visibleRouters {
+    final user = _authProvider?.currentUser;
+    if (user == null) return [];
+    
+    // Partners/Owners see ALL routers
+    if (Permissions.isOwner(user.role)) {
+      return _routers;
+    }
+    
+    // Workers/Managers see only assigned routers
+    // Reverting to showing all routers for now as per client request (same as AppState logic)
+    return _routers;
+  }
+
+  final Map<String, int> _routerActiveSessionsCount = {};
+  final Map<String, bool> _routerResourceAlive = {};
+  bool _isCheckingHealth = false;
+
+  bool get isCheckingHealth => _isCheckingHealth;
+
+  int getRouterActiveSessionsCount(String routerIdOrIp) {
+    return _routerActiveSessionsCount[routerIdOrIp] ?? 0;
+  }
+
+  bool isRouterAlive(String slug) {
+    return _routerResourceAlive[slug] ?? false;
+  }
+
+  Future<void> checkAllRoutersHealth() async {
+    if (_routers.isEmpty) return;
+    
+    _isCheckingHealth = true;
+    notifyListeners();
+
+    try {
+      // 1. Refresh global sessions
+      final globalSessions = await fetchActiveSessionsGlobal();
+      _routerActiveSessionsCount.clear();
+      
+      for (var session in globalSessions) {
+        final ip = session['router_ip']?.toString() ?? '';
+        final dns = session['router_name']?.toString() ?? '';
+        
+        if (ip.isNotEmpty) {
+          _routerActiveSessionsCount[ip] = (_routerActiveSessionsCount[ip] ?? 0) + 1;
+        }
+        if (dns.isNotEmpty) {
+          _routerActiveSessionsCount[dns] = (_routerActiveSessionsCount[dns] ?? 0) + 1;
+        }
+      }
+
+      // 2. Check resource availability for each router (parallel)
+      final List<Future<void>> tests = [];
+      for (var router in _routers) {
+        tests.add(_checkSingleRouterHealth(router));
+      }
+      await Future.wait(tests);
+      
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error checking all routers health: $e');
+    } finally {
+      _isCheckingHealth = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _checkSingleRouterHealth(RouterModel router) async {
+    try {
+      final slug = router.slug;
+      if (slug.isEmpty) return;
+      
+      final resources = await fetchRouterResources(slug);
+      _routerResourceAlive[slug] = resources.isNotEmpty;
+    } catch (e) {
+      _routerResourceAlive[router.slug] = false;
+    }
+  }
+
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  // ==================== Routers ====================
+
+  Future<void> loadRouters() async {
+    if (_routerRepository == null) return;
+    
+    _setLoading(true);
+    try {
+      if (kDebugMode) debugPrint('📡 [NetworkProvider] Loading routers...');
+      final routersData = await _routerRepository!.fetchRouters();
+      
+      _routers = routersData.map((data) {
+        try {
+          return RouterModel.fromJson(data);
+        } catch (e) {
+          if (kDebugMode) debugPrint('❌ [NetworkProvider] Error parsing router: $data\nError: $e');
+          rethrow;
+        }
+      }).toList();
+      _routerConfigurations = routersData.map((data) => RouterConfigurationModel.fromJson(data)).toList();
+      _error = null;
+      _isOffline = false;
+      
+      // Save to cache
+      await _cacheService.saveData('network_routers', routersData, isCritical: false);
+      
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error loading routers: $e');
+      
+      // Attempt fallback to cache
+      final cachedData = await _cacheService.getData('network_routers', isCritical: false);
+      if (cachedData != null && cachedData is List) {
+        _routers = cachedData.map((data) => RouterModel.fromJson(data)).toList();
+        _routerConfigurations = cachedData.map((data) => RouterConfigurationModel.fromJson(data)).toList();
+        _isOffline = true;
+        _error = null; // Clear error since we recovered from cache
+        if (kDebugMode) debugPrint('⚠️ [NetworkProvider] Loaded routers from cache offline.');
+      } else {
+        _error = ErrorHandler.getUserFriendlyMessage(e);
+        _isOffline = true;
+      }
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<Map<String, dynamic>?> addRouter(Map<String, dynamic> routerData) async {
+    if (_routerRepository == null) return null;
+    _setLoading(true);
+    try {
+      final response = await _routerRepository!.addRouter(routerData);
+      await loadRouters();
+      
+      Map<String, dynamic>? dataMap;
+      if (response != null) {
+        dataMap = response['data'] is Map ? response['data'] as Map<String, dynamic> : response;
+      }
+
+      // If the response from addRouter is missing the commands, try to fetch the full details
+      if (dataMap != null && (dataMap['bootstrap_command'] == null || dataMap['bootstrap_command'].toString().isEmpty)) {
+        final slug = dataMap['slug']?.toString() ?? dataMap['id']?.toString();
+        if (slug != null) {
+          try {
+            final details = await _routerRepository!.fetchRouterDetails(slug);
+            if (details != null) {
+              _error = null;
+              return details;
+            }
+          } catch (e) {
+            if (kDebugMode) debugPrint('⚠️ [NetworkProvider] Could not fetch details for new router: $e');
+          }
+        }
+      }
+      
+      _error = null;
+      return response;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error adding router: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<Map<String, dynamic>?> updateRouter(String routerSlug, Map<String, dynamic> routerData) async {
+    if (_routerRepository == null) return null;
+    _setLoading(true);
+    try {
+      final response = await _routerRepository!.updateRouter(routerSlug, routerData);
+      await loadRouters();
+      _error = null;
+      return response;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error updating router: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> deleteRouter(String routerId) async {
+    if (_routerRepository == null) return;
+    _setLoading(true);
+    try {
+      await _routerRepository!.deleteRouter(routerId);
+      await loadRouters();
+      _error = null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error deleting router: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchRouterResources(String slug) async {
+    if (_routerRepository == null) return {};
+    try {
+      return await _routerRepository!.fetchRouterResources(slug) ?? {};
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error fetching router resources: $e');
+      rethrow;
+    }
+  }
+
+  // Note: Router configurations are currently simplified to map to RouterModel for the list.
+  // Full configuration management would require a separate API endpoint or storage if not provided by fetchRouters.
+  // For now, we assume routers list contains necessary info or we fetch details on demand.
+  // If RouterSettingsScreen relies on a separate list, we might need to verify the API response structure.
+
+
+  Future<bool> rebootRouter(String slug) async {
+    if (_routerRepository == null) return false;
+    try {
+      final success = await _routerRepository!.rebootRouter(slug);
+      if (success) await loadRouters();
+      return success;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error rebooting router: $e');
+      return false;
+    }
+  }
+
+  Future<bool> restartHotspot(String slug) async {
+    if (_routerRepository == null) return false;
+    try {
+      final success = await _routerRepository!.restartHotspot(slug);
+      return success;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error restarting hotspot: $e');
+      return false;
+    }
+  }
+
+  Future<List<dynamic>> fetchActiveUsers(String slug) async {
+    if (_routerRepository == null) return [];
+    try {
+      return await _routerRepository!.fetchActiveUsers(slug);
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error fetching active users: $e');
+      return [];
+    }
+  }
+  Future<void> blockDevice(String deviceId) async {
+    if (_customerRepository == null) return;
+    _setLoading(true);
+    try {
+      await _customerRepository!.blockCustomer(deviceId);
+      _error = null;
+    } catch (e) {
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> unblockDevice(String deviceId) async {
+    if (_customerRepository == null) return;
+    _setLoading(true);
+    try {
+      await _customerRepository!.unblockCustomer(deviceId);
+      _error = null;
+    } catch (e) {
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+
+
+  // ==================== Customer Data ====================
+
+  Future<Map<String, dynamic>?> getCustomerDataUsage(String username) async {
+    if (_customerRepository == null) return null;
+    return await _customerRepository!.getCustomerDataUsage(username);
+  }
+
+  Future<List<dynamic>> getCustomerAssignedTransactions(String username) async {
+    if (_customerRepository == null) return [];
+    return await _customerRepository!.getCustomerAssignedTransactions(username);
+  }
+
+  Future<List<dynamic>> getCustomerWalletTransactions(String username) async {
+    if (_customerRepository == null) return [];
+    return await _customerRepository!.getCustomerWalletTransactions(username);
+  }
+
+  Future<List<dynamic>> getCustomerAssignedPlans(String username) async {
+    if (_customerRepository == null) return [];
+    return await _customerRepository!.getCustomerAssignedPlans(username);
+  }
+
+  Future<List<dynamic>> getCustomerPurchasedPlans(String username) async {
+    if (_customerRepository == null) return [];
+    return await _customerRepository!.getCustomerPurchasedPlans(username);
+  }
+
+  Future<Map<String, dynamic>?> getCustomerActivePlan(String username) async {
+    if (_customerRepository == null) return null;
+    return await _customerRepository!.getCustomerActivePlan(username);
+  }
+
+  Future<void> assignNetworkPolicy(String username, int? networkPolicyId) async {
+    if (_customerRepository == null) return;
+    try {
+      _setLoading(true);
+      await _customerRepository!.assignNetworkPolicy(username, networkPolicyId);
+      _error = null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error assigning network policy: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+      rethrow;
+    } finally {
+      _setLoading(false);
+      notifyListeners();
+    }
+  }
+
+  // ==================== Sessions ====================
+
+  Future<List<PlanModel>> loadAssignedPlans() async {
+    if (_planRepository == null) return [];
+    
+    try {
+      final response = await _planRepository!.fetchAssignedPlans();
+      // response is already a List<dynamic> of plan data
+      return response.map((e) => PlanModel.fromJson(e)).toList();
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error loading assigned plans: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<dynamic>> fetchActiveSessionsGlobal() async {
+    if (_sessionRepository == null) return [];
+    try {
+      if (kDebugMode) debugPrint('📡 [NetworkProvider] Fetching global active sessions...');
+      return await _sessionRepository!.fetchActiveSessions();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error fetching global sessions: $e');
+      return [];
+    }
+  }
+
+  Future<void> loadActiveSessions() async {
+    if (_sessionRepository == null) return;
+    
+    _setLoading(true);
+    try {
+      if (kDebugMode) debugPrint('📡 [NetworkProvider] Loading active sessions...');
+      final sessions = await _sessionRepository!.fetchActiveSessions();
+      debugPrint('🔍 [NetworkProvider] Raw Active Sessions: $sessions');
+      
+      _activeSessions = sessions;
+      
+      double totalBytes = 0;
+      for (var session in sessions) {
+        totalBytes += (session['bytes_in'] ?? 0) + (session['bytes_out'] ?? 0);
+      }
+      _activeDataUsage['total_bytes'] = totalBytes;
+      
+      // Calculate delta since last refresh to accumulate usage persistantly
+      if (!_isFirstUsageLoad) {
+        if (totalBytes > _lastRefreshTotalBytes) {
+          double delta = totalBytes - _lastRefreshTotalBytes;
+          _totalAccumulatedBytes += delta;
+          _saveAccumulatedUsage();
+        }
+      } else {
+        _isFirstUsageLoad = false;
+      }
+      _lastRefreshTotalBytes = totalBytes;
+      
+      _error = null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error loading sessions: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> disconnectSession(Map<String, dynamic> sessionData) async {
+    if (_sessionRepository == null) return false;
+    
+    try {
+      final success = await _sessionRepository!.disconnectSession(sessionData);
+      if (success) {
+        await loadActiveSessions();
+      }
+      return success;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error disconnecting session: $e');
+      return false;
+    }
+  }
+
+  // ==================== Hotspot Users ====================
+
+  Future<void> loadHotspotUsers() async {
+    if (_hotspotRepository == null) return;
+    
+    _setLoading(true);
+    try {
+      if (kDebugMode) debugPrint('📡 [NetworkProvider] Loading hotspot users...');
+      final users = await _hotspotRepository!.fetchUsers();
+      _hotspotUsers = users;
+      _error = null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error loading hotspot users: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> loadHotspotProfiles() async {
+    if (_hotspotRepository == null) return;
+    
+    _setLoading(true);
+    try {
+      if (kDebugMode) debugPrint('📡 [NetworkProvider] Loading hotspot profiles...');
+      final profiles = await _hotspotRepository!.fetchProfiles();
+      _hotspotProfiles = profiles.map((p) => HotspotProfileModel.fromJson(p)).toList();
+      _error = null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error loading hotspot profiles: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> loadNetworkPolicies() async {
+    if (_planRepository == null) return;
+    
+    _setLoading(true);
+    try {
+      if (kDebugMode) debugPrint('📡 [NetworkProvider] Loading network policies...');
+      _networkPolicies = await _planRepository!.fetchNetworkPolicies();
+      _error = null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error loading network policies: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+    } finally {
+      _setLoading(false);
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadAllConfigurations() async {
+    if (_planConfigRepository == null) return;
+    
+    _setLoading(true);
+    try {
+      if (kDebugMode) debugPrint('📡 [NetworkProvider] Loading configurations...');
+      await Future.wait([
+        _loadRateLimits(),
+        _loadDataLimits(),
+        _loadValidityPeriods(),
+        _loadIdleTimeouts(),
+        _loadSharedUsers(),
+        loadRouters(),
+        loadRouterAssignments(),
+        loadNetworkPolicies(),
+      ]);
+      _error = null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error loading configurations: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> _loadRateLimits() async {
+    if (_planConfigRepository == null) return;
+    try {
+      _rateLimits = await _planConfigRepository!.fetchRateLimits();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error loading rate limits: $e');
+    }
+  }
+
+  Future<void> _loadDataLimits() async {
+    if (_planConfigRepository == null) return;
+    try {
+      final config = await _planConfigRepository!.fetchDataLimits();
+      _dataLimits = config;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error loading data limits: $e');
+    }
+  }
+
+  // ==================== Plan Configurations ====================
+
+
+
+
+
+  Future<void> _loadIdleTimeouts() async {
+    if (_planConfigRepository == null) return;
+    try {
+      _idleTimeouts = await _planConfigRepository!.fetchIdleTimeouts();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error loading idle timeouts: $e');
+    }
+  }
+
+  Future<void> _loadSharedUsers() async {
+    if (_planConfigRepository == null) return;
+    try {
+      _sharedUsers = await _planConfigRepository!.fetchSharedUsers();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error loading shared users: $e');
+    }
+  }
+
+  Future<void> createHotspotUser(Map<String, dynamic> userData) async {
+    if (_hotspotRepository == null) return;
+    try {
+      await _hotspotRepository!.createUser(userData);
+      await loadHotspotUsers();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error creating hotspot user: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateHotspotUser(String username, Map<String, dynamic> userData) async {
+    if (_hotspotRepository == null) return;
+    try {
+      await _hotspotRepository!.updateUser(username, userData);
+      await loadHotspotUsers();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error updating hotspot user: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteHotspotUser(String username) async {
+    if (_hotspotRepository == null) return;
+    try {
+      await _hotspotRepository!.deleteUser(username);
+      await loadHotspotUsers();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error deleting hotspot user: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> createHotspotProfile(Map<String, dynamic> profileData) async {
+    if (_hotspotRepository == null) return;
+    try {
+      await _hotspotRepository!.createProfile(profileData);
+      await loadHotspotProfiles();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error creating hotspot profile: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateHotspotProfile(String profileSlug, Map<String, dynamic> profileData) async {
+    if (_hotspotRepository == null) return;
+    try {
+      await _hotspotRepository!.updateProfile(profileSlug, profileData);
+      await loadHotspotProfiles();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error updating hotspot profile: $e');
+      rethrow;
+    }
+  }
+
+  Future<String> deleteHotspotProfile(String profileSlug) async {
+    if (_hotspotRepository == null) return 'Error';
+    try {
+      final message = await _hotspotRepository!.deleteProfile(profileSlug);
+      await loadHotspotProfiles();
+      return message['message']?.toString() ?? 'Profile deleted';
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error deleting hotspot profile: $e');
+      rethrow;
+    }
+  }
+
+  double get aggregateActiveDataUsage {
+    return _activeDataUsage['total_bytes'] ?? 0;
+  }
+
+  double get aggregateTotalDataLimit {
+    return _activeDataUsage['limit_bytes'] ?? 0;
+  }
+
+  double get totalAccumulatedGB {
+    return _totalAccumulatedBytes / (1024 * 1024 * 1024);
+  }
+
+  // ==================== Router Assignments ====================
+
+  List<String> getAssignedRouters(String username) {
+    return _routerAssignments[username.toLowerCase()] ?? [];
+  }
+
+  Future<void> assignRoutersToWorker(String username, List<String> routerIds) async {
+    _routerAssignments[username.toLowerCase()] = routerIds;
+    await saveRouterAssignments();
+    notifyListeners();
+  }
+
+  Future<void> loadRouterAssignments() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonStr = prefs.getString('router_assignments');
+      if (jsonStr != null) {
+        final decoded = json.decode(jsonStr) as Map<String, dynamic>;
+        _routerAssignments = decoded.map(
+          (key, value) => MapEntry(key, List<String>.from(value as List))
+        );
+        notifyListeners();
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error loading router assignments: $e');
+    }
+  }
+
+  Future<void> saveRouterAssignments() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('router_assignments', json.encode(_routerAssignments));
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error saving router assignments: $e');
+    }
+  }
+
+  Future<void> _loadAccumulatedUsage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _totalAccumulatedBytes = prefs.getDouble('total_accumulated_usage_bytes') ?? 0;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error loading usage: $e');
+    }
+  }
+
+  Future<void> _saveAccumulatedUsage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('total_accumulated_usage_bytes', _totalAccumulatedBytes);
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error saving usage: $e');
+    }
+  }
+
+  Future<void> loadPlans() async {
+    if (_planRepository == null) return;
+    _isLoading = true;
+    notifyListeners();
+    try {
+      if (kDebugMode) debugPrint('📡 [NetworkProvider] Loading plans...');
+      final plansData = await _planRepository!.fetchPlans();
+      _plans = plansData.map<PlanModel>((data) => PlanModel.fromJson(data)).toList();
+      _error = null;
+      _isOffline = false;
+      
+      // Save to cache
+      await _cacheService.saveData('network_plans', plansData, isCritical: false);
+      
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error loading plans: $e');
+      
+      // Attempt fallback to cache
+      final cachedData = await _cacheService.getData('network_plans', isCritical: false);
+      if (cachedData != null && cachedData is List) {
+        _plans = cachedData.map<PlanModel>((data) => PlanModel.fromJson(data)).toList();
+        _isOffline = true;
+        _error = null;
+        if (kDebugMode) debugPrint('⚠️ [NetworkProvider] Loaded plans from cache offline.');
+      } else {
+        _error = ErrorHandler.getUserFriendlyMessage(e);
+        _isOffline = true;
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> createPlan(Map<String, dynamic> planData) async {
+    if (_planRepository == null) return;
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _planRepository!.createPlan(planData);
+      await loadPlans();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error creating plan: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updatePlan(String planId, Map<String, dynamic> planData) async {
+    if (_planRepository == null) return;
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _planRepository!.updatePlan(planId, planData);
+      await loadPlans();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error updating plan: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> deletePlan(String planId) async {
+    if (_planRepository == null) return;
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _planRepository!.deletePlan(planId);
+      await loadPlans();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error deleting plan: $e');
+      _error = ErrorHandler.getUserFriendlyMessage(e);
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ==================== Plan Configurations (CRUD) ====================
+
+  Future<void> createRateLimit(Map<String, dynamic> data) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.createRateLimit(data);
+      await _loadRateLimits();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error creating rate limit: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateRateLimit(int id, Map<String, dynamic> data) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.updateRateLimit(id, data);
+      await _loadRateLimits();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error updating rate limit: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteRateLimit(int id) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.deleteRateLimit(id);
+      await _loadRateLimits();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error deleting rate limit: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> createDataLimit(Map<String, dynamic> data) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.createDataLimit(data);
+      await _loadDataLimits();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error creating data limit: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateDataLimit(int id, Map<String, dynamic> data) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.updateDataLimit(id, data);
+      await _loadDataLimits();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error updating data limit: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteDataLimit(int id) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.deleteDataLimit(id);
+      await _loadDataLimits();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error deleting data limit: $e');
+      rethrow;
+    }
+  }
+  Future<void> _loadValidityPeriods() async {
+    if (_planConfigRepository == null) return;
+    try {
+      final config = await _planConfigRepository!.fetchValidityPeriods();
+      _validityPeriods = config;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error loading validity periods: $e');
+    }
+  }
+  Future<void> createValidityPeriod(Map<String, dynamic> data) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.createValidityPeriod(data);
+      await _loadValidityPeriods();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error creating validity period: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateValidityPeriod(int id, Map<String, dynamic> data) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.updateValidityPeriod(id, data);
+      await _loadValidityPeriods();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error updating validity period: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteValidityPeriod(int id) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.deleteValidityPeriod(id);
+      await _loadValidityPeriods();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error deleting validity period: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> createIdleTimeout(Map<String, dynamic> data) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.createIdleTimeout(data);
+      await _loadIdleTimeouts();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error creating idle timeout: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateIdleTimeout(int id, Map<String, dynamic> data) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.updateIdleTimeout(id, data);
+      await _loadIdleTimeouts();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error updating idle timeout: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteIdleTimeout(int id) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.deleteIdleTimeout(id);
+      await _loadIdleTimeouts();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error deleting idle timeout: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> createSharedUsersConfig(Map<String, dynamic> data) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.createSharedUsers(data);
+      await _loadSharedUsers();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error creating shared user config: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateSharedUsersConfig(int id, Map<String, dynamic> data) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.updateSharedUsers(id, data);
+      await _loadSharedUsers();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error updating shared user config: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteSharedUsersConfig(int id) async {
+    if (_planConfigRepository == null) return;
+    try {
+      await _planConfigRepository!.deleteSharedUsers(id);
+      await _loadSharedUsers();
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [NetworkProvider] Error deleting shared user config: $e');
+      rethrow;
+    }
+  }
+}

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Revenue Breakdown</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1173d4",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .icon-gradient {
+            background: linear-gradient(135deg, #4480c5, #115da7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        #transactionModal:not(:target) {
+            display: none;
+        }
+        #transactionModal:target {
+            display: flex;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-white">
+<div class="flex flex-col h-screen justify-between relative">
+<main class="flex-grow overflow-y-auto">
+<header class="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10">
+<div class="flex items-center p-4">
+<button class="p-2 -ml-2">
+<svg class="text-gray-600 dark:text-gray-300" fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path>
+</svg>
+</button>
+<h1 class="text-lg font-bold flex-1 text-center pr-8 text-gray-900 dark:text-white">Revenue Breakdown</h1>
+</div>
+</header>
+<div class="p-4 space-y-4">
+<a class="block bg-white dark:bg-gray-800/20 rounded-xl shadow-sm overflow-hidden active:opacity-80 transition-opacity" href="#transactionModal">
+<div class="p-5">
+<div class="flex justify-between items-start">
+<div class="flex-1">
+<h2 class="text-sm font-medium text-gray-500 dark:text-gray-400">Assigned Revenue</h2>
+<p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">$1,234.56</p>
+<p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Total accrued from assigned plans</p>
+</div>
+<div class="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center bg-primary/10 dark:bg-primary/20">
+<span class="text-3xl icon-gradient">💰</span>
+</div>
+</div>
+<div class="mt-4 text-center">
+<span class="text-sm font-semibold text-primary dark:text-primary">View Details</span>
+</div>
+</div>
+</a>
+<a class="block bg-white dark:bg-gray-800/20 rounded-xl shadow-sm overflow-hidden active:opacity-80 transition-opacity" href="#transactionModal">
+<div class="p-5">
+<div class="flex justify-between items-start">
+<div class="flex-1">
+<h2 class="text-sm font-medium text-gray-500 dark:text-gray-400">Online Revenue</h2>
+<p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">$789.01</p>
+<p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Total accrued from online payments</p>
+</div>
+<div class="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center bg-green-500/10 dark:bg-green-400/20">
+<span class="text-3xl" style="background: linear-gradient(135deg, #34d399, #059669);-webkit-background-clip: text;-webkit-text-fill-color: transparent;">💳</span>
+</div>
+</div>
+<div class="mt-4 text-center">
+<span class="text-sm font-semibold text-primary dark:text-primary">View Details</span>
+</div>
+</div>
+</a>
+</div>
+</main>
+<footer class="sticky bottom-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800">
+<nav class="flex justify-around items-center px-2 py-2">
+<a class="flex flex-col items-center gap-1 text-primary w-1/5" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M224,115.55V208a16,16,0,0,1-16,16H168a16,16,0,0,1-16-16V168a8,8,0,0,0-8-8H112a8,8,0,0,0-8,8v40a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V115.55a16,16,0,0,1,5.17-11.78l80-75.48.11-.11a16,16,0,0,1,21.53,0,1.14,1.14,0,0,0,.11.11l80,75.48A16,16,0,0,1,224,115.55Z"></path></svg>
+<span class="text-xs font-medium">Dashboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-500 dark:text-gray-400 w-1/5" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M117.25,157.92a60,60,0,1,0-66.5,0A95.83,95.83,0,0,0,3.53,195.63a8,8,0,1,0,13.4,8.74,80,80,0,0,1,134.14,0,8,8,0,0,0,13.4-8.74A95.83,95.83,0,0,0,117.25,157.92ZM40,108a44,44,0,1,1,44,44A44.05,44.05,0,0,1,40,108Zm210.14,98.7a8,8,0,0,1-11.07-2.33A79.83,79.83,0,0,0,172,168a8,8,0,0,1,0-16,44,44,0,1,0-16.34-84.87,8,8,0,1,1-5.94-14.85,60,60,0,0,1,55.53,105.64,95.83,95.83,0,0,1,47.22,37.71A8,8,0,0,1,250.14,206.7Z"></path></svg>
+<span class="text-xs font-medium">Users</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-500 dark:text-gray-400 w-1/5" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M80,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H88A8,8,0,0,1,80,64Zm136,56H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,64H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16ZM44,52A12,12,0,1,0,56,64,12,12,0,0,0,44,52Zm0,64a12,12,0,1,0,12,12A12,12,0,0,0,44,116Zm0,64a12,12,0,1,0,12,12A12,12,0,0,0,44,180Z"></path></svg>
+<span class="text-xs font-medium">Plans</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-500 dark:text-gray-400 w-1/5" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M152,120H136V56h8a32,32,0,0,1,32,32,8,8,0,0,0,16,0,48.05,48.05,0,0,0-48-48h-8V24a8,8,0,0,0-16,0V40h-8a48,48,0,0,0,0,96h8v64H104a32,32,0,0,1-32-32,8,8,0,0,0-16,0,48.05,48.05,0,0,0,48,48h16v16a8,8,0,0,0,16,0V216h16a48,48,0,0,0,0-96Zm-40,0a32,32,0,0,1,0-64h8v64Zm40,80H136V136h16a32,32,0,0,1,0,64Z"></path></svg>
+<span class="text-xs font-medium">Transactions</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-500 dark:text-gray-400 w-1/5" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M140,204a12,12,0,1,1-12-12A12,12,0,0,1,140,204ZM237.08,87A172,172,0,0,0,18.92,87,8,8,0,0,0,29.08,99.37a156,156,0,0,1,197.84,0A8,8,0,0,0,237.08,87ZM205,122.77a124,124,0,0,0-153.94,0A8,8,0,0,0,61,135.31a108,108,0,0,1,134.06,0,8,8,0,0,0,11.24-1.3A8,8,0,0,0,205,122.77Zm-32.26,35.76a76.05,76.05,0,0,0-89.42,0,8,8,0,0,0,9.42,12.94,60,60,0,0,1,70.58,0,8,8,0,1,0,9.42-12.94Z"></path></svg>
+<span class="text-xs font-medium">Routers</span>
+</a>
+</nav>
+<div class="h-safe-bottom"></div>
+</footer>
+</div>
+<div class="fixed inset-0 z-50 items-end bg-black bg-opacity-50 backdrop-blur-sm animate-fade-in" id="transactionModal">
+<div class="w-full bg-background-light dark:bg-background-dark rounded-t-2xl shadow-lg max-h-[90%] flex flex-col animate-slide-up">
+<header class="p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-inherit rounded-t-2xl">
+<div class="flex items-center justify-between">
+<h2 class="text-lg font-bold text-gray-900 dark:text-white">Transaction History</h2>
+<a class="p-2 -mr-2 text-gray-500 dark:text-gray-400" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+</a>
+</div>
+<div class="mt-4 relative">
+<input class="w-full bg-gray-100 dark:bg-gray-800 border-transparent rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-primary focus:border-primary" placeholder="Search transactions..." type="text"/>
+<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+<svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" fill-rule="evenodd"></path></svg>
+</div>
+</div>
+</header>
+<div class="overflow-y-auto p-4 space-y-3 flex-grow">
+<div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800/50 rounded-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-green-500/10 dark:bg-green-400/20 flex items-center justify-center">
+<svg class="w-5 h-5 text-green-500" fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path></svg>
+</div>
+<div>
+<p class="font-semibold text-gray-900 dark:text-white">Plan Purchase - Pro</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Oct 26, 2023 - John Doe</p>
+</div>
+</div>
+<p class="font-bold text-green-500">+$25.00</p>
+</div>
+<div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800/50 rounded-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-green-500/10 dark:bg-green-400/20 flex items-center justify-center">
+<svg class="w-5 h-5 text-green-500" fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path></svg>
+</div>
+<div>
+<p class="font-semibold text-gray-900 dark:text-white">Plan Assignment - Basic</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Oct 25, 2023 - Jane Smith</p>
+</div>
+</div>
+<p class="font-bold text-green-500">+$10.00</p>
+</div>
+<div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800/50 rounded-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-red-500/10 dark:bg-red-400/20 flex items-center justify-center">
+<svg class="w-5 h-5 text-red-500" fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M216,128a8,8,0,0,1-8,8H48a8,8,0,0,1,0-16H208A8,8,0,0,1,216,128Z"></path></svg>
+</div>
+<div>
+<p class="font-semibold text-gray-900 dark:text-white">Refund - Pro Plan</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Oct 24, 2023 - Mike Johnson</p>
+</div>
+</div>
+<p class="font-bold text-red-500">-$25.00</p>
+</div>
+<div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800/50 rounded-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-green-500/10 dark:bg-green-400/20 flex items-center justify-center">
+<svg class="w-5 h-5 text-green-500" fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path></svg>
+</div>
+<div>
+<p class="font-semibold text-gray-900 dark:text-white">Plan Assignment - Business</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Oct 23, 2023 - Sarah Chen</p>
+</div>
+</div>
+<p class="font-bold text-green-500">+$50.00</p>
+</div>
+<div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800/50 rounded-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-green-500/10 dark:bg-green-400/20 flex items-center justify-center">
+<svg class="w-5 h-5 text-green-500" fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path></svg>
+</div>
+<div>
+<p class="font-semibold text-gray-900 dark:text-white">Plan Purchase - Basic</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Oct 22, 2023 - David Lee</p>
+</div>
+</div>
+<p class="font-bold text-green-500">+$10.00</p>
+</div>
+<div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800/50 rounded-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-green-500/10 dark:bg-green-400/20 flex items-center justify-center">
+<svg class="w-5 h-5 text-green-500" fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path></svg>
+</div>
+<div>
+<p class="font-semibold text-gray-900 dark:text-white">Plan Assignment - Pro</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Oct 21, 2023 - Emily Rodriguez</p>
+</div>
+</div>
+<p class="font-bold text-green-500">+$25.00</p>
+</div>
+</div>
+</div>
+</div>
+<style>
+    @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .animate-fade-in {
+        animation: fade-in 0.3s ease-out forwards;
+    }
+    @keyframes slide-up {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+    .animate-slide-up {
+        animation: slide-up 0.3s ease-out forwards;
+    }
+</style>
+
+</body></html>

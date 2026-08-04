@@ -1,0 +1,318 @@
+import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+import '../providers/split/user_provider.dart';
+
+class AssignRoleScreen extends StatefulWidget {
+  const AssignRoleScreen({super.key});
+
+  @override
+  State<AssignRoleScreen> createState() => _AssignRoleScreenState();
+}
+
+class _AssignRoleScreenState extends State<AssignRoleScreen> {
+  String? _selectedRoleId;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<UserProvider>().loadWorkers();
+      context.read<UserProvider>().loadRoles();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final userProvider = context.watch<UserProvider>();
+    final workers = userProvider.workers;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('assign_change_role'.tr()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'search_workers'.tr(),
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: workers.isEmpty
+                ? Center(child: Text('no_workers_found'.tr()))
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: workers.length,
+                    itemBuilder: (context, index) {
+                      final worker = workers[index];
+                      final displayName = worker.fullName.isNotEmpty ? worker.fullName : worker.username;
+                      final displayRole = worker.roleName ?? worker.roleSlug ?? 'no_role'.tr();
+                      
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                            child: Text(
+                              displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            displayName,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Text(worker.email),
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: _getRoleBadgeColor(worker.roleSlug ?? '', context).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              displayRole,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: _getRoleBadgeColor(worker.roleSlug ?? '', context),
+                              ),
+                            ),
+                          ),
+                          onTap: () {
+                            _showRoleSelector(context, worker);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getRoleBadgeColor(String role, BuildContext context) {
+    if (role.isEmpty) return Theme.of(context).colorScheme.onSurfaceVariant;
+    
+    // Generate a consistent color based on the role string
+    final int hash = role.toLowerCase().codeUnits.fold(0, (prev, curr) => prev + curr);
+    final List<Color> roleColors = [
+      Colors.purple,
+      Colors.teal,
+      Colors.orange,
+      Colors.blue,
+      Colors.indigo,
+      Colors.pink,
+      Colors.cyan,
+      Colors.amber,
+    ];
+    
+    return roleColors[hash % roleColors.length];
+  }
+
+  void _showRoleSelector(BuildContext context, worker) {
+    final userProvider = context.read<UserProvider>();
+    final roles = userProvider.roles;
+    final displayName = worker.fullName.isNotEmpty ? worker.fullName : worker.username;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: SafeArea(
+            child: Builder(
+              builder: (context) {
+                final colorScheme = Theme.of(context).colorScheme;
+                return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: colorScheme.outline,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Text(
+                  'select_new_role'.tr(),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  displayName,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                if (roles.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text('no_roles_available'.tr()),
+                  )
+                else
+                  ...roles.map((role) {
+                    final currentRoleSlug = worker.roleSlug?.toLowerCase() ?? '';
+                    final isCurrent = currentRoleSlug == role.slug.toLowerCase() || 
+                                      currentRoleSlug == role.name.toLowerCase();
+                    
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: RadioListTile<String>(
+                        title: Text(role.name),
+                        value: role.id,
+                        groupValue: _selectedRoleId,
+                        onChanged: (value) {
+                          setModalState(() {
+                            _selectedRoleId = value;
+                          });
+                        },
+                        activeColor: Theme.of(context).colorScheme.primary,
+                        contentPadding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: _selectedRoleId == role.id ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline,
+                            width: _selectedRoleId == role.id ? 2 : 1,
+                          ),
+                        ),
+                        tileColor: _selectedRoleId == role.id ? Theme.of(context).colorScheme.primaryContainer : Colors.transparent,
+                      ),
+                    );
+                  }),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () async {
+                      if (_selectedRoleId != null) {
+                        context.pop();
+                        try {
+                          await userProvider.assignRoleToWorker(worker.username, _selectedRoleId!);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('role_updated_to'.tr(namedArgs: {'role': roles.firstWhere((r) => r.id == _selectedRoleId).name})),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error assigning role: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: Text('update_role'.tr()),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => context.pop(),
+                    child: Text('cancel'.tr()),
+                  ),
+                ),
+              ],
+            );
+          }),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoleOption(
+    BuildContext context,
+    StateSetter setModalState,
+    String label,
+    String value,
+    bool isCurrentRole,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isSelected = _selectedRoleId == value || (isCurrentRole && _selectedRoleId == null);
+    
+    return GestureDetector(
+      onTap: () {
+        setModalState(() {
+          _selectedRoleId = value;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? colorScheme.primaryContainer : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? colorScheme.primary : colorScheme.outline,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: colorScheme.primary,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}

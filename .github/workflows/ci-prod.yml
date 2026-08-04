@@ -1,0 +1,133 @@
+name: Prod CI/CD (Web & Android)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required for creating releases and pushing version.json
+      deployments: write
+    env:
+      VERSION: 1.2.${{ github.run_number }}
+      API_HOST: https://staging.wifi-4u.net
+      CRM_API_KEY: ${{ secrets.CRM_API_KEY }}
+      USE_REMOTE_API: true
+      SENTRY_DSN: https://37bff452b01af4d6e285f9d3c913e779@o4510974779588608.ingest.de.sentry.io/4510974786469968
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+          channel: 'stable'
+          cache: true
+      
+      - name: Clean Build
+        run: flutter clean
+
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Inject Version into index.html
+        run: |
+          sed -i 's/BUILD v[0-9.]*/BUILD v'"${{ env.VERSION }}"'/g' web/index.html
+          sed -i "s/targetVersion = '[0-9.]*'/targetVersion = '${{ env.VERSION }}'/g" web/index.html
+          echo "Updated web/index.html with version ${{ env.VERSION }}"
+
+      # --- WEB DEPLOYMENT ---
+      - name: Build Web
+        run: |
+          flutter build web --release \
+            --build-name=${{ env.VERSION }} \
+            --build-number=${{ github.run_number }} \
+            --dart-define=API_HOST=${{ env.API_HOST }} \
+            --dart-define=CRM_API_KEY=${{ env.CRM_API_KEY }} \
+            --dart-define=USE_REMOTE_API=${{ env.USE_REMOTE_API }} \
+            --dart-define=SENTRY_DSN=${{ env.SENTRY_DSN }}
+      
+      - name: Prepare version.json for Web
+        run: |
+          echo '{
+              "latestVersion": "${{ env.VERSION }}",
+              "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v${{ env.VERSION }}/app-partner-release.apk",
+              "forceUpdate": false,
+              "releaseNotes": "Automated update v${{ env.VERSION }}"
+          }' > build/web/version.json
+          echo "Created build/web/version.json"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify Build Output
+        run: |
+          ls -d build/web
+          grep "BUILD v${{ env.VERSION }}" build/web/index.html
+        
+      - name: Deploy to Cloudflare Pages (Production)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+           npx wrangler@3.101.0 pages deploy build/web \
+            --project-name=app-wifi-4u-net \
+            --branch=main \
+            --commit-dirty=true
+
+      - name: Purge Cloudflare Cache
+        continue-on-error: true
+        uses: jakejarvis/cloudflare-purge-action@master
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_AUTH_KEY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      # --- ANDROID BUILD ---
+      - name: Build Android APK
+        run: flutter build apk --flavor partner --release --no-pub --build-name=${{ env.VERSION }} --build-number=${{ github.run_number }}
+      
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Release v${{ env.VERSION }}
+          files: build/app/outputs/flutter-apk/app-partner-release.apk
+          body: |
+            Automated release for version ${{ env.VERSION }}
+            Build Number: ${{ github.run_number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Update version.json
+        run: |
+          echo '{
+              "latestVersion": "${{ env.VERSION }}",
+              "downloadUrl": "https://github.com/Josh84-Axe/Flutter_partnerapp/releases/download/v${{ env.VERSION }}/app-partner-release.apk",
+              "forceUpdate": false,
+              "releaseNotes": "Automated update v${{ env.VERSION }}"
+          }' > version.json
+          
+      - name: Commit and Push version.json
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git add version.json
+          # Only commit if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to version.json"
+          else
+            git commit -m "chore: Update version.json to ${{ env.VERSION }} [skip ci]"
+            git pull --rebase origin ${{ github.ref_name }}
+            git push origin HEAD:${{ github.ref_name }}
+          fi

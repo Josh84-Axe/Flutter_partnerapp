@@ -1,0 +1,447 @@
+import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import '../providers/split/network_provider.dart';
+import '../providers/split/user_provider.dart';
+import '../providers/split/billing_provider.dart';
+
+class CreateEditPlanScreen extends StatefulWidget {
+  final Map<String, dynamic>? planData;
+
+  const CreateEditPlanScreen({super.key, this.planData});
+
+  @override
+  State<CreateEditPlanScreen> createState() => _CreateEditPlanScreenState();
+}
+
+class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _priceController = TextEditingController();
+  
+  dynamic _selectedDataLimit;
+  dynamic _selectedValidity;
+  dynamic _selectedDeviceAllowed;
+  int? _selectedProfile;
+  int? _selectedNetworkPolicy;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.planData != null) {
+      _nameController.text = widget.planData!['name'] ?? '';
+      _priceController.text = widget.planData!['price']?.toString() ?? '';
+      final np = widget.planData!['network_policy'];
+      if (np != null) {
+        _selectedNetworkPolicy = int.tryParse(np.toString());
+      }
+      // Note: We'll need to match the selected values from the dropdowns after they load
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _priceController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final networkProvider = context.watch<NetworkProvider>();
+    final userProvider = context.watch<UserProvider>();
+    final billingProvider = context.watch<BillingProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
+    final isEdit = widget.planData != null;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(isEdit ? 'edit_internet_plan'.tr() : 'create_internet_plan'.tr()),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16.0),
+                children: [
+                  // Plan Name
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: 'plan_name'.tr(),
+                      hintText: 'plan_name_hint'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.label),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'enter_plan_name'.tr();
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Price
+                  TextFormField(
+                    controller: _priceController,
+                    decoration: InputDecoration(
+                      labelText: 'price'.tr(),
+                      hintText: 'price_hint'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.attach_money),
+                      prefixText: '${userProvider.currencyCode} ',
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'enter_price'.tr();
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'enter_valid_number'.tr();
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Data Limit Dropdown
+                  DropdownButtonFormField<dynamic>(
+                    initialValue: _selectedDataLimit,
+                    decoration: InputDecoration(
+                      labelText: 'data_limit'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.cloud_download),
+                    ),
+                    items: networkProvider.dataLimits.isEmpty
+                        ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
+                        : [
+                            // Add Unlimited option first
+                            DropdownMenuItem(
+                              value: 'unlimited',
+                               child: Text('unlimited'.tr()),
+                            ),
+                            // Then add all configured data limits
+                            ...networkProvider.dataLimits.map((limit) {
+                              return DropdownMenuItem(
+                                value: limit, 
+                                child: Text(_getLabel(limit, 'data_limit'))
+                              );
+                            }),
+                          ],
+                    onChanged: (value) => setState(() => _selectedDataLimit = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'select_data_limit'.tr();
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Validity Dropdown
+                  DropdownButtonFormField<dynamic>(
+                    initialValue: _selectedValidity,
+                    decoration: InputDecoration(
+                      labelText: 'validity'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.calendar_month),
+                    ),
+                    items: networkProvider.validityPeriods.isEmpty
+                        ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
+                        : networkProvider.validityPeriods.map((validity) {
+                            return DropdownMenuItem(
+                              value: validity, 
+                              child: Text(_getLabel(validity, 'validity'))
+                            );
+                          }).toList(),
+                    onChanged: (value) => setState(() => _selectedValidity = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'select_validity_period'.tr();
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Device Allowed Dropdown
+                  DropdownButtonFormField<dynamic>(
+                    initialValue: _selectedDeviceAllowed,
+                    decoration: InputDecoration(
+                      labelText: 'device_allowed'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.devices),
+                    ),
+                    items: networkProvider.sharedUsers.isEmpty
+                        ? [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))]
+                        : networkProvider.sharedUsers.map((user) {
+                            return DropdownMenuItem(
+                              value: user, 
+                              child: Text(_getLabel(user, 'shared_users'))
+                            );
+                          }).toList(),
+                    onChanged: (value) => setState(() => _selectedDeviceAllowed = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'select_device_allowed'.tr();
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Hotspot Profile Dropdown
+                  DropdownButtonFormField<int>(
+                    initialValue: _selectedProfile,
+                    decoration: InputDecoration(
+                      labelText: 'hotspot_user_profile'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.person),
+                    ),
+                    items: networkProvider.hotspotProfiles.isEmpty
+                        ? []
+                        : networkProvider.hotspotProfiles
+                            .map((profile) => DropdownMenuItem(
+                                  value: int.tryParse(profile.id),
+                                  child: Text(profile.name),
+                                ))
+                            .toList(),
+                    onChanged: (value) => setState(() => _selectedProfile = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'select_hotspot_profile'.tr();
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Network Policy Dropdown
+                  Builder(
+                    builder: (context) {
+                      int? currentPolicy = _selectedNetworkPolicy;
+                      if (currentPolicy != null && networkProvider.networkPolicies.isNotEmpty) {
+                        final exists = networkProvider.networkPolicies.any((p) {
+                          final pId = int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null);
+                          return pId == currentPolicy;
+                        });
+                        if (!exists) {
+                          currentPolicy = null;
+                        }
+                      }
+                      
+                      return DropdownButtonFormField<int>(
+                        initialValue: currentPolicy,
+                        decoration: InputDecoration(
+                          labelText: 'select_network_policy'.tr(),
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.policy),
+                        ),
+                        items: networkProvider.networkPolicies.isEmpty
+                            ? [DropdownMenuItem<int>(value: null, child: Text('no_network_policies_configured'.tr()))]
+                            : [
+                                DropdownMenuItem<int>(value: null, child: Text('none'.tr())),
+                                ...networkProvider.networkPolicies
+                                    .map((p) => DropdownMenuItem<int>(
+                                          value: int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null),
+                                          child: Text(p['name']?.toString() ?? 'Unknown'),
+                                        ))
+                                    ,
+                              ],
+                        onChanged: (value) => setState(() => _selectedNetworkPolicy = value),
+                      );
+                    }
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Action Buttons
+                  Row(
+                    children: [
+                      if (isEdit) ...[
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _deletePlan,
+                            icon: const Icon(Icons.delete),
+                            label: Text('delete_plan'.tr()),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      Expanded(
+                        flex: 2,
+                        child: FilledButton.icon(
+                          onPressed: _savePlan,
+                          icon: Icon(isEdit ? Icons.save : Icons.add),
+                          label: Text(isEdit ? 'update_plan'.tr() : 'create_plan'.tr()),
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  String _getLabel(dynamic item, String type) {
+    if (item is! Map) return item.toString();
+    
+    if (item['name'] != null) return item['name'].toString();
+    
+    switch (type) {
+      case 'data_limit':
+        if (item['gb'] != null) return item['gb'].toString();
+        if (item['value'] != null) return item['value'].toString();
+        if (item['limit'] != null) return item['limit'].toString();
+        break;
+      case 'validity':
+        if (item['days'] != null) return '${item['days']}';
+        if (item['value'] != null) return '${item['value']}';
+        break;
+      case 'shared_users':
+        if (item['count'] != null) return '${item['count']} Users';
+        if (item['limit'] != null) return '${item['limit']} Users';
+        if (item['value'] != null) return '${item['value']} Users';
+        break;
+    }
+    
+    // Fallback to printing the whole map if nothing matches, but cleaner
+    return item.values.first.toString();
+  }
+
+  Future<void> _savePlan() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Helper to extract ID from dynamic item
+      int? extractId(dynamic item, String context) {
+        if (kDebugMode) debugPrint('🔍 [CreatePlan] Extracting ID from $context: $item');
+        
+        if (item is Map) {
+          final id = item['id'];
+          if (kDebugMode) debugPrint('   Extracted ID: $id');
+          return id is int ? id : (id is String ? int.tryParse(id) : null);
+        } else if (item is int) {
+          return item;
+        } else if (item is String) {
+          return int.tryParse(item);
+        }
+        return null;
+      }
+
+      final dataLimitId = _selectedDataLimit == 'unlimited'
+          ? null
+          : extractId(_selectedDataLimit, 'data_limit');
+      
+      final validityId = extractId(_selectedValidity, 'validity');
+      final sharedUsersId = extractId(_selectedDeviceAllowed, 'shared_users');
+
+      final data = {
+        'name': _nameController.text,
+        'price': double.parse(_priceController.text),
+        'data_limit': dataLimitId,
+        'validity': validityId,
+        'is_active': true,
+        'shared_users': sharedUsersId,
+        'profile': _selectedProfile,
+      };
+      
+      if (_selectedNetworkPolicy != null) {
+        data['network_policy'] = _selectedNetworkPolicy;
+      }
+
+      if (kDebugMode) debugPrint('📦 [CreatePlan] Plan data: $data');
+
+      final networkProvider = context.read<NetworkProvider>();
+      if (widget.planData != null && widget.planData!['id'] != null) {
+        await networkProvider.updatePlan(widget.planData!['slug']?.toString() ?? widget.planData!['id'].toString(), data);
+      } else {
+        await networkProvider.createPlan(data);
+      }
+
+      if (mounted) {
+        context.pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.planData != null ? 'plan_updated'.tr() : 'plan_created'.tr()),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [CreatePlan] Error: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deletePlan() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('delete_plan'.tr()),
+        content: Text('delete_plan_confirm'.tr(namedArgs: {'name': _nameController.text})),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: Text('delete'.tr()),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() => _isLoading = true);
+      try {
+        await context.read<NetworkProvider>().deletePlan(widget.planData!['slug']?.toString() ?? widget.planData!['id'].toString());
+        if (mounted) {
+          context.pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('plan_deleted_successfully'.tr()),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+}

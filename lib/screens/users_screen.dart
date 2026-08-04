@@ -1,0 +1,1017 @@
+import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+
+import '../providers/split/auth_provider.dart';
+import '../providers/split/user_provider.dart';
+import '../models/worker_model.dart';
+// Added by instruction
+import '../providers/split/network_provider.dart';
+import '../utils/app_theme.dart';
+import '../widgets/search_bar_widget.dart';
+import '../widgets/create_worker_dialog.dart';
+import '../widgets/skeleton_loader.dart';
+import 'assign_routers_screen.dart';
+import '../utils/permissions.dart';
+import '../utils/permission_mapping.dart';
+import '../widgets/permission_denied_dialog.dart';
+import '../utils/error_message_helper.dart';
+import '../utils/country_utils.dart';
+
+class UsersScreen extends StatefulWidget {
+  const UsersScreen({super.key});
+
+  @override
+  State<UsersScreen> createState() => _UsersScreenState();
+}
+
+class _UsersScreenState extends State<UsersScreen> with SingleTickerProviderStateMixin {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    
+    // Restore tab index if saved
+    // We use a post-frame callback to set the index to avoid initial animation glitches
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final savedIndex = PageStorage.of(context).readState(context, identifier: 'users_tab_index') as int?;
+      if (savedIndex != null && savedIndex != _tabController.index) {
+        _tabController.animateTo(savedIndex);
+      }
+    });
+
+    _tabController.addListener(() {
+      // Save tab index
+      if (!_tabController.indexIsChanging) {
+        PageStorage.of(context).writeState(context, _tabController.index, identifier: 'users_tab_index');
+        setState(() {});
+      }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = context.read<AuthProvider>();
+      if (authProvider.isGuestMode) return;
+
+      context.read<UserProvider>().loadUsers();
+      context.read<UserProvider>().loadWorkers();
+      context.read<UserProvider>().loadRoles();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _tabController.dispose();
+    super.dispose();
+  }
+
+
+  void _showUserDialog({Map<String, dynamic>? userData}) {
+    final currentUser = context.read<AuthProvider>().currentUser;
+    if (currentUser == null) return;
+    // Permission check for create vs edit
+    final hasPermission = userData == null
+        ? Permissions.canCreateUsers(currentUser.role, currentUser.permissions)
+        : Permissions.canEditUsers(currentUser.role, currentUser.permissions);
+    if (!hasPermission) {
+      PermissionDeniedDialog.show(
+        context,
+        requiredPermission: userData == null ? PermissionConstants.createUsers : PermissionConstants.editUsers,
+      );
+      return;
+    }
+    
+    // Ensure routers are loaded for the dropdown
+    context.read<NetworkProvider>().loadRouters();
+
+    final partnerCountry = context.read<AuthProvider>().partnerCountry;
+
+    // Pre-fill phone with country code if new user and country is known
+    String initialPhone = userData?['phone'] ?? '';
+    if (initialPhone.isEmpty && partnerCountry != null) {
+      // Add country code if not present
+      initialPhone = CountryUtils.getPhonePrefix(partnerCountry);
+    }
+    
+    final firstNameController = TextEditingController(text: userData?['first_name'] ?? userData?['name']);
+    final phoneController = TextEditingController(text: initialPhone);
+    String? selectedRouterId = userData?['router_id']; // Handle if editing existing (though router_id usually for new users)
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(userData == null ? 'add_user'.tr() : 'edit_user'.tr()),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: firstNameController,
+                decoration: InputDecoration(labelText: 'first_name'.tr()),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: phoneController,
+                decoration: InputDecoration(labelText: 'phone'.tr()),
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 12),
+              // Router Selection Dropdown
+              Consumer<NetworkProvider>(
+                builder: (context, networkProvider, child) {
+                  if (networkProvider.isLoading) {
+                    return const LinearProgressIndicator();
+                  }
+                  final routers = networkProvider.routers;
+                  if (routers.isEmpty) {
+                    return Text('no_routers_available'.tr(), style: const TextStyle(color: Colors.grey));
+                  }
+                  return DropdownButtonFormField<String>(
+                    initialValue: selectedRouterId,
+                    decoration: InputDecoration(
+                      labelText: 'select_router'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: routers.map<DropdownMenuItem<String>>((router) {
+                      final id = router.id;
+                      final name = router.name;
+                      return DropdownMenuItem(
+                        value: id,
+                        child: Text(name),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      selectedRouterId = value;
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text('cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () {
+              final routerId = selectedRouterId;
+              
+              if (routerId == null && userData == null) { // Require router only for new users or logical requirement
+                 ScaffoldMessenger.of(context).showSnackBar(
+                   SnackBar(content: Text('select_router_error'.tr())),
+                 );
+                 return;
+              }
+
+              final data = {
+                'first_name': firstNameController.text,
+                'phone': phoneController.text,
+                if (routerId != null) 'router_id': routerId,
+              };
+
+              if (userData == null) {
+                context.read<UserProvider>().createUser(data);
+              } else {
+                context.read<UserProvider>().updateUser(userData['id'], data);
+              }
+
+              context.pop();
+            },
+            child: Text(userData == null ? 'add_user'.tr() : 'edit_user'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    final authProvider = context.watch<AuthProvider>();
+    final userProvider = context.watch<UserProvider>();
+    final allUsers = userProvider.users.where((user) {
+      if (_searchQuery.isEmpty) return true;
+      final query = _searchQuery.toLowerCase();
+      return user.name.toLowerCase().contains(query) ||
+          user.email.toLowerCase().contains(query) ||
+          (user.phone?.toLowerCase().contains(query) ?? false);
+    }).toList();
+
+    final users = allUsers;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'users'.tr(),
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.checklist),
+            tooltip: 'bulk_actions'.tr(),
+            onPressed: () {
+              context.push('/bulk-actions');
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => context.read<UserProvider>().loadUsers(),
+          ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Theme.of(context).colorScheme.onPrimary,
+          tabs: [
+            Tab(text: 'users'.tr()),
+            Tab(text: 'workers'.tr()),
+          ],
+        ),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SearchBarWidget(
+              hintText: 'search_users'.tr(),
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: userProvider.isLoading
+                ? _buildSkeletonList()
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildUserList(users, isCustomers: true),
+                      _buildWorkerList(userProvider.workers),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+      floatingActionButton: _buildFAB(authProvider),
+    );
+  }
+
+  Widget? _buildFAB(AuthProvider authProvider) {
+    final canCreate = Permissions.canCreateUsers(
+      authProvider.currentUser?.role ?? '',
+      authProvider.currentUser?.permissions,
+    );
+    
+    if (!canCreate) return null;
+
+    return FloatingActionButton.extended(
+      onPressed: () {
+        if (_tabController.index == 0) {
+          // Customers tab - create user
+          _showUserDialog();
+        } else {
+          // Workers tab - create worker
+          showDialog(
+            context: context,
+            builder: (context) => const CreateWorkerDialog(),
+          );
+        }
+      },
+      icon: Icon(_tabController.index == 0 ? Icons.person_add : Icons.badge),
+      label: Text(_tabController.index == 0 ? 'add_user'.tr() : 'create_worker'.tr()),
+    );
+  }
+
+  Widget _buildUserList(List users, {bool isCustomers = false}) {
+    // Filter users by search query (name OR phone)
+    final filteredUsers = users.where((user) {
+      if (_searchQuery.isEmpty) return true;
+      
+      final query = _searchQuery.toLowerCase();
+      final name = user.name.toLowerCase();
+      final phone = user.phone?.toLowerCase() ?? '';
+      
+      return name.contains(query) || phone.contains(query);
+    }).toList();
+    
+    if (filteredUsers.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.person_off, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'no_users_found'.tr(),
+              style: TextStyle(color: Colors.grey[600], fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: filteredUsers.length,
+      itemBuilder: (context, index) {
+        final user = filteredUsers[index];
+        
+        // Real status from API (no more mocks!)
+        final isBlocked = user.isBlocked ?? false;
+        final isConnected = user.isConnected ?? false;
+        final hasActivePlan = user.isActive;
+        
+        final colorScheme = Theme.of(context).colorScheme;
+        
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: colorScheme.primaryContainer,
+              child: Text(
+                user.name[0].toUpperCase(),
+                style: TextStyle(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            title: Text(
+              user.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: user.isActive 
+                            ? colorScheme.primary.withValues(alpha: 0.2)
+                            : Colors.grey.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        user.isActive ? 'active'.tr() : 'inactive'.tr(),
+                        style: TextStyle(
+                          color: user.isActive ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Blocked badge
+                    if (isBlocked) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.block, size: 12, color: Colors.red),
+                            const SizedBox(width: 4),
+                            Text(
+                              'blocked'.tr(),
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else if (hasActivePlan) ...[
+                      // Connected/Offline badge (only if active and not blocked)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isConnected 
+                              ? AppTheme.successGreen.withValues(alpha: 0.2)
+                              : Colors.orange.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isConnected ? Icons.wifi : Icons.wifi_off,
+                              size: 12,
+                              color: isConnected ? AppTheme.successGreen : Colors.orange,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              isConnected ? 'connected'.tr() : 'offline'.tr(),
+                              style: TextStyle(
+                                color: isConnected ? AppTheme.successGreen : Colors.orange,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {
+                _showUserMenu(context, user);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showUserMenu(BuildContext context, user) {
+    final currentUser = context.read<AuthProvider>().currentUser;
+    if (currentUser == null) return;
+    
+    // Debug logging
+    if (kDebugMode) {
+      debugPrint('🔍 [UsersScreen] Current user role: ${currentUser.role}');
+      debugPrint('🔍 [UsersScreen] Current user permissions: ${currentUser.permissions}');
+      debugPrint('🔍 [UsersScreen] canEditUsers: ${Permissions.canEditUsers(currentUser.role, currentUser.permissions)}');
+      debugPrint('🔍 [UsersScreen] canViewUsers: ${Permissions.canViewUsers(currentUser.role, currentUser.permissions)}');
+      debugPrint('🔍 [UsersScreen] canDeleteUsers: ${Permissions.canDeleteUsers(currentUser.role, currentUser.permissions)}');
+    }
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (Permissions.canEditUsers(currentUser.role, currentUser.permissions))
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: Text('edit_user'.tr()),
+                onTap: () {
+                  context.pop();
+                  _showUserDialog(userData: user.toJson());
+                },
+              ),
+            if (Permissions.canViewUsers(currentUser.role, currentUser.permissions))
+              ListTile(
+                leading: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
+                title: Text('view_details'.tr()),
+                onTap: () {
+                  context.pop();
+                  context.push('/user-details', extra: user);
+                },
+              ),
+            // Block/Unblock action (requires edit permission)
+            if (Permissions.canEditUsers(currentUser.role, currentUser.permissions))
+              ListTile(
+                leading: Icon(
+                  (user.isBlocked ?? false) ? Icons.check_circle : Icons.block,
+                  color: (user.isBlocked ?? false) ? AppTheme.successGreen : Theme.of(context).colorScheme.error,
+                ),
+                title: Text((user.isBlocked ?? false) ? 'unblock_device'.tr() : 'block_device'.tr()),
+                onTap: () async {
+                  context.pop();
+                  try {
+                    await context.read<UserProvider>().toggleUserBlock(
+                      user.username ?? user.id,
+                      user.isBlocked ?? false,
+                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            (user.isBlocked ?? false) ? 'device_unblocked'.tr() : 'device_blocked'.tr(),
+                          ),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                           content: Text('error_generic'.tr(namedArgs: {'error': e.toString()})),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                },
+              ),
+            if (Permissions.canDeleteUsers(currentUser.role, currentUser.permissions))
+              ListTile(
+                leading: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
+                title: Text('remove_user'.tr()),
+                onTap: () {
+                  context.pop();
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text('remove_user'.tr()),
+                      content: Text('remove_user_confirm'.tr()),
+                      actions: [
+                        TextButton(
+                          onPressed: () => context.pop(),
+                          child: Text('cancel'.tr()),
+                        ),
+                        FilledButton(
+                          onPressed: () {
+                            context.read<UserProvider>().deleteUser(user.username ?? user.id);
+                            context.pop();
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.error,
+                            foregroundColor: Theme.of(context).colorScheme.onError,
+                          ),
+                          child: Text('remove'.tr()),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            // Show message if no permissions
+            if (!Permissions.canEditUsers(currentUser.role, currentUser.permissions) &&
+                !Permissions.canViewUsers(currentUser.role, currentUser.permissions) &&
+                !Permissions.canDeleteUsers(currentUser.role, currentUser.permissions))
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'no_permission_manage_users'.tr(),
+                  style: TextStyle(color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWorkerList(List workers) {
+    if (workers.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.badge_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'no_workers_found'.tr(),
+              style: TextStyle(color: Colors.grey[600], fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: workers.length,
+      itemBuilder: (context, index) {
+        final worker = workers[index];
+        final colorScheme = Theme.of(context).colorScheme;
+        
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: colorScheme.secondaryContainer,
+              child: Icon(
+                Icons.badge,
+                color: colorScheme.secondary,
+              ),
+            ),
+            title: Text(
+              worker.fullName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(worker.email),
+                const SizedBox(height: 4),
+                if (worker.roleName != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      worker.roleName!,
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'no_role'.tr(),
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {
+                _showWorkerMenu(context, worker);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showWorkerMenu(BuildContext context, worker) {
+    final currentUser = context.read<AuthProvider>().currentUser;
+    if (currentUser == null) return;
+    
+    // Debug logging
+    if (kDebugMode) {
+      debugPrint('🔍 [UsersScreen] Worker menu - Current user role: ${currentUser.role}');
+      debugPrint('🔍 [UsersScreen] Worker menu - Current user permissions: ${currentUser.permissions}');
+    }
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // View Details
+            if (Permissions.canViewUsers(currentUser.role, currentUser.permissions))
+              ListTile(
+                leading: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
+                title: Text('view_details'.tr()),
+                onTap: () {
+                  context.pop();
+                  _showWorkerDetailsDialog(context, worker);
+                },
+              ),
+            // Edit Worker
+            if (Permissions.canEditUsers(currentUser.role, currentUser.permissions))
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: Text('edit'.tr()),
+                onTap: () {
+                  context.pop();
+                  _showEditWorkerDialog(context, worker);
+                },
+              ),
+            // Assign Routers
+            if (Permissions.isWorker((worker.roleSlug ?? worker.roleName ?? '').toString()) || 
+                Permissions.isManager((worker.roleSlug ?? worker.roleName ?? '').toString()))
+              ListTile(
+                leading: Icon(Icons.router, color: Theme.of(context).colorScheme.primary),
+                title: Text('assign_routers'.tr()),
+                onTap: () {
+                  context.pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AssignRoutersScreen(worker: worker),
+                    ),
+                  );
+                },
+              ),
+            // Assign/Change Role
+            ListTile(
+              leading: Icon(Icons.badge, color: Theme.of(context).colorScheme.primary),
+              title: Text(worker.roleName != null ? 'change_role'.tr() : 'assign_role'.tr()),
+              onTap: () {
+                context.pop();
+                _showAssignRoleDialog(context, worker);
+              },
+            ),
+            // Delete Worker
+            if (Permissions.canDeleteUsers(currentUser.role, currentUser.permissions))
+              ListTile(
+                leading: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
+                title: Text('remove_worker'.tr()),
+                onTap: () {
+                  context.pop();
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text('remove_worker'.tr()),
+                      content: Text('remove_worker_confirm'.tr(namedArgs: {'name': worker.fullName})),
+                      actions: [
+                        TextButton(
+                          onPressed: () => context.pop(),
+                          child: Text('cancel'.tr()),
+                        ),
+                        FilledButton(
+                          onPressed: () async {
+                            try {
+                              await context.read<UserProvider>().deleteWorker(worker.username);
+                              if (context.mounted) {
+                                context.pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('worker_removed_success'.tr())),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                context.pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(ErrorMessageHelper.getUserFriendlyMessage(e)),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.error,
+                            foregroundColor: Theme.of(context).colorScheme.onError,
+                          ),
+                          child: Text('remove'.tr()),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAssignRoleDialog(BuildContext context, worker) {
+    final userProvider = context.read<UserProvider>();
+    final roles = userProvider.roles;
+    String? selectedRole = worker.roleSlug;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(worker.roleName != null ? 'change_role'.tr() : 'assign_role'.tr()),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedRole,
+                    decoration: InputDecoration(
+                      labelText: 'role'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                      items: roles.map((role) {
+                        return DropdownMenuItem(
+                          value: role.id, // Returns role ID
+                          child: Text(role.name),
+                        );
+                      }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedRole = value; // Updates role ID
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: Text('cancel'.tr()),
+            ),
+            FilledButton(
+              onPressed: () async {
+                if (selectedRole != null) {
+                  try {
+                    if (worker.roleSlug == null) { // Check against roleSlug
+                      await userProvider.assignRoleToWorker(worker.username, selectedRole!);
+                    } else {
+                      await userProvider.updateWorkerRole(worker.username, selectedRole!);
+                    }
+                    
+                    if (context.mounted) {
+                      context.pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('role_assigned_successfully'.tr(namedArgs: {'name': roles.firstWhere((r) => r.id == selectedRole).name})),
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      context.pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(ErrorMessageHelper.getUserFriendlyMessage(e)),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
+              },
+              child: Text('save'.tr()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showWorkerDetailsDialog(BuildContext context, WorkerModel worker) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('worker_details'.tr()),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDetailRow('name'.tr(), worker.fullName),
+              _buildDetailRow('email'.tr(), worker.email),
+              _buildDetailRow('username'.tr(), worker.username),
+              _buildDetailRow('role'.tr(), worker.roleName ?? 'no_role'.tr()),
+              _buildDetailRow('status'.tr(), worker.isActive ? 'active'.tr() : 'inactive'.tr()),
+              if (worker.assignedRouters != null && worker.assignedRouters!.isNotEmpty)
+                _buildDetailRow('assigned_routers'.tr(), worker.assignedRouters!.join(', ')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text('close'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              '$label:',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            child: Text(value),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditWorkerDialog(BuildContext context, WorkerModel worker) {
+    final firstNameController = TextEditingController(text: worker.fullName.split(' ').first);
+    final lastNameController = TextEditingController(text: worker.fullName.split(' ').skip(1).join(' '));
+    final emailController = TextEditingController(text: worker.email);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('edit_worker'.tr()),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: firstNameController,
+                decoration: InputDecoration(labelText: 'first_name'.tr()),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: lastNameController,
+                decoration: InputDecoration(labelText: 'last_name'.tr()),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(labelText: 'email'.tr()),
+                keyboardType: TextInputType.emailAddress,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text('cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () async {
+              try {
+                await context.read<UserProvider>().updateWorker(worker.username, {
+                  'first_name': firstNameController.text,
+                  'last_name': lastNameController.text,
+                  'email': emailController.text,
+                });
+                if (context.mounted) {
+                  context.pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('worker_updated_success'.tr())),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(ErrorMessageHelper.getUserFriendlyMessage(e)),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: Text('save'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSkeletonList() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: 8,
+      itemBuilder: (context, index) => Card(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              const SkeletonLoader(width: 40, height: 40, borderRadius: BorderRadius.all(Radius.circular(20))),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonText(width: 120),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        SkeletonLoader(width: 60, height: 20),
+                        SizedBox(width: 8),
+                        SkeletonLoader(width: 80, height: 20),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SkeletonLoader(width: 24, height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

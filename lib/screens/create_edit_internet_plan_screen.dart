@@ -1,0 +1,386 @@
+import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import '../providers/split/network_provider.dart';
+import '../providers/split/auth_provider.dart';
+import '../services/hotspot_configuration_service.dart';
+
+class CreateEditInternetPlanScreen extends StatefulWidget {
+  final Map<String, dynamic>? planData;
+
+  const CreateEditInternetPlanScreen({super.key, this.planData});
+
+  @override
+  State<CreateEditInternetPlanScreen> createState() => _CreateEditInternetPlanScreenState();
+}
+
+class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _priceController = TextEditingController();
+  String? _selectedValidity;
+  String? _selectedDataLimit;
+  String? _selectedAdditionalDevices;
+  String? _selectedHotspotProfile;
+  int? _selectedNetworkPolicy;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<NetworkProvider>().loadAllConfigurations();
+      context.read<NetworkProvider>().loadHotspotProfiles();
+    });
+    
+    if (widget.planData != null) {
+      _nameController.text = widget.planData!['name'] ?? '';
+      _priceController.text = widget.planData!['price']?.toString() ?? '';
+      // Use correct field names from PlanModel.toJson()
+      _selectedValidity = widget.planData!['validityDays'];
+      _selectedDataLimit = widget.planData!['dataLimitGB'];
+      _selectedAdditionalDevices = widget.planData!['deviceAllowed'];
+      _selectedHotspotProfile = widget.planData!['userProfile'];
+      _selectedNetworkPolicy = widget.planData!['network_policy'];
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _priceController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final networkProvider = context.watch<NetworkProvider>();
+    final authProvider = context.watch<AuthProvider>();
+    final isEdit = widget.planData != null;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(isEdit ? 'edit_internet_plan'.tr() : 'create_internet_plan'.tr()),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: 'plan_name'.tr(),
+                      hintText: 'plan_name_hint'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Plan name is required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _priceController,
+                    decoration: InputDecoration(
+                      labelText: 'price'.tr(),
+                      hintText: 'price_hint'.tr(),
+                      border: const OutlineInputBorder(),
+                      prefixText: '${authProvider.currencySymbol} ',
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Price is required';
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'Please enter a valid number';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<dynamic>(
+                    initialValue: _selectedValidity,
+                    decoration: InputDecoration(
+                      labelText: 'validity'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: networkProvider.validityPeriods.isEmpty
+                        ? (HotspotConfigurationService.getValidityOptions().isNotEmpty
+                            ? HotspotConfigurationService.getValidityOptions().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
+                            : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
+                        : networkProvider.validityPeriods
+                            .map((v) {
+                              final label = v is Map ? (v['name'] ?? 'Unknown') : v.toString();
+                              return DropdownMenuItem(value: v, child: Text(label));
+                            })
+                            .toList(),
+                    onChanged: (value) => setState(() => _selectedValidity = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select a validity period';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<dynamic>(
+                    initialValue: _selectedDataLimit,
+                    decoration: InputDecoration(
+                      labelText: 'data_limit'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: networkProvider.dataLimits.isEmpty
+                        ? (HotspotConfigurationService.getDataLimits().isNotEmpty
+                            ? HotspotConfigurationService.getDataLimits().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
+                            : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
+                        : networkProvider.dataLimits
+                            .map((d) {
+                              final label = d is Map ? (d['name'] ?? 'Unknown') : d.toString();
+                              return DropdownMenuItem(value: d, child: Text(label));
+                            })
+                            .toList(),
+                    onChanged: (value) => setState(() => _selectedDataLimit = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select a data limit';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<dynamic>(
+                    initialValue: _selectedAdditionalDevices,
+                    decoration: InputDecoration(
+                      labelText: 'additional_devices_allowed'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: networkProvider.sharedUsers.isEmpty
+                        ? (HotspotConfigurationService.getDeviceAllowed().isNotEmpty
+                            ? HotspotConfigurationService.getDeviceAllowed().map((e) => DropdownMenuItem(value: e, child: Text(e))).toList()
+                            : [DropdownMenuItem(value: null, child: Text('no_options_configured'.tr()))])
+                        : networkProvider.sharedUsers
+                            .map((d) {
+                              final label = d is Map ? (d['name'] ?? 'Unknown') : d.toString();
+                              return DropdownMenuItem(value: d, child: Text(label));
+                            })
+                            .toList(),
+                    onChanged: (value) => setState(() => _selectedAdditionalDevices = value),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select additional devices';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedHotspotProfile,
+                    decoration: InputDecoration(
+                      labelText: 'hotspot_user_profile'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: networkProvider.hotspotProfiles.isEmpty
+                        ? [DropdownMenuItem<String>(value: null, child: Text('no_profiles_configured'.tr()))]
+                        : networkProvider.hotspotProfiles
+                            .map((p) => DropdownMenuItem(value: p.id, child: Text(p.name)))
+                            .toList(),
+                    onChanged: (value) => setState(() => _selectedHotspotProfile = value),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<int>(
+                    initialValue: _selectedNetworkPolicy,
+                    decoration: InputDecoration(
+                      labelText: 'select_network_policy'.tr(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: networkProvider.networkPolicies.isEmpty
+                        ? [DropdownMenuItem<int>(value: null, child: Text('no_network_policies_configured'.tr()))]
+                        : [
+                            DropdownMenuItem<int>(value: null, child: Text('none'.tr())),
+                            ...networkProvider.networkPolicies
+                                .map((p) => DropdownMenuItem<int>(
+                                      value: p['id'] as int?,
+                                      child: Text(p['name']?.toString() ?? 'Unknown'),
+                                    ))
+                                ,
+                          ],
+                    onChanged: (value) => setState(() => _selectedNetworkPolicy = value),
+                  ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _savePlan,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: Text(isEdit ? 'update_plan'.tr() : 'create_plan'.tr()),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _savePlan() async {
+    // Validate form
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Helper to extract value from dynamic item (Map or String)
+    int extractValue(dynamic item, String context) {
+      if (kDebugMode) debugPrint('🔍 [CreatePlan] Extracting value from $context: $item (type: ${item.runtimeType})');
+      
+      if (item is Map) {
+        // Try multiple possible field names
+        final value = int.tryParse(
+          item['value']?.toString() ?? 
+          item['days']?.toString() ?? 
+          item['gb']?.toString() ?? 
+          item['count']?.toString() ?? 
+          item['limit']?.toString() ??
+          '0'
+        ) ?? 0;
+        if (kDebugMode) debugPrint('   Extracted from Map: $value');
+        return value;
+      } else if (item is String) {
+        final value = HotspotConfigurationService.extractNumericValue(item);
+        if (kDebugMode) debugPrint('   Extracted from String: $value');
+        return value;
+      } else if (item is int) {
+        if (kDebugMode) debugPrint('   Direct int value: $item');
+        return item;
+      }
+      
+      if (kDebugMode) debugPrint('   ⚠️ Could not extract value, returning 0');
+      return 0;
+    }
+
+    // Get profile name from selected profile ID
+    String getProfileName(String? profileId) {
+      if (profileId == null) return 'Basic';
+      final networkProvider = context.read<NetworkProvider>();
+      
+      // Check if profiles list is empty
+      if (networkProvider.hotspotProfiles.isEmpty) {
+        if (kDebugMode) debugPrint('⚠️ [CreatePlan] No hotspot profiles loaded, using "Basic"');
+        return 'Basic';
+      }
+      
+      // Find the profile by ID
+      try {
+        final profile = networkProvider.hotspotProfiles.firstWhere(
+          (p) => p.id == profileId,
+        );
+        if (kDebugMode) debugPrint('✅ [CreatePlan] Found profile: ${profile.name}');
+        return profile.name;
+      } catch (e) {
+        // Profile not found, return first profile name or 'Basic'
+        if (kDebugMode) debugPrint('⚠️ [CreatePlan] Profile not found, using first available or "Basic"');
+        return networkProvider.hotspotProfiles.isNotEmpty ? networkProvider.hotspotProfiles.first.name : 'Basic';
+      }
+    }
+
+    // Extract values with context for debugging
+    final dataLimitValue = _selectedDataLimit is String && HotspotConfigurationService.isUnlimited(_selectedDataLimit as String)
+        ? 999999
+        : extractValue(_selectedDataLimit, 'data_limit');
+    
+    final validityDays = extractValue(_selectedValidity, 'validity');
+    final validityMinutes = validityDays * 1440; // Convert days to minutes
+    
+    final sharedUsersValue = extractValue(_selectedAdditionalDevices, 'shared_users');
+
+    // Prepare data with correct API field names
+    final data = {
+      'name': _nameController.text,
+      'price': double.tryParse(_priceController.text) ?? 0,
+      'data_limit': dataLimitValue,
+      'validity': validityMinutes,
+      'is_active': true,
+      'shared_users': sharedUsersValue,
+      'profile': _selectedHotspotProfile ?? 'Basic',
+      'profile_name': getProfileName(_selectedHotspotProfile),
+    };
+
+    if (_selectedNetworkPolicy != null) {
+      data['network_policy'] = _selectedNetworkPolicy!;
+    }
+
+    if (kDebugMode) {
+      debugPrint('📦 [CreatePlan] Prepared plan data:');
+      debugPrint('   Name: ${data['name']}');
+      debugPrint('   Price: ${data['price']}');
+      debugPrint('   Data Limit: ${data['data_limit']} GB');
+      debugPrint('   Validity: ${data['validity']} minutes ($validityDays days)');
+      debugPrint('   Shared Users: ${data['shared_users']}');
+      debugPrint('   Profile: ${data['profile']}');
+      debugPrint('   Profile Name: ${data['profile_name']}');
+    }
+
+    try {
+      if (widget.planData != null && widget.planData!['id'] != null) {
+        // Update existing plan
+        if (kDebugMode) debugPrint('🔄 [CreatePlan] Updating plan: ${widget.planData!['id']}');
+        await context.read<NetworkProvider>().updatePlan(widget.planData!['id'], data);
+        if (kDebugMode) debugPrint('✅ [CreatePlan] Plan updated successfully');
+      } else {
+        // Create new plan
+        if (kDebugMode) debugPrint('➕ [CreatePlan] Creating new plan');
+        await context.read<NetworkProvider>().createPlan(data);
+        if (kDebugMode) debugPrint('✅ [CreatePlan] Plan created successfully');
+      }
+      
+      if (mounted) {
+        context.pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.planData != null ? 'plan_updated'.tr() : 'plan_created'.tr()),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [CreatePlan] Error saving plan: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+}

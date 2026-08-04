@@ -1,0 +1,296 @@
+import 'package:go_router/go_router.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import '../providers/split/network_provider.dart';
+import '../providers/split/user_provider.dart';
+import '../models/plan_model.dart';
+import '../utils/permissions.dart';
+import '../utils/permission_mapping.dart';
+import '../widgets/permission_denied_dialog.dart';
+
+class InternetPlanScreen extends StatefulWidget {
+  const InternetPlanScreen({super.key});
+
+  @override
+  State<InternetPlanScreen> createState() => _InternetPlanScreenState();
+}
+
+class _InternetPlanScreenState extends State<InternetPlanScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<NetworkProvider>().loadPlans();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Ensure rebuild when theme changes
+    // This is often handled automatically but explicit call helps if context hierarchy is complex
+    final theme = Theme.of(context);
+    if (kDebugMode) debugPrint('🎨 [InternetPlanScreen] Theme changed: brightness=${theme.brightness}');
+  }
+
+  void _navigateToCreateEdit({PlanModel? plan}) {
+    final user = context.read<UserProvider>().currentUser;
+    if (user == null) return;
+    
+    // Check permission based on whether creating or editing
+    final hasPermission = plan == null
+        ? Permissions.canCreatePlans(user.role, user.permissions)
+        : Permissions.canEditPlans(user.role, user.permissions);
+    
+    if (!hasPermission) {
+      PermissionDeniedDialog.show(
+        context,
+        requiredPermission: plan == null 
+            ? PermissionConstants.createPlans 
+            : PermissionConstants.editPlans,
+      );
+      return;
+    }
+    
+    context.push('/create-edit-plan', extra: plan?.toJson(),
+    ).then((_) {
+      if (!mounted) return;
+      // Reload plans after returning from create/edit screen
+      context.read<NetworkProvider>().loadPlans();
+    });
+  }
+
+  void _showDeleteDialog(PlanModel plan) {
+    final user = context.read<UserProvider>().currentUser;
+    if (user == null) return;
+    
+    if (!Permissions.canDeletePlans(user.role, user.permissions)) {
+      PermissionDeniedDialog.show(
+        context,
+        requiredPermission: PermissionConstants.deletePlans,
+      );
+      return;
+    }
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('delete_plan'.tr()),
+        content: Text('delete_plan_confirm'.tr(namedArgs: {'name': plan.name})),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text('cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () async {
+              context.pop();
+              final networkProvider = context.read<NetworkProvider>();
+              try {
+                await networkProvider.deletePlan(plan.slug);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('plan_deleted_successfully'.tr())),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('error_deleting_plan'.tr())),
+                  );
+                }
+              }
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFD32F2F),
+              foregroundColor: Colors.white,
+            ),
+            child: Text('delete'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final networkProvider = context.watch<NetworkProvider>();
+    final userProvider = context.watch<UserProvider>();
+    final plans = networkProvider.plans;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: kIsWeb ? 'dashboard_title'.tr() : 'back_to_dashboard'.tr(),
+          onPressed: () {
+            if (kIsWeb || !Navigator.canPop(context)) {
+              context.go('/home');
+            } else {
+              context.pop();
+            }
+          },
+        ),
+        title: Text('internet_plans'.tr()),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        elevation: 0,
+      ),
+      body: networkProvider.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : plans.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.wifi_off, size: 64, color: colorScheme.onSurfaceVariant),
+                      const SizedBox(height: 16),
+                      Text(
+                        'no_plans_found'.tr(),
+                        style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: plans.length,
+                  itemBuilder: (context, index) {
+                    final plan = plans[index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: isDark ? colorScheme.surfaceContainerHighest : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: isDark ? Border.all(color: colorScheme.outline.withOpacity(0.2)) : null,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  plan.name,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  '${plan.dataLimit != null ? '${plan.dataLimit} ${'data_unit'.tr()}' : 'unlimited'.tr()} | ${plan.formattedValidity}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  plan.priceDisplay.isNotEmpty 
+                                      ? plan.priceDisplay 
+                                      : '${plan.price} ${userProvider.currencyCode}',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (Permissions.canEditPlans(
+                                userProvider.currentUser?.role ?? '',
+                                userProvider.currentUser?.permissions,
+                              ))
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primaryContainer,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: IconButton(
+                                    onPressed: () => _navigateToCreateEdit(plan: plan),
+                                    icon: const Icon(Icons.edit, size: 20),
+                                    color: colorScheme.onPrimaryContainer,
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                ),
+                              if (Permissions.canEditPlans(
+                                userProvider.currentUser?.role ?? '',
+                                userProvider.currentUser?.permissions,
+                              ) && Permissions.canDeletePlans(
+                                userProvider.currentUser?.role ?? '',
+                                userProvider.currentUser?.permissions,
+                              ))
+                                const SizedBox(width: 12),
+                              if (Permissions.canDeletePlans(
+                                userProvider.currentUser?.role ?? '',
+                                userProvider.currentUser?.permissions,
+                              ))
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.errorContainer,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: IconButton(
+                                    onPressed: () => _showDeleteDialog(plan),
+                                    icon: const Icon(Icons.delete, size: 20),
+                                    color: colorScheme.onErrorContainer,
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+      floatingActionButton: Permissions.canCreatePlans(
+        userProvider.currentUser?.role ?? '',
+        userProvider.currentUser?.permissions,
+      )
+          ? Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.primary.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: FloatingActionButton.extended(
+                onPressed: () => _navigateToCreateEdit(),
+                backgroundColor: colorScheme.primary,
+                icon: Icon(Icons.add, color: colorScheme.onPrimary),
+                label: Text(
+                  'new_plan'.tr(),
+                  style: TextStyle(
+                    color: colorScheme.onPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                elevation: 0,
+              ),
+            )
+          : null,
+    );
+  }
+}

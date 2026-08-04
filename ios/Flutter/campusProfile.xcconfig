@@ -1,0 +1,6 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
+#include "Generated.xcconfig"
+
+ASSET_PREFIX=campus
+BUNDLE_NAME=Tiknet Campus
+BUNDLE_DISPLAY_NAME=Tiknet Campus

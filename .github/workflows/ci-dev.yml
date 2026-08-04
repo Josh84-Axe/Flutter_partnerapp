@@ -1,0 +1,72 @@
+name: Dev CI/CD (Web & Android)
+
+on:
+  push:
+    branches:
+      - 'fix/token-storage-windows'
+      - 'fix-token-storage-windows'
+      - 'fix/*'
+  workflow_dispatch:
+
+# Dummy comment to force trigger: 2026-02-04
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+          channel: 'stable'
+          cache: true
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      # --- WEB DEPLOYMENT ---
+      - name: Build Web
+        run: flutter build web --release --dart-define=API_HOST=https://staging.wifi-4u.net --dart-define=CRM_API_KEY=aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE --dart-define=USE_REMOTE_API=true
+      
+      - name: Verify Build Output
+        run: |
+          echo "Checking index.html content..."
+          grep "BRANDING SYNC" build/web/index.html
+          if [ $? -eq 0 ]; then
+            echo "✅ VERIFICATION SUCCESS: New index.html generated correctly."
+          else
+            echo "❌ VERIFICATION FAILED: Old index.html detected!"
+            exit 1
+          fi
+      
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '3.101.0'
+          command: pages deploy build/web --project-name=tiknet-partner-fresh --branch=${{ github.ref_name }} --commit-dirty=true
+  
+      - name: Purge Cache (Optional)
+        continue-on-error: true
+        uses: jakejarvis/cloudflare-purge-action@master
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_AUTH_KEY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      # --- ANDROID BUILD ---
+      - name: Build Android APK
+        run: flutter build apk --flavor partner --release --no-pub
+      
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: partner-app-dev-apk
+          path: build/app/outputs/flutter-apk/app-partner-release.apk

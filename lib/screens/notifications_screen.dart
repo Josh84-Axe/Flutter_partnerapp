@@ -1,0 +1,226 @@
+import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+import '../providers/split/user_provider.dart';
+import '../models/local_notification_model.dart';
+import '../utils/app_theme.dart';
+
+class NotificationsScreen extends StatefulWidget {
+  const NotificationsScreen({super.key});
+
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<UserProvider>().loadNotifications();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final userProvider = context.watch<UserProvider>();
+    final notifications = userProvider.localNotifications;
+
+    final today = <LocalNotification>[];
+    final yesterday = <LocalNotification>[];
+    final now = DateTime.now();
+
+    for (final notification in notifications) {
+      final diff = now.difference(notification.timestamp);
+      if (diff.inHours < 24) {
+        today.add(notification);
+      } else if (diff.inHours < 48) {
+        yesterday.add(notification);
+      }
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('notifications'.tr()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => userProvider.markAllNotificationsAsRead(),
+            child: Text(
+              'mark_all_as_read'.tr(),
+              style: const TextStyle(color: AppTheme.pureWhite),
+            ),
+          ),
+        ],
+      ),
+      body: notifications.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.notifications_off_outlined,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'no_notifications'.tr(),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                  ),
+                ],
+              ),
+            )
+          : ListView(
+              children: [
+                if (today.isNotEmpty) ...[
+                  _buildSectionHeader(context, 'today_label'.tr()),
+                  ...today.map((n) => _buildNotificationItem(context, n, userProvider)),
+                ],
+                if (yesterday.isNotEmpty) ...[
+                  _buildSectionHeader(context, 'yesterday_label'.tr()),
+                  ...yesterday.map((n) => _buildNotificationItem(context, n, userProvider)),
+                ],
+              ],
+            ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: AppTheme.textLight,
+              fontWeight: FontWeight.w600,
+            ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationItem(
+    BuildContext context,
+    LocalNotification notification,
+    UserProvider userProvider,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Dismissible(
+      key: Key(notification.id),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) => userProvider.dismissNotification(notification.id),
+      background: Container(
+        color: AppTheme.errorRed,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 16),
+        child: const Icon(Icons.delete, color: AppTheme.pureWhite),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: notification.isRead
+              ? Colors.transparent
+              : colorScheme.primaryContainer,
+        ),
+        child: ListTile(
+          leading: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _getNotificationColor(notification.type).withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              _getNotificationIcon(notification.type),
+              color: _getNotificationColor(notification.type),
+              size: 24,
+            ),
+          ),
+          title: Text(
+            notification.title,
+            style: TextStyle(
+              fontWeight: notification.isRead ? FontWeight.normal : FontWeight.w600,
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              Text(notification.message),
+              const SizedBox(height: 4),
+              Text(
+                _formatTimestamp(notification.timestamp),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.textLight,
+                    ),
+              ),
+            ],
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.close, size: 20),
+            onPressed: () => userProvider.dismissNotification(notification.id),
+          ),
+          onTap: () {
+            if (!notification.isRead) {
+              userProvider.markNotificationAsRead(notification.id);
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  IconData _getNotificationIcon(String type) {
+    switch (type) {
+      case 'user':
+        return Icons.person_add;
+      case 'payment':
+        return Icons.paid;
+      case 'router':
+        return Icons.wifi_off;
+      case 'system':
+        return Icons.system_update;
+      case 'report':
+        return Icons.assessment;
+      default:
+        return Icons.notifications;
+    }
+  }
+
+  Color _getNotificationColor(String type) {
+    final colorScheme = Theme.of(context).colorScheme;
+    switch (type) {
+      case 'user':
+        return colorScheme.primary;
+      case 'payment':
+        return AppTheme.successGreen;
+      case 'router':
+        return AppTheme.errorRed;
+      case 'system':
+        return AppTheme.warningAmber;
+      case 'report':
+        return colorScheme.primary;
+      default:
+        return colorScheme.primary;
+    }
+  }
+
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final diff = now.difference(timestamp);
+
+    if (diff.inMinutes < 60) {
+      return 'minutes_ago'.tr(namedArgs: {'minutes': diff.inMinutes.toString()});
+    } else if (diff.inHours < 24) {
+      return 'hours_ago'.tr(namedArgs: {'hours': diff.inHours.toString()});
+    } else {
+      return DateFormat('MMM d, h:mm a').format(timestamp);
+    }
+  }
+}

@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn dart run flutter_flavorizr
+expect "Do you want to proceed? (Y/n)"
+send "Y\r"
+expect eof
