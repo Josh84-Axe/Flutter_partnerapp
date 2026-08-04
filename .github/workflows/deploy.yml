@@ -11,6 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Build & Deploy 3 Flutter Web Flavors
 
+    env:
+      CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+      CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,12 +39,7 @@ jobs:
             --dart-define=USE_REMOTE_API=true
 
       - name: Deploy Family Web → Cloudflare Pages (family)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiKey: ${{ secrets.CLOUDFLARE_API_KEY }}
-          apiEmail: ${{ secrets.CLOUDFLARE_EMAIL }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy build/web --project-name=family --commit-dirty=true
+        run: npx wrangler@3.99.0 pages deploy build/web --project-name=family --commit-dirty=true
 
       # ------------------------------------------------------------------------
       # FLAVOR 2: Campus Web (campus.tiknetafrica.com)
@@ -51,12 +51,7 @@ jobs:
             --dart-define=USE_REMOTE_API=true
 
       - name: Deploy Campus Web → Cloudflare Pages (campus)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiKey: ${{ secrets.CLOUDFLARE_API_KEY }}
-          apiEmail: ${{ secrets.CLOUDFLARE_EMAIL }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy build/web --project-name=campus --commit-dirty=true
+        run: npx wrangler@3.99.0 pages deploy build/web --project-name=campus --commit-dirty=true
 
       # ------------------------------------------------------------------------
       # FLAVOR 3: Partner Web (partner.tiknetafrica.com)
@@ -68,9 +63,4 @@ jobs:
             --dart-define=USE_REMOTE_API=true
 
       - name: Deploy Partner Web → Cloudflare Pages (partner)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiKey: ${{ secrets.CLOUDFLARE_API_KEY }}
-          apiEmail: ${{ secrets.CLOUDFLARE_EMAIL }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy build/web --project-name=partner --commit-dirty=true
+        run: npx wrangler@3.99.0 pages deploy build/web --project-name=partner --commit-dirty=true
