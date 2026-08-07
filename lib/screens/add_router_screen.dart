@@ -306,7 +306,13 @@ class _AddRouterScreenState extends State<AddRouterScreen>
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () {
-                final int rId = routerData['id'] ?? 0;
+                int rId = 0;
+                if (routerData['id'] != null) {
+                  rId = int.tryParse(routerData['id'].toString()) ?? 0;
+                }
+                if (rId == 0 && _existingConfig != null) {
+                  rId = int.tryParse(_existingConfig!.id) ?? 0;
+                }
                 final String rName = name;
                 Navigator.of(context).pushNamed(
                   '/router-ztp-wizard',
@@ -638,6 +644,36 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (isEdit) ...[
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            final int rId = int.tryParse(_existingConfig?.id ?? '') ?? 0;
+                            final String rName = _existingConfig?.name ?? _nameController.text;
+                            Navigator.of(context).pushNamed(
+                              '/router-ztp-wizard',
+                              arguments: {'routerId': rId, 'routerName': rName},
+                            );
+                          },
+                          icon: const Icon(Icons.bolt, color: Colors.amber),
+                          label: const Text(
+                            'Lancer l\'Assistant 1-Tap ZTP (Auto-Provisioning)',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.indigo.shade700,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+
                     // Info card
                     Container(
                       padding: const EdgeInsets.all(14),
