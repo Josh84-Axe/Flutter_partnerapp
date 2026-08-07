@@ -93,6 +93,21 @@ class RouterDetailsScreen extends StatelessWidget {
             children: [
               _buildActionButton(
                 context,
+                icon: Icons.bolt,
+                label: 'Assistant ZTP 1-Tap (Auto-Provisioning)',
+                onTap: () {
+                  Navigator.of(context).pushNamed(
+                    '/router-ztp-wizard',
+                    arguments: {
+                      'routerId': router.id,
+                      'routerName': router.name,
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              _buildActionButton(
+                context,
                 icon: Icons.restart_alt,
                 label: 'restart_router'.tr(),
                 onTap: () async {
