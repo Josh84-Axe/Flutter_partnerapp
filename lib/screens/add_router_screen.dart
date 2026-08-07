@@ -296,6 +296,35 @@ class _AddRouterScreenState extends State<AddRouterScreen>
           ),
           const SizedBox(height: 20),
 
+          // 0. 1-Tap ZTP Wizard Launch Button
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                final int rId = routerData['id'] ?? 0;
+                final String rName = name;
+                Navigator.of(context).pushNamed(
+                  '/router-ztp-wizard',
+                  arguments: {'routerId': rId, 'routerName': rName},
+                );
+              },
+              icon: const Icon(Icons.bolt, color: Colors.amber),
+              label: const Text(
+                'Lancer l\'Assistant 1-Tap ZTP (Auto-Provisioning)',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo.shade700,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+
           // 1. Informations Générales
           _buildInfoCard(
             'Informations Générales',

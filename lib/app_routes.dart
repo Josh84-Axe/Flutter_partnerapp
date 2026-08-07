@@ -55,6 +55,7 @@ import 'screens/internet_plans_settings_screen.dart';
 import 'screens/subscription_management_screen.dart';
 import 'screens/router_settings_screen.dart';
 import 'screens/add_router_screen.dart';
+import 'screens/router_ztp_wizard_screen.dart';
 
 import 'screens/create_edit_plan_screen.dart';
 import 'screens/assign_user_screen.dart';
@@ -184,6 +185,7 @@ class AppRoutes {
         '/subscription-management': (context) => const SubscriptionManagementScreen(),
         '/router-settings': (context) => const RouterSettingsScreen(),
         '/add-router': (context) => const AddRouterScreen(),
+        '/router-ztp-wizard': (context) => const RouterZtpWizardScreen(),
         '/role-permissions': (context) => const RolePermissionScreen(),
         '/assign-role': (context) => const AssignRoleScreen(),
         '/worker-profile-setup': (context) => const WorkerProfileSetupScreen(),

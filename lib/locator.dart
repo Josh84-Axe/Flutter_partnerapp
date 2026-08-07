@@ -9,6 +9,7 @@ import 'services/api/api_client_factory.dart';
 import 'services/api/api_config.dart';
 import 'services/support_ticket_service.dart';
 import 'services/pwa_service.dart';
+import 'services/mikrotik_ztp_service.dart';
 import 'services/update_service.dart';
 import 'flavors.dart';
 
@@ -58,6 +59,7 @@ Future<void> setupLocator({TokenStorage? mockTokenStorage}) async {
 
   // --- External Services ---
   locator.registerLazySingleton<SupportTicketService>(() => SupportTicketService(dio: dio));
+  locator.registerLazySingleton<MikrotikZtpService>(() => MikrotikZtpService(dio: dio));
   locator.registerLazySingleton<UpdateService>(() => UpdateService());
   locator.registerLazySingleton<PwaService>(() => PwaService());
 
