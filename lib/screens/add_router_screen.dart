@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../flavors.dart';
 import '../models/router_configuration_model.dart';
 import '../providers/split/network_provider.dart';
+import '../utils/error_message_helper.dart';
 import 'package:provider/provider.dart';
 
 class AddRouterScreen extends StatefulWidget {
@@ -130,10 +131,12 @@ class _AddRouterScreenState extends State<AddRouterScreen>
           );
         }
       } catch (e) {
+        final errorMsg = ErrorMessageHelper.getDetailedError(e);
         messenger.showSnackBar(
           SnackBar(
-            content: Text('error_occurred'.tr()),
+            content: Text(errorMsg),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
