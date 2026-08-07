@@ -79,14 +79,18 @@ class _AddRouterScreenState extends State<AddRouterScreen>
       final messenger = ScaffoldMessenger.of(context);
       final isEdit = _existingConfig != null;
 
-      final data = {
+      final data = <String, dynamic>{
         'name': _nameController.text.trim(),
-        'password': _passwordController.text,
-        'secret': _radiusSecretController.text.trim(),
         'api_port': _apiPort,
         'coa_port': _coaPort,
         'is_active': true,
       };
+      if (_passwordController.text.isNotEmpty) {
+        data['password'] = _passwordController.text;
+      }
+      if (_radiusSecretController.text.trim().isNotEmpty) {
+        data['secret'] = _radiusSecretController.text.trim();
+      }
 
       try {
         Map<String, dynamic>? response;
@@ -663,16 +667,17 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                     ),
                     const SizedBox(height: 24),
 
-                    // Wifi Name
+                    // Wifi Name (Only Required User Input)
                     TextFormField(
                       controller: _nameController,
                       decoration: InputDecoration(
                         labelText: 'wifi_name'.tr(),
                         hintText: 'wifi_name_hint'.tr(),
                         prefixIcon: const Icon(Icons.wifi),
-                        border: const OutlineInputBorder(),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      textInputAction: TextInputAction.next,
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _saveConfiguration(),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'enter_wifi_name'.tr();
@@ -682,68 +687,94 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                     ),
                     const SizedBox(height: 16),
 
-                    // MikroTik Password
-                    TextFormField(
-                      controller: _passwordController,
-                      decoration: InputDecoration(
-                        labelText: 'mikrotik_password'.tr(),
-                        hintText: 'mikrotik_password_hint'.tr(),
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _passwordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _passwordVisible = !_passwordVisible;
-                            });
-                          },
-                        ),
+                    // Automated Vault Security Info Card
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.indigo.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.indigo.shade200),
                       ),
-                      obscureText: !_passwordVisible,
-                      textInputAction: TextInputAction.next,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'enter_mikrotik_password'.tr();
-                        }
-                        return null;
-                      },
+                      child: Row(
+                        children: [
+                          const Icon(Icons.shield_outlined, color: Colors.indigo, size: 24),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Sécurité Automatique Vault Tiknet',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.indigo,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Le mot de passe administrateur (32 caractères) et la clé RADIUS sont générés et chiffrés automatiquement par le contrôleur.',
+                                  style: TextStyle(fontSize: 12, color: Colors.indigo.shade900),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 16),
 
-                    // Radius Secret
-                    TextFormField(
-                      controller: _radiusSecretController,
-                      decoration: InputDecoration(
-                        labelText: 'radius_secret'.tr(),
-                        hintText: 'radius_secret_hint'.tr(),
-                        prefixIcon: const Icon(Icons.key_outlined),
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _radiusSecretVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _radiusSecretVisible = !_radiusSecretVisible;
-                            });
-                          },
+                    // Optional Advanced Settings Accordion
+                    Theme(
+                      data: ThemeData(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Paramètres Avancés (Optionnel)',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey),
                         ),
+                        children: [
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _passwordController,
+                            decoration: InputDecoration(
+                              labelText: 'Mot de passe Administrateur (Optionnel)',
+                              hintText: 'Laisser vide pour mot de passe 32-chars sécurisé',
+                              prefixIcon: const Icon(Icons.lock_outline),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              suffixIcon: IconButton(
+                                icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off),
+                                onPressed: () {
+                                  setState(() {
+                                    _passwordVisible = !_passwordVisible;
+                                  });
+                                },
+                              ),
+                            ),
+                            obscureText: !_passwordVisible,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _radiusSecretController,
+                            decoration: InputDecoration(
+                              labelText: 'RADIUS Secret (Optionnel)',
+                              hintText: 'Laisser vide pour secret automatique',
+                              prefixIcon: const Icon(Icons.key_outlined),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              suffixIcon: IconButton(
+                                icon: Icon(_radiusSecretVisible ? Icons.visibility : Icons.visibility_off),
+                                onPressed: () {
+                                  setState(() {
+                                    _radiusSecretVisible = !_radiusSecretVisible;
+                                  });
+                                },
+                              ),
+                            ),
+                            obscureText: !_radiusSecretVisible,
+                          ),
+                          const SizedBox(height: 12),
+                        ],
                       ),
-                      obscureText: !_radiusSecretVisible,
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: (_) => _saveConfiguration(),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'enter_radius_secret'.tr();
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 24),
 
