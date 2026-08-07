@@ -68,11 +68,17 @@ class FamilyProvider extends ChangeNotifier {
       macAddress: originalDevice.macAddress,
       isPaused: pause,
       isOnline: originalDevice.isOnline,
-      pauseUntil: pause && durationMinutes != null 
-          ? DateTime.now().add(Duration(minutes: durationMinutes))
-          : originalDevice.pauseUntil,
+      pauseUntil: pause
+          ? (durationMinutes != null ? DateTime.now().add(Duration(minutes: durationMinutes)) : null)
+          : null,
       activePolicyId: originalDevice.activePolicyId,
       activePolicyName: originalDevice.activePolicyName,
+      vendor: originalDevice.vendor,
+      deviceType: originalDevice.deviceType,
+      deviceTypeLabel: originalDevice.deviceTypeLabel,
+      iconName: originalDevice.iconName,
+      fingerprintSummary: originalDevice.fingerprintSummary,
+      hostname: originalDevice.hostname,
     );
     
     _devices[index] = updatedDevice;
@@ -119,6 +125,12 @@ class FamilyProvider extends ChangeNotifier {
         pauseUntil: null,
         activePolicyId: _devices[i].activePolicyId,
         activePolicyName: _devices[i].activePolicyName,
+        vendor: _devices[i].vendor,
+        deviceType: _devices[i].deviceType,
+        deviceTypeLabel: _devices[i].deviceTypeLabel,
+        iconName: _devices[i].iconName,
+        fingerprintSummary: _devices[i].fingerprintSummary,
+        hostname: _devices[i].hostname,
       );
     }
     notifyListeners();
@@ -151,8 +163,10 @@ class FamilyProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Use the first group available, or default to 1 if none found
-      final groupId = _groups.isNotEmpty ? _groups.first['id'] as int : 1;
+      if (_groups.isEmpty) {
+        _groups = await FamilyApiService.fetchGroups();
+      }
+      final groupId = _groups.isNotEmpty ? (_groups.first['id'] as int? ?? 1) : 1;
       
       final newDevice = await FamilyApiService.registerDevice(
         groupId, 

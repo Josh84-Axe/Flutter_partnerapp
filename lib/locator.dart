@@ -43,7 +43,7 @@ Future<void> setupLocator({TokenStorage? mockTokenStorage}) async {
 
   final apiClientFactory = ApiClientFactory(
     tokenStorage: tokenStorage,
-    baseUrl: '${ApiConfig.baseUrl}/${F.name}',
+    baseUrl: '${ApiConfig.baseUrl}/${F.name}/',
     onLogout: () {
       if (kDebugMode) debugPrint('🚪 [Locator] Global logout triggered');
       tokenStorage.clearTokens().then((_) {

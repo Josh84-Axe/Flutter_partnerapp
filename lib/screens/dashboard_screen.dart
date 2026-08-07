@@ -443,7 +443,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             
             const SizedBox(height: 16),
-            const SizedBox(height: 16),
           ],
         ),
       ),

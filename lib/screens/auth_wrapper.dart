@@ -16,11 +16,20 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   bool _isLoading = true;
+  bool _subscriptionTimeoutTriggered = false;
 
   @override
   void initState() {
     super.initState();
     _checkOnboarding();
+    // Safety net: force proceed after 3s if subscription loading stalls
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted && !_subscriptionTimeoutTriggered) {
+        setState(() {
+          _subscriptionTimeoutTriggered = true;
+        });
+      }
+    });
   }
 
   Future<void> _checkOnboarding() async {
@@ -56,16 +65,12 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     final userProvider = context.watch<UserProvider>();
     
-    if (!userProvider.isSubscriptionLoaded && !userProvider.isLoading) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        userProvider.loadSubscription();
-      });
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (!userProvider.isSubscriptionLoaded) {
+    if (!userProvider.isSubscriptionLoaded && !_subscriptionTimeoutTriggered) {
+      if (!userProvider.isLoading) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          userProvider.loadSubscription();
+        });
+      }
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );

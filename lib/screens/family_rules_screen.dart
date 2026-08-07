@@ -26,7 +26,7 @@ class _FamilyRulesScreenState extends State<FamilyRulesScreen>
 
 
 
-  void _applyPreset(_Preset preset) {
+  Future<void> _applyPreset(_Preset preset) async {
     final provider = context.read<FamilyProvider>();
     final devices = provider.devices;
     if (devices.isEmpty) {
@@ -35,15 +35,53 @@ class _FamilyRulesScreenState extends State<FamilyRulesScreen>
       );
       return;
     }
-    final rule = preset.toRule(devices.first);
-    provider.addRule(rule);
-    _tabController.animateTo(0);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('"${preset.title}" applied to ${devices.first.deviceName}. Customise it in My Rules.'),
-        backgroundColor: preset.color,
-      ),
-    );
+
+    FamilyDevice selectedDevice = devices.first;
+    if (devices.length > 1) {
+      final chosen = await showDialog<FamilyDevice>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('Apply "${preset.title}"'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Select target device:'),
+              const SizedBox(height: 12),
+              ...devices.map((d) => ListTile(
+                    leading: const Icon(Icons.smartphone),
+                    title: Text(d.deviceName),
+                    onTap: () => Navigator.pop(ctx, d),
+                  )),
+            ],
+          ),
+        ),
+      );
+      if (chosen == null) return;
+      selectedDevice = chosen;
+    }
+
+    final rule = preset.toRule(selectedDevice);
+    final success = await provider.addRule(rule);
+
+    if (mounted) {
+      if (success) {
+        _tabController.animateTo(0);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('"${preset.title}" applied to ${selectedDevice.deviceName}. Customise it in My Rules.'),
+            backgroundColor: preset.color,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(provider.error ?? 'Failed to apply rule preset'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override

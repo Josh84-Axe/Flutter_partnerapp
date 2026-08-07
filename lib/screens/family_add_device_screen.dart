@@ -113,11 +113,13 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
                     if (mounted) {
                       setDialogState(() => isSubmitting = false);
                       if (success) {
+                        setState(() {
+                          _devices.removeWhere((d) => d.macAddress == device.macAddress);
+                        });
                         context.pop(); // Close dialog
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Device added successfully!'), backgroundColor: Colors.green),
                         );
-                        context.pop(); // Go back to devices list
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(provider.error ?? 'Failed to claim device'), backgroundColor: Colors.red),
@@ -135,6 +137,12 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
         );
       },
     );
+  }
+
+  bool _isValidMacAddress(String input) {
+    final clean = input.trim();
+    final regex = RegExp(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$|^[0-9A-Fa-f]{12}$');
+    return regex.hasMatch(clean);
   }
 
   void _showManualEntryDialog() {
@@ -160,9 +168,10 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
                       controller: nameController,
                       decoration: InputDecoration(
                         labelText: 'Device Name',
+                        hintText: 'e.g. Maya\'s Tablet',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -172,7 +181,11 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
                         hintText: 'AA:BB:CC:DD:EE:FF',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Required';
+                        if (!_isValidMacAddress(v)) return 'Invalid MAC address format (e.g. AA:BB:CC:DD:EE:FF)';
+                        return null;
+                      },
                     ),
                   ],
                 ),

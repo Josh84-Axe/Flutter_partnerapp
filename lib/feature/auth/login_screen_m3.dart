@@ -197,11 +197,14 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                       const SizedBox(height: 36),
                       // Logo
                       Center(
-                        child: Image.asset(
-                          'assets/images/logo_tiknet.png',
-                          width: 120,
-                          height: 120,
-                          fit: BoxFit.contain,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Image.asset(
+                            F.iconAsset,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),

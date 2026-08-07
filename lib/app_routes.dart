@@ -10,6 +10,7 @@ import 'screens/family_registration_screen.dart';
 import 'screens/campus_registration_screen.dart';
 import 'screens/campus_schedules_screen.dart';
 import 'screens/family_add_device_screen.dart';
+import 'screens/family_devices_screen.dart';
 import 'screens/family_content_policy_screen.dart';
 import 'screens/family_schedule_manager_screen.dart';
 import 'screens/family_profiles_screen.dart';
@@ -124,6 +125,7 @@ class AppRoutes {
         },
         '/setup-pin': (context) => const SetupPinScreen(),
         '/family-add-device': (context) => const FamilyAddDeviceScreen(),
+        '/family-devices': (context) => const FamilyDevicesScreen(),
         '/family-schedules': (context) => const FamilyScheduleManagerScreen(),
         '/family-profiles': (context) => const FamilyProfilesScreen(),
         '/family-network-zones': (context) => const FamilyNetworkZonesScreen(),

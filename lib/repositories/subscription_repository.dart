@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../flavors.dart';
 
 /// Repository for subscription plan operations
 class SubscriptionRepository {
@@ -10,13 +11,18 @@ class SubscriptionRepository {
   /// Fetch list of available subscription plans
   Future<List<dynamic>> fetchSubscriptionPlans({String? country}) async {
     try {
-      if (kDebugMode) debugPrint('📋 [SubscriptionRepository] Fetching subscription plans${country != null ? ' for $country' : ''}');
+      final flavor = F.appFlavor;
+      final endpoint = flavor == Flavor.family
+          ? 'subscription-plans/'
+          : (flavor == Flavor.campus ? 'subscription-plans/' : 'subscription-plans/list/');
+
+      if (kDebugMode) debugPrint('📋 [SubscriptionRepository] Fetching $endpoint${country != null ? ' for $country' : ''}');
       
       final queryParams = <String, dynamic>{};
       if (country != null) queryParams['country'] = country;
 
       final response = await _dio.get(
-        '/subscription-plans/list/',
+        endpoint,
         queryParameters: queryParams,
       );
       if (kDebugMode) debugPrint('✅ [SubscriptionRepository] Response: ${response.data}');
@@ -47,8 +53,13 @@ class SubscriptionRepository {
   /// Check current subscription status
   Future<Map<String, dynamic>?> checkSubscriptionStatus() async {
     try {
-      if (kDebugMode) debugPrint('📦 [SubscriptionRepository] Checking subscription status');
-      final response = await _dio.get('/subscription-plans/check/');
+      final flavor = F.appFlavor;
+      final endpoint = (flavor == Flavor.family || flavor == Flavor.campus) 
+          ? 'subscription/current/' 
+          : 'subscription-plans/check/';
+
+      if (kDebugMode) debugPrint('📦 [SubscriptionRepository] Checking subscription status at $endpoint');
+      final response = await _dio.get(endpoint);
       if (kDebugMode) debugPrint('✅ [SubscriptionRepository] Subscription status: ${response.data}');
       return response.data as Map<String, dynamic>?;
     } catch (e) {

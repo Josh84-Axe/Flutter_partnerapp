@@ -13,6 +13,7 @@ import '../../repositories/subscription_repository.dart';
 import '../../services/local_notification_service.dart';
 import '../../utils/currency_utils.dart';
 import 'auth_provider.dart';
+import '../../locator.dart';
 
 class UserProvider with ChangeNotifier {
   AuthProvider? _authProvider;
@@ -534,45 +535,41 @@ class UserProvider with ChangeNotifier {
 
   /// Load available subscription plans
   Future<void> loadAvailableSubscriptionPlans() async {
-    if (_subscriptionRepository == null) return;
+    final repo = _subscriptionRepository ?? locator<SubscriptionRepository>();
     try {
       if (kDebugMode) debugPrint('📋 [UserProvider] Loading available subscription plans');
-      final plansData = await _subscriptionRepository!.fetchSubscriptionPlans(
+      final plansData = await repo.fetchSubscriptionPlans(
         country: _partnerCountry ?? _authProvider?.partnerCountry,
       );
       List<SubscriptionPlanModel> allPlans = [];
       
       for (var planData in plansData) {
-        if (planData is! Map<String, dynamic>) continue;
+        if (planData is! Map) continue;
+        final mapData = Map<String, dynamic>.from(planData);
         
-        final priceInfoList = planData['price_info'];
+        final priceInfoList = mapData['price_info'] ?? mapData['prices'];
         if (priceInfoList is List && priceInfoList.isNotEmpty) {
           // Create a plan model for each price option (duration)
           for (var priceInfo in priceInfoList) {
-             if (priceInfo is Map<String, dynamic>) {
-               // Merge base plan data with specific price info
-               final mergedData = Map<String, dynamic>.from(planData);
-               mergedData['price_info'] = priceInfo; // Override with single price info map for parsing
-               // Also override top-level duration/price for easier consumption if needed
-               mergedData['duration'] = priceInfo['duration']?.toString() ?? 'monthly';
-               mergedData['price'] = priceInfo['price'];
+             if (priceInfo is Map) {
+               final priceMap = Map<String, dynamic>.from(priceInfo);
+               final mergedData = Map<String, dynamic>.from(mapData);
+               mergedData['price_info'] = priceMap;
+               mergedData['duration'] = priceMap['duration']?.toString() ?? 'monthly';
+               mergedData['price'] = priceMap['price'];
                
                allPlans.add(SubscriptionPlanModel.fromJson(mergedData));
              }
           }
         } else {
-           // Fallback for plans without price_info list (e.g. legacy or simple structure)
-           // If 'price' exists at top level or in price_info map
-           if (planData['price'] != null || (priceInfoList is Map && priceInfoList['price'] != null)) {
-              allPlans.add(SubscriptionPlanModel.fromJson(planData));
+           // Fallback for plans without price_info list
+           if (mapData['price'] != null || (priceInfoList is Map && priceInfoList['price'] != null)) {
+              allPlans.add(SubscriptionPlanModel.fromJson(mapData));
            }
         }
       }
 
-      _availableSubscriptionPlans = allPlans
-          .where((plan) => plan.price > 0 || plan.name == 'Free Access') // Keep valid paid plans OR free plans (price might comprise 0 or 1)
-          .toList();
-      
+      _availableSubscriptionPlans = allPlans;
       if (kDebugMode) debugPrint('✅ [UserProvider] Loaded ${_availableSubscriptionPlans.length} subscription plans');
       _error = null;
     } catch (e) {

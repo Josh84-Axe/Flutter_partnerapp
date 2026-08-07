@@ -115,6 +115,7 @@ flutter:
   
   assets:
     - assets/images/logo_tiknet.png
+    - assets/icons/
     - assets/branding/
     - assets/html/
     - assets/legal/

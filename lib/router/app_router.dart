@@ -9,6 +9,7 @@ import '../screens/family_registration_screen.dart';
 import '../screens/campus_registration_screen.dart';
 import '../screens/campus_schedules_screen.dart';
 import '../screens/family_add_device_screen.dart';
+import '../screens/family_devices_screen.dart';
 import '../screens/family_content_policy_screen.dart';
 import '../screens/family_schedule_manager_screen.dart';
 import '../screens/family_profiles_screen.dart';
@@ -125,6 +126,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/family-add-device',
       builder: (context, state) => const FamilyAddDeviceScreen(),
+    ),
+    GoRoute(
+      path: '/family-devices',
+      builder: (context, state) => const FamilyDevicesScreen(),
     ),
     GoRoute(
       path: '/family-schedules',

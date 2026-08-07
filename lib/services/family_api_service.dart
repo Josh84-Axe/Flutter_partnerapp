@@ -44,19 +44,24 @@ class FamilyApiService {
   }
 
   static Future<FamilyDevice> registerDevice(int groupId, String deviceName, String macAddress, {int? policyId}) async {
-    final response = await locator<Dio>().post('/devices/', data: {
+    try {
+      final response = await locator<Dio>().post('/devices/', data: {
         'group_id': groupId,
         'device_name': deviceName,
         'mac_address': macAddress,
         if (policyId != null) 'policy_id': policyId,
       });
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      final body = response.data;
-      return FamilyDevice.fromJson(body['data']);
-    } else {
-      final body = response.data;
-      throw Exception(body['message'] ?? 'Failed to register device');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final body = response.data;
+        return FamilyDevice.fromJson(body['data']);
+      } else {
+        final body = response.data;
+        throw Exception(body['message'] ?? 'Failed to register device');
+      }
+    } on DioException catch (e) {
+      final msg = e.response?.data?['message'] ?? e.message ?? 'Failed to register device';
+      throw Exception(msg);
     }
   }
 

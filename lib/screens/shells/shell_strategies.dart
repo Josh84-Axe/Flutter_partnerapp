@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../providers/split/auth_provider.dart';
 
-import '../../providers/family_provider.dart';
 import '../../providers/campus_provider.dart';
 
 import '../dashboard_screen.dart';
@@ -13,7 +12,7 @@ import '../plans_screen.dart';
 import '../wallet_overview_screen.dart';
 
 import '../family_dashboard_screen.dart';
-import '../family_profiles_screen.dart';
+import '../family_devices_screen.dart';
 import '../family_rules_screen.dart';
 import '../family_network_zones_screen.dart';
 
@@ -210,7 +209,7 @@ class FamilyVariantStrategy implements AppVariantStrategy {
   List<Widget> getScreens(BuildContext context, void Function(int) navigateTo) {
     return [
       const FamilyDashboardScreen(),
-      const FamilyProfilesScreen(),
+      const FamilyDevicesScreen(),
       const FamilyRulesScreen(),
       const FamilyNetworkZonesScreen(),
     ];
@@ -353,12 +352,7 @@ class FamilyVariantStrategy implements AppVariantStrategy {
   }
 
   @override
-  Widget wrapShell(Widget child) {
-    return ChangeNotifierProvider(
-      create: (_) => FamilyProvider(),
-      child: child,
-    );
-  }
+  Widget wrapShell(Widget child) => child;
 }
 
 class CampusVariantStrategy implements AppVariantStrategy {

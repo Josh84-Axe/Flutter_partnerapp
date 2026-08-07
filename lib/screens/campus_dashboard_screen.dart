@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../services/pwa_service.dart';
 import '../widgets/skeleton_loader.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/pwa_install_dialog.dart';
 import 'package:flutter/foundation.dart';
 
 class CampusDashboardScreen extends StatefulWidget {
@@ -22,16 +24,43 @@ class CampusDashboardScreen extends StatefulWidget {
 }
 
 class _CampusDashboardScreenState extends State<CampusDashboardScreen> {
+  Timer? _autoRefreshTimer;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CampusProvider>().loadData();
-      if (!context.read<AuthProvider>().isGuestMode) {
-        context.read<UserProvider>().loadSubscription();
+      _handleRefresh(context);
+    });
+
+    // Real-time background auto-refresh every 30 seconds for live session and network data
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) {
+        context.read<CampusProvider>().loadData();
         context.read<NetworkProvider>().loadAllConfigurations();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _handleRefresh(BuildContext context) async {
+    final campusProvider = context.read<CampusProvider>();
+    final userProvider = context.read<UserProvider>();
+    final networkProvider = context.read<NetworkProvider>();
+    final authProvider = context.read<AuthProvider>();
+
+    await Future.wait([
+      campusProvider.loadData(),
+      if (!authProvider.isGuestMode) ...[
+        userProvider.loadSubscription(),
+        networkProvider.loadAllConfigurations(),
+      ],
+    ]);
   }
 
   void _showBuyPassDialog(BuildContext context) {
@@ -57,96 +86,103 @@ class _CampusDashboardScreenState extends State<CampusDashboardScreen> {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
-          child: CustomScrollView(
-            slivers: [
-              _buildSliverAppBar(context, firstName, provider, colorScheme),
-          SliverToBoxAdapter(
-            child: _buildQuickActions(context, colorScheme),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                children: [
-                  _buildPwaBanner(context, colorScheme),
-                  const SizedBox(height: 16),
-                  if (provider.profile != null)
-                    SubscriptionPlanCard(
-                      planName: provider.profile!.currentPolicy.replaceAll('TIKNET_POLICY_', '').replaceAll('_', ' '),
-                      renewalDate: userProvider.subscription?.renewalDate, // Map to actual pass expiry later if available
-                      isLoading: provider.isLoading,
-                    ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
-                  const SizedBox(height: 16),
-                  if (provider.profile != null)
-                    DataUsageCard(
-                      usedGB: provider.profile!.dataConsumedMb / 1024,
-                      totalGB: (provider.profile!.dataConsumedMb + provider.profile!.remainingDataMb) / 1024,
-                      isLoading: provider.isLoading,
-                    ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildMetricWidget(
-                          context,
-                          title: 'Network Speed',
-                          value: provider.profile?.isFastpathActive == true ? 'Fastpath' : 'Standard',
-                          icon: Icons.bolt,
-                          isLoading: provider.isLoading,
-                          colorScheme: colorScheme,
-                        ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.1),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildMetricWidget(
-                          context,
-                          title: 'Dorm Connection',
-                          value: 'Stable',
-                          icon: Icons.wifi,
-                          isLoading: provider.isLoading,
-                          colorScheme: colorScheme,
-                        ).animate().fadeIn(delay: 400.ms).slideX(begin: 0.1),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (provider.error != null)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: colorScheme.errorContainer,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline, color: colorScheme.error),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          provider.error!,
-                          style: TextStyle(color: colorScheme.error),
+          child: RefreshIndicator(
+            onRefresh: () => _handleRefresh(context),
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                _buildSliverAppBar(context, firstName, provider, colorScheme),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 0.0),
+                    child: Column(
+                      children: [
+                        _buildPwaUpdateBanner(context, colorScheme),
+                        _buildPwaBanner(context, colorScheme),
+                        const SizedBox(height: 16),
+                        if (provider.profile != null)
+                          SubscriptionPlanCard(
+                            planName: provider.profile!.currentPolicy.replaceAll('TIKNET_POLICY_', '').replaceAll('_', ' '),
+                            renewalDate: userProvider.subscription?.renewalDate,
+                            isLoading: provider.isLoading,
+                          ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
+                        const SizedBox(height: 16),
+                        if (provider.profile != null)
+                          DataUsageCard(
+                            usedGB: provider.profile!.dataConsumedMb / 1024,
+                            totalGB: (provider.profile!.dataConsumedMb + provider.profile!.remainingDataMb) / 1024,
+                            isLoading: provider.isLoading,
+                          ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildMetricWidget(
+                                context,
+                                title: 'Network Speed',
+                                value: provider.profile?.isFastpathActive == true ? 'Fastpath' : 'Standard',
+                                icon: Icons.bolt,
+                                isLoading: provider.isLoading,
+                                colorScheme: colorScheme,
+                                onRefresh: () => _handleRefresh(context),
+                              ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.1),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildMetricWidget(
+                                context,
+                                title: 'Active Session',
+                                value: provider.profile != null ? 'Connected' : 'Offline',
+                                icon: Icons.wifi,
+                                isLoading: provider.isLoading,
+                                colorScheme: colorScheme,
+                                onRefresh: () => _handleRefresh(context),
+                              ).animate().fadeIn(delay: 400.ms).slideX(begin: 0.1),
+                            ),
+                          ],
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => provider.clearError(),
-                        color: colorScheme.error,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ).animate().fadeIn().slideY(begin: 0.2),
-              ),
+                ),
+                SliverToBoxAdapter(
+                  child: _buildQuickActions(context, colorScheme),
+                ),
+                if (provider.error != null)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: colorScheme.errorContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline, color: colorScheme.error),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                provider.error!,
+                                style: TextStyle(color: colorScheme.error),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => provider.clearError(),
+                              color: colorScheme.error,
+                            ),
+                          ],
+                        ),
+                      ).animate().fadeIn().slideY(begin: 0.2),
+                    ),
+                  ),
+                const SliverToBoxAdapter(child: SizedBox(height: 100)), // Bottom padding
+              ],
             ),
-          const SliverToBoxAdapter(child: SizedBox(height: 100)), // Bottom padding
-        ],
-      ),
-      ),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showBuyPassDialog(context),
@@ -171,6 +207,19 @@ class _CampusDashboardScreenState extends State<CampusDashboardScreen> {
               ),
             )
           : null,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.schedule, color: Colors.white),
+          tooltip: 'Network Schedule',
+          onPressed: () => Navigator.pushNamed(context, '/campus-schedules'),
+        ),
+        IconButton(
+          icon: const Icon(Icons.refresh, color: Colors.white),
+          tooltip: 'Refresh Status & Pass Data',
+          onPressed: () => _handleRefresh(context),
+        ),
+        const SizedBox(width: 8),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
@@ -247,15 +296,6 @@ class _CampusDashboardScreenState extends State<CampusDashboardScreen> {
           ],
         ),
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.schedule, color: Colors.white),
-          onPressed: () {
-            Navigator.pushNamed(context, '/campus-schedules');
-          },
-          tooltip: 'Network Schedule',
-        ),
-      ],
     );
   }
 
@@ -310,6 +350,62 @@ class _CampusDashboardScreenState extends State<CampusDashboardScreen> {
     );
   }
 
+  Widget _buildPwaUpdateBanner(BuildContext context, ColorScheme colorScheme) {
+    if (!kIsWeb) return const SizedBox.shrink();
+
+    final pwa = PwaService();
+    return StreamBuilder<bool>(
+      stream: pwa.updateAvailableStream,
+      initialData: pwa.isUpdateAvailable,
+      builder: (context, snapshot) {
+        final bool isUpdate = snapshot.data ?? pwa.isUpdateAvailable;
+        if (!isUpdate) return const SizedBox.shrink();
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12.0),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.amber.shade800,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.amber.shade900.withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.system_update_rounded, color: Colors.white, size: 28),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Update Available!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text('A new version of Tiknet Campus is ready.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () => pwa.applyUpdate(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.amber.shade900,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Update Now', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildPwaBanner(BuildContext context, ColorScheme colorScheme) {
     if (!kIsWeb) return const SizedBox.shrink();
 
@@ -326,13 +422,12 @@ class _CampusDashboardScreenState extends State<CampusDashboardScreen> {
           builder: (context, snapshot) {
             final bool isInstallable = snapshot.data ?? pwa.isInstallable;
             final bool showNativePrompt = isInstallable && pwa.isInstallPromptSupported;
-            if (!isInstallable) return const SizedBox.shrink();
 
             return Container(
               margin: const EdgeInsets.only(bottom: 8.0),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [Colors.indigo, Colors.purple],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -354,25 +449,30 @@ class _CampusDashboardScreenState extends State<CampusDashboardScreen> {
                     size: 28
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Install App', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('Add to home screen for quick access', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                        Text('Install App', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text('Add to home screen for quick access', style: TextStyle(color: Colors.white70, fontSize: 12)),
                       ],
                     ),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (showNativePrompt) {
-                        pwa.promptInstall();
+                        final success = await pwa.promptInstall();
+                        if (!success && context.mounted) {
+                          showPwaInstallInstructions(context);
+                        }
+                      } else {
+                        showPwaInstallInstructions(context);
                       }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: Colors.indigo,
+                      foregroundColor: colorScheme.primary,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
@@ -387,7 +487,7 @@ class _CampusDashboardScreenState extends State<CampusDashboardScreen> {
     );
   }
 
-  Widget _buildMetricWidget(BuildContext context, {required String title, required String value, required IconData icon, required bool isLoading, required ColorScheme colorScheme}) {
+  Widget _buildMetricWidget(BuildContext context, {required String title, required String value, required IconData icon, required bool isLoading, required ColorScheme colorScheme, VoidCallback? onRefresh}) {
     return Card(
       elevation: 0,
       color: colorScheme.surfaceContainerLowest,
@@ -400,7 +500,21 @@ class _CampusDashboardScreenState extends State<CampusDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 28, color: Colors.indigo),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(icon, size: 28, color: Colors.indigo),
+                if (onRefresh != null)
+                  InkWell(
+                    onTap: onRefresh,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Icon(Icons.refresh, size: 18, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                    ),
+                  ),
+              ],
+            ),
             const SizedBox(height: 12),
             if (isLoading)
               const Column(

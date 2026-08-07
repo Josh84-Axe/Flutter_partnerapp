@@ -8,7 +8,7 @@ import 'dart:convert';
 
 class ThemeProvider with ChangeNotifier {
   ThemeConfig? _dynamicThemeConfig;
-  static const String _dynamicThemeKey = 'dynamicThemeConfig';
+  String get _dynamicThemeKey => 'dynamicThemeConfig_${F.appFlavor.name}';
 
   TiknetThemeVariant get currentVariant {
     switch (F.appFlavor) {
@@ -45,7 +45,7 @@ class ThemeProvider with ChangeNotifier {
   Future<void> _loadThemePreference() async {
     final prefs = await SharedPreferences.getInstance();
     
-    // Load dynamic theme if exists
+    // Load flavor-scoped dynamic theme if exists
     final dynamicThemeJson = prefs.getString(_dynamicThemeKey);
     if (dynamicThemeJson != null) {
       try {

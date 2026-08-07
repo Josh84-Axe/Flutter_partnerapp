@@ -10,6 +10,9 @@ external set onAppInstallable(JSFunction value);
 @JS('onAppInstalled')
 external set onAppInstalled(JSFunction value);
 
+@JS('onPwaUpdateAvailable')
+external set onPwaUpdateAvailable(JSFunction value);
+
 @JS('isAppInstallable')
 external JSBoolean isAppInstallableJs();
 
@@ -22,6 +25,12 @@ external JSBoolean isStandaloneJs();
 @JS('promptAppInstall')
 external JSPromise<JSBoolean> promptAppInstallJs();
 
+@JS('applyPwaUpdate')
+external void applyPwaUpdateJs();
+
+@JS('pwaUpdateAvailable')
+external JSBoolean? pwaUpdateAvailableJs();
+
 class PwaServiceWeb implements PwaService {
   static final PwaServiceWeb _instance = PwaServiceWeb._internal();
   factory PwaServiceWeb() => _instance;
@@ -31,9 +40,17 @@ class PwaServiceWeb implements PwaService {
   @override
   Stream<bool> get installableStream => _installableController.stream;
 
+  final _updateAvailableController = StreamController<bool>.broadcast();
+  @override
+  Stream<bool> get updateAvailableStream => _updateAvailableController.stream;
+
   bool _isInstallable = false;
   @override
   bool get isInstallable => _isInstallable;
+
+  bool _isUpdateAvailable = false;
+  @override
+  bool get isUpdateAvailable => _isUpdateAvailable;
 
   @override
   bool get isInstallPromptSupported {
@@ -61,7 +78,6 @@ class PwaServiceWeb implements PwaService {
 
   @override
   void init() {
-    // Register callback for JS using modern dart:js_interop
     onAppInstallable = (() {
       if (isStandalone) {
         _isInstallable = false;
@@ -78,14 +94,30 @@ class PwaServiceWeb implements PwaService {
       if (kDebugMode) debugPrint('🌐 [PwaService] App was installed');
     }).toJS;
 
-    // Check initial state
+    onPwaUpdateAvailable = (() {
+      _isUpdateAvailable = true;
+      _updateAvailableController.add(true);
+      if (kDebugMode) debugPrint('🌐 [PwaService] New update available!');
+    }).toJS;
+
+    // Check initial installable state
     try {
       _isInstallable = isAppInstallableJs().toDart && !isStandalone;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ [PwaService] Initial check failed (expected on non-PWA): $e');
       _isInstallable = false;
     }
     _installableController.add(_isInstallable);
+
+    // Check initial update available state
+    try {
+      final updateAvail = pwaUpdateAvailableJs();
+      if (updateAvail != null && updateAvail.toDart) {
+        _isUpdateAvailable = true;
+        _updateAvailableController.add(true);
+      }
+    } catch (e) {
+      _isUpdateAvailable = false;
+    }
   }
 
   @override
@@ -101,6 +133,15 @@ class PwaServiceWeb implements PwaService {
       if (kDebugMode) debugPrint('❌ [PwaService] Prompt install error: $e');
     }
     return false;
+  }
+
+  @override
+  Future<void> applyUpdate() async {
+    try {
+      applyPwaUpdateJs();
+    } catch (e) {
+      html.window.location.reload();
+    }
   }
 }
 

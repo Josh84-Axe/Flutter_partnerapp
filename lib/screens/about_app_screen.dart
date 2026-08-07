@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../utils/app_theme.dart';
 import 'legal_document_screen.dart';
+import '../flavors.dart';
 
 class AboutAppScreen extends StatelessWidget {
   const AboutAppScreen({super.key});
@@ -23,7 +24,7 @@ class AboutAppScreen extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Image.asset(
-                  'assets/images/logo_tiknet.png',
+                  F.iconAsset,
                   width: 96,
                   height: 96,
                   fit: BoxFit.cover,

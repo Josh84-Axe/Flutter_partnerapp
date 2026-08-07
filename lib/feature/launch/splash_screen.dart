@@ -24,11 +24,26 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _navigateAfterDelay() async {
-    // Check if user has completed onboarding first
+    // Perform IP Detection in un-awaited background task
+    _detectLanguageFromIp();
+
+    // Check if user has completed onboarding
     final prefs = await SharedPreferences.getInstance();
     final hasCompletedOnboarding = prefs.getBool('onboarding_completed') ?? false;
     
-    // Perform IP Detection for language
+    // Wait for splash animation to complete briefly (400ms)
+    await Future.delayed(const Duration(milliseconds: 400));
+    
+    if (!mounted) return;
+    
+    if (hasCompletedOnboarding) {
+      context.go('/auth-wrapper');
+    } else {
+      context.go('/dynamic-tour');
+    }
+  }
+
+  void _detectLanguageFromIp() async {
     try {
       final dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 1)));
       final response = await dio.get('https://api.country.is/');
@@ -45,20 +60,6 @@ class _SplashScreenState extends State<SplashScreen> {
       }
     } catch (e) {
       if (kDebugMode) debugPrint('IP Localization error: $e');
-    }
-
-    // Wait for splash animation to complete (just briefly so it doesn't flash)
-    await Future.delayed(const Duration(milliseconds: 400));
-    
-    if (!mounted) return;
-    
-    if (hasCompletedOnboarding) {
-      // User has seen onboarding, go to main auth flow
-      // Navigate to root which will trigger AuthWrapper
-      context.go('/auth-wrapper');
-    } else {
-      // First launch, go straight to the flavor's dynamic tour
-      context.go('/dynamic-tour');
     }
   }
 

@@ -6,15 +6,15 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="Tiknet Africa Partner Management App">
-  <meta name="theme-color" content="#FFFFFF">
+  <meta name="description" content="Tiknet Africa Multi-Flavor Management App">
+  <meta name="theme-color" content="#1A365D">
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.cinetpay.com https://paystack.com https://*.paystack.com https://paystack.co https://*.paystack.co https://*.gstatic.com https://*.cloudflareinsights.com https://apis.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://paystack.com https://*.paystack.com https://*.paystack.co; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://paystack.com https://*.paystack.com https://*.paystack.co; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://* blob:; frame-src 'self' https://paystack.com https://*.paystack.com https://paystack.co https://*.paystack.co https://*.cinetpay.com; connect-src 'self' blob: https://*.cinetpay.com https://cinetpay.com https://paystack.com https://*.paystack.com https://paystack.co https://*.paystack.co https://*.tiknetafrica.com https://*.wifi-4u.net https://staging.wifi-4u.net https://*.coleah.com https://*.sentry.io https://raw.githubusercontent.com https://*.cloudflareinsights.com https://*.gstatic.com https://cdnjs.cloudflare.com wss://*.cinetpay.com wss://paystack.co wss://*.paystack.co https://*.posthog.com https://api.country.is https://ipapi.co https://*.ipapi.co https://ioapi.co https://*.ioapi.co;">
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.cinetpay.com https://paystack.com https://*.paystack.com https://paystack.co https://*.paystack.co https://*.gstatic.com https://*.cloudflareinsights.com https://apis.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://paystack.com https://*.paystack.com https://*.paystack.co; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://paystack.com https://*.paystack.com https://*.paystack.co; font-src 'self' https://fonts.gstatic.com https://*.gstatic.com; img-src 'self' data: https://* blob:; frame-src 'self' https://paystack.com https://*.paystack.com https://paystack.co https://*.paystack.co https://*.cinetpay.com; connect-src 'self' blob: https://*.cinetpay.com https://cinetpay.com https://paystack.com https://*.paystack.com https://paystack.co https://*.paystack.co https://*.tiknetafrica.com https://*.wifi-4u.net https://staging.wifi-4u.net https://*.coleah.com https://*.sentry.io https://raw.githubusercontent.com https://*.cloudflareinsights.com https://*.gstatic.com https://fonts.gstatic.com https://www.gstatic.com https://cdnjs.cloudflare.com wss://*.cinetpay.com wss://paystack.co wss://*.paystack.co https://*.posthog.com https://api.country.is https://ipapi.co https://*.ipapi.co https://ioapi.co https://*.ioapi.co;">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Tiknet Partner">
+  <meta name="apple-mobile-web-app-title" content="Tiknet App">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
   <link rel="apple-touch-icon" sizes="152x152" href="icons/Icon-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/Icon-512.png">
@@ -28,17 +28,32 @@
 
   <title>Tiknet App</title>
   <script>
+    let flavor = 'partner';
+    let flavorTitle = 'Tiknet Partner';
+    let flavorTheme = '#1A365D';
+    
     if (window.location.hostname.includes('family')) {
-      document.title = 'Tiknet Family';
+      flavor = 'family';
+      flavorTitle = 'Tiknet Family';
+      flavorTheme = '#1A365D';
     } else if (window.location.hostname.includes('campus')) {
-      document.title = 'Tiknet Campus';
-    } else {
-      document.title = 'Tiknet Partner';
+      flavor = 'campus';
+      flavorTitle = 'Tiknet Campus';
+      flavorTheme = '#0D9488';
     }
+    
+    document.title = flavorTitle;
+    
+    // Set dynamic icons & theme
+    const appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+    if (appleIcon) appleIcon.href = 'icons/' + flavor + '/Icon-192.png';
+    
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) themeColorMeta.setAttribute('content', flavorTheme);
   </script>
   <link rel="manifest" href="manifest.json">
 
-  <!-- Payment SDKs Integration (Documentation Standard) -->
+  <!-- Payment SDKs Integration -->
   <script src="https://cdn.cinetpay.com/seamless/main.js" type="text/javascript"></script>
   <script src="https://js.paystack.co/v1/inline.js"></script>
 </head>
@@ -46,70 +61,304 @@
 <body>
   <style>
     body {
-      background-color: #FFFFFF;
+      background-color: #0B192C;
       margin: 0;
       padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     #loading {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 9999;
-      background-color: #FFFFFF;
+      background-color: #0B192C;
+      background-image: 
+        radial-gradient(circle at 50% 35%, rgba(0, 230, 118, 0.18) 0%, rgba(6, 182, 212, 0.12) 40%, transparent 70%),
+        url('watermark_family.svg');
+      background-repeat: repeat;
+      background-size: 130px 130px;
+      transition: opacity 0.4s ease-out;
+    }
+    .logo-box {
+      padding: 16px;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      margin-bottom: 24px;
     }
     .logo {
-      width: 120px;
-      height: 120px;
-      animation: pulse 2s infinite ease-in-out;
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      border-radius: 20px;
+      animation: pulse 2.4s infinite ease-in-out;
     }
-    .loader-bar {
-      margin-top: 24px;
-      width: 150px;
-      height: 4px;
-      background-color: #E0E0E0;
-      border-radius: 4px;
+    .progress-box {
+      width: 240px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .loader-bar-bg {
+      width: 100%;
+      height: 8px;
+      background-color: rgba(0, 0, 0, 0.12);
+      border-radius: 10px;
       overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
     }
-    .loader-progress {
-      width: 30%;
+    .loader-bar-fill {
+      width: 5%;
       height: 100%;
-      background-color: #2E7D32;
-      border-radius: 4px;
-      animation: progress 1.5s infinite ease-in-out;
+      background: linear-gradient(90deg, #00E676 0%, #00B0FF 100%);
+      border-radius: 10px;
+      transition: width 0.25s ease-out;
+      box-shadow: 0 0 12px rgba(0, 230, 118, 0.7);
+    }
+    .progress-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      letter-spacing: 0.5px;
+    }
+    .progress-percent {
+      font-size: 13px;
+      font-weight: 700;
+      color: #00E676;
     }
     @keyframes pulse {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.05); opacity: 1; }
-      100% { transform: scale(0.95); opacity: 0.8; }
-    }
-    @keyframes progress {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(300%); }
+      0% { transform: scale(0.96); opacity: 0.85; }
+      50% { transform: scale(1.04); opacity: 1; }
+      100% { transform: scale(0.96); opacity: 0.85; }
     }
   </style>
+
   <div id="loading">
-    <img src="assets/assets/images/logo_tiknet.png" class="logo" alt="Tiknet" />
-    <div class="loader-bar">
-      <div class="loader-progress"></div>
+    <div class="logo-box">
+      <img id="app-logo-img" src="icons/family/Icon-192.png" class="logo" alt="Tiknet App" />
+    </div>
+    <div class="progress-box">
+      <div class="loader-bar-bg">
+        <div id="loader-fill" class="loader-bar-fill"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; width: 100%;">
+        <span class="progress-text" id="loader-status">Downloading App...</span>
+        <span class="progress-percent" id="loader-percent">5%</span>
+      </div>
     </div>
   </div>
 
-  <div id="build-version" style="position: fixed; bottom: 4px; right: 8px; font-family: monospace; font-size: 10px; color: rgba(255,255,255,0.4); z-index: 999999; pointer-events: none;">
-    WIFI-4U APP - BUILD 1.2.225 (ROUTER ZTP & LOGIN SYNTAX UPDATE)
+  <div id="build-version" style="position: fixed; bottom: 4px; right: 8px; font-family: monospace; font-size: 10px; color: rgba(0,0,0,0.3); z-index: 999999; pointer-events: none;">
+    WIFI-4U APP - BUILD 1.2.247 (FEATHERWEIGHT 1.1KB SVG WATERMARK ENGINE)
   </div>
 
   <script>
-    // FINAL BUILD v1.2.225 - BUMP CACHE & FIX ROUTER ZTP SYNTAX
-    const targetVersion = '1.2.225';
-    console.log('🚀 WIFI-4U APP - BUILD ' + targetVersion + ' (ROUTER ZTP & LOGIN SYNTAX UPDATE)');
+    const targetVersion = '1.2.247';
+    console.log('🚀 WIFI-4U APP - BUILD ' + targetVersion + ' (INLINED DATA-URI WATERMARK ENGINE)');
+
+    const loadStartTime = Date.now();
+
+    // Dynamic Logo & Inlined Data-URI Loader Backgrounds (Selected Options F1, P1, C1)
+    const logoImg = document.getElementById('app-logo-img');
+    if (logoImg) logoImg.src = 'icons/' + flavor + '/Icon-192.png';
+
+    const loader = document.getElementById('loading');
+    const fill = document.getElementById('loader-fill');
+    const text = document.getElementById('loader-status');
+    const percent = document.getElementById('loader-percent');
+
+    if (loader) {
+      if (flavor === 'family') {
+        // Option F1: Brighter Cyan-Teal Gradient + Inlined Family Protection Watermark
+        document.body.style.backgroundColor = '#0B192C';
+        loader.style.backgroundColor = '#0B192C';
+        loader.style.backgroundImage = "radial-gradient(circle at 50% 35%, rgba(0, 230, 118, 0.28) 0%, rgba(6, 182, 212, 0.18) 45%, transparent 75%), url(\"data:image/svg+xml,%3Csvg width='130' height='130' viewBox='0 0 130 130' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%2300E676' stroke-width='1.4' stroke-opacity='0.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 22 38 L 38 24 L 54 38 V 60 H 22 Z' /%3E%3Cpath d='M 34 47 C 34 43, 38 41, 38 47 C 38 41, 42 43, 42 47 C 42 51, 38 55, 38 55 C 38 55, 34 51, 34 47 Z' fill='%2300E676' fill-opacity='0.12' /%3E%3Cpath d='M 80 32 A 16 16 0 0 1 112 32' stroke='%2306B6D4' stroke-opacity='0.25' /%3E%3Cpath d='M 86 38 A 10 10 0 0 1 106 38' stroke='%2306B6D4' stroke-opacity='0.25' /%3E%3Ccircle cx='96' cy='44' r='2.5' fill='%2306B6D4' fill-opacity='0.25' /%3E%3Cpath d='M 28 88 C 28 88 44 82 44 88 C 44 104 28 112 28 112 C 28 112 12 104 12 88 C 12 82 28 88 28 88 Z' fill='%2300E676' fill-opacity='0.08' /%3E%3Crect x='80' y='88' width='26' height='18' rx='3' /%3E%3Cpath d='M 74 106 H 112' /%3E%3Crect x='114' y='92' width='10' height='14' rx='2' stroke='%2306B6D4' stroke-opacity='0.25' /%3E%3C/g%3E%3C/svg%3E\")";
+      } else if (flavor === 'partner') {
+        // Option P1: Lively Mint Growth Gradient + Inlined Merchant Network Watermark
+        document.body.style.backgroundColor = '#DCFCE7';
+        loader.style.backgroundColor = '#DCFCE7';
+        loader.style.backgroundImage = "radial-gradient(circle at 50% 35%, rgba(74, 222, 128, 0.45) 0%, rgba(134, 239, 172, 0.3) 50%, transparent 75%), url(\"data:image/svg+xml,%3Csvg width='130' height='130' viewBox='0 0 130 130' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23064E3B' stroke-width='1.4' stroke-opacity='0.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='18' y='24' width='28' height='38' rx='4' /%3E%3Crect x='22' y='28' width='20' height='14' rx='1' fill='%23064E3B' fill-opacity='0.08' /%3E%3Ccircle cx='25' cy='48' r='1.5' /%3E%3Ccircle cx='32' cy='48' r='1.5' /%3E%3Ccircle cx='39' cy='48' r='1.5' /%3E%3Ccircle cx='25' cy='54' r='1.5' /%3E%3Ccircle cx='32' cy='54' r='1.5' /%3E%3Ccircle cx='39' cy='54' r='1.5' /%3E%3Cpath d='M 80 58 L 92 46 L 102 52 L 116 34' stroke-width='1.8' /%3E%3Cpath d='M 108 34 H 116 V 42' stroke-width='1.8' /%3E%3Cpath d='M 22 92 C 22 92 32 84 38 90 C 44 96 54 88 54 88' stroke-width='1.5' /%3E%3Ccircle cx='38' cy='90' r='3' fill='%23064E3B' fill-opacity='0.12' /%3E%3Ccircle cx='96' cy='94' r='14' fill='%23064E3B' fill-opacity='0.06' /%3E%3Cpath d='M 96 86 V 102 M 92 90 C 92 90 98 88 98 93 C 98 98 92 97 92 100 C 92 102 98 102 98 102' stroke-width='1.5' /%3E%3C/g%3E%3C/svg%3E\")";
+        if (text) text.style.color = '#064E3B';
+        if (percent) percent.style.color = '#047857';
+        if (fill) fill.style.background = 'linear-gradient(90deg, #059669 0%, #047857 100%)';
+      } else if (flavor === 'campus') {
+        // Option C1: Bright Academic Slate & Inlined University WiFi Watermark
+        document.body.style.backgroundColor = '#F8FAFC';
+        loader.style.backgroundColor = '#F8FAFC';
+        loader.style.backgroundImage = "radial-gradient(circle at 50% 35%, rgba(13, 148, 136, 0.28) 0%, rgba(20, 184, 166, 0.16) 50%, transparent 75%), url(\"data:image/svg+xml,%3Csvg width='130' height='130' viewBox='0 0 130 130' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%230F766E' stroke-width='1.4' stroke-opacity='0.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 38 24 L 62 34 L 38 44 L 14 34 Z' fill='%230F766E' fill-opacity='0.08' /%3E%3Cpath d='M 22 38 V 50 C 22 50 30 56 38 56 C 46 56 54 50 54 50 V 38' /%3E%3Cpath d='M 58 36 V 52' /%3E%3Ccircle cx='58' cy='54' r='1.5' fill='%230F766E' stroke='none' /%3E%3Cpath d='M 80 44 C 80 44 90 38 100 44 V 62 C 100 62 90 56 80 62 Z' /%3E%3Cpath d='M 100 44 C 100 44 110 38 120 44 V 62 C 120 62 110 56 100 62 Z' /%3E%3Cpath d='M 38 82 L 26 114 H 50 Z' /%3E%3Cpath d='M 32 94 H 44 M 29 104 H 47' /%3E%3Ccircle cx='38' cy='78' r='2.5' fill='%230F766E' fill-opacity='0.18' /%3E%3Cpath d='M 28 72 A 12 12 0 0 1 48 72' /%3E%3Cpath d='M 22 66 A 18 18 0 0 1 54 66' /%3E%3Crect x='84' y='84' width='24' height='30' rx='3' fill='%230F766E' fill-opacity='0.06' /%3E%3Ccircle cx='96' cy='94' r='4' /%3E%3Cpath d='M 90 106 C 90 102 92 100 96 100 C 100 100 102 102 102 106' /%3E%3C/g%3E%3C/svg%3E\")";
+        if (text) text.style.color = '#0F172A';
+        if (percent) percent.style.color = '#0D9488';
+        if (fill) fill.style.background = 'linear-gradient(90deg, #0D9488 0%, #0F766E 100%)';
+      }
+    }
+
+    let simulatedPercent = 5;
+    const progressFill = document.getElementById('loader-fill');
+    const progressPercent = document.getElementById('loader-percent');
+    const progressStatus = document.getElementById('loader-status');
+
+    function setProgress(pct, statusText) {
+      if (progressFill) progressFill.style.width = Math.min(100, Math.max(5, pct)) + '%';
+      if (progressPercent) progressPercent.textContent = Math.round(pct) + '%';
+      if (statusText && progressStatus) progressStatus.textContent = statusText;
+    }
+
+    const progressTimer = setInterval(() => {
+      if (simulatedPercent < 95) {
+        simulatedPercent += Math.random() * 8 + 4;
+        if (simulatedPercent > 95) simulatedPercent = 95;
+        setProgress(
+          simulatedPercent,
+          simulatedPercent < 75 ? 'Downloading App Assets...' : 'Initializing Engine...'
+        );
+      }
+    }, 120);
+
+    // Loader Dismissal Helper with minimum display time guarantee
+    window.hideAppLoading = function() {
+      const elapsed = Date.now() - loadStartTime;
+      const minDisplay = 1000;
+      const delay = Math.max(0, minDisplay - elapsed);
+
+      setTimeout(function() {
+        clearInterval(progressTimer);
+        setProgress(100, 'Ready!');
+        const loader = document.getElementById('loading');
+        if (loader) {
+          loader.style.opacity = '0';
+          setTimeout(function() {
+            if (loader.parentNode) loader.parentNode.removeChild(loader);
+          }, 400);
+        }
+      }, delay);
+    };
+    window.addEventListener('flutter-first-frame', window.hideAppLoading);
+    window.addEventListener('DOMContentLoaded', function() {
+      setTimeout(window.hideAppLoading, 6000);
+    });
     
-    // Global helper for CinetPay official SDK launch
+    // Global PWA Install & Update Bridge
+    let deferredPrompt = null;
+    window.pwaUpdateAvailable = false;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (window.onAppInstallable) {
+        window.onAppInstallable();
+      }
+      window.dispatchEvent(new CustomEvent('pwa_installable'));
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      if (window.onAppInstalled) {
+        window.onAppInstalled();
+      }
+      window.dispatchEvent(new CustomEvent('pwa_installed'));
+    });
+
+    window.isAppInstallable = function () {
+      return deferredPrompt !== null;
+    };
+
+    window.isInstallPromptSupported = function () {
+      return 'beforeinstallprompt' in window || /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    };
+
+    window.isStandalone = function () {
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    };
+
+    window.promptAppInstall = function () {
+      return new Promise((resolve) => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted PWA install prompt');
+              deferredPrompt = null;
+              resolve(true);
+            } else {
+              console.log('User dismissed PWA install prompt');
+              resolve(false);
+            }
+          });
+        } else {
+          resolve(false);
+        }
+      });
+    };
+
+    // Service Worker Update Listener & Helper
+    function checkServiceWorkerUpdate(reg) {
+      if (!reg) return;
+      
+      function activateNewWorker() {
+        console.log('✨ [ServiceWorker] Activating new PWA version automatically!');
+        window.pwaUpdateAvailable = true;
+        if (reg.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        if (window.onPwaUpdateAvailable) window.onPwaUpdateAvailable();
+        window.dispatchEvent(new CustomEvent('pwa_update_available'));
+      }
+
+      reg.addEventListener('updatefound', function () {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', function () {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            activateNewWorker();
+          }
+        });
+      });
+
+      if (reg.waiting && navigator.serviceWorker.controller) {
+        activateNewWorker();
+      }
+    }
+
+    // Explicit User Action Only: Applies update and reloads page once
+    window.applyPwaUpdate = function() {
+      window.pwaUpdateAvailable = false;
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then(function(reg) {
+          if (reg && reg.waiting) {
+            let reloaded = false;
+            navigator.serviceWorker.addEventListener('controllerchange', function onControllerChange() {
+              if (!reloaded) {
+                reloaded = true;
+                navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+                window.location.reload();
+              }
+            });
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            setTimeout(function() {
+              if (!reloaded) {
+                reloaded = true;
+                window.location.reload();
+              }
+            }, 1000);
+          } else {
+            window.location.reload();
+          }
+        });
+      } else {
+        window.location.reload();
+      }
+    };
+
+    // Payment SDK Helpers
     window.launchCinetPay = function(config) {
       if (!window.CinetPay) {
         alert("CinetPay SDK not loaded! Please check your internet connection.");
@@ -130,7 +379,6 @@
         });
 
         CinetPay.waitResponse(function(data) {
-           console.log('CinetPay Response:', data);
            if (data.status == "ACCEPTED") {
               if (window.onPaymentSuccess) window.onPaymentSuccess(config.transactionId);
            } else {
@@ -139,12 +387,10 @@
         });
 
         CinetPay.onError(function(data) {
-          console.error('CinetPay Error:', data);
           if (window.onPaymentError) window.onPaymentError(data);
         });
 
         CinetPay.onClose(function(data) {
-          console.log('CinetPay Portal Closed');
           if (window.onPaymentError) window.onPaymentError({message: "closed"});
         });
       } catch (e) {
@@ -152,9 +398,7 @@
       }
     };
 
-    // Global helper for Paystack SDK launch
     window.launchPaystack = function (config) {
-      console.log('PAYSTACK LAUNCH CONFIG:', JSON.stringify(config));
       if (!window.PaystackPop) {
         alert("Paystack SDK not loaded! Please check your internet connection.");
         return;
@@ -169,11 +413,9 @@
             ]
           },
           callback: function (response) {
-            console.log('✅ Paystack Success:', response);
             if (window.onPaystackSuccess) window.onPaystackSuccess(response.reference);
           },
           onClose: function () {
-            console.log('⚠️ Paystack Closed');
             if (window.onPaystackCancel) window.onPaystackCancel();
           }
         });
@@ -183,29 +425,29 @@
       }
     };
 
-    // Standalone and Version Management
-    if (localStorage.getItem('last_version') !== targetVersion) {
-      console.warn('🧹 [Update] Version mismatch! Hard Resetting...');
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-          for (let r of registrations) r.unregister();
-        });
-      }
-      if ('caches' in window) {
-        caches.keys().then(names => {
-          for (let name of names) caches.delete(name);
-        });
-      }
-      localStorage.clear();
-      localStorage.setItem('last_version', targetVersion);
-      setTimeout(() => { window.location.reload(); }, 200);
-    }
-    
+    // Stable Version Tracking
     window.appVersion = targetVersion;
+    try {
+      localStorage.setItem('last_version', targetVersion);
+    } catch(e) {}
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('service-worker.js?v=' + targetVersion).then(function (reg) {
-          console.log('✅ ServiceWorker enabled');
+          console.log('✅ ServiceWorker registered');
+          checkServiceWorkerUpdate(reg);
+
+          // Periodic check for SW update every 15 minutes
+          setInterval(function () {
+            reg.update();
+          }, 15 * 60 * 1000);
+
+          // Check on tab visibility change / focus
+          document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') {
+              reg.update();
+            }
+          });
         });
       });
     }

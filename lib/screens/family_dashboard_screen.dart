@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -9,13 +10,14 @@ import '../models/family_models.dart';
 import '../providers/split/user_provider.dart';
 import '../providers/split/network_provider.dart';
 import '../widgets/subscription_plan_card.dart';
-import '../widgets/data_usage_card.dart';
 import '../services/pwa_service.dart';
 import '../widgets/skeleton_loader.dart';
 import '../widgets/app_drawer.dart';
 import 'family_add_device_screen.dart';
 import 'family_schedule_manager_screen.dart';
 import 'family_network_zones_screen.dart';
+import '../widgets/pwa_install_dialog.dart';
+import '../widgets/active_traffic_feed_widget.dart';
 import 'package:flutter/foundation.dart';
 
 class FamilyDashboardScreen extends StatefulWidget {
@@ -26,16 +28,43 @@ class FamilyDashboardScreen extends StatefulWidget {
 }
 
 class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
+  Timer? _autoRefreshTimer;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<FamilyProvider>().loadData();
-      if (!context.read<AuthProvider>().isGuestMode) {
-        context.read<UserProvider>().loadSubscription();
+      _handleRefresh(context);
+    });
+
+    // Real-time background auto-refresh every 30 seconds for live router device status
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) {
+        context.read<FamilyProvider>().loadData(forceRefresh: true);
         context.read<NetworkProvider>().loadAllConfigurations();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _handleRefresh(BuildContext context) async {
+    final familyProvider = context.read<FamilyProvider>();
+    final userProvider = context.read<UserProvider>();
+    final networkProvider = context.read<NetworkProvider>();
+    final authProvider = context.read<AuthProvider>();
+
+    await Future.wait([
+      familyProvider.loadData(forceRefresh: true),
+      if (!authProvider.isGuestMode) ...[
+        userProvider.loadSubscription(),
+        networkProvider.loadAllConfigurations(),
+      ],
+    ]);
   }
 
   @override
@@ -54,132 +83,98 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
-          child: CustomScrollView(
-            slivers: [
-              _buildSliverAppBar(context, firstName, colorScheme),
-              SliverToBoxAdapter(
-                child: _buildQuickActions(context, colorScheme),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Column(
-                    children: [
-                      _buildPwaBanner(context, colorScheme),
-                      const SizedBox(height: 16),
-                      SubscriptionPlanCard(
-                        planName: userProvider.subscription?.tier ?? 'Home Basic',
-                        renewalDate: userProvider.subscription?.renewalDate,
-                        isLoading: userProvider.isLoading || networkProvider.isLoading,
-                      ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildMetricWidget(
-                              context,
-                              title: 'Active Devices',
-                              value: provider.devices.where((d) => d.isOnline).length.toString(),
-                              icon: Icons.devices,
-                              isLoading: provider.isLoading,
-                              colorScheme: colorScheme,
-                            ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildMetricWidget(
-                              context,
-                              title: 'Network Status',
-                              value: 'Online',
-                              icon: Icons.cloud_done,
-                              isLoading: false,
-                              colorScheme: colorScheme,
-                            ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      DataUsageCard(
-                        usedGB: networkProvider.totalAccumulatedGB,
-                        totalGB: 500.0, // Mock home broadband limit
-                        isLoading: networkProvider.isLoading,
-                      ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
-                    ],
-                  ),
-                ),
-              ),
-              if (provider.error != null)
+          child: RefreshIndicator(
+            onRefresh: () => _handleRefresh(context),
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                _buildSliverAppBar(context, firstName, colorScheme),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.error_outline, color: colorScheme.error),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              provider.error!,
-                              style: TextStyle(color: colorScheme.error),
+                    padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 0.0),
+                    child: Column(
+                      children: [
+                        _buildPwaUpdateBanner(context, colorScheme),
+                        _buildPwaBanner(context, colorScheme),
+                        const SizedBox(height: 16),
+                        SubscriptionPlanCard(
+                          planName: userProvider.subscription?.tier ?? 'Home Basic',
+                          renewalDate: userProvider.subscription?.renewalDate,
+                          isLoading: userProvider.isLoading || networkProvider.isLoading,
+                        ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildMetricWidget(
+                                context,
+                                title: 'Active Devices',
+                                value: provider.devices.where((d) => d.isOnline).length.toString(),
+                                icon: Icons.devices,
+                                isLoading: provider.isLoading,
+                                colorScheme: colorScheme,
+                                onRefresh: () => _handleRefresh(context),
+                              ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () => provider.clearError(),
-                            color: colorScheme.error,
-                          ),
-                        ],
-                      ),
-                    ).animate().fadeIn().slideY(begin: 0.2),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildMetricWidget(
+                                context,
+                                title: 'Network Status',
+                                value: 'Online',
+                                icon: Icons.cloud_done,
+                                isLoading: false,
+                                colorScheme: colorScheme,
+                                onRefresh: () => _handleRefresh(context),
+                              ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        ActiveTrafficFeedWidget(devices: provider.devices)
+                            .animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
+                      ],
+                    ),
                   ),
                 ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-            sliver: SliverToBoxAdapter(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Family Devices', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                  if (provider.devices.isNotEmpty)
-                    Text('${provider.devices.where((d) => d.isOnline).length} Online (${provider.devices.length} Total)', style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.primary)),
-                ],
-              ).animate().fadeIn().slideX(begin: -0.1),
+                SliverToBoxAdapter(
+                  child: _buildQuickActions(context, colorScheme),
+                ),
+                if (provider.error != null)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: colorScheme.errorContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline, color: colorScheme.error),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                provider.error!,
+                                style: TextStyle(color: colorScheme.error),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => provider.clearError(),
+                              color: colorScheme.error,
+                            ),
+                          ],
+                        ),
+                      ).animate().fadeIn().slideY(begin: 0.2),
+                    ),
+                  ),
+                const SliverToBoxAdapter(child: SizedBox(height: 40)),
+              ],
             ),
           ),
-          if (provider.isLoading && provider.devices.isEmpty)
-            const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (provider.devices.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: _buildEmptyState(context, colorScheme),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final device = provider.devices[index];
-                    return _buildDeviceCard(context, device, provider, colorScheme)
-                        .animate()
-                        .fadeIn(delay: Duration(milliseconds: 100 * index))
-                        .slideY(begin: 0.2, curve: Curves.easeOutQuad);
-                  },
-                  childCount: provider.devices.length,
-                ),
-              ),
-            ),
-          const SliverToBoxAdapter(child: SizedBox(height: 100)), // Bottom padding
-        ],
-      ),
-      ),
+        ),
       ),
       floatingActionButton: provider.devices.isNotEmpty 
         ? FloatingActionButton.extended(
@@ -206,6 +201,14 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
               ),
             )
           : null,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh, color: Colors.white),
+          tooltip: 'Refresh Devices & Status',
+          onPressed: () => _handleRefresh(context),
+        ),
+        const SizedBox(width: 8),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         background: IgnorePointer(
           child: Stack(
@@ -372,6 +375,62 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
     );
   }
 
+  Widget _buildPwaUpdateBanner(BuildContext context, ColorScheme colorScheme) {
+    if (!kIsWeb) return const SizedBox.shrink();
+
+    final pwa = PwaService();
+    return StreamBuilder<bool>(
+      stream: pwa.updateAvailableStream,
+      initialData: pwa.isUpdateAvailable,
+      builder: (context, snapshot) {
+        final bool isUpdate = snapshot.data ?? pwa.isUpdateAvailable;
+        if (!isUpdate) return const SizedBox.shrink();
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12.0),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.amber.shade800,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.amber.shade900.withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.system_update_rounded, color: Colors.white, size: 28),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Update Available!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text('A new version of Tiknet Family is ready.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () => pwa.applyUpdate(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.amber.shade900,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Update Now', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildPwaBanner(BuildContext context, ColorScheme colorScheme) {
     if (!kIsWeb) return const SizedBox.shrink();
 
@@ -388,8 +447,6 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
           builder: (context, snapshot) {
             final bool isInstallable = snapshot.data ?? pwa.isInstallable;
             final bool showNativePrompt = isInstallable && pwa.isInstallPromptSupported;
-            if (!isInstallable) return const SizedBox.shrink();
-
             return Container(
               margin: const EdgeInsets.only(bottom: 8.0),
               padding: const EdgeInsets.all(16),
@@ -416,20 +473,25 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                     size: 28
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Install App', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('Add to home screen for quick access', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                        Text('Install App', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text('Add to home screen for quick access', style: TextStyle(color: Colors.white70, fontSize: 12)),
                       ],
                     ),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (showNativePrompt) {
-                        pwa.promptInstall();
+                        final success = await pwa.promptInstall();
+                        if (!success && context.mounted) {
+                          showPwaInstallInstructions(context);
+                        }
+                      } else {
+                        showPwaInstallInstructions(context);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -449,7 +511,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
     );
   }
 
-  Widget _buildMetricWidget(BuildContext context, {required String title, required String value, required IconData icon, required bool isLoading, required ColorScheme colorScheme}) {
+  Widget _buildMetricWidget(BuildContext context, {required String title, required String value, required IconData icon, required bool isLoading, required ColorScheme colorScheme, VoidCallback? onRefresh}) {
     return Card(
       elevation: 0,
       color: colorScheme.surfaceContainerLowest,
@@ -462,7 +524,21 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 28, color: colorScheme.primary),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(icon, size: 28, color: colorScheme.primary),
+                if (onRefresh != null)
+                  InkWell(
+                    onTap: onRefresh,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Icon(Icons.refresh, size: 18, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                    ),
+                  ),
+              ],
+            ),
             const SizedBox(height: 12),
             if (isLoading)
               const Column(
@@ -733,14 +809,20 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                _buildPauseOption(context, Icons.timer_10, 'For 10 minutes', () {
-                  provider.toggleDevicePause(device.id, true, durationMinutes: 10);
+                _buildPauseOption(context, Icons.timer, 'For 15 minutes', () {
+                  provider.toggleDevicePause(device.id, true, durationMinutes: 15);
+                }),
+                _buildPauseOption(context, Icons.timer_10, 'For 30 minutes', () {
+                  provider.toggleDevicePause(device.id, true, durationMinutes: 30);
                 }),
                 _buildPauseOption(context, Icons.hourglass_bottom, 'For 1 hour', () {
                   provider.toggleDevicePause(device.id, true, durationMinutes: 60);
                 }),
-                _buildPauseOption(context, Icons.nightlight_round, 'Until tomorrow', () {
-                  provider.toggleDevicePause(device.id, true, durationMinutes: 12 * 60);
+                _buildPauseOption(context, Icons.hourglass_top, 'For 2 hours', () {
+                  provider.toggleDevicePause(device.id, true, durationMinutes: 120);
+                }),
+                _buildPauseOption(context, Icons.edit_calendar, 'Custom Duration...', () {
+                  _showDashboardCustomDurationDialog(context, device, provider);
                 }),
                 _buildPauseOption(context, Icons.pause_circle_filled, 'Indefinitely', () {
                   provider.toggleDevicePause(device.id, true);
@@ -749,6 +831,60 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  void _showDashboardCustomDurationDialog(BuildContext context, FamilyDevice device, FamilyProvider provider) {
+    final minutesController = TextEditingController(text: '45');
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Custom Pause for ${device.deviceName}'),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: minutesController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Duration in Minutes',
+                    hintText: 'e.g. 45',
+                    suffixText: 'mins',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  validator: (val) {
+                    final mins = int.tryParse(val ?? '');
+                    if (mins == null || mins <= 0) return 'Enter a valid number of minutes';
+                    if (mins > 1440) return 'Max 1440 minutes (24 hours)';
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  final minutes = int.parse(minutesController.text.trim());
+                  Navigator.pop(context);
+                  provider.toggleDevicePause(device.id, true, durationMinutes: minutes);
+                }
+              },
+              child: const Text('Apply Pause'),
+            ),
+          ],
         );
       },
     );

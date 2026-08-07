@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import '../services/api/token_storage.dart';
+import '../services/api/api_config.dart';
+import '../flavors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -27,8 +29,10 @@ class AuthRepository {
   }) async {
     try {
       if (kDebugMode) debugPrint('🔐 [AuthRepository] Login request for: $email');
+      final endpoint = '${ApiConfig.baseUrl}/${F.name}/login/';
+      if (kDebugMode) debugPrint('🌐 [AuthRepository] Posting login to: $endpoint');
       final response = await _dio.post(
-        '/login/',
+        endpoint,
         data: {
           'email': email,
           'password': password,

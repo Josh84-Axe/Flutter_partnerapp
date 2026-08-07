@@ -1,0 +1,20 @@
+<svg width="130" height="130" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" stroke="#00E676" stroke-width="1.4" stroke-opacity="0.12" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Home with Family Heart -->
+    <path d="M 22 38 L 38 24 L 54 38 V 60 H 22 Z" />
+    <path d="M 34 47 C 34 43, 38 41, 38 47 C 38 41, 42 43, 42 47 C 42 51, 38 55, 38 55 C 38 55, 34 51, 34 47 Z" fill="#00E676" fill-opacity="0.08" />
+    
+    <!-- WiFi Signal Waves -->
+    <path d="M 80 32 A 16 16 0 0 1 112 32" stroke="#06B6D4" stroke-opacity="0.14" />
+    <path d="M 86 38 A 10 10 0 0 1 106 38" stroke="#06B6D4" stroke-opacity="0.14" />
+    <circle cx="96" cy="44" r="2.5" fill="#06B6D4" fill-opacity="0.14" />
+
+    <!-- Protected Family Security Shield -->
+    <path d="M 28 88 C 28 88 44 82 44 88 C 44 104 28 112 28 112 C 28 112 12 104 12 88 C 12 82 28 88 28 88 Z" fill="#00E676" fill-opacity="0.04" />
+
+    <!-- Connected Smart Laptop & Mobile -->
+    <rect x="80" y="88" width="26" height="18" rx="3" />
+    <path d="M 74 106 H 112" />
+    <rect x="114" y="92" width="10" height="14" rx="2" stroke="#06B6D4" stroke-opacity="0.14" />
+  </g>
+</svg>

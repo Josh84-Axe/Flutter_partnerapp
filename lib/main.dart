@@ -187,6 +187,14 @@ class HotspotPartnerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          locator<PwaService>();
+        } catch (_) {}
+      });
+    }
+
     final themeProvider = context.watch<ThemeProvider>();
     
     return MaterialApp.router(

@@ -7,10 +7,13 @@ abstract class PwaService {
   factory PwaService() => _instance;
 
   Stream<bool> get installableStream;
+  Stream<bool> get updateAvailableStream;
   bool get isInstallable;
   bool get isInstallPromptSupported;
   bool get isStandalone;
   bool get isIOS;
+  bool get isUpdateAvailable;
   void init();
   Future<bool> promptInstall();
+  Future<void> applyUpdate();
 }

@@ -27,7 +27,6 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
   final List<Map<String, String>> _durations = [
     {'id': 'monthly', 'label': 'monthly'},
     {'id': 'quarterly', 'label': 'quarterly'},
-    {'id': 'yearly', 'label': 'yearly'},
   ];
 
   @override
@@ -52,12 +51,38 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
     }
   }
 
+  bool _matchesDuration(String planDuration, String selected) {
+    final pd = planDuration.toLowerCase().trim();
+    final sel = selected.toLowerCase().trim();
+
+    // Explicitly filter out any yearly/annual plan across all 3 flavors
+    if (pd == 'yearly' || pd == 'annual' || pd == 'annuel' || pd == '12 months') {
+      return false;
+    }
+
+    if (pd == sel) return true;
+    if (sel == 'monthly' && (pd == 'mois' || pd == '1 month' || pd == 'monthly')) return true;
+    if (sel == 'quarterly' && (pd == 'trimestriel' || pd == '3 months' || pd == 'quarterly')) return true;
+    return false;
+  }
+
+  String _formatDurationLabel(String duration) {
+    final d = duration.toLowerCase().trim();
+    if (d == 'monthly' || d == 'mois' || d == '1 month') {
+      return 'per_month'.tr();
+    }
+    if (d == 'quarterly' || d == 'trimestriel' || d == '3 months') {
+      return 'per_quarter'.tr();
+    }
+    return '/ ${duration.tr()}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
     final subscription = userProvider.subscription;
     final availablePlans = userProvider.availableSubscriptionPlans;
-    final filteredPlans = availablePlans.where((p) => p.duration == _selectedDuration).toList();
+    final filteredPlans = availablePlans.where((p) => _matchesDuration(p.duration, _selectedDuration)).toList();
     final colorScheme = Theme.of(context).colorScheme;
 
     return PopScope(
@@ -364,7 +389,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        '/ ${plan.duration.tr()}',
+                                        _formatDurationLabel(plan.duration),
                                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                           color: Colors.grey.shade600,
                                         ),
@@ -590,7 +615,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             
             // Return to dashboard automatically
             if (mounted) {
-              Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+              context.go('/home');
             }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
