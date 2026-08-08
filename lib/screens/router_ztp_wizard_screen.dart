@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../locator.dart';
 import '../providers/split/network_provider.dart';
@@ -452,6 +453,55 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 8),
+
+            // 1-Tap Terminal Command Copy Card for PWA users
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade900,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.terminal, color: Colors.greenAccent, size: 20),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Alternative Terminal WebFig / WinBox',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.copy, color: Colors.amber, size: 20),
+                        tooltip: 'Copier la commande',
+                        onPressed: () {
+                          final cmd = '/tool fetch url="https://staging.wifi-4u.net/v1/partner/routers/$_effectiveRouterId/ztp-payload/" mode=https dst-path=ztp.rsc; /import ztp.rsc';
+                          Clipboard.setData(ClipboardData(text: cmd));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Commande Terminal copiée dans le presse-papier !')),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  SelectableText(
+                    '/tool fetch url="https://staging.wifi-4u.net/v1/partner/routers/$_effectiveRouterId/ztp-payload/" mode=https dst-path=ztp.rsc; /import ztp.rsc',
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                      color: Colors.greenAccent,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

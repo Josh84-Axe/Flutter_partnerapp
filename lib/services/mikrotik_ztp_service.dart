@@ -153,6 +153,7 @@ class MikrotikZtpService {
     if (preferredIp != null && preferredIp.trim().isNotEmpty) {
       ipsToScan.add(preferredIp.trim());
     }
+
     for (final ip in candidateGateways) {
       if (!ipsToScan.contains(ip)) {
         ipsToScan.add(ip);
