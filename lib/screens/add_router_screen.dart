@@ -39,6 +39,18 @@ class _AddRouterScreenState extends State<AddRouterScreen>
   late AnimationController _responseAnimController;
   late Animation<double> _responseAnimation;
 
+  String _tr(String key, String fallback) {
+    try {
+      final res = key.tr();
+      if (res == key || res.isEmpty) {
+        return fallback;
+      }
+      return res;
+    } catch (_) {
+      return fallback;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -82,16 +94,12 @@ class _AddRouterScreenState extends State<AddRouterScreen>
 
       final data = <String, dynamic>{
         'name': _nameController.text.trim(),
+        'password': _passwordController.text,
+        'secret': _radiusSecretController.text.trim().isEmpty ? 'Raduis@Secret' : _radiusSecretController.text.trim(),
         'api_port': _apiPort,
         'coa_port': _coaPort,
         'is_active': true,
       };
-      if (_passwordController.text.isNotEmpty) {
-        data['password'] = _passwordController.text;
-      }
-      if (_radiusSecretController.text.trim().isNotEmpty) {
-        data['secret'] = _radiusSecretController.text.trim();
-      }
 
       try {
         Map<String, dynamic>? response;
@@ -532,7 +540,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                     ),
                                   )
                                 : const Icon(Icons.check, size: 18),
-                            label: Text('validate'.tr()),
+                            label: Text(_tr('validate', 'Valider')),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green.shade700,
                               foregroundColor: Colors.white,
@@ -583,8 +591,8 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                             ),
                             label: Text(
                               isReady
-                                  ? 'ztp_assistant_ready'.tr()
-                                  : 'ztp_assistant_unvalidated'.tr(),
+                                  ? _tr('ztp_assistant_ready', 'Lancer l\'Assistant 1-Tap ZTP (Auto-Provisioning)')
+                                  : _tr('ztp_assistant_unvalidated', 'Assistant 1-Tap ZTP (Validez le nom ci-dessus)'),
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: isReady ? Colors.white : Colors.grey.shade600,
@@ -621,7 +629,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'vault_security_title'.tr(),
+                                  _tr('vault_security_title', 'Sécurité Automatique Vault Tiknet'),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.indigo,
@@ -630,7 +638,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'vault_security_desc'.tr(),
+                                  _tr('vault_security_desc', 'Le mot de passe administrateur (32 caractères) et la clé RADIUS sont générés et chiffrés automatiquement par le contrôleur.'),
                                   style: TextStyle(fontSize: 12, color: Colors.indigo.shade900),
                                 ),
                               ],
