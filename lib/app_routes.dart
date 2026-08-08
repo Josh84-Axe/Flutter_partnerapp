@@ -21,7 +21,6 @@ import 'screens/plans_screen.dart';
 import 'screens/settings_screen.dart';
 import 'feature/launch/splash_screen.dart';
 import 'feature/launch/onboarding_screen.dart';
-import 'screens/onboarding/smart_welcome_screen.dart';
 import 'screens/onboarding/dynamic_tour_screen.dart';
 import 'feature/auth/login_screen_m3.dart';
 import 'screens/notifications_screen.dart';
@@ -108,22 +107,10 @@ import 'screens/onboarding/variant_selection_screen.dart';
 class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
         '/splash': (context) => const SplashScreen(),
-        '/dynamic-tour': (context) {
-          final variant = ModalRoute.of(context)?.settings.arguments as String?;
-          return DynamicTourScreen(appVariant: variant ?? 'partner');
-        },
+        '/dynamic-tour': (context) => const DynamicTourScreen(),
         '/onboarding-old': (context) => const OnboardingScreen(),
         '/auth-wrapper': (context) => const AuthWrapper(),
-        '/login': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments;
-          String appVariant = 'partner';
-          if (args is Map) {
-            appVariant = args['app_variant']?.toString() ?? 'partner';
-          } else if (args is String) {
-            appVariant = args;
-          }
-          return LoginScreenM3(appVariant: appVariant);
-        },
+        '/login': (context) => const LoginScreenM3(),
         '/setup-pin': (context) => const SetupPinScreen(),
         '/family-add-device': (context) => const FamilyAddDeviceScreen(),
         '/family-devices': (context) => const FamilyDevicesScreen(),
@@ -220,7 +207,7 @@ class AppRoutes {
           final user = ModalRoute.of(context)?.settings.arguments as UserModel;
           return UserDetailsScreen(user: user);
         },
-        '/onboarding-old': (context) => const OnboardingFlow(),
+        '/onboarding-flow': (context) => const OnboardingFlow(),
         '/about': (context) => const AboutAppScreen(),
         '/empty-state': (context) => const EmptyStateScreen(),
         '/email-verification': (context) {

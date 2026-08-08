@@ -50,6 +50,7 @@ import '../screens/internet_plans_settings_screen.dart';
 import '../screens/subscription_management_screen.dart';
 import '../screens/router_settings_screen.dart';
 import '../screens/add_router_screen.dart';
+import '../screens/router_ztp_wizard_screen.dart';
 import '../screens/create_edit_plan_screen.dart';
 import '../screens/assign_user_screen.dart';
 import '../screens/create_role_screen.dart';
@@ -273,6 +274,19 @@ final appRouter = GoRouter(
       builder: (context, state) => AddRouterScreen(
         args: state.extra as RouterConfigurationModel?,
       ),
+    ),
+    GoRoute(
+      path: '/router-ztp-wizard',
+      builder: (context, state) {
+        int? rId;
+        String? rName;
+        if (state.extra is Map<String, dynamic>) {
+          final map = state.extra as Map<String, dynamic>;
+          rId = map['routerId'] is int ? map['routerId'] : int.tryParse(map['routerId']?.toString() ?? '');
+          rName = map['routerName']?.toString();
+        }
+        return RouterZtpWizardScreen(routerId: rId, routerName: rName);
+      },
     ),
     GoRoute(
       path: '/role-permissions',
