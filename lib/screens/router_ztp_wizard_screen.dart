@@ -523,6 +523,8 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
   }
 
   Widget _buildStep2Verify(ThemeData theme) {
+    final wgIp = _ztpPayload?['wg_ip'] != null ? '${_ztpPayload!['wg_ip']}/32' : (_deviceInfo?.gatewayIp ?? '10.0.0.X');
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -531,9 +533,15 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _tr('ztp_step2_title', 'Étape 2 : Routeur Détecté !'),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                const Icon(Icons.verified, color: Colors.green, size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  _tr('ztp_step2_title', 'Étape 2 : Routeur Identifié & Empreinte Détectée'),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             Container(
@@ -541,24 +549,37 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
               decoration: BoxDecoration(
                 color: Colors.blue.shade50,
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.shade200),
               ),
               child: Column(
                 children: [
-                  _buildInfoRow(_tr('router_model', 'Modèle du Routeur'), _deviceInfo?.model ?? 'MikroTik'),
+                  _buildInfoRow('Nom du Wi-Fi / Config', _effectiveRouterName),
                   const Divider(),
-                  _buildInfoRow(_tr('system_identity', 'Identité Système'), _deviceInfo?.identity ?? 'MikroTik'),
+                  _buildInfoRow('ID Référence Routeur', 'TIK-RTR-$_effectiveRouterId'),
                   const Divider(),
-                  _buildInfoRow(_tr('routeros_version', 'Version RouterOS'), _deviceInfo?.version ?? '7.x'),
+                  _buildInfoRow(_tr('system_identity', 'Identité Système RouterOS'), _deviceInfo?.identity ?? _effectiveRouterName),
                   const Divider(),
-                  _buildInfoRow(_tr('gateway_ip', 'IP Passerelle'), _deviceInfo?.gatewayIp ?? '192.168.88.1'),
+                  _buildInfoRow(_tr('router_model', 'Modèle Hardware'), _deviceInfo?.model ?? 'MikroTik RouterBOARD'),
+                  const Divider(),
+                  _buildInfoRow(_tr('routeros_version', 'Version Firmware'), _deviceInfo?.version ?? 'v7.x'),
+                  const Divider(),
+                  _buildInfoRow('IP VPN Tiknet (WireGuard)', wgIp),
+                  const Divider(),
+                  _buildInfoRow('Admin Vault', 'tiknet-admin (Sécurisé 32-chars)'),
                 ],
               ),
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: (_isProvisioning || _isFetchingPayload) ? null : _startProvisioning,
-              icon: const Icon(Icons.flash_on),
-              label: Text(_tr('start_auto_provisioning', 'Lancer le Provisionnement Auto')),
+              icon: _isFetchingPayload
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.flash_on),
+              label: Text(_isFetchingPayload ? 'Chargement du Payload...' : _tr('start_auto_provisioning', 'Lancer le Provisionnement Auto')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade600,
                 foregroundColor: Colors.white,
