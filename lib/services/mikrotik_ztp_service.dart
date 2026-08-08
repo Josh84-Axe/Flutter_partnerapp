@@ -268,6 +268,8 @@ class MikrotikZtpService {
         gatewayIp: gatewayIp,
         bootstrapToken: token,
         routerName: rName,
+        username: defaultAdminUsername,
+        password: defaultAdminPassword,
       );
       onProgress('✅ Provisionnement Web transmis ! Vérification du tunnel VPN...', 0.75);
       return true;
