@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../locator.dart';
 import '../services/mikrotik_ztp_service.dart';
@@ -266,7 +267,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Assistant ZTP 1-Tap'),
+        title: Text('ztp_wizard_title'.tr()),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -306,9 +307,9 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    'Configuration automatique Zero-Touch Provisioning via le réseau local.',
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  Text(
+                    'ztp_new_router_desc'.tr(),
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                 ],
               ),
@@ -355,7 +356,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
   }
 
   Widget _buildStepIndicator(ThemeData theme) {
-    final steps = ['Connexion', 'Vérification', 'Déploiement', 'Succès'];
+    final steps = ['1', '2', '3', '4'];
 
     return Row(
       children: List.generate(steps.length, (index) {
@@ -401,20 +402,20 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Étape 1 : Connectez-vous au Wi-Fi du Routeur',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              'ztp_step1_title'.tr(),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              'Connectez votre smartphone au réseau Wi-Fi par défaut du MikroTik neuf ou réinitialisé.',
+              'ztp_step1_desc'.tr(),
               style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _gatewayIpController,
               decoration: InputDecoration(
-                labelText: 'Adresse IP Passerelle (Gateway)',
+                labelText: 'gateway_ip_address'.tr(),
                 hintText: '192.168.88.1',
                 prefixIcon: const Icon(Icons.router),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -431,7 +432,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
                   : const Icon(Icons.search),
-              label: Text(_isProbing ? 'Détection en cours...' : 'Détecter le Routeur MikroTik'),
+              label: Text(_isProbing ? 'scanning_local_gateways'.tr() : 'detect_mikrotik_router'.tr()),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -452,9 +453,9 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Étape 2 : Routeur Détecté !',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              'ztp_step2_title'.tr(),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Container(
@@ -465,13 +466,13 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
               ),
               child: Column(
                 children: [
-                  _buildInfoRow('Modèle', _deviceInfo?.model ?? 'MikroTik'),
+                  _buildInfoRow('router_model'.tr(), _deviceInfo?.model ?? 'MikroTik'),
                   const Divider(),
-                  _buildInfoRow('Nom Système', _deviceInfo?.identity ?? 'MikroTik'),
+                  _buildInfoRow('system_identity'.tr(), _deviceInfo?.identity ?? 'MikroTik'),
                   const Divider(),
-                  _buildInfoRow('Version RouterOS', _deviceInfo?.version ?? '7.x'),
+                  _buildInfoRow('routeros_version'.tr(), _deviceInfo?.version ?? '7.x'),
                   const Divider(),
-                  _buildInfoRow('IP Passerelle', _deviceInfo?.gatewayIp ?? '192.168.88.1'),
+                  _buildInfoRow('gateway_ip'.tr(), _deviceInfo?.gatewayIp ?? '192.168.88.1'),
                 ],
               ),
             ),
@@ -479,7 +480,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
             ElevatedButton.icon(
               onPressed: (_isProvisioning || _isFetchingPayload) ? null : _startProvisioning,
               icon: const Icon(Icons.flash_on),
-              label: const Text('Lancer le Déploiement 1-Tap ZTP'),
+              label: Text('start_auto_provisioning'.tr()),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade600,
                 foregroundColor: Colors.white,
@@ -554,13 +555,13 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
               child: Icon(Icons.check, color: Colors.white, size: 40),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Routeur Provisionné avec Succès !',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+            Text(
+              'ztp_step4_title'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
             ),
             const SizedBox(height: 8),
             Text(
-              'Le routeur $_effectiveRouterName a rejoint le réseau Tiknet VPN et est maintenant connecté.',
+              'ztp_step4_desc'.tr(),
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
             ),
@@ -590,7 +591,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                 minimumSize: const Size.fromHeight(50),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Terminer et Revenir aux Routeurs'),
+              child: Text('finish_and_view_router'.tr()),
             ),
           ],
         ),

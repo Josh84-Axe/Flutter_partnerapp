@@ -511,7 +511,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                 return 'enter_wifi_name'.tr();
                               }
                               if (value.contains('_')) {
-                                return 'Le nom du Wi-Fi ne peut pas contenir de tiret bas (_). Utilisez des lettres, chiffres ou tirets (-).';
+                                return 'wifi_name_underscore_error'.tr();
                               }
                               return null;
                             },
@@ -532,7 +532,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                     ),
                                   )
                                 : const Icon(Icons.check, size: 18),
-                            label: const Text('Valider'),
+                            label: Text('validate'.tr()),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green.shade700,
                               foregroundColor: Colors.white,
@@ -583,8 +583,8 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                             ),
                             label: Text(
                               isReady
-                                  ? 'Lancer l\'Assistant 1-Tap ZTP (Auto-Provisioning)'
-                                  : 'Assistant 1-Tap ZTP (Validez le nom ci-dessus)',
+                                  ? 'ztp_assistant_ready'.tr()
+                                  : 'ztp_assistant_unvalidated'.tr(),
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: isReady ? Colors.white : Colors.grey.shade600,
@@ -620,9 +620,9 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Sécurité Automatique Vault Tiknet',
-                                  style: TextStyle(
+                                Text(
+                                  'vault_security_title'.tr(),
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.indigo,
                                     fontSize: 13,
@@ -630,7 +630,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Le mot de passe administrateur (32 caractères) et la clé RADIUS sont générés et chiffrés automatiquement par le contrôleur.',
+                                  'vault_security_desc'.tr(),
                                   style: TextStyle(fontSize: 12, color: Colors.indigo.shade900),
                                 ),
                               ],
