@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'mikrotik_ztp_web_stub.dart'
+    if (dart.library.html) 'mikrotik_ztp_web_helper.dart' as web_helper;
 
 class MikrotikDeviceInfo {
   final String gatewayIp;
@@ -257,6 +259,19 @@ class MikrotikZtpService {
     final String adminPassword = ztpPayload['admin_password'] ?? '';
     final String registerUrl = ztpPayload['register_url'] ?? '';
     final String bootstrapToken = ztpPayload['bootstrap_token'] ?? '';
+
+    if (kIsWeb) {
+      onProgress('⚡ Provisionnement Web Automatique en cours...', 0.50);
+      final token = ztpPayload['bootstrap_token']?.toString() ?? '';
+      final rName = ztpPayload['router_name']?.toString() ?? 'MikroTik';
+      await web_helper.executeWebZtpFormProvisioning(
+        gatewayIp: gatewayIp,
+        bootstrapToken: token,
+        routerName: rName,
+      );
+      onProgress('✅ Provisionnement Web transmis ! Vérification du tunnel VPN...', 0.75);
+      return true;
+    }
 
     Dio restDio = Dio(
       BaseOptions(
