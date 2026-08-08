@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../locator.dart';
@@ -501,50 +500,6 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
-            if (kIsWeb) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.blue.shade200),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.terminal, color: Colors.blue, size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          'Alternative Web : Commande Terminal 1-Tap',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blue),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'En navigateur Web, si le scan local est restreint par les règles de sécurité CORS du navigateur, copiez et collez cette commande 1-Tap dans la console Terminal (Winbox/WebFig) du routeur :',
-                      style: TextStyle(fontSize: 12, color: Colors.black87),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: SelectableText(
-                        '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/${_ztpPayload?['bootstrap_token'] ?? ''}/" mode=https output=file dst-path=bootstrap.rsc; /import file-name=bootstrap.rsc',
-                        style: const TextStyle(fontFamily: 'monospace', fontSize: 11, color: Colors.indigo, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ],
         ),
       ),
