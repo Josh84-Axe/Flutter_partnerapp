@@ -277,6 +277,7 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/router-ztp-wizard',
+      name: 'router-ztp-wizard',
       builder: (context, state) {
         int? rId;
         String? rName;

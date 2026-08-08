@@ -96,9 +96,9 @@ class RouterDetailsScreen extends StatelessWidget {
                 icon: Icons.bolt,
                 label: 'Assistant ZTP 1-Tap (Auto-Provisioning)',
                 onTap: () {
-                  Navigator.of(context).pushNamed(
+                  context.push(
                     '/router-ztp-wizard',
-                    arguments: {
+                    extra: {
                       'routerId': router.id,
                       'routerName': router.name,
                     },

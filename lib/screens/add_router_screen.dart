@@ -317,9 +317,9 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                   rId = int.tryParse(_existingConfig!.id) ?? 0;
                 }
                 final String rName = name;
-                Navigator.of(context).pushNamed(
+                context.push(
                   '/router-ztp-wizard',
-                  arguments: {'routerId': rId, 'routerName': rName},
+                  extra: {'routerId': rId, 'routerName': rName},
                 );
               },
               icon: const Icon(Icons.bolt, color: Colors.amber),
@@ -513,9 +513,9 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                           child: ElevatedButton.icon(
                             onPressed: isReady
                                 ? () {
-                                    Navigator.of(context).pushNamed(
+                                    context.push(
                                       '/router-ztp-wizard',
-                                      arguments: {'routerId': routerId, 'routerName': routerName},
+                                      extra: {'routerId': routerId, 'routerName': routerName},
                                     );
                                   }
                                 : null,
