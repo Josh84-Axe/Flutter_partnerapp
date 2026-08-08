@@ -193,6 +193,15 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> with Single
              } catch (_) {}
           }
 
+          if (planName == 'Unknown Plan' || planName == 'unknown_plan'.tr()) {
+            if (userDetails != null) {
+              planName = userDetails['plan_name']?.toString() 
+                  ?? userDetails['plan']?['name']?.toString() 
+                  ?? userDetails['plan']?.toString() 
+                  ?? planName;
+            }
+          }
+
           String customerName = session['customer_first_name']?.toString() ?? session['customer_name']?.toString() ?? '';
           if (customerName.isEmpty) {
              // Try fetching from matched plan details
