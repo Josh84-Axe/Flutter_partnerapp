@@ -605,12 +605,12 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'ztp_step4_title'.tr(),
+              _tr('ztp_step4_title', 'Configuration & Provisionnement Réussis !'),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
             ),
             const SizedBox(height: 8),
             Text(
-              'ztp_step4_desc'.tr(),
+              _tr('ztp_step4_desc', 'Votre routeur MikroTik est maintenant entièrement configuré, sécurisé et connecté au cloud Tiknet Africa via tunnel VPN WireGuard.'),
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
             ),
@@ -640,7 +640,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                 minimumSize: const Size.fromHeight(50),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text('finish_and_view_router'.tr()),
+              child: Text(_tr('finish_and_view_router', 'Terminer et Voir le Routeur')),
             ),
           ],
         ),
