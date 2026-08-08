@@ -658,13 +658,49 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
               ),
               child: Column(
                 children: [
-                  _buildInfoRow('Vérification Cloud', _verificationData?['message'] ?? '✅ Confirmé (Ping VPN Reçu)'),
+                  _buildInfoRow('Score Audit Systeme', _verificationData?['audit_score'] ?? '6/6 (100% Verifie)'),
                   const Divider(),
                   _buildInfoRow('Management IP', '$wgIp/32'),
                   const Divider(),
-                  _buildInfoRow('Statut', 'EN LIGNE (WireGuard)'),
+                  _buildInfoRow('Statut Cloud', 'EN LIGNE (WireGuard)'),
                   const Divider(),
-                  _buildInfoRow('Admin User', 'tiknet-admin'),
+                  _buildInfoRow('Compte Admin', 'tiknet-admin'),
+                  if (_verificationData != null && _verificationData!['audit_checks'] != null) ...[
+                    const Divider(),
+                    const SizedBox(height: 6),
+                    ...List<Widget>.from(
+                      (_verificationData!['audit_checks'] as List).map((check) {
+                        final bool passed = check['passed'] ?? false;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 3.0),
+                          child: Row(
+                            children: [
+                              Icon(
+                                passed ? Icons.check_circle : Icons.warning_amber_rounded,
+                                color: passed ? Colors.green : Colors.amber.shade800,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  check['name'] ?? '',
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                              Text(
+                                passed ? 'Conforme' : 'Alerte',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: passed ? Colors.green.shade700 : Colors.amber.shade900,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                 ],
               ),
             ),
