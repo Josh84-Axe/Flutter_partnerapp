@@ -40,6 +40,18 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
   int _effectiveRouterId = 0;
   String _effectiveRouterName = 'Nouveau Routeur';
 
+  String _tr(String key, String fallback) {
+    try {
+      final res = key.tr();
+      if (res == key || res.isEmpty) {
+        return fallback;
+      }
+      return res;
+    } catch (_) {
+      return fallback;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -284,7 +296,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('ztp_wizard_title'.tr()),
+        title: Text(_tr('ztp_wizard_title', 'Assistant ZTP 1-Tap')),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -325,7 +337,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'ztp_new_router_desc'.tr(),
+                    _tr('ztp_new_router_desc', 'Configuration automatique Zero-Touch Provisioning via le réseau local.'),
                     style: const TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                 ],
@@ -420,19 +432,19 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'ztp_step1_title'.tr(),
+              _tr('ztp_step1_title', 'Étape 1 : Connectez-vous au Wi-Fi du Routeur'),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              'ztp_step1_desc'.tr(),
+              _tr('ztp_step1_desc', 'Connectez votre smartphone au réseau Wi-Fi par défaut du MikroTik neuf ou réinitialisé.'),
               style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _gatewayIpController,
               decoration: InputDecoration(
-                labelText: 'gateway_ip_address'.tr(),
+                labelText: _tr('gateway_ip_address', 'Adresse IP Passerelle (Gateway)'),
                 hintText: '192.168.88.1',
                 prefixIcon: const Icon(Icons.router),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -449,7 +461,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
                   : const Icon(Icons.search),
-              label: Text(_isProbing ? 'scanning_local_gateways'.tr() : 'detect_mikrotik_router'.tr()),
+              label: Text(_isProbing ? _tr('scanning_local_gateways', 'Scan des passerelles du réseau local...') : _tr('detect_mikrotik_router', 'Détecter le Routeur MikroTik')),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -520,7 +532,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'ztp_step2_title'.tr(),
+              _tr('ztp_step2_title', 'Étape 2 : Routeur Détecté !'),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -532,13 +544,13 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
               ),
               child: Column(
                 children: [
-                  _buildInfoRow('router_model'.tr(), _deviceInfo?.model ?? 'MikroTik'),
+                  _buildInfoRow(_tr('router_model', 'Modèle du Routeur'), _deviceInfo?.model ?? 'MikroTik'),
                   const Divider(),
-                  _buildInfoRow('system_identity'.tr(), _deviceInfo?.identity ?? 'MikroTik'),
+                  _buildInfoRow(_tr('system_identity', 'Identité Système'), _deviceInfo?.identity ?? 'MikroTik'),
                   const Divider(),
-                  _buildInfoRow('routeros_version'.tr(), _deviceInfo?.version ?? '7.x'),
+                  _buildInfoRow(_tr('routeros_version', 'Version RouterOS'), _deviceInfo?.version ?? '7.x'),
                   const Divider(),
-                  _buildInfoRow('gateway_ip'.tr(), _deviceInfo?.gatewayIp ?? '192.168.88.1'),
+                  _buildInfoRow(_tr('gateway_ip', 'IP Passerelle'), _deviceInfo?.gatewayIp ?? '192.168.88.1'),
                 ],
               ),
             ),
@@ -546,7 +558,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
             ElevatedButton.icon(
               onPressed: (_isProvisioning || _isFetchingPayload) ? null : _startProvisioning,
               icon: const Icon(Icons.flash_on),
-              label: Text('start_auto_provisioning'.tr()),
+              label: Text(_tr('start_auto_provisioning', 'Lancer le Provisionnement Auto')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade600,
                 foregroundColor: Colors.white,

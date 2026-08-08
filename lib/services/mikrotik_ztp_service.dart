@@ -32,7 +32,7 @@ class MikrotikZtpService {
   Future<Map<String, dynamic>> fetchZtpPayload(int routerId) async {
     try {
       final response = await _centralApiDio.get(
-        '/partner/routers/$routerId/ztp-payload/',
+        '/routers/$routerId/ztp-payload/',
       );
 
       if (response.data != null && response.data['data'] != null) {
