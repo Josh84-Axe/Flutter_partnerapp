@@ -361,4 +361,25 @@ class MikrotikZtpService {
         return 'Application de la configuration MikroTik...';
     }
   }
+
+  /// 4. Reverse Verification: Ask backend to ping router via WireGuard VPN
+  Future<Map<String, dynamic>> verifyCloudConnection(int routerId) async {
+    try {
+      final response = await _centralApiDio.get(
+        '/routers/$routerId/check-connection/',
+      );
+
+      if (response.data != null && response.data['data'] != null) {
+        return Map<String, dynamic>.from(response.data['data']);
+      } else if (response.data != null) {
+        return Map<String, dynamic>.from(response.data);
+      }
+      return {'is_connected': false, 'message': 'Réponse vide du backend'};
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ [MikrotikZtpService] Reverse verification error: $e');
+      }
+      return {'is_connected': false, 'message': e.toString()};
+    }
+  }
 }

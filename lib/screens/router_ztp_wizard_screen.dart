@@ -31,6 +31,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
 
   MikrotikDeviceInfo? _deviceInfo;
   Map<String, dynamic>? _ztpPayload;
+  Map<String, dynamic>? _verificationData;
 
   String _statusMessage = '';
   double _progressValue = 0.0;
@@ -275,9 +276,42 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
 
       if (success && mounted) {
         setState(() {
-          _isProvisioning = false;
-          _currentStep = 4;
+          _statusMessage = 'Initialisation de la vérification inverse avec le Cloud Central...';
+          _progressValue = 0.85;
         });
+
+        bool isConnected = false;
+        Map<String, dynamic>? checkData;
+
+        // Active Reverse Verification: Poll check-connection up to 5 times (every 3 seconds)
+        for (int i = 1; i <= 5; i++) {
+          if (!mounted) return;
+          setState(() {
+            _statusMessage = 'Vérification inverse Cloud (Ping WireGuard - Tentative $i/5)...';
+            _progressValue = 0.85 + (i * 0.03);
+          });
+
+          await Future.delayed(const Duration(seconds: 3));
+          checkData = await _ztpService.verifyCloudConnection(_effectiveRouterId);
+
+          if (checkData['is_connected'] == true) {
+            isConnected = true;
+            break;
+          }
+        }
+
+        if (isConnected && mounted) {
+          setState(() {
+            _isProvisioning = false;
+            _verificationData = checkData;
+            _currentStep = 4;
+          });
+        } else if (mounted) {
+          setState(() {
+            _isProvisioning = false;
+            _errorMessage = '⚠️ Échec de la vérification inverse Cloud : La configuration locale s\'est effectuée, mais le contrôleur n\'a pas pu joindre le routeur via le tunnel VPN WireGuard (${_ztpPayload?['wg_ip'] ?? '10.0.0.X'}). Vérifiez la connexion Internet du routeur.';
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -618,11 +652,14 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: Colors.green.shade50,
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.shade200),
               ),
               child: Column(
                 children: [
+                  _buildInfoRow('Vérification Cloud', _verificationData?['message'] ?? '✅ Confirmé (Ping VPN Reçu)'),
+                  const Divider(),
                   _buildInfoRow('Management IP', '$wgIp/32'),
                   const Divider(),
                   _buildInfoRow('Statut', 'EN LIGNE (WireGuard)'),
