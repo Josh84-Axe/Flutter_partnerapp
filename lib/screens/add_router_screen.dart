@@ -352,36 +352,6 @@ class _AddRouterScreenState extends State<AddRouterScreen>
             colorScheme,
           ),
 
-          // 2. Setup Command
-          if (setupCmd.isNotEmpty)
-            _buildCommandCard(
-              title: 'Commande Setup',
-              subtitle: 'Exécutez pour configurer l\'interface DHCP et DNS.',
-              command: setupCmd,
-              accentColor: Colors.purple.shade700,
-              colorScheme: colorScheme,
-            ),
-
-          // 3. Bootstrap Command
-          if (bootstrapCmd.isNotEmpty)
-            _buildCommandCard(
-              title: 'Commande Bootstrap',
-              subtitle: 'Exécutez cette commande pour lancer le bootstrap du routeur.',
-              command: bootstrapCmd,
-              accentColor: Colors.teal.shade700,
-              colorScheme: colorScheme,
-            ),
-
-          // 4. Login Page Command (Partner & Campus only; hidden for Family mode)
-          if (loginPageCmd.isNotEmpty && F.appFlavor != Flavor.family && routerData['app_variant'] != 'family')
-            _buildCommandCard(
-              title: 'Commande Login Page',
-              subtitle: 'Exécutez pour télécharger la page de connexion hotspot.',
-              command: loginPageCmd,
-              accentColor: Colors.blue.shade700,
-              colorScheme: colorScheme,
-            ),
-
           // 5. Informations Techniques
           _buildInfoCard(
             'Informations Techniques',
@@ -429,135 +399,6 @@ class _AddRouterScreenState extends State<AddRouterScreen>
           // Raw JSON (Fallback)
           const SizedBox(height: 16),
           _buildRawJsonSection(rawJson, colorScheme),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCommandCard({
-    required String title,
-    required String subtitle,
-    required String command,
-    required Color accentColor,
-    required ColorScheme colorScheme,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header with accent color strip
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: IntrinsicHeight(
-              child: Container(
-                color: colorScheme.surfaceContainerHighest.withOpacity(0.4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Left accent strip
-                    Container(width: 4, color: accentColor),
-                    // Header content
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(color: colorScheme.outline.withOpacity(0.1)),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.terminal, size: 16, color: accentColor),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                title,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: colorScheme.onSurface,
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                            ),
-                            // Copy button
-                            InkWell(
-                              onTap: () => _copyToClipboard(command),
-                              borderRadius: BorderRadius.circular(6),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: accentColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: accentColor.withOpacity(0.3)),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.copy, size: 12, color: accentColor),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Copier',
-                                      style: TextStyle(fontSize: 11, color: accentColor, fontWeight: FontWeight.w600),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // Terminal body
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0D1117),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF30363D)),
-                  ),
-                  child: SelectableText(
-                    command,
-                    style: const TextStyle(
-                      color: Color(0xFFE6EDF3),
-                      fontFamily: 'monospace',
-                      fontSize: 12,
-                      height: 1.6,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -647,35 +488,62 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (isEdit) ...[
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            final int rId = int.tryParse(_existingConfig?.id ?? '') ?? 0;
-                            final String rName = _existingConfig?.name ?? _nameController.text;
-                            Navigator.of(context).pushNamed(
-                              '/router-ztp-wizard',
-                              arguments: {'routerId': rId, 'routerName': rName},
-                            );
-                          },
-                          icon: const Icon(Icons.bolt, color: Colors.amber),
-                          label: const Text(
-                            'Lancer l\'Assistant 1-Tap ZTP (Auto-Provisioning)',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.indigo.shade700,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                    // ZTP Wizard Banner Gated by Backend Validation
+                    Builder(
+                      builder: (context) {
+                        final bool isReady = isEdit || _serverResponse != null;
+                        int routerId = 0;
+                        String routerName = _nameController.text;
+
+                        if (isEdit && _existingConfig != null) {
+                          routerId = int.tryParse(_existingConfig!.id) ?? 0;
+                          routerName = _existingConfig!.name;
+                        } else if (_serverResponse != null) {
+                          Map<String, dynamic> rData = _serverResponse!;
+                          while (rData.containsKey('data') && rData['data'] is Map) {
+                            rData = rData['data'] as Map<String, dynamic>;
+                          }
+                          routerId = int.tryParse(rData['id']?.toString() ?? '') ?? 0;
+                          routerName = rData['name']?.toString() ?? _nameController.text;
+                        }
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: isReady
+                                ? () {
+                                    Navigator.of(context).pushNamed(
+                                      '/router-ztp-wizard',
+                                      arguments: {'routerId': routerId, 'routerName': routerName},
+                                    );
+                                  }
+                                : null,
+                            icon: Icon(
+                              Icons.bolt,
+                              color: isReady ? Colors.amber : Colors.grey.shade400,
+                            ),
+                            label: Text(
+                              isReady
+                                  ? 'Lancer l\'Assistant 1-Tap ZTP (Auto-Provisioning)'
+                                  : 'Assistant 1-Tap ZTP (Validez le nom ci-dessous)',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: isReady ? Colors.white : Colors.grey.shade600,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isReady ? Colors.indigo.shade700 : Colors.grey.shade200,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    ],
+                        );
+                      },
+                    ),
 
                     // Info card
                     Container(

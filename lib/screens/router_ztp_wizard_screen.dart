@@ -85,21 +85,126 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
     }
   }
 
+  String _customAdminUsername = 'admin';
+  String _customAdminPassword = '';
+
+  Future<Map<String, String>?> _promptCustomCredentials() async {
+    final userCtrl = TextEditingController(text: _customAdminUsername);
+    final passCtrl = TextEditingController(text: _customAdminPassword);
+    bool passObscured = true;
+
+    return showDialog<Map<String, String>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDlgState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.lock_person, color: Colors.indigo),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Mot de Passe Routeur Requis',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Ce routeur est protégé (boîtier déjà configuré ou mot de passe inscrit sur l\'étiquette au dos du routeur). Veuillez le saisir ci-dessous pour continuer.',
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade800),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: userCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Nom d\'utilisateur',
+                  prefixIcon: Icon(Icons.person_outline),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: passCtrl,
+                obscureText: passObscured,
+                decoration: InputDecoration(
+                  labelText: 'Mot de passe actuel (Sticker / Admin)',
+                  prefixIcon: const Icon(Icons.key_outlined),
+                  suffixIcon: IconButton(
+                    icon: Icon(passObscured ? Icons.visibility : Icons.visibility_off),
+                    onPressed: () => setDlgState(() => passObscured = !passObscured),
+                  ),
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(null),
+              child: const Text('Annuler'),
+            ),
+            FilledButton.icon(
+              onPressed: () {
+                Navigator.of(ctx).pop({
+                  'username': userCtrl.text.trim().isEmpty ? 'admin' : userCtrl.text.trim(),
+                  'password': passCtrl.text,
+                });
+              },
+              icon: const Icon(Icons.check, size: 18),
+              label: const Text('Valider & Continuer'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _probeGateway() async {
     setState(() {
       _isProbing = true;
       _errorMessage = null;
     });
 
-    final info = await _ztpService.probeLocalGateway(
+    var info = await _ztpService.probeLocalGateway(
       gatewayIp: _gatewayIpController.text.trim(),
+      username: _customAdminUsername,
+      password: _customAdminPassword,
     );
+
+    if (info.isAuthRequired) {
+      setState(() {
+        _isProbing = false;
+      });
+      final creds = await _promptCustomCredentials();
+      if (creds != null) {
+        _customAdminUsername = creds['username'] ?? 'admin';
+        _customAdminPassword = creds['password'] ?? '';
+
+        setState(() {
+          _isProbing = true;
+        });
+
+        info = await _ztpService.probeLocalGateway(
+          gatewayIp: _gatewayIpController.text.trim(),
+          username: _customAdminUsername,
+          password: _customAdminPassword,
+        );
+      }
+    }
 
     setState(() {
       _isProbing = false;
       _deviceInfo = info;
-      if (info.isRestSupported) {
+      if (info.isRestSupported && !info.isAuthRequired) {
         _currentStep = 2;
+      } else if (info.isAuthRequired) {
+        _errorMessage = 'Mot de passe incorrect pour le routeur MikroTik. Veuillez réessayer avec le mot de passe de l\'étiquette.';
       } else {
         _errorMessage = 'Aucun routeur MikroTik RouterOS v7 réactif détecté sur ${_gatewayIpController.text}. Assurez-vous d\'être connecté au Wi-Fi du routeur.';
       }
@@ -124,6 +229,8 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
       final success = await _ztpService.executeZtpProvisioning(
         gatewayIp: _gatewayIpController.text.trim(),
         ztpPayload: _ztpPayload!,
+        defaultAdminUsername: _customAdminUsername,
+        defaultAdminPassword: _customAdminPassword,
         onProgress: (status, progress) {
           if (mounted) {
             setState(() {

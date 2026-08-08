@@ -10,6 +10,7 @@ class MikrotikDeviceInfo {
   final String version;
   final String identity;
   final bool isRestSupported;
+  final bool isAuthRequired;
 
   MikrotikDeviceInfo({
     required this.gatewayIp,
@@ -18,6 +19,7 @@ class MikrotikDeviceInfo {
     required this.version,
     required this.identity,
     required this.isRestSupported,
+    this.isAuthRequired = false,
   });
 }
 
@@ -98,11 +100,25 @@ class MikrotikZtpService {
         version: version,
         identity: identity,
         isRestSupported: true,
+        isAuthRequired: false,
       );
     } catch (e) {
       if (kDebugMode) {
         debugPrint('⚠️ [MikrotikZtpService] REST API probe failed on $gatewayIp: $e');
       }
+
+      if (e is DioException && (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
+        return MikrotikDeviceInfo(
+          gatewayIp: gatewayIp,
+          boardName: 'MikroTik Router',
+          model: 'Mot de passe requis',
+          version: 'v7.x',
+          identity: 'Verrouillé',
+          isRestSupported: true,
+          isAuthRequired: true,
+        );
+      }
+
       return MikrotikDeviceInfo(
         gatewayIp: gatewayIp,
         boardName: 'Inconnu',
@@ -110,6 +126,7 @@ class MikrotikZtpService {
         version: 'Inconnu',
         identity: 'Inconnu',
         isRestSupported: false,
+        isAuthRequired: false,
       );
     }
   }
