@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 
@@ -9,74 +10,80 @@ Future<bool> executeWebZtpFormProvisioning({
 }) async {
   try {
     if (kDebugMode) {
-      debugPrint('⚡ [WebZtpHelper] Executing dual-vector automatic ZTP to $gatewayIp...');
+      debugPrint('⚡ [WebZtpHelper] Executing JSON Beacon & fetch ZTP to $gatewayIp...');
     }
 
     final bootstrapUrl = 'https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/';
 
-    // Ensure target iframe exists in DOM
-    html.IFrameElement? iframe = html.document.querySelector('#ztp_web_iframe') as html.IFrameElement?;
-    if (iframe == null) {
-      iframe = html.IFrameElement()
-        ..id = 'ztp_web_iframe'
-        ..name = 'ztp_web_iframe'
-        ..style.display = 'none';
-      html.document.body?.children.add(iframe);
-    }
-
-    final targets = [
+    final candidateHosts = [
       'http://$gatewayIp',
       'https://$gatewayIp',
+      'http://192.168.88.1',
+      'http://192.168.1.1',
+      'http://192.168.0.1',
+      'http://10.0.0.1',
     ];
 
-    for (final targetHost in targets) {
-      // Step 1: Form POST to /rest/tool/fetch
-      final form1 = html.FormElement()
-        ..action = '$targetHost/rest/tool/fetch'
-        ..method = 'POST'
-        ..target = 'ztp_web_iframe'
-        ..style.display = 'none';
+    for (final host in candidateHosts) {
+      // 1. JSON Payload 1: /rest/tool/fetch
+      final json1 = jsonEncode({
+        'url': bootstrapUrl,
+        'mode': 'https',
+        'output': 'file',
+        'dst-path': 'bootstrap.rsc',
+      });
+      final blob1 = html.Blob([json1], 'application/json');
+      html.window.navigator.sendBeacon('$host/rest/tool/fetch', blob1);
 
-      form1.children.add(html.InputElement()..name = 'url'..value = bootstrapUrl);
-      form1.children.add(html.InputElement()..name = 'mode'..value = 'https');
-      form1.children.add(html.InputElement()..name = 'output'..value = 'file');
-      form1.children.add(html.InputElement()..name = 'dst-path'..value = 'bootstrap.rsc');
+      try {
+        html.window.fetch('$host/rest/tool/fetch', {
+          'method': 'POST',
+          'mode': 'no-cors',
+          'headers': {'Content-Type': 'application/json'},
+          'body': json1,
+        });
+      } catch (_) {}
 
-      html.document.body?.children.add(form1);
-      form1.submit();
+      await Future.delayed(const Duration(milliseconds: 1200));
+
+      // 2. JSON Payload 2: /rest/system/script
+      final json2 = jsonEncode({
+        'name': 'import-bootstrap-script',
+        'source': '/import file-name=bootstrap.rsc',
+      });
+      final blob2 = html.Blob([json2], 'application/json');
+      html.window.navigator.sendBeacon('$host/rest/system/script', blob2);
+
+      try {
+        html.window.fetch('$host/rest/system/script', {
+          'method': 'POST',
+          'mode': 'no-cors',
+          'headers': {'Content-Type': 'application/json'},
+          'body': json2,
+        });
+      } catch (_) {}
+
+      await Future.delayed(const Duration(milliseconds: 1000));
+
+      // 3. JSON Payload 3: /rest/system/script/import-bootstrap-script/run
+      final json3 = jsonEncode({});
+      final blob3 = html.Blob([json3], 'application/json');
+      html.window.navigator.sendBeacon('$host/rest/system/script/import-bootstrap-script/run', blob3);
+
+      try {
+        html.window.fetch('$host/rest/system/script/import-bootstrap-script/run', {
+          'method': 'POST',
+          'mode': 'no-cors',
+          'headers': {'Content-Type': 'application/json'},
+          'body': json3,
+        });
+      } catch (_) {}
+
       await Future.delayed(const Duration(milliseconds: 800));
-      form1.remove();
-
-      // Step 2: Form POST to /rest/system/script
-      final form2 = html.FormElement()
-        ..action = '$targetHost/rest/system/script'
-        ..method = 'POST'
-        ..target = 'ztp_web_iframe'
-        ..style.display = 'none';
-
-      form2.children.add(html.InputElement()..name = 'name'..value = 'import-bootstrap-script');
-      form2.children.add(html.InputElement()..name = 'source'..value = '/import file-name=bootstrap.rsc');
-
-      html.document.body?.children.add(form2);
-      form2.submit();
-      await Future.delayed(const Duration(milliseconds: 800));
-      form2.remove();
-
-      // Step 3: Form POST to /rest/system/script/import-bootstrap-script/run
-      final form3 = html.FormElement()
-        ..action = '$targetHost/rest/system/script/import-bootstrap-script/run'
-        ..method = 'POST'
-        ..target = 'ztp_web_iframe'
-        ..style.display = 'none';
-
-      html.document.body?.children.add(form3);
-      form3.submit();
-      await Future.delayed(const Duration(milliseconds: 800));
-      form3.remove();
     }
 
     if (kDebugMode) {
-      debugPrint('✅ [WebZtpHelper] Dual-vector automatic ZTP dispatched cleanly!');
+      debugPrint('✅ [WebZtpHelper] JSON Beacon & Fetch ZTP dispatched to all candidate hosts!');
     }
     return true;
   } catch (e) {
