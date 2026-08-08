@@ -131,6 +131,80 @@ class MikrotikZtpService {
     }
   }
 
+  /// Candidate local gateway IPs across common ISP and private subnet ranges
+  static const List<String> candidateGateways = [
+    '192.168.88.1',  // MikroTik default out-of-the-box
+    '192.168.1.1',   // Standard ISP LAN / Router
+    '192.168.0.1',   // Standard ISP LAN
+    '10.0.0.1',      // Enterprise / Private LAN
+    '192.168.10.1',  // Custom subnet
+    '192.168.2.1',   // Custom subnet
+    '172.16.0.1',    // Class B subnet
+  ];
+
+  /// Smart Multi-Subnet Gateway Discovery: Concurrently probes candidate gateways
+  Future<MikrotikDeviceInfo> discoverLocalGateway({
+    String username = 'admin',
+    String password = '',
+    String? preferredIp,
+  }) async {
+    final List<String> ipsToScan = [];
+    if (preferredIp != null && preferredIp.trim().isNotEmpty) {
+      ipsToScan.add(preferredIp.trim());
+    }
+    for (final ip in candidateGateways) {
+      if (!ipsToScan.contains(ip)) {
+        ipsToScan.add(ip);
+      }
+    }
+
+    if (kDebugMode) {
+      debugPrint('🔍 [MikrotikZtpService] Scanning candidate gateways: $ipsToScan');
+    }
+
+    // Run probes in parallel across all candidate subnets
+    final List<Future<MikrotikDeviceInfo>> probeTasks = ipsToScan.map((ip) {
+      return probeLocalGateway(
+        gatewayIp: ip,
+        username: username,
+        password: password,
+      );
+    }).toList();
+
+    final results = await Future.wait(probeTasks);
+
+    // 1. Return unauthenticated responsive MikroTik device first
+    for (final info in results) {
+      if (info.isRestSupported && !info.isAuthRequired) {
+        if (kDebugMode) {
+          debugPrint('✅ [MikrotikZtpService] Found out-of-box MikroTik at ${info.gatewayIp}');
+        }
+        return info;
+      }
+    }
+
+    // 2. Return password-protected responsive MikroTik device
+    for (final info in results) {
+      if (info.isRestSupported && info.isAuthRequired) {
+        if (kDebugMode) {
+          debugPrint('🔒 [MikrotikZtpService] Found password-protected MikroTik at ${info.gatewayIp}');
+        }
+        return info;
+      }
+    }
+
+    // 3. Fallback: Return probe result for preferred or default IP
+    return results.isNotEmpty ? results[0] : MikrotikDeviceInfo(
+      gatewayIp: preferredIp ?? '192.168.88.1',
+      boardName: 'Inconnu',
+      model: 'MikroTik',
+      version: 'Inconnu',
+      identity: 'Inconnu',
+      isRestSupported: false,
+      isAuthRequired: false,
+    );
+  }
+
   /// 3. Execute ZTP Provisioning steps directly over RouterOS REST API
   Future<bool> executeZtpProvisioning({
     required String gatewayIp,

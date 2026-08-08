@@ -459,6 +459,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
   Widget build(BuildContext context) {
     final isEdit = _existingConfig != null;
     final colorScheme = Theme.of(context).colorScheme;
+    final provider = context.watch<NetworkProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -488,7 +489,65 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // ZTP Wizard Banner Gated by Backend Validation
+                    // 1. Wi-Fi Name Input FIRST with Side "Valider" Button
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _nameController,
+                            decoration: InputDecoration(
+                              labelText: 'wifi_name'.tr(),
+                              hintText: 'wifi_name_hint'.tr(),
+                              prefixIcon: const Icon(Icons.wifi),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (_) => _saveConfiguration(),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'enter_wifi_name'.tr();
+                              }
+                              if (value.contains('_')) {
+                                return 'Le nom du Wi-Fi ne peut pas contenir de tiret bas (_). Utilisez des lettres, chiffres ou tirets (-).';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          height: 56,
+                          child: ElevatedButton.icon(
+                            onPressed: provider.isLoading ? null : _saveConfiguration,
+                            icon: provider.isLoading
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.check, size: 18),
+                            label: const Text('Valider'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green.shade700,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 2. Assistant 1-Tap ZTP Button RIGHT UNDER Wi-Fi Name input
                     Builder(
                       builder: (context) {
                         final bool isReady = isEdit || _serverResponse != null;
@@ -507,8 +566,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                           routerName = rData['name']?.toString() ?? _nameController.text;
                         }
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
+                        return SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: isReady
@@ -526,7 +584,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                             label: Text(
                               isReady
                                   ? 'Lancer l\'Assistant 1-Tap ZTP (Auto-Provisioning)'
-                                  : 'Assistant 1-Tap ZTP (Validez le nom ci-dessous)',
+                                  : 'Assistant 1-Tap ZTP (Validez le nom ci-dessus)',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: isReady ? Colors.white : Colors.grey.shade600,
@@ -544,57 +602,9 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                         );
                       },
                     ),
-
-                    // Info card
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: colorScheme.primary.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.info_outline,
-                              color: colorScheme.primary, size: 20),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'router_config_info'.tr(),
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Wifi Name (Only Required User Input)
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: 'wifi_name'.tr(),
-                        hintText: 'wifi_name_hint'.tr(),
-                        prefixIcon: const Icon(Icons.wifi),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: (_) => _saveConfiguration(),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'enter_wifi_name'.tr();
-                        }
-                        return null;
-                      },
-                    ),
                     const SizedBox(height: 16),
 
-                    // Automated Vault Security Info Card
+                    // 3. Automated Vault Security Info Card
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -631,105 +641,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                     ),
                     const SizedBox(height: 16),
 
-                    // Optional Advanced Settings Accordion
-                    Theme(
-                      data: ThemeData(dividerColor: Colors.transparent),
-                      child: ExpansionTile(
-                        tilePadding: EdgeInsets.zero,
-                        title: const Text(
-                          'Paramètres Avancés (Optionnel)',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey),
-                        ),
-                        children: [
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _passwordController,
-                            decoration: InputDecoration(
-                              labelText: 'Mot de passe Administrateur (Optionnel)',
-                              hintText: 'Laisser vide pour mot de passe 32-chars sécurisé',
-                              prefixIcon: const Icon(Icons.lock_outline),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                              suffixIcon: IconButton(
-                                icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off),
-                                onPressed: () {
-                                  setState(() {
-                                    _passwordVisible = !_passwordVisible;
-                                  });
-                                },
-                              ),
-                            ),
-                            obscureText: !_passwordVisible,
-                          ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            controller: _radiusSecretController,
-                            decoration: InputDecoration(
-                              labelText: 'RADIUS Secret (Optionnel)',
-                              hintText: 'Laisser vide pour secret automatique',
-                              prefixIcon: const Icon(Icons.key_outlined),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                              suffixIcon: IconButton(
-                                icon: Icon(_radiusSecretVisible ? Icons.visibility : Icons.visibility_off),
-                                onPressed: () {
-                                  setState(() {
-                                    _radiusSecretVisible = !_radiusSecretVisible;
-                                  });
-                                },
-                              ),
-                            ),
-                            obscureText: !_radiusSecretVisible,
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Constant values info (read-only display)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerHighest
-                            .withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: colorScheme.outline.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'default_settings'.tr(),
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurfaceVariant,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Icon(Icons.settings_ethernet,
-                                  size: 16,
-                                  color: colorScheme.onSurfaceVariant),
-                              const SizedBox(width: 8),
-                              Text(
-                                'API Port: $_apiPort  •  CoA Port: $_coaPort',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // ── Server Response Panel ──────────────────────────────
+                    // 4. Server Response Panel
                     _buildResponsePanel(colorScheme),
 
                     const SizedBox(height: 16),
