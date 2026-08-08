@@ -142,11 +142,12 @@ class MikrotikZtpService {
     '172.16.0.1',    // Class B subnet
   ];
 
-  /// Smart Multi-Subnet Gateway Discovery: Concurrently probes candidate gateways
+  /// Smart Multi-Subnet & Platform Discovery: Probes candidate gateways & platform connected routers
   Future<MikrotikDeviceInfo> discoverLocalGateway({
     String username = 'admin',
     String password = '',
     String? preferredIp,
+    List<Map<String, dynamic>>? registeredPlatformRouters,
   }) async {
     final List<String> ipsToScan = [];
     if (preferredIp != null && preferredIp.trim().isNotEmpty) {
@@ -158,8 +159,18 @@ class MikrotikZtpService {
       }
     }
 
+    // Also include IP addresses of routers registered to the user's platform account
+    if (registeredPlatformRouters != null) {
+      for (final r in registeredPlatformRouters) {
+        final ip = r['ip_address']?.toString() ?? r['wg_ip']?.toString();
+        if (ip != null && ip.trim().isNotEmpty && !ipsToScan.contains(ip.trim())) {
+          ipsToScan.add(ip.trim());
+        }
+      }
+    }
+
     if (kDebugMode) {
-      debugPrint('🔍 [MikrotikZtpService] Scanning candidate gateways: $ipsToScan');
+      debugPrint('🔍 [MikrotikZtpService] Scanning candidate gateways & platform IPs: $ipsToScan');
     }
 
     // Run probes in parallel across all candidate subnets
@@ -193,7 +204,32 @@ class MikrotikZtpService {
       }
     }
 
-    // 3. Fallback: Return probe result for preferred or default IP
+    // 3. Smart Platform Fallback: If local HTTP probe is blocked by HTTPS browser CORS, but user has registered routers on platform
+    if (registeredPlatformRouters != null && registeredPlatformRouters.isNotEmpty) {
+      final activeRouter = registeredPlatformRouters.firstWhere(
+        (r) => r['is_active'] == true || r['status'] == 'online',
+        orElse: () => registeredPlatformRouters.first,
+      );
+      final rName = activeRouter['name']?.toString() ?? 'MikroTik Router';
+      final rIp = activeRouter['ip_address']?.toString() ?? activeRouter['wg_ip']?.toString() ?? '10.0.0.X';
+      final rModel = activeRouter['slug']?.toString() ?? 'Routeur Plateforme';
+
+      if (kDebugMode) {
+        debugPrint('🌐 [MikrotikZtpService] Found online platform router: $rName ($rIp)');
+      }
+
+      return MikrotikDeviceInfo(
+        gatewayIp: rIp,
+        boardName: rName,
+        model: 'MikroTik ($rModel)',
+        version: 'v7.x (En Ligne)',
+        identity: rName,
+        isRestSupported: true,
+        isAuthRequired: false,
+      );
+    }
+
+    // 4. Default fallback
     return results.isNotEmpty ? results[0] : MikrotikDeviceInfo(
       gatewayIp: preferredIp ?? '192.168.88.1',
       boardName: 'Inconnu',

@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../locator.dart';
+import '../providers/split/network_provider.dart';
 import '../services/mikrotik_ztp_service.dart';
 
 class RouterZtpWizardScreen extends StatefulWidget {
@@ -172,10 +174,23 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
       _errorMessage = null;
     });
 
+    List<Map<String, dynamic>>? userRouters;
+    try {
+      final netProvider = context.read<NetworkProvider>();
+      userRouters = netProvider.routers.map((r) => {
+        'id': r.id,
+        'name': r.name,
+        'slug': r.slug,
+        'ip_address': r.ipAddress,
+        'is_active': r.status == 'online',
+      }).toList();
+    } catch (_) {}
+
     var info = await _ztpService.discoverLocalGateway(
       username: _customAdminUsername,
       password: _customAdminPassword,
       preferredIp: _gatewayIpController.text.trim(),
+      registeredPlatformRouters: userRouters,
     );
 
     if (info.isAuthRequired) {
@@ -195,6 +210,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
           username: _customAdminUsername,
           password: _customAdminPassword,
           preferredIp: _gatewayIpController.text.trim(),
+          registeredPlatformRouters: userRouters,
         );
       }
     }
