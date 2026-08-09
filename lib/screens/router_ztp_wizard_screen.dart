@@ -717,7 +717,11 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                           );
                         }
 
-                        final targetIp = _gatewayIpController.text.trim().isEmpty ? '192.168.88.1' : _gatewayIpController.text.trim();
+                        final rawIp = _gatewayIpController.text.trim();
+                        String targetIp = '192.168.88.1';
+                        if (rawIp.isNotEmpty && !rawIp.startsWith('10.')) {
+                          targetIp = rawIp;
+                        }
                         html.window.open('http://$targetIp', '_blank');
                       },
                       icon: const Icon(Icons.copy_all, size: 18),
