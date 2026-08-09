@@ -2,7 +2,7 @@
 {{flutter_build_config}}
 
 // Safe target version accessor
-var activeVersion = (typeof targetVersion !== 'undefined' && targetVersion) ? targetVersion : '1.2.276';
+var activeVersion = (typeof targetVersion !== 'undefined' && targetVersion) ? targetVersion : '1.2.277';
 
 // FORCE CACHE BUST FOR MAIN DART JS
 if (_flutter && _flutter.buildConfig && _flutter.buildConfig.builds && _flutter.buildConfig.builds.length > 0) {

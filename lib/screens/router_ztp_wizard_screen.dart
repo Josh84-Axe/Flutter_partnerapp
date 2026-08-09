@@ -330,43 +330,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
       );
 
       if (success && mounted) {
-        setState(() {
-          _statusMessage = 'Initialisation de la vérification inverse avec le Cloud Central...';
-          _progressValue = 0.85;
-        });
-
-        bool isConnected = false;
-        Map<String, dynamic>? checkData;
-
-        // Active Reverse Verification: Poll check-connection up to 5 times (every 3 seconds)
-        for (int i = 1; i <= 5; i++) {
-          if (!mounted) return;
-          setState(() {
-            _statusMessage = 'Vérification inverse Cloud (Ping WireGuard - Tentative $i/5)...';
-            _progressValue = 0.85 + (i * 0.03);
-          });
-
-          await Future.delayed(const Duration(seconds: 3));
-          checkData = await _ztpService.verifyCloudConnection(_effectiveRouterId);
-
-          if (checkData['is_connected'] == true) {
-            isConnected = true;
-            break;
-          }
-        }
-
-        if (isConnected && mounted) {
-          setState(() {
-            _isProvisioning = false;
-            _verificationData = checkData;
-            _currentStep = 4;
-          });
-        } else if (mounted) {
-          setState(() {
-            _isProvisioning = false;
-            _errorMessage = '⚠️ Échec de la vérification inverse Cloud : La configuration locale s\'est effectuée, mais le contrôleur n\'a pas pu joindre le routeur via le tunnel VPN WireGuard (${_ztpPayload?['wg_ip'] ?? '10.0.0.X'}). Vérifiez la connexion Internet du routeur.';
-          });
-        }
+        await _runCloudVerification();
       }
     } catch (e) {
       if (mounted) {
@@ -375,6 +339,49 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
           _errorMessage = 'Erreur lors du déploiement ZTP : $e';
         });
       }
+    }
+  }
+
+  Future<void> _runCloudVerification() async {
+    if (!mounted) return;
+    setState(() {
+      _isProvisioning = true;
+      _errorMessage = null;
+      _statusMessage = 'Initialisation de la vérification inverse avec le Cloud Central...';
+      _progressValue = 0.85;
+    });
+
+    bool isConnected = false;
+    Map<String, dynamic>? checkData;
+    const totalAttempts = 12;
+
+    for (int i = 1; i <= totalAttempts; i++) {
+      if (!mounted) return;
+      setState(() {
+        _statusMessage = 'Vérification inverse Cloud (Ping WireGuard - Tentative $i/$totalAttempts)...';
+        _progressValue = 0.85 + (i * (0.14 / totalAttempts));
+      });
+
+      await Future.delayed(const Duration(seconds: 4));
+      checkData = await _ztpService.verifyCloudConnection(_effectiveRouterId);
+
+      if (checkData['is_connected'] == true) {
+        isConnected = true;
+        break;
+      }
+    }
+
+    if (isConnected && mounted) {
+      setState(() {
+        _isProvisioning = false;
+        _verificationData = checkData;
+        _currentStep = 4;
+      });
+    } else if (mounted) {
+      setState(() {
+        _isProvisioning = false;
+        _errorMessage = '⚠️ Le routeur n\'a pas encore répondu au ping VPN WireGuard. Si le navigateur a affiché "Les informations ne sont pas sécurisées", assurez-vous d\'avoir appuyé sur "Envoyer quand même" (Send anyway), puis cliquez sur "Re-vérifier" ci-dessous.';
+      });
     }
   }
 
@@ -445,14 +452,30 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.red.shade200),
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.red),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: const TextStyle(color: Colors.red, fontSize: 13),
+                    Row(
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.red),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.red, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: _isProvisioning ? null : _runCloudVerification,
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('Re-vérifier la connexion Cloud WireGuard'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade700,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(40),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
                   ],
@@ -754,6 +777,29 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                 fontWeight: FontWeight.w500,
               ),
             ),
+            if (kIsWeb) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.shield, color: Colors.blue, size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Si un message de sécurité s\'affiche ("Information not secure"), appuyez sur "Send anyway" (Envoyer quand même) pour autoriser la transmission.',
+                        style: TextStyle(fontSize: 12, color: Colors.blue.shade900, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
           ],
         ),
