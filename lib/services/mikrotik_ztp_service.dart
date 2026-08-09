@@ -133,6 +133,35 @@ class MikrotikZtpService {
     }
   }
 
+  /// Validate admin credentials against router REST API
+  Future<bool> validateRouterCredentials({
+    String gatewayIp = '192.168.88.1',
+    required String username,
+    required String password,
+  }) async {
+    final localDio = Dio(
+      BaseOptions(
+        baseUrl: 'http://$gatewayIp',
+        connectTimeout: const Duration(seconds: 4),
+        receiveTimeout: const Duration(seconds: 4),
+        headers: {
+          'Authorization': 'Basic ${base64Encode(utf8.encode('$username:$password'))}',
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
+
+    try {
+      final resp = await localDio.get('/rest/system/identity');
+      return resp.statusCode == 200;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('🔒 [MikrotikZtpService] Credential validation failed for $username: $e');
+      }
+      return false;
+    }
+  }
+
   /// Candidate local gateway IPs across common ISP and private subnet ranges
   static const List<String> candidateGateways = [
     '192.168.88.1',  // MikroTik default out-of-the-box

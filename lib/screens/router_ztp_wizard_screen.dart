@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../locator.dart';
@@ -108,6 +109,8 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
     final userCtrl = TextEditingController(text: _customAdminUsername);
     final passCtrl = TextEditingController(text: _customAdminPassword);
     bool passObscured = true;
+    bool isValidating = false;
+    String? dlgError;
 
     return showDialog<Map<String, String>>(
       context: context,
@@ -136,8 +139,32 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                 style: TextStyle(fontSize: 13, color: Colors.grey.shade800),
               ),
               const SizedBox(height: 16),
+              if (dlgError != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          dlgError!,
+                          style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               TextField(
                 controller: userCtrl,
+                enabled: !isValidating,
                 decoration: const InputDecoration(
                   labelText: 'Nom d\'utilisateur',
                   prefixIcon: Icon(Icons.person_outline),
@@ -147,6 +174,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
               const SizedBox(height: 12),
               TextField(
                 controller: passCtrl,
+                enabled: !isValidating,
                 obscureText: passObscured,
                 decoration: InputDecoration(
                   labelText: 'Mot de passe actuel (Sticker / Admin)',
@@ -162,18 +190,44 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(ctx).pop(null),
+              onPressed: isValidating ? null : () => Navigator.of(ctx).pop(null),
               child: const Text('Annuler'),
             ),
             FilledButton.icon(
-              onPressed: () {
-                Navigator.of(ctx).pop({
-                  'username': userCtrl.text.trim().isEmpty ? 'admin' : userCtrl.text.trim(),
-                  'password': passCtrl.text,
-                });
-              },
-              icon: const Icon(Icons.check, size: 18),
-              label: const Text('Valider & Continuer'),
+              onPressed: isValidating
+                  ? null
+                  : () async {
+                      final u = userCtrl.text.trim().isEmpty ? 'admin' : userCtrl.text.trim();
+                      final p = passCtrl.text;
+
+                      setDlgState(() {
+                        isValidating = true;
+                        dlgError = null;
+                      });
+
+                      final targetIp = _gatewayIpController.text.trim().isEmpty ? '192.168.88.1' : _gatewayIpController.text.trim();
+                      final isValid = await _ztpService.validateRouterCredentials(
+                        gatewayIp: targetIp,
+                        username: u,
+                        password: p,
+                      );
+
+                      if (isValid || kIsWeb) {
+                        Navigator.of(ctx).pop({
+                          'username': u,
+                          'password': p,
+                        });
+                      } else {
+                        setDlgState(() {
+                          isValidating = false;
+                          dlgError = '❌ Mot de passe incorrect ! Impossible de se connecter à $targetIp avec l\'utilisateur \'$u\'. Vérifiez l\'étiquette.';
+                        });
+                      }
+                    },
+              icon: isValidating
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.check, size: 18),
+              label: Text(isValidating ? 'Test de connexion...' : 'Valider & Tester'),
             ),
           ],
         ),
