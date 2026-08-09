@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'dart:html' as html;
 import 'package:provider/provider.dart';
 import '../locator.dart';
 import '../providers/split/network_provider.dart';
@@ -645,6 +646,70 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
+            if (kIsWeb) ...[
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amber.shade300),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.terminal, color: Colors.amber, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Alternative Web PWA (Navigateur Web)',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.amber.shade900),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Si la politique CORS de votre navigateur bloque l\'envoi automatique HTTP local, cliquez ci-dessous pour copier le script en 1 clic et ouvrir le terminal WebFig du routeur.',
+                      style: TextStyle(fontSize: 12, color: Colors.amber.shade900),
+                    ),
+                    const SizedBox(height: 10),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final token = _ztpPayload?['bootstrap_token'] ?? '';
+                        final cmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" mode=https dst-path=bootstrap.rsc; /import file-name=bootstrap.rsc';
+                        await html.window.navigator.clipboard?.writeText(cmd);
+
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('📋 Commandes ZTP copiées dans le presse-papier ! Ouverture de WebFig...'),
+                              backgroundColor: Colors.green,
+                              duration: Duration(seconds: 4),
+                            ),
+                          );
+                        }
+
+                        final targetIp = _gatewayIpController.text.trim().isEmpty ? '192.168.88.1' : _gatewayIpController.text.trim();
+                        html.window.open('http://$targetIp', '_blank');
+                      },
+                      icon: const Icon(Icons.copy_all, size: 18),
+                      label: const Text('Copier 1-Clic & Ouvrir Terminal Routeur (WebFig)'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber.shade700,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(42),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

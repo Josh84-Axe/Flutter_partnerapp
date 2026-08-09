@@ -50,8 +50,6 @@ Future<bool> executeWebZtpFormProvisioning({
     }
 
     final bootstrapUrl = 'https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/';
-    final encodedAuthUser = Uri.encodeComponent(username);
-    final encodedAuthPass = Uri.encodeComponent(password);
 
     final candidateHosts = [
       'http://$gatewayIp',
@@ -62,15 +60,6 @@ Future<bool> executeWebZtpFormProvisioning({
       'http://192.168.0.1',
       'http://10.0.0.1',
     ];
-
-    if (password.isNotEmpty) {
-      candidateHosts.addAll([
-        'http://$encodedAuthUser:$encodedAuthPass@$gatewayIp',
-        'http://$encodedAuthUser:$encodedAuthPass@192.168.88.1',
-        'http://$encodedAuthUser:$encodedAuthPass@192.168.1.1',
-        'http://$encodedAuthUser:$encodedAuthPass@192.168.0.1',
-      ]);
-    }
 
     for (final host in candidateHosts) {
       // 1. Payload 1: /rest/tool/fetch
