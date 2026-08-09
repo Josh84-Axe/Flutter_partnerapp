@@ -549,11 +549,31 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                   const Divider(),
                   _buildInfoRow('IP VPN Tiknet (WireGuard)', wgIp),
                   const Divider(),
+                  _buildInfoRow('Authentification Routeur', _customAdminPassword.isEmpty ? 'admin (Sans mot de passe)' : 'admin (Mot de passe configuré)'),
+                  const Divider(),
                   _buildInfoRow('Admin Vault', 'tiknet-admin (Sécurisé 32-chars)'),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () async {
+                final creds = await _promptCustomCredentials();
+                if (creds != null) {
+                  setState(() {
+                    _customAdminUsername = creds['username'] ?? 'admin';
+                    _customAdminPassword = creds['password'] ?? '';
+                  });
+                }
+              },
+              icon: const Icon(Icons.key, size: 18),
+              label: Text(_customAdminPassword.isEmpty ? 'Définir le mot de passe admin du routeur' : 'Modifier le mot de passe admin'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(42),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+            const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: (_isProvisioning || _isFetchingPayload) ? null : _startProvisioning,
               icon: _isFetchingPayload

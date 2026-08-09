@@ -225,10 +225,10 @@ class MikrotikZtpService {
         gatewayIp: rIp,
         boardName: rName,
         model: 'MikroTik ($rModel)',
-        version: 'v7.x (En Ligne)',
+        version: 'v7.x',
         identity: rName,
         isRestSupported: true,
-        isAuthRequired: false,
+        isAuthRequired: password.isEmpty, // Prompt for admin sticker password if empty
       );
     }
 
