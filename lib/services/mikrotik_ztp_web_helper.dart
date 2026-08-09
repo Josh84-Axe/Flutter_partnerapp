@@ -3,6 +3,40 @@ import 'dart:convert';
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 
+void _submitHiddenForm(String url, String jsonBody) {
+  try {
+    final iframeName = 'ztp_iframe_${DateTime.now().millisecondsSinceEpoch}_${(1000 * (1 + DateTime.now().microsecond)).toInt()}';
+    final iframe = html.IFrameElement()
+      ..name = iframeName
+      ..style.display = 'none';
+    html.document.body?.children.add(iframe);
+
+    final form = html.FormElement()
+      ..method = 'POST'
+      ..action = url
+      ..target = iframeName
+      ..style.display = 'none';
+
+    final input = html.InputElement()
+      ..type = 'hidden'
+      ..name = 'data'
+      ..value = jsonBody;
+    form.children.add(input);
+
+    html.document.body?.children.add(form);
+    form.submit();
+
+    Future.delayed(const Duration(seconds: 4), () {
+      form.remove();
+      iframe.remove();
+    });
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('⚠️ Error in _submitHiddenForm: $e');
+    }
+  }
+}
+
 Future<bool> executeWebZtpFormProvisioning({
   required String gatewayIp,
   required String bootstrapToken,
@@ -12,23 +46,34 @@ Future<bool> executeWebZtpFormProvisioning({
 }) async {
   try {
     if (kDebugMode) {
-      debugPrint('⚡ [WebZtpHelper] Executing Authenticated JSON Beacon & Fetch ZTP to $gatewayIp ($username)...');
+      debugPrint('⚡ [WebZtpHelper] Executing CORS-Bypassing Form & Beacon ZTP to $gatewayIp ($username)...');
     }
 
     final bootstrapUrl = 'https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/';
-    final authHeader = 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+    final encodedAuthUser = Uri.encodeComponent(username);
+    final encodedAuthPass = Uri.encodeComponent(password);
 
     final candidateHosts = [
       'http://$gatewayIp',
       'https://$gatewayIp',
       'http://192.168.88.1',
+      'https://192.168.88.1',
       'http://192.168.1.1',
       'http://192.168.0.1',
       'http://10.0.0.1',
     ];
 
+    if (password.isNotEmpty) {
+      candidateHosts.addAll([
+        'http://$encodedAuthUser:$encodedAuthPass@$gatewayIp',
+        'http://$encodedAuthUser:$encodedAuthPass@192.168.88.1',
+        'http://$encodedAuthUser:$encodedAuthPass@192.168.1.1',
+        'http://$encodedAuthUser:$encodedAuthPass@192.168.0.1',
+      ]);
+    }
+
     for (final host in candidateHosts) {
-      // 1. JSON Payload 1: /rest/tool/fetch
+      // 1. Payload 1: /rest/tool/fetch
       final json1 = jsonEncode({
         'url': bootstrapUrl,
         'mode': 'https',
@@ -36,69 +81,45 @@ Future<bool> executeWebZtpFormProvisioning({
         'dst-path': 'bootstrap.rsc',
       });
 
-      try {
-        html.window.fetch('$host/rest/tool/fetch', {
-          'method': 'POST',
-          'mode': 'no-cors',
-          'headers': {
-            'Authorization': authHeader,
-            'Content-Type': 'application/json',
-          },
-          'body': json1,
-        });
-      } catch (_) {}
+      _submitHiddenForm('$host/rest/tool/fetch', json1);
 
-      final blob1 = html.Blob([json1], 'application/json');
-      html.window.navigator.sendBeacon('$host/rest/tool/fetch', blob1);
+      try {
+        final blob1 = html.Blob([json1], 'application/json');
+        html.window.navigator.sendBeacon('$host/rest/tool/fetch', blob1);
+      } catch (_) {}
 
       await Future.delayed(const Duration(milliseconds: 1200));
 
-      // 2. JSON Payload 2: /rest/system/script
+      // 2. Payload 2: /rest/system/script
       final json2 = jsonEncode({
         'name': 'import-bootstrap-script',
         'source': '/import file-name=bootstrap.rsc',
       });
 
-      try {
-        html.window.fetch('$host/rest/system/script', {
-          'method': 'POST',
-          'mode': 'no-cors',
-          'headers': {
-            'Authorization': authHeader,
-            'Content-Type': 'application/json',
-          },
-          'body': json2,
-        });
-      } catch (_) {}
+      _submitHiddenForm('$host/rest/system/script', json2);
 
-      final blob2 = html.Blob([json2], 'application/json');
-      html.window.navigator.sendBeacon('$host/rest/system/script', blob2);
+      try {
+        final blob2 = html.Blob([json2], 'application/json');
+        html.window.navigator.sendBeacon('$host/rest/system/script', blob2);
+      } catch (_) {}
 
       await Future.delayed(const Duration(milliseconds: 1000));
 
-      // 3. JSON Payload 3: /rest/system/script/import-bootstrap-script/run
+      // 3. Payload 3: /rest/system/script/import-bootstrap-script/run
       final json3 = jsonEncode({});
 
-      try {
-        html.window.fetch('$host/rest/system/script/import-bootstrap-script/run', {
-          'method': 'POST',
-          'mode': 'no-cors',
-          'headers': {
-            'Authorization': authHeader,
-            'Content-Type': 'application/json',
-          },
-          'body': json3,
-        });
-      } catch (_) {}
+      _submitHiddenForm('$host/rest/system/script/import-bootstrap-script/run', json3);
 
-      final blob3 = html.Blob([json3], 'application/json');
-      html.window.navigator.sendBeacon('$host/rest/system/script/import-bootstrap-script/run', blob3);
+      try {
+        final blob3 = html.Blob([json3], 'application/json');
+        html.window.navigator.sendBeacon('$host/rest/system/script/import-bootstrap-script/run', blob3);
+      } catch (_) {}
 
       await Future.delayed(const Duration(milliseconds: 800));
     }
 
     if (kDebugMode) {
-      debugPrint('✅ [WebZtpHelper] Authenticated JSON ZTP dispatched to all hosts!');
+      debugPrint('✅ [WebZtpHelper] Form & Beacon ZTP dispatched across all candidate hosts!');
     }
     return true;
   } catch (e) {
