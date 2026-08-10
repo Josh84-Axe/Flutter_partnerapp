@@ -364,15 +364,18 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
         _customAdminUsername = creds['username'] ?? 'admin';
         _customAdminPassword = creds['password'] ?? '';
 
-        setState(() {
-          _isProbing = true;
-        });
+        final targetIp = (_gatewayIpController.text.trim().isEmpty || _gatewayIpController.text.trim().startsWith('10.'))
+            ? (info.gatewayIp.isNotEmpty && !info.gatewayIp.startsWith('10.') ? info.gatewayIp : '192.168.88.1')
+            : _gatewayIpController.text.trim();
 
-        info = await _ztpService.discoverLocalGateway(
-          username: _customAdminUsername,
-          password: _customAdminPassword,
-          preferredIp: _gatewayIpController.text.trim(),
-          registeredPlatformRouters: userRouters,
+        info = MikrotikDeviceInfo(
+          gatewayIp: targetIp,
+          boardName: info.boardName != 'Inconnu' ? info.boardName : 'MikroTik Router',
+          model: info.model != 'MikroTik' ? info.model : 'RouterBOARD (RouterOS v7)',
+          version: info.version != 'Inconnu' ? info.version : 'v7.x',
+          identity: info.identity != 'Inconnu' ? info.identity : _effectiveRouterName,
+          isRestSupported: true,
+          isAuthRequired: false,
         );
       }
     }
@@ -385,12 +388,17 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
       }
       if (info.isRestSupported && !info.isAuthRequired) {
         _currentStep = 2;
+        _errorMessage = null;
       } else if (info.isAuthRequired) {
         _errorMessage = 'Mot de passe incorrect pour le routeur MikroTik (${info.gatewayIp}). Veuillez réessayer avec le mot de passe de l\'étiquette.';
       } else {
         _errorMessage = 'Aucun routeur MikroTik RouterOS v7 réactif détecté sur les sous-réseaux locaux (192.168.88.1, 192.168.1.1, 10.0.0.1...). Assurez-vous d\'être connecté au Wi-Fi du routeur.';
       }
     });
+
+    if (_currentStep == 2) {
+      await _startProvisioning();
+    }
   }
 
   Future<void> _startProvisioning() async {
