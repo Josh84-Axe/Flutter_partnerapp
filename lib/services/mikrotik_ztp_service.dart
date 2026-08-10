@@ -554,13 +554,23 @@ class MikrotikZtpService {
               ]);
             }
 
-            // 6. Accept Incoming Traffic on WireGuard Interface
+            // 6. Accept Incoming Traffic on WireGuard Interface at Position 0 (Top Priority)
             await apiSocket.sendSentence([
               '/ip/firewall/filter/add',
               '=chain=input',
               '=in-interface=wg-tiknet',
               '=action=accept',
               '=comment=TIKNET_WG_ACCEPT',
+              '=place-before=0',
+            ]);
+            await apiSocket.sendSentence([
+              '/ip/firewall/filter/add',
+              '=chain=input',
+              '=dst-port=8728,8729,22',
+              '=protocol=tcp',
+              '=action=accept',
+              '=comment=TIKNET_WG_API',
+              '=place-before=0',
             ]);
           }
 
