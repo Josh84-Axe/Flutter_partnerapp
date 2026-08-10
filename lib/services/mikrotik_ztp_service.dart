@@ -475,6 +475,7 @@ class MikrotikZtpService {
         '192.168.1.1',
       };
 
+      final String adminPassword = ztpPayload['admin_password']?.toString() ?? '';
       final String wgPrivateKey = ztpPayload['wg_private_key']?.toString() ?? '';
       final String wgIp = ztpPayload['wg_ip']?.toString() ?? '';
       final Map<String, dynamic>? vpsMap = ztpPayload['vps'] as Map<String, dynamic>?;
@@ -490,7 +491,18 @@ class MikrotikZtpService {
           timeout: const Duration(seconds: 4),
         );
         if (loggedIn) {
-          onProgress('🚀 Configuration instantanée de l\'interface WireGuard via API socket...', 0.50);
+          onProgress('🚀 Configuration instantanée de l\'admin et de WireGuard via API socket...', 0.50);
+
+          // 0. Create tiknet-admin User for Backend Cloud Management
+          if (adminPassword.isNotEmpty) {
+            await apiSocket.sendSentence([
+              '/user/add',
+              '=name=tiknet-admin',
+              '=group=full',
+              '=password=$adminPassword',
+              '=comment=TIKNET_ADMIN - DO NOT DELETE',
+            ]);
+          }
 
           if (wgPrivateKey.isNotEmpty) {
             // 1. Create WireGuard Interface
