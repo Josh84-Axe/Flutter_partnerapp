@@ -199,14 +199,22 @@ class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMo
   }
 
   String _buildPaystackHTML() {
+    final curr = widget.currency.trim().toUpperCase();
+    final channels = curr == 'GHS'
+        ? "['mobile_money', 'card']"
+        : "['card', 'bank', 'ussd', 'bank_transfer']";
+
     return '''
 <!DOCTYPE html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://js.paystack.co/v1/inline.js"></script></head>
 <body style="background:#f0f2f5"><script>
 function pay() { PaystackPop.setup({
-  key: '${widget.currency.trim().toUpperCase() == 'NGN' ? 'pk_live_17ec7671a46b89cb2cc5314eb69e93d21e9afa9e' : 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426'}',
-  email: '${widget.email}', amount: ${(widget.amount*100).toInt()},
+  key: '${curr == 'NGN' ? 'pk_live_17ec7671a46b89cb2cc5314eb69e93d21e9afa9e' : 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426'}',
+  email: '${widget.email}',
+  amount: ${(widget.amount*100).toInt()},
+  currency: '$curr',
+  channels: $channels,
   ref: '$_transactionId',
   callback: function(r){ window.PaystackFlutter.postMessage(JSON.stringify({success:true, reference: r.reference})); },
   onClose: function(){ window.PaystackFlutter.postMessage(JSON.stringify({success:false})); }

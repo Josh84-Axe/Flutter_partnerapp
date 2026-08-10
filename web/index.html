@@ -29,7 +29,7 @@
 
   <title>Tiknet App</title>
   <script>
-    var targetVersion = '1.2.278';
+    var targetVersion = '1.2.279';
     window.targetVersion = targetVersion;
     let flavor = 'partner';
     let flavorTitle = 'Tiknet Partner';
@@ -406,8 +406,10 @@
         return;
       }
       try {
+        const currency = (config.currency || 'GHS').toUpperCase();
+        const channels = currency === 'GHS' ? ['mobile_money', 'card'] : ['card', 'bank', 'ussd', 'bank_transfer'];
         const handler = PaystackPop.setup({
-          key: config.key, email: config.email, amount: config.amount, ref: config.ref,
+          key: config.key, email: config.email, amount: config.amount, currency: currency, channels: channels, ref: config.ref,
           metadata: {
             custom_fields: [
               { display_name: "Plan ID", variable_name: "plan_id", value: config.planId },
