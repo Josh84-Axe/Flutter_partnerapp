@@ -896,7 +896,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                     ElevatedButton.icon(
                       onPressed: () async {
                         final token = _ztpPayload?['bootstrap_token'] ?? '';
-                        final cmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" mode=https dst-path=bootstrap.rsc; /import file-name=bootstrap.rsc';
+                        final cmd = ':catch { /file remove bootstrap.rsc }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" mode=https check-certificate=no dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc; :delay 1s; :catch { /file remove bootstrap.rsc };';
                         await Clipboard.setData(ClipboardData(text: cmd));
 
                         if (mounted) {
