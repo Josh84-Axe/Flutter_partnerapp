@@ -491,9 +491,17 @@ class MikrotikZtpService {
           timeout: const Duration(seconds: 4),
         );
         if (loggedIn) {
-          onProgress('🚀 Configuration instantanée de l\'admin et de WireGuard via API socket...', 0.50);
+          onProgress('🚀 Configuration instantanée de l\'admin, du firewall et de WireGuard via API socket...', 0.50);
 
-          // 0. Create tiknet-admin User for Backend Cloud Management
+          // 0. Enable API & Winbox for all subnets (including WireGuard 10.0.0.0/8)
+          await apiSocket.sendSentence([
+            '/ip/service/set',
+            '=numbers=api',
+            '=address=0.0.0.0/0',
+            '=disabled=no',
+          ]);
+
+          // 1. Create tiknet-admin User for Backend Cloud Management
           if (adminPassword.isNotEmpty) {
             await apiSocket.sendSentence([
               '/user/add',
@@ -505,7 +513,7 @@ class MikrotikZtpService {
           }
 
           if (wgPrivateKey.isNotEmpty) {
-            // 1. Create WireGuard Interface
+            // 2. Create WireGuard Interface
             await apiSocket.sendSentence([
               '/interface/wireguard/add',
               '=name=wg-tiknet',
@@ -514,7 +522,7 @@ class MikrotikZtpService {
               '=mtu=1420',
             ]);
 
-            // 2. Assign IP Address
+            // 3. Assign IP Address
             if (wgIp.isNotEmpty) {
               await apiSocket.sendSentence([
                 '/ip/address/add',
@@ -523,7 +531,7 @@ class MikrotikZtpService {
               ]);
             }
 
-            // 3. Add Central WireGuard Peer
+            // 4. Add Central WireGuard Peer
             await apiSocket.sendSentence([
               '/interface/wireguard/peers/add',
               '=interface=wg-tiknet',
@@ -534,7 +542,7 @@ class MikrotikZtpService {
               '=persistent-keepalive=25s',
             ]);
 
-            // 4. Add Static Route
+            // 5. Add Static Route
             if (wgIp.isNotEmpty) {
               await apiSocket.sendSentence([
                 '/ip/route/add',
@@ -545,6 +553,15 @@ class MikrotikZtpService {
                 '=comment=Primary VPN',
               ]);
             }
+
+            // 6. Accept Incoming Traffic on WireGuard Interface
+            await apiSocket.sendSentence([
+              '/ip/firewall/filter/add',
+              '=chain=input',
+              '=in-interface=wg-tiknet',
+              '=action=accept',
+              '=comment=TIKNET_WG_ACCEPT',
+            ]);
           }
 
           onProgress('🚀 Exécution du script Bootstrap complet via RouterOS Native API...', 0.75);
@@ -669,23 +686,34 @@ class MikrotikZtpService {
   }
 
   /// 4. Reverse Verification: Ask backend to ping router via WireGuard VPN
-  Future<Map<String, dynamic>> verifyCloudConnection(int routerId) async {
-    try {
-      final response = await _centralApiDio.get(
-        '/routers/$routerId/check-connection/',
-      );
+  Future<Map<String, dynamic>> verifyCloudConnection(int routerId, {String? slug}) async {
+    final candidateUrls = [
+      if (slug != null && slug.isNotEmpty) '/routers/$slug/check-connection/',
+      '/routers/$routerId/check-connection/',
+    ];
 
-      if (response.data != null && response.data['data'] != null) {
-        return Map<String, dynamic>.from(response.data['data']);
-      } else if (response.data != null) {
-        return Map<String, dynamic>.from(response.data);
+    for (final url in candidateUrls) {
+      try {
+        final response = await _centralApiDio.get(url);
+        final resData = response.data;
+        Map<String, dynamic>? dataObj;
+
+        if (resData != null && resData['data'] != null && resData['data'] is Map) {
+          dataObj = Map<String, dynamic>.from(resData['data']);
+        } else if (resData != null && resData is Map) {
+          dataObj = Map<String, dynamic>.from(resData);
+        }
+
+        if (dataObj != null) {
+          return dataObj;
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('⚠️ [MikrotikZtpService] verifyCloudConnection failed on $url: $e');
+        }
       }
-      return {'is_connected': false, 'message': 'Réponse vide du backend'};
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [MikrotikZtpService] Reverse verification error: $e');
-      }
-      return {'is_connected': false, 'message': e.toString()};
     }
+
+    return {'is_connected': false, 'message': 'Routeur non réactif sur le VPN'};
   }
 }

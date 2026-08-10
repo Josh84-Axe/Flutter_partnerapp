@@ -465,7 +465,8 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
       });
 
       await Future.delayed(const Duration(seconds: 4));
-      checkData = await _ztpService.verifyCloudConnection(_effectiveRouterId);
+      final routerSlug = _ztpPayload?['slug']?.toString() ?? _ztpPayload?['router_slug']?.toString() ?? _effectiveRouterName.toLowerCase();
+      checkData = await _ztpService.verifyCloudConnection(_effectiveRouterId, slug: routerSlug);
 
       if (checkData['is_connected'] == true) {
         isConnected = true;
