@@ -538,7 +538,7 @@ class MikrotikZtpService {
               '=public-key=$vpsPublicKey',
               '=endpoint-address=$vpsIp',
               '=endpoint-port=$vpsPort',
-              '=allowed-address=10.0.0.1/32',
+              '=allowed-address=10.0.0.0/16',
               '=persistent-keepalive=25s',
             ]);
 
@@ -546,7 +546,7 @@ class MikrotikZtpService {
             if (wgIp.isNotEmpty) {
               await apiSocket.sendSentence([
                 '/ip/route/add',
-                '=dst-address=10.0.0.1/32',
+                '=dst-address=10.0.0.0/16',
                 '=gateway=wg-tiknet',
                 '=pref-src=$wgIp',
                 '=distance=1',
