@@ -572,7 +572,30 @@ class MikrotikZtpService {
           );
           apiSocket.close();
 
-          onProgress('✅ Tunnel WireGuard et Bootstrap initialisés via TCP 8728 !', 0.90);
+          onProgress('✅ Tunnel WireGuard et Bootstrap initialisés via TCP 8728 !', 0.85);
+
+          // Register router with central backend
+          if (registerUrl.isNotEmpty && bootstrapToken.isNotEmpty) {
+            try {
+              onProgress('Enregistrement du routeur auprès du contrôleur central...', 0.90);
+              await _centralApiDio.post(
+                registerUrl,
+                options: Options(
+                  headers: {
+                    'X-TIKNET-TOKEN': bootstrapToken,
+                  },
+                ),
+              );
+              if (kDebugMode) {
+                debugPrint('✅ [MikrotikZtpService] Router registered successfully at central API');
+              }
+            } catch (e) {
+              if (kDebugMode) {
+                debugPrint('⚠️ [MikrotikZtpService] Registration notification warning: $e');
+              }
+            }
+          }
+
           await Future.delayed(const Duration(seconds: 1));
           onProgress('Configuration ZTP terminée avec succès !', 1.0);
           return true;
