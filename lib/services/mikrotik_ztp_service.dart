@@ -555,7 +555,7 @@ class MikrotikZtpService {
             }
 
             // 5b. Add RADIUS Client Configuration
-            final String radiusSecret = ztpPayload?['router']?['secret'] ?? 'tiknet-secret';
+            final String radiusSecret = ztpPayload['router']?['secret'] ?? 'tiknet-secret';
             try {
               await apiSocket.sendSentence([
                 '/radius/add',
@@ -574,6 +574,40 @@ class MikrotikZtpService {
                 debugPrint('⚠️ RADIUS socket config warning: $e');
               }
             }
+
+            // 5c. Provision Wi-Fi Wave2 / WiFi / Wireless Interfaces (hAP ax lite / RouterOS 7.x)
+            final String routerName = ztpPayload['router']?['name'] ?? 'Sweetman';
+            try {
+              await apiSocket.sendSentence([
+                '/interface/wifiwave2/set',
+                '=numbers=wifi1',
+                '=configuration.mode=ap',
+                '=configuration.ssid=$routerName',
+                '=security.authentication-types=',
+                '=disabled=no',
+              ]);
+            } catch (_) {}
+
+            try {
+              await apiSocket.sendSentence([
+                '/interface/wifi/set',
+                '=numbers=wifi1',
+                '=configuration.mode=ap',
+                '=configuration.ssid=$routerName',
+                '=security.authentication-types=',
+                '=disabled=no',
+              ]);
+            } catch (_) {}
+
+            try {
+              await apiSocket.sendSentence([
+                '/interface/wireless/set',
+                '=numbers=wlan1',
+                '=mode=ap-bridge',
+                '=ssid=$routerName',
+                '=disabled=no',
+              ]);
+            } catch (_) {}
 
             // 6. Accept Incoming Traffic on WireGuard Interface at Position 0 (Top Priority)
             await apiSocket.sendSentence([
