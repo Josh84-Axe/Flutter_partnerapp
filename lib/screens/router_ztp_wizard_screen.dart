@@ -1,7 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'dart:html' as html;
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import '../locator.dart';
 import '../providers/split/network_provider.dart';
@@ -111,7 +112,9 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
     final passCtrl = TextEditingController(text: _customAdminPassword);
     bool passObscured = true;
     bool isValidating = false;
+    bool showLogs = false;
     String? dlgError;
+    List<String> dlgLogs = [];
 
     return showDialog<Map<String, String>>(
       context: context,
@@ -131,63 +134,123 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
               ),
             ],
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Ce routeur est protégé (boîtier déjà configuré ou mot de passe inscrit sur l\'étiquette au dos du routeur). Veuillez le saisir ci-dessous pour continuer.',
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade800),
-              ),
-              const SizedBox(height: 16),
-              if (dlgError != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.shade200),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ce routeur est protégé (boîtier déjà configuré ou mot de passe inscrit sur l\'étiquette au dos du routeur). Veuillez le saisir ci-dessous pour continuer.',
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade800),
+                ),
+                const SizedBox(height: 16),
+                if (dlgError != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            dlgError!,
+                            style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                ],
+                TextField(
+                  controller: userCtrl,
+                  enabled: !isValidating,
+                  decoration: const InputDecoration(
+                    labelText: 'Nom d\'utilisateur',
+                    prefixIcon: Icon(Icons.person_outline),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: passCtrl,
+                  enabled: !isValidating,
+                  obscureText: passObscured,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: InputDecoration(
+                    labelText: 'Mot de passe actuel (Sticker / Admin)',
+                    hintText: 'ex: EWQCI2IHXX',
+                    prefixIcon: const Icon(Icons.key_outlined),
+                    suffixIcon: IconButton(
+                      icon: Icon(passObscured ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () => setDlgState(() => passObscured = !passObscured),
+                    ),
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                InkWell(
+                  onTap: () => setDlgState(() => showLogs = !showLogs),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, color: Colors.red, size: 20),
-                      const SizedBox(width: 8),
+                      Icon(showLogs ? Icons.terminal : Icons.terminal_outlined, size: 16, color: Colors.indigo),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          dlgError!,
-                          style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
+                          showLogs ? 'Masquer le journal réseau' : '🔍 Afficher les échanges Réseau/Socket (Live Log)',
+                          style: const TextStyle(fontSize: 12, color: Colors.indigo, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-              TextField(
-                controller: userCtrl,
-                enabled: !isValidating,
-                decoration: const InputDecoration(
-                  labelText: 'Nom d\'utilisateur',
-                  prefixIcon: Icon(Icons.person_outline),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: passCtrl,
-                enabled: !isValidating,
-                obscureText: passObscured,
-                decoration: InputDecoration(
-                  labelText: 'Mot de passe actuel (Sticker / Admin)',
-                  prefixIcon: const Icon(Icons.key_outlined),
-                  suffixIcon: IconButton(
-                    icon: Icon(passObscured ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () => setDlgState(() => passObscured = !passObscured),
+                if (showLogs || dlgLogs.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    height: 160,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF334155)),
+                    ),
+                    child: SingleChildScrollView(
+                      reverse: true,
+                      child: Text(
+                        dlgLogs.isEmpty ? 'Attente de test...' : dlgLogs.join('\n'),
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 10,
+                          color: Color(0xFF38BDF8),
+                        ),
+                      ),
+                    ),
                   ),
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-            ],
+                  if (dlgLogs.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: dlgLogs.join('\n')));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('📋 Journal réseau copié dans le presse-papiers !')),
+                          );
+                        },
+                        icon: const Icon(Icons.copy, size: 14),
+                        label: const Text('Copier les Logs', style: TextStyle(fontSize: 11)),
+                      ),
+                    ),
+                  ],
+                ],
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -199,18 +262,26 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                   ? null
                   : () async {
                       final u = userCtrl.text.trim().isEmpty ? 'admin' : userCtrl.text.trim();
-                      final p = passCtrl.text;
+                      final p = passCtrl.text.trim().toUpperCase();
 
                       setDlgState(() {
                         isValidating = true;
                         dlgError = null;
+                        dlgLogs.clear();
+                        showLogs = true;
                       });
 
-                      final targetIp = _gatewayIpController.text.trim().isEmpty ? '192.168.88.1' : _gatewayIpController.text.trim();
+                      final rawTargetIp = _gatewayIpController.text.trim();
+                      final targetIp = (rawTargetIp.isEmpty || rawTargetIp.startsWith('10.')) ? '192.168.88.1' : rawTargetIp;
                       final isValid = await _ztpService.validateRouterCredentials(
                         gatewayIp: targetIp,
                         username: u,
                         password: p,
+                        onLog: (logLine) {
+                          setDlgState(() {
+                            dlgLogs.add(logLine);
+                          });
+                        },
                       );
 
                       if (isValid || kIsWeb) {
@@ -221,14 +292,14 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                       } else {
                         setDlgState(() {
                           isValidating = false;
-                          dlgError = '❌ Mot de passe incorrect ! Impossible de se connecter à $targetIp avec l\'utilisateur \'$u\'. Vérifiez l\'étiquette.';
+                          dlgError = '❌ Authentification échouée pour \'$u\'. Observez le journal réseau ci-dessus pour la réponse exacte du routeur.';
                         });
                       }
                     },
               icon: isValidating
                   ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                   : const Icon(Icons.check, size: 18),
-              label: Text(isValidating ? 'Test de connexion...' : 'Valider & Tester'),
+              label: Text(isValidating ? 'Test en cours...' : 'Valider & Tester'),
             ),
           ],
         ),
@@ -705,7 +776,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                       onPressed: () async {
                         final token = _ztpPayload?['bootstrap_token'] ?? '';
                         final cmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" mode=https dst-path=bootstrap.rsc; /import file-name=bootstrap.rsc';
-                        await html.window.navigator.clipboard?.writeText(cmd);
+                        await Clipboard.setData(ClipboardData(text: cmd));
 
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -722,7 +793,10 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                         if (rawIp.isNotEmpty && !rawIp.startsWith('10.')) {
                           targetIp = rawIp;
                         }
-                        html.window.open('http://$targetIp', '_blank');
+                        final uri = Uri.parse('http://$targetIp');
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
                       },
                       icon: const Icon(Icons.copy_all, size: 18),
                       label: const Text('Copier 1-Clic & Ouvrir Terminal Routeur (WebFig)'),

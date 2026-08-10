@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'mikrotik_ztp_web_stub.dart'
     if (dart.library.html) 'mikrotik_ztp_web_helper.dart' as web_helper;
+import 'mikrotik_api_socket.dart';
 
 class MikrotikDeviceInfo {
   final String gatewayIp;
@@ -133,33 +134,127 @@ class MikrotikZtpService {
     }
   }
 
-  /// Validate admin credentials against router REST API
+  /// Global diagnostic log accumulator for live UI monitoring
+  static final List<String> lastDiagnosticLogs = [];
+
+  static void addDiagLog(String line, {Function(String logLine)? onLog}) {
+    final timestamp = DateTime.now().toIso8601String().substring(11, 19);
+    final formatted = '[$timestamp] $line';
+    lastDiagnosticLogs.add(formatted);
+    if (lastDiagnosticLogs.length > 200) {
+      lastDiagnosticLogs.removeAt(0);
+    }
+    onLog?.call(formatted);
+    if (kDebugMode) {
+      debugPrint(formatted);
+    }
+  }
+
+  /// 4. Validate router credentials against RouterOS Native Socket (TCP 8728) & HTTP REST
   Future<bool> validateRouterCredentials({
     String gatewayIp = '192.168.88.1',
     required String username,
     required String password,
+    Function(String logLine)? onLog,
   }) async {
-    final localDio = Dio(
-      BaseOptions(
-        baseUrl: 'http://$gatewayIp',
-        connectTimeout: const Duration(seconds: 4),
-        receiveTimeout: const Duration(seconds: 4),
-        headers: {
-          'Authorization': 'Basic ${base64Encode(utf8.encode('$username:$password'))}',
-          'Content-Type': 'application/json',
-        },
-      ),
-    );
+    lastDiagnosticLogs.clear();
+    void log(String msg) => addDiagLog(msg, onLog: onLog);
 
-    try {
-      final resp = await localDio.get('/rest/system/identity');
-      return resp.statusCode == 200;
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('🔒 [MikrotikZtpService] Credential validation failed for $username: $e');
+    final cleanUser = username.trim();
+    final cleanPass = password.trim();
+    final upperPass = cleanPass.toUpperCase();
+    final lowerPass = cleanPass.toLowerCase();
+
+    log('🚀 [ZTP DIAGNOSTIC] Initiating validation for user "$cleanUser"');
+
+    final passwordsToTest = <String>{
+      upperPass,
+      cleanPass,
+      lowerPass,
+      '',       // Try empty password (factory default reset)
+      'admin',  // Try 'admin' password
+    }.toList();
+
+    final candidateIps = <String>{
+      if (gatewayIp.isNotEmpty && !gatewayIp.startsWith('10.')) gatewayIp,
+      '192.168.88.1',
+      '192.168.0.1',
+      '192.168.1.1',
+      '10.0.0.1',
+    }.toList();
+
+    log('🔍 Candidate IPs to probe: ${candidateIps.join(", ")}');
+    log('🔑 Password variants: CAPS ("$upperPass"), Exact ("$cleanPass"), Empty (""), Admin ("admin")');
+
+    for (final pass in passwordsToTest) {
+      final maskPass = pass.isEmpty
+          ? '<EMPTY>'
+          : (pass.length <= 3 ? '***' : '${pass.substring(0, 2)}***${pass.substring(pass.length - 1)}');
+
+      log('----------------------------------------');
+      log('🧪 Testing Password Variant: "$maskPass"');
+
+      for (final ip in candidateIps) {
+        // 1. Native Mobile Probe: RouterOS Native API over TCP 8728
+        if (!kIsWeb) {
+          log('🔌 [TCP 8728] Probing $ip:8728 as "$cleanUser"...');
+          try {
+            final apiSocket = MikrotikApiSocket(host: ip, port: 8728);
+            final socketOk = await apiSocket.connectAndLogin(
+              username: cleanUser,
+              password: pass,
+              timeout: const Duration(seconds: 3),
+              onLog: (socketMsg) => log('   ↳ [Socket] $socketMsg'),
+            );
+            apiSocket.close();
+            if (socketOk) {
+              log('✅ [SUCCESS] Authenticated on TCP $ip:8728 with user "$cleanUser" & pass "$maskPass"!');
+              return true;
+            }
+          } catch (e) {
+            log('⚠️ [Socket Err] $ip:8728 -> $e');
+          }
+        }
+
+        // 2. Secondary HTTP REST Probe: http://$ip/rest/system/identity
+        log('🌐 [HTTP REST] GET http://$ip/rest/system/identity as "$cleanUser"...');
+        try {
+          final authStr = 'Basic ${base64Encode(utf8.encode('$cleanUser:$pass'))}';
+          final localDio = Dio(
+            BaseOptions(
+              baseUrl: 'http://$ip',
+              connectTimeout: const Duration(seconds: 3),
+              receiveTimeout: const Duration(seconds: 3),
+              headers: {
+                'Authorization': authStr,
+                'Content-Type': 'application/json',
+              },
+            ),
+          );
+          final resp = await localDio.get('/rest/system/identity');
+          if (resp.statusCode == 200) {
+            log('✅ [SUCCESS] HTTP 200 OK from http://$ip/rest/system/identity!');
+            return true;
+          } else {
+            log('❌ [REST Reject] HTTP ${resp.statusCode} from http://$ip/rest');
+          }
+        } catch (e) {
+          if (e is DioException) {
+            final statusCode = e.response?.statusCode;
+            if (statusCode != null) {
+              log('❌ [HTTP $statusCode] Rejected at http://$ip/rest/system/identity');
+            } else {
+              log('⚠️ [HTTP Net/Timeout] http://$ip -> ${e.message}');
+            }
+          } else {
+            log('⚠️ [HTTP Err] http://$ip -> $e');
+          }
+        }
       }
-      return false;
     }
+
+    log('⛔ [ZTP FAILED] All candidate IPs and password variants were rejected by the router.');
+    return false;
   }
 
   /// Candidate local gateway IPs across common ISP and private subnet ranges
@@ -302,6 +397,42 @@ class MikrotikZtpService {
       );
       onProgress('✅ Provisionnement Web transmis ! Vérification du tunnel VPN...', 0.75);
       return true;
+    }
+
+    // --- 1. Native Mobile RouterOS API Provisioning over TCP 8728 ---
+    if (!kIsWeb && bootstrapToken.isNotEmpty) {
+      onProgress('⚡ Connexion au socket TCP 8728 RouterOS API...', 0.35);
+      final candidateIps = <String>{
+        if (gatewayIp.isNotEmpty && !gatewayIp.startsWith('10.')) gatewayIp,
+        '192.168.88.1',
+        '192.168.0.1',
+        '192.168.1.1',
+      };
+
+      for (final ip in candidateIps) {
+        final apiSocket = MikrotikApiSocket(host: ip, port: 8728);
+        final loggedIn = await apiSocket.connectAndLogin(
+          username: defaultAdminUsername,
+          password: defaultAdminPassword,
+          timeout: const Duration(seconds: 4),
+        );
+        if (loggedIn) {
+          onProgress('🚀 Execution du script ZTP Bootstrap via RouterOS Native API...', 0.65);
+          final scriptCmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" mode=https dst-path=bootstrap.rsc; /import file-name=bootstrap.rsc';
+          final execOk = await apiSocket.executeScript(
+            scriptName: 'tiknet-bootstrap',
+            scriptSource: scriptCmd,
+          );
+          apiSocket.close();
+          if (execOk) {
+            onProgress('✅ Script Bootstrap exécuté avec succès via TCP 8728 !', 0.90);
+            await Future.delayed(const Duration(seconds: 1));
+            onProgress('Configuration ZTP terminée avec succès !', 1.0);
+            return true;
+          }
+        }
+        apiSocket.close();
+      }
     }
 
     Dio restDio = Dio(
