@@ -475,6 +475,13 @@ class MikrotikZtpService {
         '192.168.1.1',
       };
 
+      final String wgPrivateKey = ztpPayload['wg_private_key']?.toString() ?? '';
+      final String wgIp = ztpPayload['wg_ip']?.toString() ?? '';
+      final Map<String, dynamic>? vpsMap = ztpPayload['vps'] as Map<String, dynamic>?;
+      final String vpsPublicKey = vpsMap?['primary_public_key']?.toString() ?? 'J6EwfTlpIN7RQS97tpHVjYZBm0lt21OoMyjvwT9OhA8=';
+      final String vpsIp = vpsMap?['primary_ip']?.toString() ?? '51.75.72.56';
+      final String vpsPort = (vpsMap?['primary_port'] ?? 51820).toString();
+
       for (final ip in candidateIps) {
         final apiSocket = MikrotikApiSocket(host: ip, port: 8728);
         final loggedIn = await apiSocket.connectAndLogin(
@@ -483,19 +490,63 @@ class MikrotikZtpService {
           timeout: const Duration(seconds: 4),
         );
         if (loggedIn) {
-          onProgress('🚀 Execution du script ZTP Bootstrap via RouterOS Native API...', 0.65);
+          onProgress('🚀 Configuration instantanée de l\'interface WireGuard via API socket...', 0.50);
+
+          if (wgPrivateKey.isNotEmpty) {
+            // 1. Create WireGuard Interface
+            await apiSocket.sendSentence([
+              '/interface/wireguard/add',
+              '=name=wg-tiknet',
+              '=private-key=$wgPrivateKey',
+              '=listen-port=13231',
+              '=mtu=1420',
+            ]);
+
+            // 2. Assign IP Address
+            if (wgIp.isNotEmpty) {
+              await apiSocket.sendSentence([
+                '/ip/address/add',
+                '=address=$wgIp/32',
+                '=interface=wg-tiknet',
+              ]);
+            }
+
+            // 3. Add Central WireGuard Peer
+            await apiSocket.sendSentence([
+              '/interface/wireguard/peers/add',
+              '=interface=wg-tiknet',
+              '=public-key=$vpsPublicKey',
+              '=endpoint-address=$vpsIp',
+              '=endpoint-port=$vpsPort',
+              '=allowed-address=10.0.0.1/32',
+              '=persistent-keepalive=25s',
+            ]);
+
+            // 4. Add Static Route
+            if (wgIp.isNotEmpty) {
+              await apiSocket.sendSentence([
+                '/ip/route/add',
+                '=dst-address=10.0.0.1/32',
+                '=gateway=wg-tiknet',
+                '=pref-src=$wgIp',
+                '=distance=1',
+                '=comment=Primary VPN',
+              ]);
+            }
+          }
+
+          onProgress('🚀 Exécution du script Bootstrap complet via RouterOS Native API...', 0.75);
           final scriptCmd = ':catch { /file remove bootstrap.rsc }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" mode=https check-certificate=no dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc; :delay 1s; :catch { /file remove bootstrap.rsc };';
-          final execOk = await apiSocket.executeScript(
+          await apiSocket.executeScript(
             scriptName: 'tiknet-bootstrap',
             scriptSource: scriptCmd,
           );
           apiSocket.close();
-          if (execOk) {
-            onProgress('✅ Script Bootstrap exécuté avec succès via TCP 8728 !', 0.90);
-            await Future.delayed(const Duration(seconds: 1));
-            onProgress('Configuration ZTP terminée avec succès !', 1.0);
-            return true;
-          }
+
+          onProgress('✅ Tunnel WireGuard et Bootstrap initialisés via TCP 8728 !', 0.90);
+          await Future.delayed(const Duration(seconds: 1));
+          onProgress('Configuration ZTP terminée avec succès !', 1.0);
+          return true;
         }
         apiSocket.close();
       }

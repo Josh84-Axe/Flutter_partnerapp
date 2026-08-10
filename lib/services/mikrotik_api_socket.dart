@@ -66,6 +66,16 @@ class MikrotikApiSocket {
     }
   }
 
+  /// Send arbitrary RouterOS API sentence
+  Future<bool> sendSentence(List<String> words, {Duration timeout = const Duration(seconds: 4)}) async {
+    try {
+      final resp = await _sendSentenceAndReadResponse(words, timeout: timeout);
+      return resp.any((w) => w == '!done');
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Read System Identity from RouterOS API
   Future<String?> getSystemIdentity({Duration timeout = const Duration(seconds: 3)}) async {
     try {
