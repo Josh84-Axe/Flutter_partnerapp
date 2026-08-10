@@ -554,6 +554,27 @@ class MikrotikZtpService {
               ]);
             }
 
+            // 5b. Add RADIUS Client Configuration
+            final String radiusSecret = ztpPayload?['router']?['secret'] ?? 'tiknet-secret';
+            try {
+              await apiSocket.sendSentence([
+                '/radius/add',
+                '=address=10.0.0.1',
+                '=service=hotspot',
+                '=secret=$radiusSecret',
+                '=timeout=3s',
+                '=require-message-auth=no',
+              ]);
+              await apiSocket.sendSentence([
+                '/radius/incoming/set',
+                '=accept=yes',
+              ]);
+            } catch (e) {
+              if (kDebugMode) {
+                debugPrint('⚠️ RADIUS socket config warning: $e');
+              }
+            }
+
             // 6. Accept Incoming Traffic on WireGuard Interface at Position 0 (Top Priority)
             await apiSocket.sendSentence([
               '/ip/firewall/filter/add',
