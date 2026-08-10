@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 import 'mikrotik_ztp_web_stub.dart'
     if (dart.library.html) 'mikrotik_ztp_web_helper.dart' as web_helper;
@@ -165,7 +167,11 @@ class MikrotikZtpService {
     final upperPass = cleanPass.toUpperCase();
     final lowerPass = cleanPass.toLowerCase();
 
-    log('🚀 [ZTP DIAGNOSTIC] Initiating validation for user "$cleanUser"');
+    log('🚀 [ZTP DIAGNOSTIC] Initiating validation for user "$cleanUser" (Platform: ${kIsWeb ? "Web PWA" : "Native Mobile"})');
+    if (kIsWeb) {
+      log('⚠️ [Browser PWA Notice] HTTPS Web Browsers block direct background HTTP REST requests to 192.168.88.1 (Mixed Content / PNA Policy).');
+      log('💡 TIP: For 100% automated Zero-Touch Provisioning via raw TCP socket 8728, please use the Tiknet Mobile App (APK)!');
+    }
 
     final passwordsToTest = <String>{
       upperPass,
@@ -177,8 +183,8 @@ class MikrotikZtpService {
 
     final candidateIps = <String>{
       if (gatewayIp.isNotEmpty && !gatewayIp.startsWith('10.')) gatewayIp,
-      '192.168.88.1',
       '192.168.0.1',
+      '192.168.88.1',
       '192.168.1.1',
       '10.0.0.1',
     }.toList();
@@ -241,7 +247,9 @@ class MikrotikZtpService {
         } catch (e) {
           if (e is DioException) {
             final statusCode = e.response?.statusCode;
-            if (statusCode != null) {
+            if (statusCode == 403) {
+              log('🎯 [TARGET FOUND] $ip returned HTTP 403 (Active Router Web Interface detected!). Testing HTTPS REST & WebFig auth...');
+            } else if (statusCode != null) {
               log('❌ [HTTP $statusCode] Rejected at http://$ip/rest/system/identity');
             } else {
               log('⚠️ [HTTP Net/Timeout] http://$ip -> ${e.message}');
@@ -250,6 +258,64 @@ class MikrotikZtpService {
             log('⚠️ [HTTP Err] http://$ip -> $e');
           }
         }
+
+        // 3. HTTPS REST Probe (with SSL Certificate Bypass): https://$ip/rest/system/identity
+        log('🔒 [HTTPS REST] GET https://$ip/rest/system/identity as "$cleanUser"...');
+        try {
+          final authStr = 'Basic ${base64Encode(utf8.encode('$cleanUser:$pass'))}';
+          final httpsDio = Dio(
+            BaseOptions(
+              baseUrl: 'https://$ip',
+              connectTimeout: const Duration(seconds: 3),
+              receiveTimeout: const Duration(seconds: 3),
+              headers: {
+                'Authorization': authStr,
+                'Content-Type': 'application/json',
+              },
+            ),
+          );
+
+          if (!kIsWeb) {
+            (httpsDio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+              final client = HttpClient();
+              client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+              return client;
+            };
+          }
+
+          final httpsResp = await httpsDio.get('/rest/system/identity');
+          if (httpsResp.statusCode == 200) {
+            log('✅ [SUCCESS] HTTPS 200 OK from https://$ip/rest/system/identity!');
+            return true;
+          } else {
+            log('❌ [HTTPS Reject] HTTP ${httpsResp.statusCode} from https://$ip/rest');
+          }
+        } catch (e) {
+          if (e is DioException) {
+            final statusCode = e.response?.statusCode;
+            if (statusCode != null) {
+              log('❌ [HTTPS $statusCode] Rejected at https://$ip/rest ($cleanUser:$maskPass)');
+            } else {
+              log('⚠️ [HTTPS Err] https://$ip -> ${e.message} (SSL/Handshake: ${e.error})');
+            }
+          } else {
+            log('⚠️ [HTTPS Err] https://$ip -> $e');
+          }
+        }
+
+        // 4. Web Interface Header Inspector
+        try {
+          final rootDio = Dio(
+            BaseOptions(
+              baseUrl: 'http://$ip',
+              connectTimeout: const Duration(seconds: 2),
+              receiveTimeout: const Duration(seconds: 2),
+            ),
+          );
+          final rootResp = await rootDio.get('/');
+          final serverHeader = rootResp.headers.value('server') ?? 'MikroTik/WebFig';
+          log('🌐 [Web Interface Header] http://$ip/ Server Header: "$serverHeader" (Status: ${rootResp.statusCode})');
+        } catch (_) {}
       }
     }
 
@@ -418,7 +484,7 @@ class MikrotikZtpService {
         );
         if (loggedIn) {
           onProgress('🚀 Execution du script ZTP Bootstrap via RouterOS Native API...', 0.65);
-          final scriptCmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" mode=https dst-path=bootstrap.rsc; /import file-name=bootstrap.rsc';
+          final scriptCmd = ':catch { /file remove bootstrap.rsc }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" mode=https check-certificate=no dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc; :delay 1s; :catch { /file remove bootstrap.rsc };';
           final execOk = await apiSocket.executeScript(
             scriptName: 'tiknet-bootstrap',
             scriptSource: scriptCmd,

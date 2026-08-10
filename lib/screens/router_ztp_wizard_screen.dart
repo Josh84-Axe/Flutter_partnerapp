@@ -139,6 +139,29 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (kIsWeb) ...[
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.amber.shade300),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.amber.shade900, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '🌐 Navigateur Web PWA (HTTPS) : Les navigateurs web restreignent les requêtes HTTP d\'arrière-plan vers les IP locales (192.168.88.1). Pour un ZTP 100% automatique via Socket TCP 8728, utilisez l\'application Mobile Android (APK) !',
+                            style: TextStyle(color: Colors.amber.shade900, fontSize: 11, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 Text(
                   'Ce routeur est protégé (boîtier déjà configuré ou mot de passe inscrit sur l\'étiquette au dos du routeur). Veuillez le saisir ci-dessous pour continuer.',
                   style: TextStyle(fontSize: 13, color: Colors.grey.shade800),
@@ -560,6 +583,95 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
             if (_currentStep == 2) _buildStep2Verify(theme),
             if (_currentStep == 3) _buildStep3Provisioning(theme),
             if (_currentStep == 4) _buildStep4Success(theme),
+
+            // Persistent Network Diagnostic Terminal Console
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF334155)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.terminal, color: Color(0xFF38BDF8), size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Console Réseau Diagnostic (Permanent)',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.copy, color: Color(0xFF38BDF8), size: 18),
+                        tooltip: 'Copier Tous les Logs',
+                        onPressed: () {
+                          final allLogs = MikrotikZtpService.lastDiagnosticLogs.join('\n');
+                          Clipboard.setData(ClipboardData(text: allLogs.isEmpty ? 'Aucun log disponible.' : allLogs));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('📋 Tous les logs réseau ont été copiés dans le presse-papiers !')),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    height: 200,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF020617),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: SingleChildScrollView(
+                      reverse: true,
+                      child: SelectableText(
+                        MikrotikZtpService.lastDiagnosticLogs.isEmpty
+                            ? 'Attente d\'exécution... Cliquez sur "Valider & Tester" ou "Start ZTP" pour voir la trace réseau.'
+                            : MikrotikZtpService.lastDiagnosticLogs.join('\n'),
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 11,
+                          color: Color(0xFF38BDF8),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        final allLogs = MikrotikZtpService.lastDiagnosticLogs.join('\n');
+                        Clipboard.setData(ClipboardData(text: allLogs.isEmpty ? 'Aucun log disponible' : allLogs));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('📋 Journal réseau copié dans le presse-papiers !')),
+                        );
+                      },
+                      icon: const Icon(Icons.copy, size: 16),
+                      label: const Text('📋 COPIER LE JOURNAL RÉSEAU COMPLET', style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0284C7),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
