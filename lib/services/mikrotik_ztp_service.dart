@@ -513,7 +513,7 @@ class MikrotikZtpService {
           }
 
           if (wgPrivateKey.isNotEmpty) {
-            // 2. Create WireGuard Interface
+            // 2. Create Primary & Redundant WireGuard Interfaces
             await apiSocket.sendSentence([
               '/interface/wireguard/add',
               '=name=wg-tiknet',
@@ -522,16 +522,34 @@ class MikrotikZtpService {
               '=mtu=1420',
             ]);
 
-            // 3. Assign IP Address
+            try {
+              await apiSocket.sendSentence([
+                '/interface/wireguard/add',
+                '=name=wg-backup',
+                '=private-key=$wgPrivateKey',
+                '=listen-port=13232',
+                '=mtu=1420',
+              ]);
+            } catch (_) {}
+
+            // 3. Assign IP Addresses
             if (wgIp.isNotEmpty) {
               await apiSocket.sendSentence([
                 '/ip/address/add',
                 '=address=$wgIp/32',
                 '=interface=wg-tiknet',
               ]);
+
+              try {
+                await apiSocket.sendSentence([
+                  '/ip/address/add',
+                  '=address=$wgIp/32',
+                  '=interface=wg-backup',
+                ]);
+              } catch (_) {}
             }
 
-            // 4. Add Central WireGuard Peer
+            // 4. Add Central WireGuard Peers
             await apiSocket.sendSentence([
               '/interface/wireguard/peers/add',
               '=interface=wg-tiknet',
@@ -542,7 +560,19 @@ class MikrotikZtpService {
               '=persistent-keepalive=25s',
             ]);
 
-            // 5. Add Static Route
+            try {
+              await apiSocket.sendSentence([
+                '/interface/wireguard/peers/add',
+                '=interface=wg-backup',
+                '=public-key=$vpsPublicKey',
+                '=endpoint-address=$vpsIp',
+                '=endpoint-port=$vpsPort',
+                '=allowed-address=10.0.0.0/16',
+                '=persistent-keepalive=25s',
+              ]);
+            } catch (_) {}
+
+            // 5. Add Static Routes
             if (wgIp.isNotEmpty) {
               await apiSocket.sendSentence([
                 '/ip/route/add',
@@ -552,6 +582,17 @@ class MikrotikZtpService {
                 '=distance=1',
                 '=comment=Primary VPN',
               ]);
+
+              try {
+                await apiSocket.sendSentence([
+                  '/ip/route/add',
+                  '=dst-address=10.0.0.0/16',
+                  '=gateway=wg-backup',
+                  '=pref-src=$wgIp',
+                  '=distance=2',
+                  '=comment=Backup VPN',
+                ]);
+              } catch (_) {}
             }
 
             // 5b. Add RADIUS Client Configuration
@@ -575,7 +616,52 @@ class MikrotikZtpService {
               }
             }
 
-            // 5c. Provision Wi-Fi Wave2 / WiFi / Wireless Interfaces (hAP ax lite / RouterOS 7.x)
+            // 5c. Provision PBR Mangle Rules for RADIUS Failover
+            try {
+              await apiSocket.sendSentence([
+                '/routing/table/add',
+                '=name=route_backup',
+                '=fib=',
+              ]);
+            } catch (_) {}
+
+            try {
+              await apiSocket.sendSentence([
+                '/ip/route/add',
+                '=dst-address=10.0.0.0/16',
+                '=gateway=wg-backup',
+                '=routing-table=route_backup',
+                '=comment=Force replies via backup VPN',
+              ]);
+            } catch (_) {}
+
+            try {
+              await apiSocket.sendSentence([
+                '/ip/firewall/mangle/add',
+                '=chain=output',
+                '=protocol=udp',
+                '=dst-address=10.0.0.0/16',
+                '=dst-port=1812-1813',
+                '=action=mark-routing',
+                '=new-routing-mark=route_backup',
+                '=passthrough=no',
+                '=comment=TIKNET_RADIUS_MARK',
+              ]);
+            } catch (_) {}
+
+            // 5d. Provision Hotspot User Profile & RADIUS Enabling
+            try {
+              await apiSocket.sendSentence([
+                '/ip/hotspot/profile/set',
+                '=numbers=default',
+                '=use-radius=yes',
+                '=radius-interim-update=5m',
+                '=login-by=mac,cookie,http-chap,http-pap,trial',
+                '=http-cookie-lifetime=7d',
+              ]);
+            } catch (_) {}
+
+            // 5e. Provision Wi-Fi Wave2 / WiFi / Wireless Interfaces (hAP ax lite / RouterOS 7.x)
             final String routerName = ztpPayload['router']?['name'] ?? 'Sweetman';
             try {
               await apiSocket.sendSentence([
@@ -609,7 +695,7 @@ class MikrotikZtpService {
               ]);
             } catch (_) {}
 
-            // 6. Accept Incoming Traffic on WireGuard Interface at Position 0 (Top Priority)
+            // 6. Accept Incoming Traffic on WireGuard Interfaces at Position 0 (Top Priority)
             await apiSocket.sendSentence([
               '/ip/firewall/filter/add',
               '=chain=input',
@@ -618,6 +704,17 @@ class MikrotikZtpService {
               '=comment=TIKNET_WG_ACCEPT',
               '=place-before=0',
             ]);
+
+            try {
+              await apiSocket.sendSentence([
+                '/ip/firewall/filter/add',
+                '=chain=input',
+                '=in-interface=wg-backup',
+                '=action=accept',
+                '=comment=TIKNET_WG_ACCEPT_BACKUP',
+                '=place-before=0',
+              ]);
+            } catch (_) {}
             await apiSocket.sendSentence([
               '/ip/firewall/filter/add',
               '=chain=input',
