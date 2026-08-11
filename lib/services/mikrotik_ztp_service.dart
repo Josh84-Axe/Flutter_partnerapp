@@ -650,10 +650,13 @@ class MikrotikZtpService {
             } catch (_) {}
 
             // 5d. Provision Hotspot User Profile & Active Hotspot Server Binding
+            final String dnsName = ztpPayload['router']?['dns_name'] ?? 'sweetman.net';
             try {
               await apiSocket.sendSentence([
                 '/ip/hotspot/profile/set',
                 '=numbers=default',
+                '=hotspot-address=192.168.88.1',
+                '=dns-name=$dnsName',
                 '=use-radius=yes',
                 '=radius-interim-update=5m',
                 '=login-by=mac,cookie,http-chap,http-pap,trial',
