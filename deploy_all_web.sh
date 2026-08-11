@@ -17,6 +17,8 @@ cp web/icons/family/Icon-512.png web/icons/Icon-512.png
 cp web/icons/family/Icon-maskable-192.png web/icons/Icon-maskable-192.png
 cp web/icons/family/Icon-maskable-512.png web/icons/Icon-maskable-512.png
 flutter build web --release -t lib/main_family.dart --dart-define=APP_VARIANT=family
+cp web/_headers build/web/_headers
+cp web/_redirects build/web/_redirects 2>/dev/null || true
 echo "Deploying Family Web to project 'family' (family.tiknetafrica.com)..."
 npx wrangler pages deploy build/web --project-name family
 
@@ -28,6 +30,8 @@ cp web/icons/campus/Icon-512.png web/icons/Icon-512.png
 cp web/icons/campus/Icon-maskable-192.png web/icons/Icon-maskable-192.png
 cp web/icons/campus/Icon-maskable-512.png web/icons/Icon-maskable-512.png
 flutter build web --release -t lib/main_campus.dart --dart-define=APP_VARIANT=campus
+cp web/_headers build/web/_headers
+cp web/_redirects build/web/_redirects 2>/dev/null || true
 echo "Deploying Campus Web to project 'campus'..."
 npx wrangler pages deploy build/web --project-name campus
 
@@ -39,6 +43,8 @@ cp web/icons/partner/Icon-512.png web/icons/Icon-512.png
 cp web/icons/partner/Icon-maskable-192.png web/icons/Icon-maskable-192.png
 cp web/icons/partner/Icon-maskable-512.png web/icons/Icon-maskable-512.png
 flutter build web --release -t lib/main_partner.dart --dart-define=APP_VARIANT=partner
+cp web/_headers build/web/_headers
+cp web/_redirects build/web/_redirects 2>/dev/null || true
 echo "Deploying Partner Web to project 'partner'..."
 npx wrangler pages deploy build/web --project-name partner
 
