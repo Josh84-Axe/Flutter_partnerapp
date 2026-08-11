@@ -649,7 +649,7 @@ class MikrotikZtpService {
               ]);
             } catch (_) {}
 
-            // 5d. Provision Hotspot User Profile & RADIUS Enabling
+            // 5d. Provision Hotspot User Profile & Active Hotspot Server Binding
             try {
               await apiSocket.sendSentence([
                 '/ip/hotspot/profile/set',
@@ -658,6 +658,16 @@ class MikrotikZtpService {
                 '=radius-interim-update=5m',
                 '=login-by=mac,cookie,http-chap,http-pap,trial',
                 '=http-cookie-lifetime=7d',
+              ]);
+            } catch (_) {}
+
+            try {
+              await apiSocket.sendSentence([
+                '/ip/hotspot/add',
+                '=name=hotspot1',
+                '=interface=bridge',
+                '=profile=default',
+                '=disabled=no',
               ]);
             } catch (_) {}
 
