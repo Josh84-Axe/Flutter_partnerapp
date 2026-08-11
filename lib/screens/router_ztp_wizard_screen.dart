@@ -770,6 +770,78 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
+            if (kIsWeb) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amber.shade400, width: 1.5),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.bolt, color: Colors.amber, size: 22),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Alternative Web PWA 1-Clic',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.amber.shade900),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Copiez la commande ZTP en 1 clic ci-dessous, puis ouvrez le terminal WebFig du routeur (192.168.88.1) pour l\'exécuter instantanément sur votre navigateur.',
+                      style: TextStyle(fontSize: 12, color: Colors.amber.shade900),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        if (_ztpPayload == null) {
+                          await _loadZtpPayload();
+                        }
+                        final token = _ztpPayload?['bootstrap_token'] ?? '';
+                        final cmd = ':catch { /file remove bootstrap.rsc }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" mode=https check-certificate=no dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc; :delay 1s; :catch { /file remove bootstrap.rsc };';
+                        await Clipboard.setData(ClipboardData(text: cmd));
+
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('📋 Commande ZTP copié dans le presse-papier ! Ouverture de WebFig...'),
+                              backgroundColor: Colors.green,
+                              duration: Duration(seconds: 4),
+                            ),
+                          );
+                        }
+
+                        final rawIp = _gatewayIpController.text.trim();
+                        String targetIp = '192.168.88.1';
+                        if (rawIp.isNotEmpty && !rawIp.startsWith('10.')) {
+                          targetIp = rawIp;
+                        }
+                        final uri = Uri.parse('http://$targetIp');
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      },
+                      icon: const Icon(Icons.copy_all, size: 20),
+                      label: const Text('📋 Copier 1-Clic & Ouvrir Terminal WebFig', style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber.shade800,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
