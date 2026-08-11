@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import '../../flavors.dart';
 import '../../providers/split/auth_provider.dart';
 
 import '../../providers/campus_provider.dart';
@@ -533,7 +534,8 @@ class CampusVariantStrategy implements AppVariantStrategy {
 }
 
 AppVariantStrategy getStrategy(String? appVariant) {
-  switch (appVariant) {
+  final variant = (appVariant != null && appVariant.isNotEmpty) ? appVariant : F.name;
+  switch (variant) {
     case 'campus':
       return CampusVariantStrategy();
     case 'family':

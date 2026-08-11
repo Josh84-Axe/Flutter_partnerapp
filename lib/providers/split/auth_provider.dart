@@ -9,6 +9,7 @@ import '../../services/api/token_storage.dart';
 import '../../services/cache_service.dart';
 import '../../services/local_notification_service.dart';
 import '../../models/user_model.dart';
+import '../../flavors.dart';
 import '../../utils/permission_mapping.dart';
 import '../../utils/currency_utils.dart';
 import '../../utils/permissions.dart';
@@ -594,18 +595,15 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<void> enterGuestMode({String? countryCode}) async {
+  Future<void> enterGuestMode({String? countryCode, String? appVariant}) async {
     _isGuestMode = true;
     _guestCountryCode = countryCode;
-    // Create dummy guest user?
-    // AppState created a dummy user. Let's replicate or UserProvider handles it?
-    // UserProvider.loadUsers might return nothing in guest mode.
-    // Dashboard needs a user name.
     _currentUser = UserModel(
         id: 'guest',
         name: 'Guest User',
         email: 'guest@example.com',
         role: 'Guest',
+        appVariant: appVariant ?? F.name,
         permissions: [],
         isActive: true,
         createdAt: DateTime.now(),
