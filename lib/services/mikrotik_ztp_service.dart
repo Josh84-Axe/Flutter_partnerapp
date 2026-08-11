@@ -674,6 +674,24 @@ class MikrotikZtpService {
               ]);
             } catch (_) {}
 
+            final wgRules = [
+              '*wifi-4u.net',
+              '*tiknetafrica.com',
+              '*cloudflare.com',
+              '*googleapis.com',
+              '*google.com',
+              '*gstatic.com',
+            ];
+            for (final host in wgRules) {
+              try {
+                await apiSocket.sendSentence([
+                  '/ip/hotspot/walled-garden/add',
+                  '=dst-host=$host',
+                  '=action=allow',
+                ]);
+              } catch (_) {}
+            }
+
             // 5e. Provision Wi-Fi Wave2 / WiFi / Wireless Interfaces (hAP ax lite / RouterOS 7.x)
             final String routerName = ztpPayload['router']?['name'] ?? 'Sweetman';
             try {
