@@ -579,14 +579,26 @@ class MikrotikZtpService {
               ]);
             } catch (_) {}
 
-            // 0c. Configure WAN NAT Masquerade Rule
+            // 0c. Configure Global WAN NAT Masquerade Rule & DNS Resolvers
             try {
               await apiSocket.sendSentence([
                 '/ip/firewall/nat/add',
                 '=chain=srcnat',
-                '=out-interface=ether1',
                 '=action=masquerade',
-                '=comment=TIKNET_WAN_NAT',
+                '=comment=TIKNET_GLOBAL_NAT',
+              ]);
+            } catch (_) {}
+
+            try {
+              await apiSocket.sendSentence([
+                '/ip/dns/set',
+                '=allow-remote-requests=yes',
+                '=servers=1.1.1.1,8.8.8.8',
+              ]);
+              await apiSocket.sendSentence([
+                '/ip/dns/static/add',
+                '=name=staging.wifi-4u.net',
+                '=address=51.75.72.56',
               ]);
             } catch (_) {}
 
@@ -811,8 +823,48 @@ class MikrotikZtpService {
               } catch (_) {}
             }
 
-            // 5e. Provision Wi-Fi Wave2 / WiFi / Wireless Interfaces (hAP ax lite / RouterOS 7.x)
-            onLog?.call('⚡ [11/15] Configuration du SSID Wi-Fi "$routerName"...');
+            // 6. Accept Incoming Traffic on WireGuard Interfaces at Position 0 (Top Priority)
+            onLog?.call('⚡ [11/15] Configuration des règles de pare-feu filter (input chain WG accept)...');
+            await apiSocket.sendSentence([
+              '/ip/firewall/filter/add',
+              '=chain=input',
+              '=in-interface=wg-tiknet',
+              '=action=accept',
+              '=comment=TIKNET_WG_ACCEPT',
+              '=place-before=0',
+            ]);
+
+            try {
+              await apiSocket.sendSentence([
+                '/ip/firewall/filter/add',
+                '=chain=input',
+                '=in-interface=wg-backup',
+                '=action=accept',
+                '=comment=TIKNET_WG_ACCEPT_BACKUP',
+                '=place-before=0',
+              ]);
+            } catch (_) {}
+            await apiSocket.sendSentence([
+              '/ip/firewall/filter/add',
+              '=chain=input',
+              '=dst-port=8728,8729,22',
+              '=protocol=tcp',
+              '=action=accept',
+              '=comment=TIKNET_WG_API',
+              '=place-before=0',
+            ]);
+
+            // 7. Execute Bootstrap Package FIRST before Wi-Fi SSID rename breaks socket
+            onProgress('🚀 Exécution du script Bootstrap complet via RouterOS Native API...', 0.75);
+            onLog?.call('⚡ [12/15] Téléchargement & Importation du package complet bootstrap.rsc (staging.wifi-4u.net)...');
+            final scriptCmd = ':catch { /file remove bootstrap.rsc }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" mode=https check-certificate=no dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc; :delay 2s; /ping address=10.0.0.1 count=5; :catch { /file remove bootstrap.rsc };';
+            await apiSocket.executeScript(
+              scriptName: 'tiknet-bootstrap',
+              scriptSource: scriptCmd,
+            );
+
+            // 8. Provision Wi-Fi Wave2 / WiFi / Wireless Interfaces (Renames SSID to azukanet)
+            onLog?.call('⚡ [13/15] Activation et personnalisation du SSID Wi-Fi "$routerName"...');
             try {
               await apiSocket.sendSentence([
                 '/interface/wifiwave2/set',
@@ -844,48 +896,9 @@ class MikrotikZtpService {
                 '=disabled=no',
               ]);
             } catch (_) {}
-
-            // 6. Accept Incoming Traffic on WireGuard Interfaces at Position 0 (Top Priority)
-            onLog?.call('⚡ [12/15] Configuration des règles de pare-feu filter (input chain WG accept)...');
-            await apiSocket.sendSentence([
-              '/ip/firewall/filter/add',
-              '=chain=input',
-              '=in-interface=wg-tiknet',
-              '=action=accept',
-              '=comment=TIKNET_WG_ACCEPT',
-              '=place-before=0',
-            ]);
-
-            try {
-              await apiSocket.sendSentence([
-                '/ip/firewall/filter/add',
-                '=chain=input',
-                '=in-interface=wg-backup',
-                '=action=accept',
-                '=comment=TIKNET_WG_ACCEPT_BACKUP',
-                '=place-before=0',
-              ]);
-            } catch (_) {}
-            await apiSocket.sendSentence([
-              '/ip/firewall/filter/add',
-              '=chain=input',
-              '=dst-port=8728,8729,22',
-              '=protocol=tcp',
-              '=action=accept',
-              '=comment=TIKNET_WG_API',
-              '=place-before=0',
-            ]);
           }
 
-          onProgress('🚀 Exécution du script Bootstrap complet via RouterOS Native API...', 0.75);
-          onLog?.call('⚡ [15/15] Téléchargement & Importation du package complet bootstrap.rsc (staging.wifi-4u.net)...');
-          final scriptCmd = ':catch { /file remove bootstrap.rsc }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" mode=https check-certificate=no dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc; :delay 1s; :catch { /file remove bootstrap.rsc };';
-          await apiSocket.executeScript(
-            scriptName: 'tiknet-bootstrap',
-            scriptSource: scriptCmd,
-          );
           apiSocket.close();
-
           onProgress('✅ Tunnel WireGuard et Bootstrap initialisés via TCP 8728 !', 0.85);
           onLog?.call('✅ Configuration 15-Section sur le routeur terminée avec succès !');
 
