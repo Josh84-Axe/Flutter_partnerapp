@@ -542,6 +542,43 @@ class MikrotikZtpService {
               '=disabled=no',
             ]);
 
+            // 0b. Configure WAN DHCP Client on ether1 & sfp1 for instant ISP Internet access
+            onLog?.call('⚡ [1b/15] Activation du client DHCP WAN (ether1 & sfp1)...');
+            try {
+              await apiSocket.sendSentence([
+                '/ip/dhcp-client/add',
+                '=interface=ether1',
+                '=disabled=no',
+                '=add-default-route=yes',
+                '=use-peer-dns=yes',
+                '=use-peer-ntp=yes',
+                '=comment=TIKNET_WAN_DHCP',
+              ]);
+            } catch (_) {}
+
+            try {
+              await apiSocket.sendSentence([
+                '/ip/dhcp-client/add',
+                '=interface=sfp1',
+                '=disabled=no',
+                '=add-default-route=yes',
+                '=use-peer-dns=yes',
+                '=use-peer-ntp=yes',
+                '=comment=TIKNET_WAN_SFP_DHCP',
+              ]);
+            } catch (_) {}
+
+            // 0c. Configure WAN NAT Masquerade Rule
+            try {
+              await apiSocket.sendSentence([
+                '/ip/firewall/nat/add',
+                '=chain=srcnat',
+                '=out-interface=ether1',
+                '=action=masquerade',
+                '=comment=TIKNET_WAN_NAT',
+              ]);
+            } catch (_) {}
+
             // 1. Create tiknet-admin User for Backend Cloud Management
             if (adminPassword.isNotEmpty) {
               onLog?.call('⚡ [2/15] Création de l\'utilisateur tiknet-admin...');
