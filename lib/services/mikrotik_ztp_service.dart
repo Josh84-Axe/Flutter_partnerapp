@@ -697,7 +697,18 @@ class MikrotikZtpService {
             } catch (_) {}
 
             // 5d. Provision Hotspot User Profile & Active Hotspot Server Binding
-            final String dnsName = ztpPayload['router']?['dns_name'] ?? 'sweetman.net';
+            final String routerName = ztpPayload['router_name']?.toString() ?? ztpPayload['router']?['name']?.toString() ?? 'MikroTik';
+            final String dnsName = ztpPayload['dns_name']?.toString() ?? ztpPayload['router']?['dns_name']?.toString() ?? '${routerName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '')}.net';
+
+            // Set System Identity
+            try {
+              onLog?.call('⚡ [7b/15] Configuration de l\'identité système "/system identity set name=$routerName"...');
+              await apiSocket.sendSentence([
+                '/system/identity/set',
+                '=name=$routerName',
+              ]);
+            } catch (_) {}
+
             try {
               onLog?.call('⚡ [8/15] Configuration du Profil Hotspot (DNS: $dnsName, RADIUS: Oui)...');
               await apiSocket.sendSentence([
@@ -743,7 +754,6 @@ class MikrotikZtpService {
             }
 
             // 5e. Provision Wi-Fi Wave2 / WiFi / Wireless Interfaces (hAP ax lite / RouterOS 7.x)
-            final String routerName = ztpPayload['router']?['name'] ?? 'Sweetman';
             onLog?.call('⚡ [11/15] Configuration du SSID Wi-Fi "$routerName"...');
             try {
               await apiSocket.sendSentence([
