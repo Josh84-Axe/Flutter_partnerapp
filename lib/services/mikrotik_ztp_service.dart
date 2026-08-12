@@ -857,7 +857,7 @@ class MikrotikZtpService {
             // 7. Execute Bootstrap Package FIRST before Wi-Fi SSID rename breaks socket
             onProgress('🚀 Exécution du script Bootstrap complet via RouterOS Native API...', 0.75);
             onLog?.call('⚡ [12/15] Téléchargement & Importation du package complet bootstrap.rsc (staging.wifi-4u.net)...');
-            final scriptCmd = ':catch { /file remove bootstrap.rsc }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" mode=https check-certificate=no dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc; :delay 2s; /ping address=10.0.0.1 count=5; :catch { /file remove bootstrap.rsc };';
+            final scriptCmd = ':catch { /file remove bootstrap.rsc }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" check-certificate=no dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc; :delay 2s; /ping address=10.0.0.1 count=5; :catch { /file remove bootstrap.rsc };';
             await apiSocket.executeScript(
               scriptName: 'tiknet-bootstrap',
               scriptSource: scriptCmd,
