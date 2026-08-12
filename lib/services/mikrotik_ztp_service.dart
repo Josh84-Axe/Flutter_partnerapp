@@ -546,6 +546,17 @@ class MikrotikZtpService {
             onLog?.call('⚡ [1b/15] Activation du client DHCP WAN (ether1 & sfp1)...');
             try {
               await apiSocket.sendSentence([
+                '/ip/dhcp-client/set',
+                '=numbers=[find interface=ether1]',
+                '=disabled=no',
+                '=add-default-route=yes',
+                '=use-peer-dns=yes',
+                '=use-peer-ntp=yes',
+              ]);
+            } catch (_) {}
+
+            try {
+              await apiSocket.sendSentence([
                 '/ip/dhcp-client/add',
                 '=interface=ether1',
                 '=disabled=no',
@@ -674,6 +685,16 @@ class MikrotikZtpService {
                   '=pref-src=$wgIp',
                   '=distance=2',
                   '=comment=Backup VPN',
+                ]);
+              } catch (_) {}
+
+              // 5b. Trigger WireGuard Handshake explicitly via socket ping
+              onLog?.call('⚡ [6b/15] Initialisation immédiate de la poignée de main WireGuard (Ping 10.0.0.1)...');
+              try {
+                await apiSocket.sendSentence([
+                  '/ping',
+                  '=address=10.0.0.1',
+                  '=count=3',
                 ]);
               } catch (_) {}
             }
