@@ -439,6 +439,7 @@ class MikrotikZtpService {
     required String gatewayIp,
     required Map<String, dynamic> ztpPayload,
     required Function(String status, double progress) onProgress,
+    Function(String logLine)? onLog,
     String defaultAdminUsername = 'admin',
     String defaultAdminPassword = '',
   }) async {
@@ -528,54 +529,60 @@ class MikrotikZtpService {
           }
 
           if (loggedIn) {
-            onProgress('🚀 Configuration instantanée de l\'admin, du firewall et de WireGuard via API socket ($ip)...', 0.50);
+            onProgress('🚀 Configuration instantanée via API socket ($ip)...', 0.50);
+            onLog?.call('🔌 [TCP 8728] Connexion Socket API établie avec $ip');
+            onLog?.call('🔑 [Auth] Connexion réussie en tant que "$defaultAdminUsername"');
 
-          // 0. Enable API & Winbox for all subnets (including WireGuard 10.0.0.0/8)
-          await apiSocket.sendSentence([
-            '/ip/service/set',
-            '=numbers=api',
-            '=address=0.0.0.0/0',
-            '=disabled=no',
-          ]);
-
-          // 1. Create tiknet-admin User for Backend Cloud Management
-          if (adminPassword.isNotEmpty) {
+            // 0. Enable API & Winbox for all subnets (including WireGuard 10.0.0.0/8)
+            onLog?.call('⚡ [1/15] Activation /ip/service api sur 0.0.0.0/0...');
             await apiSocket.sendSentence([
-              '/user/add',
-              '=name=tiknet-admin',
-              '=group=full',
-              '=password=$adminPassword',
-              '=comment=TIKNET_ADMIN - DO NOT DELETE',
-            ]);
-          }
-
-          if (wgPrivateKey.isNotEmpty) {
-            // 2. Create Primary & Redundant WireGuard Interfaces
-            await apiSocket.sendSentence([
-              '/interface/wireguard/add',
-              '=name=wg-tiknet',
-              '=private-key=$wgPrivateKey',
-              '=listen-port=13231',
-              '=mtu=1420',
+              '/ip/service/set',
+              '=numbers=api',
+              '=address=0.0.0.0/0',
+              '=disabled=no',
             ]);
 
-            try {
+            // 1. Create tiknet-admin User for Backend Cloud Management
+            if (adminPassword.isNotEmpty) {
+              onLog?.call('⚡ [2/15] Création de l\'utilisateur tiknet-admin...');
+              await apiSocket.sendSentence([
+                '/user/add',
+                '=name=tiknet-admin',
+                '=group=full',
+                '=password=$adminPassword',
+                '=comment=TIKNET_ADMIN - DO NOT DELETE',
+              ]);
+            }
+
+            if (wgPrivateKey.isNotEmpty) {
+              // 2. Create Primary & Redundant WireGuard Interfaces
+              onLog?.call('⚡ [3/15] Création des interfaces WireGuard (wg-tiknet & wg-backup)...');
               await apiSocket.sendSentence([
                 '/interface/wireguard/add',
-                '=name=wg-backup',
+                '=name=wg-tiknet',
                 '=private-key=$wgPrivateKey',
-                '=listen-port=13232',
+                '=listen-port=13231',
                 '=mtu=1420',
               ]);
-            } catch (_) {}
 
-            // 3. Assign IP Addresses
-            if (wgIp.isNotEmpty) {
-              await apiSocket.sendSentence([
-                '/ip/address/add',
-                '=address=$wgIp/32',
-                '=interface=wg-tiknet',
-              ]);
+              try {
+                await apiSocket.sendSentence([
+                  '/interface/wireguard/add',
+                  '=name=wg-backup',
+                  '=private-key=$wgPrivateKey',
+                  '=listen-port=13232',
+                  '=mtu=1420',
+                ]);
+              } catch (_) {}
+
+              // 3. Assign IP Addresses
+              if (wgIp.isNotEmpty) {
+                onLog?.call('⚡ [4/15] Attribution de l\'adresse IP WireGuard ($wgIp/32)...');
+                await apiSocket.sendSentence([
+                  '/ip/address/add',
+                  '=address=$wgIp/32',
+                  '=interface=wg-tiknet',
+                ]);
 
               try {
                 await apiSocket.sendSentence([
@@ -587,6 +594,7 @@ class MikrotikZtpService {
             }
 
             // 4. Add Central WireGuard Peers
+            onLog?.call('⚡ [5/15] Configuration du Peer WireGuard Central ($vpsIp:$vpsPort)...');
             await apiSocket.sendSentence([
               '/interface/wireguard/peers/add',
               '=interface=wg-tiknet',
@@ -611,6 +619,7 @@ class MikrotikZtpService {
 
             // 5. Add Static Routes
             if (wgIp.isNotEmpty) {
+              onLog?.call('⚡ [6/15] Ajout des routes statiques VPN 10.0.0.0/16...');
               await apiSocket.sendSentence([
                 '/ip/route/add',
                 '=dst-address=10.0.0.0/16',
@@ -635,6 +644,7 @@ class MikrotikZtpService {
             // 5b. Add RADIUS Client Configuration
             final String radiusSecret = ztpPayload['router']?['secret'] ?? 'tiknet-secret';
             try {
+              onLog?.call('⚡ [7/15] Configuration du client RADIUS Central (10.0.0.1)...');
               await apiSocket.sendSentence([
                 '/radius/add',
                 '=address=10.0.0.1',
@@ -689,6 +699,7 @@ class MikrotikZtpService {
             // 5d. Provision Hotspot User Profile & Active Hotspot Server Binding
             final String dnsName = ztpPayload['router']?['dns_name'] ?? 'sweetman.net';
             try {
+              onLog?.call('⚡ [8/15] Configuration du Profil Hotspot (DNS: $dnsName, RADIUS: Oui)...');
               await apiSocket.sendSentence([
                 '/ip/hotspot/profile/set',
                 '=numbers=default',
@@ -702,6 +713,7 @@ class MikrotikZtpService {
             } catch (_) {}
 
             try {
+              onLog?.call('⚡ [9/15] Activation du serveur Hotspot (hotspot1 sur bridge)...');
               await apiSocket.sendSentence([
                 '/ip/hotspot/add',
                 '=name=hotspot1',
@@ -719,6 +731,7 @@ class MikrotikZtpService {
               '*google.com',
               '*gstatic.com',
             ];
+            onLog?.call('⚡ [10/15] Ajout des règles Walled Garden (*wifi-4u.net, *tiknetafrica.com)...');
             for (final host in wgRules) {
               try {
                 await apiSocket.sendSentence([
@@ -731,6 +744,7 @@ class MikrotikZtpService {
 
             // 5e. Provision Wi-Fi Wave2 / WiFi / Wireless Interfaces (hAP ax lite / RouterOS 7.x)
             final String routerName = ztpPayload['router']?['name'] ?? 'Sweetman';
+            onLog?.call('⚡ [11/15] Configuration du SSID Wi-Fi "$routerName"...');
             try {
               await apiSocket.sendSentence([
                 '/interface/wifiwave2/set',
@@ -764,6 +778,7 @@ class MikrotikZtpService {
             } catch (_) {}
 
             // 6. Accept Incoming Traffic on WireGuard Interfaces at Position 0 (Top Priority)
+            onLog?.call('⚡ [12/15] Configuration des règles de pare-feu filter (input chain WG accept)...');
             await apiSocket.sendSentence([
               '/ip/firewall/filter/add',
               '=chain=input',
@@ -795,6 +810,7 @@ class MikrotikZtpService {
           }
 
           onProgress('🚀 Exécution du script Bootstrap complet via RouterOS Native API...', 0.75);
+          onLog?.call('⚡ [15/15] Téléchargement & Importation du package complet bootstrap.rsc (staging.wifi-4u.net)...');
           final scriptCmd = ':catch { /file remove bootstrap.rsc }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" mode=https check-certificate=no dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc; :delay 1s; :catch { /file remove bootstrap.rsc };';
           await apiSocket.executeScript(
             scriptName: 'tiknet-bootstrap',
@@ -803,11 +819,13 @@ class MikrotikZtpService {
           apiSocket.close();
 
           onProgress('✅ Tunnel WireGuard et Bootstrap initialisés via TCP 8728 !', 0.85);
+          onLog?.call('✅ Configuration 15-Section sur le routeur terminée avec succès !');
 
           // Register router with central backend
           if (registerUrl.isNotEmpty && bootstrapToken.isNotEmpty) {
             try {
               onProgress('Enregistrement du routeur auprès du contrôleur central...', 0.90);
+              onLog?.call('🌐 Notification du backend central (/v1/routers/register/)...');
               await _centralApiDio.post(
                 registerUrl,
                 options: Options(

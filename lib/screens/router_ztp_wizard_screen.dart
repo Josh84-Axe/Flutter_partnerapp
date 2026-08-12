@@ -39,6 +39,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
   String _statusMessage = '';
   double _progressValue = 0.0;
   String? _errorMessage;
+  final List<String> _liveTerminalLogs = [];
 
   int _effectiveRouterId = 0;
   String _effectiveRouterName = 'Nouveau Routeur';
@@ -426,6 +427,13 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
             setState(() {
               _statusMessage = status;
               _progressValue = progress;
+            });
+          }
+        },
+        onLog: (line) {
+          if (mounted) {
+            setState(() {
+              _liveTerminalLogs.add(line);
             });
           }
         },
@@ -1048,29 +1056,62 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            if (kIsWeb) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue.shade200),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.shield, color: Colors.blue, size: 22),
-                    const SizedBox(width: 10),
-                    Expanded(
+            const SizedBox(height: 16),
+            // Persistent Live Terminal Box
+            Container(
+              width: double.infinity,
+              height: 200,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFF334155)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.terminal, size: 16, color: Color(0xFF38BDF8)),
+                      const SizedBox(width: 6),
+                      const Text(
+                        '🖥️ Journal d\'Exécution ZTP (Live Terminal)',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.copy, size: 14, color: Colors.white70),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: _liveTerminalLogs.join('\n')));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('📋 Journal d\'exécution copié !')),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const Divider(color: Color(0xFF334155), height: 12),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      reverse: true,
                       child: Text(
-                        'Si un message de sécurité s\'affiche ("Information not secure"), appuyez sur "Send anyway" (Envoyer quand même) pour autoriser la transmission.',
-                        style: TextStyle(fontSize: 12, color: Colors.blue.shade900, fontWeight: FontWeight.bold),
+                        _liveTerminalLogs.isEmpty
+                            ? '🔌 Démarrage de la transmission des instructions au routeur...'
+                            : _liveTerminalLogs.join('\n'),
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 11,
+                          color: Color(0xFF4ADE80),
+                          height: 1.4,
+                        ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
             const SizedBox(height: 16),
           ],
         ),
