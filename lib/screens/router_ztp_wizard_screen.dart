@@ -441,12 +441,20 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
 
       if (success && mounted) {
         await _runCloudVerification();
+      } else if (mounted) {
+        // Rollback on provisioning failure
+        await _ztpService.rollbackZtpRouter(_effectiveRouterId);
+        setState(() {
+          _isProvisioning = false;
+          _errorMessage = '⚠️ Le déploiement ZTP n\'a pas pu se terminer à 100%. Un rollback automatique a été effectué sur le backend.';
+        });
       }
     } catch (e) {
+      await _ztpService.rollbackZtpRouter(_effectiveRouterId);
       if (mounted) {
         setState(() {
           _isProvisioning = false;
-          _errorMessage = 'Erreur lors du déploiement ZTP : $e';
+          _errorMessage = 'Erreur lors du déploiement ZTP ($e). Le système a effectué un rollback automatique vers un état propre.';
         });
       }
     }
