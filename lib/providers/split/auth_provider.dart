@@ -251,7 +251,11 @@ class AuthProvider with ChangeNotifier {
           : (userData['role']?.toString() ?? 'Partner');
 
       // Extract country and set currency info
-      _partnerCountry = userData['country']?.toString() ?? userData['country_name']?.toString();
+      if (userData['country'] is Map) {
+        _partnerCountry = userData['country']['name']?.toString() ?? userData['country']['code']?.toString() ?? userData['country']['slug']?.toString();
+      } else {
+        _partnerCountry = userData['country']?.toString() ?? userData['country_name']?.toString();
+      }
       _partnerCurrencyCode = CurrencyUtils.getCurrencyCode(_partnerCountry);
       _partnerCurrencySymbol = CurrencyUtils.getCurrencySymbol(_partnerCountry);
 

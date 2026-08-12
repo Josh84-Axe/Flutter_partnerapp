@@ -9,16 +9,16 @@ class CurrencyUtils {
     
     final normalized = country.trim().toLowerCase();
     
-    // Handle ISO 2-letter codes first
-    if (normalized == 'gh') return 'GHS';
-    if (normalized == 'ci') return 'XOF';
-    if (normalized == 'ng') return 'NGN';
-    if (normalized == 'ke') return 'KES';
-    if (normalized == 'ug') return 'UGX';
-    if (normalized == 'tz') return 'TZS';
-    if (normalized == 'rw') return 'RWF';
-    if (normalized == 'za') return 'ZAR';
-    if (normalized == 'gn') return 'GNF';
+    // Handle ISO 2-letter codes & map string representations first
+    if (normalized == 'gh' || normalized.contains('name: gh') || normalized.contains('code: gh')) return 'GHS';
+    if (normalized == 'ci' || normalized.contains('name: ci') || normalized.contains('code: ci')) return 'XOF';
+    if (normalized == 'ng' || normalized.contains('name: ng') || normalized.contains('code: ng') || normalized.contains('nigeria') || normalized.contains('naira')) return 'NGN';
+    if (normalized == 'ke' || normalized.contains('name: ke') || normalized.contains('code: ke')) return 'KES';
+    if (normalized == 'ug' || normalized.contains('name: ug') || normalized.contains('code: ug')) return 'UGX';
+    if (normalized == 'tz' || normalized.contains('name: tz') || normalized.contains('code: tz')) return 'TZS';
+    if (normalized == 'rw' || normalized.contains('name: rw') || normalized.contains('code: rw')) return 'RWF';
+    if (normalized == 'za' || normalized.contains('name: za') || normalized.contains('code: za')) return 'ZAR';
+    if (normalized == 'gn' || normalized.contains('name: gn') || normalized.contains('code: gn')) return 'GNF';
     if (normalized == 'sn') return 'XOF';
     if (normalized == 'ml') return 'XOF';
     if (normalized == 'bj') return 'XOF';
@@ -33,7 +33,7 @@ class CurrencyUtils {
     // Robust substring matching
     if (normalized.contains('guinea') && !normalized.contains('bissau')) return 'GNF';
     if (normalized.contains('ghana')) return 'GHS';
-    if (normalized.contains('nigeria')) return 'NGN';
+    if (normalized.contains('nigeria') || normalized.contains('naira') || normalized.contains('lagos')) return 'NGN';
     if (normalized.contains('kenya')) return 'KES';
     if (normalized.contains('uganda')) return 'UGX';
     if (normalized.contains('tanzania')) return 'TZS';
