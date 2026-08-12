@@ -944,6 +944,24 @@ class MikrotikZtpService {
     return true;
   }
 
+  /// Rollback incomplete or failed ZTP session for a router back to a 100% clean slate
+  Future<bool> rollbackZtpRouter(int routerId) async {
+    try {
+      final response = await _centralApiDio.post(
+        '/routers/$routerId/ztp-rollback/',
+      );
+      if (kDebugMode) {
+        debugPrint('🔄 [MikrotikZtpService] Rollback API response: ${response.data}');
+      }
+      return response.statusCode == 200;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ [MikrotikZtpService] Error during ZTP rollback: $e');
+      }
+      return false;
+    }
+  }
+
   String _getFriendlyStepName(String action) {
     switch (action) {
       case 'setup_admin_user':

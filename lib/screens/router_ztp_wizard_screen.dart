@@ -489,9 +489,11 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
         _currentStep = 4;
       });
     } else if (mounted) {
+      // Auto-rollback backend for a clean slate
+      await _ztpService.rollbackZtpRouter(_effectiveRouterId);
       setState(() {
         _isProvisioning = false;
-        _errorMessage = '⚠️ Le routeur n\'a pas encore répondu au ping VPN WireGuard. Si le navigateur a affiché "Les informations ne sont pas sécurisées", assurez-vous d\'avoir appuyé sur "Envoyer quand même" (Send anyway), puis cliquez sur "Re-vérifier" ci-dessous.';
+        _errorMessage = '⚠️ Échec de vérification (Moins de 100% de complétion). Les configurations ont été automatiquement annulées (Rollback effectué). Le routeur est remis à zéro et prêt pour un nouveau test ZTP propre.';
       });
     }
   }
