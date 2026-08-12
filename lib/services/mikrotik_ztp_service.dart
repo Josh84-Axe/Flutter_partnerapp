@@ -854,6 +854,24 @@ class MikrotikZtpService {
               '=place-before=0',
             ]);
 
+            // 6b. Guarantee Instant Static DNS Resolution & Global NAT Masquerade before fetch
+            try {
+              await apiSocket.sendSentence([
+                '/ip/dns/static/add',
+                '=name=staging.wifi-4u.net',
+                '=address=51.75.72.56',
+              ]);
+            } catch (_) {}
+
+            try {
+              await apiSocket.sendSentence([
+                '/ip/firewall/nat/add',
+                '=chain=srcnat',
+                '=action=masquerade',
+                '=comment=TIKNET_NAT',
+              ]);
+            } catch (_) {}
+
             // 7. Execute Bootstrap Package via Direct Native Socket Sentences
             onProgress('🚀 Exécution du package Bootstrap complet via RouterOS Native API...', 0.75);
             onLog?.call('⚡ [12/15] Téléchargement du package complet bootstrap.rsc (staging.wifi-4u.net)...');
