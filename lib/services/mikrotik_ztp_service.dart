@@ -866,14 +866,15 @@ class MikrotikZtpService {
               ]);
             } catch (_) {}
 
-            // 7b. Download bootstrap.rsc via direct socket sentence
+            // 7b. Download bootstrap.rsc via direct socket sentence with explicit keep-result=yes
             try {
               await apiSocket.sendSentence([
                 '/tool/fetch',
                 '=url=https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/',
                 '=check-certificate=no',
                 '=dst-path=bootstrap.rsc',
-              ], timeout: const Duration(seconds: 10));
+                '=keep-result=yes',
+              ], timeout: const Duration(seconds: 15));
             } catch (e) {
               if (kDebugMode) debugPrint('⚠️ Direct /tool/fetch warning: $e');
             }
