@@ -473,6 +473,7 @@ class MikrotikZtpService {
         '192.168.88.1',
         '192.168.0.1',
         '192.168.1.1',
+        '10.0.0.1',
       };
 
       final String adminPassword = ztpPayload['admin_password']?.toString() ?? '';
@@ -483,15 +484,51 @@ class MikrotikZtpService {
       final String vpsIp = vpsMap?['primary_ip']?.toString() ?? '51.75.72.56';
       final String vpsPort = (vpsMap?['primary_port'] ?? 51820).toString();
 
+      final passVariants = <String>{
+        defaultAdminPassword,
+        defaultAdminPassword.toUpperCase(),
+        defaultAdminPassword.toLowerCase(),
+        adminPassword,
+        '',
+        'admin',
+      };
+
       for (final ip in candidateIps) {
-        final apiSocket = MikrotikApiSocket(host: ip, port: 8728);
-        final loggedIn = await apiSocket.connectAndLogin(
-          username: defaultAdminUsername,
-          password: defaultAdminPassword,
-          timeout: const Duration(seconds: 4),
-        );
-        if (loggedIn) {
-          onProgress('🚀 Configuration instantanée de l\'admin, du firewall et de WireGuard via API socket...', 0.50);
+        for (final pwd in passVariants) {
+          MikrotikApiSocket apiSocket = MikrotikApiSocket(host: ip, port: 8728);
+          bool loggedIn = await apiSocket.connectAndLogin(
+            username: defaultAdminUsername,
+            password: pwd,
+            timeout: const Duration(seconds: 3),
+          );
+
+          // If socket fails (port 8728 disabled), attempt enabling API via RouterOS REST HTTP API
+          if (!loggedIn) {
+            try {
+              final enableDio = Dio(BaseOptions(
+                baseUrl: 'http://$ip',
+                connectTimeout: const Duration(seconds: 2),
+                receiveTimeout: const Duration(seconds: 2),
+                headers: {
+                  'Authorization': 'Basic ${base64Encode(utf8.encode('$defaultAdminUsername:$pwd'))}',
+                  'Content-Type': 'application/json',
+                },
+              ));
+              await enableDio.patch('/rest/system/service/api', data: {'disabled': false});
+              await enableDio.patch('/rest/system/service/set', data: {'numbers': 'api', 'disabled': false});
+            } catch (_) {}
+
+            // Retry socket login after REST enable attempt
+            apiSocket = MikrotikApiSocket(host: ip, port: 8728);
+            loggedIn = await apiSocket.connectAndLogin(
+              username: defaultAdminUsername,
+              password: pwd,
+              timeout: const Duration(seconds: 3),
+            );
+          }
+
+          if (loggedIn) {
+            onProgress('🚀 Configuration instantanée de l\'admin, du firewall et de WireGuard via API socket ($ip)...', 0.50);
 
           // 0. Enable API & Winbox for all subnets (including WireGuard 10.0.0.0/8)
           await apiSocket.sendSentence([
@@ -795,6 +832,7 @@ class MikrotikZtpService {
         }
         apiSocket.close();
       }
+    }
     }
 
     Dio restDio = Dio(
