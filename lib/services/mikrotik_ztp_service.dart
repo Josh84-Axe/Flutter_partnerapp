@@ -899,13 +899,13 @@ class MikrotikZtpService {
 
             await Future.delayed(const Duration(seconds: 2));
 
-            // 7c. Import bootstrap.rsc via direct socket sentence
+            // 7c. Import bootstrap.rsc via direct socket sentence with 60s timeout
             onLog?.call('⚡ [13/15] Importation et exécution de bootstrap.rsc...');
             try {
               await apiSocket.sendSentence([
                 '/import',
                 '=file-name=bootstrap.rsc',
-              ], timeout: const Duration(seconds: 15));
+              ], timeout: const Duration(seconds: 60));
             } catch (e) {
               if (kDebugMode) debugPrint('⚠️ Direct /import warning: $e');
             }
