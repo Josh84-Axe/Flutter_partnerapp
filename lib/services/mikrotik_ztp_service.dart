@@ -854,17 +854,55 @@ class MikrotikZtpService {
               '=place-before=0',
             ]);
 
-            // 7. Execute Bootstrap Package FIRST before Wi-Fi SSID rename breaks socket
-            onProgress('🚀 Exécution du script Bootstrap complet via RouterOS Native API...', 0.75);
-            onLog?.call('⚡ [12/15] Téléchargement & Importation du package complet bootstrap.rsc (staging.wifi-4u.net)...');
-            final scriptCmd = ':catch { /file remove bootstrap.rsc }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" check-certificate=no dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc; :delay 2s; /ping address=10.0.0.1 count=5; :catch { /file remove bootstrap.rsc };';
-            await apiSocket.executeScript(
-              scriptName: 'tiknet-bootstrap',
-              scriptSource: scriptCmd,
-            );
+            // 7. Execute Bootstrap Package via Direct Native Socket Sentences
+            onProgress('🚀 Exécution du package Bootstrap complet via RouterOS Native API...', 0.75);
+            onLog?.call('⚡ [12/15] Téléchargement du package complet bootstrap.rsc (staging.wifi-4u.net)...');
+
+            // 7a. Remove old bootstrap.rsc if exists
+            try {
+              await apiSocket.sendSentence([
+                '/file/remove',
+                '=numbers=bootstrap.rsc',
+              ]);
+            } catch (_) {}
+
+            // 7b. Download bootstrap.rsc via direct socket sentence
+            try {
+              await apiSocket.sendSentence([
+                '/tool/fetch',
+                '=url=https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/',
+                '=check-certificate=no',
+                '=dst-path=bootstrap.rsc',
+              ], timeout: const Duration(seconds: 10));
+            } catch (e) {
+              if (kDebugMode) debugPrint('⚠️ Direct /tool/fetch warning: $e');
+            }
+
+            await Future.delayed(const Duration(seconds: 2));
+
+            // 7c. Import bootstrap.rsc via direct socket sentence
+            onLog?.call('⚡ [13/15] Importation et exécution de bootstrap.rsc...');
+            try {
+              await apiSocket.sendSentence([
+                '/import',
+                '=file-name=bootstrap.rsc',
+              ], timeout: const Duration(seconds: 15));
+            } catch (e) {
+              if (kDebugMode) debugPrint('⚠️ Direct /import warning: $e');
+            }
+
+            // 7d. Trigger WireGuard Handshake Ping
+            onLog?.call('⚡ [14/15] Initialisation du tunnel WireGuard Cloud (Ping 10.0.0.1)...');
+            try {
+              await apiSocket.sendSentence([
+                '/ping',
+                '=address=10.0.0.1',
+                '=count=5',
+              ]);
+            } catch (_) {}
 
             // 8. Provision Wi-Fi Wave2 / WiFi / Wireless Interfaces (Renames SSID to azukanet)
-            onLog?.call('⚡ [13/15] Activation et personnalisation du SSID Wi-Fi "$routerName"...');
+            onLog?.call('⚡ [15/15] Activation et personnalisation du SSID Wi-Fi "$routerName"...');
             try {
               await apiSocket.sendSentence([
                 '/interface/wifiwave2/set',
