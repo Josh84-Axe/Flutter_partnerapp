@@ -256,8 +256,21 @@ class AuthProvider with ChangeNotifier {
       } else {
         _partnerCountry = userData['country']?.toString() ?? userData['country_name']?.toString();
       }
-      _partnerCurrencyCode = CurrencyUtils.getCurrencyCode(_partnerCountry);
-      _partnerCurrencySymbol = CurrencyUtils.getCurrencySymbol(_partnerCountry);
+
+      final rawSymbol = userData['currency_symbol']?.toString() ?? (userData['partner'] is Map ? userData['partner']['currency_symbol']?.toString() : null);
+      final rawCode = userData['currency_code']?.toString() ?? (userData['partner'] is Map ? userData['partner']['currency_code']?.toString() : null);
+
+      if (rawSymbol != null && rawSymbol.isNotEmpty && rawSymbol != 'null') {
+        _partnerCurrencySymbol = rawSymbol;
+      } else {
+        _partnerCurrencySymbol = CurrencyUtils.getCurrencySymbol(_partnerCountry);
+      }
+
+      if (rawCode != null && rawCode.isNotEmpty && rawCode != 'null') {
+        _partnerCurrencyCode = rawCode;
+      } else {
+        _partnerCurrencyCode = CurrencyUtils.getCurrencyCode(_partnerCountry);
+      }
 
       // Extract partner name if available (especially for workers)
       if (userData['partner'] is Map) {
@@ -266,8 +279,8 @@ class AuthProvider with ChangeNotifier {
         if (_partnerCountry == null || _partnerCountry!.isEmpty) {
           _partnerCountry = userData['partner']['country']?.toString();
           if (_partnerCountry != null) {
-            _partnerCurrencyCode = CurrencyUtils.getCurrencyCode(_partnerCountry);
-            _partnerCurrencySymbol = CurrencyUtils.getCurrencySymbol(_partnerCountry);
+            _partnerCurrencyCode = rawCode ?? CurrencyUtils.getCurrencyCode(_partnerCountry);
+            _partnerCurrencySymbol = rawSymbol ?? CurrencyUtils.getCurrencySymbol(_partnerCountry);
           }
         }
       } else {
