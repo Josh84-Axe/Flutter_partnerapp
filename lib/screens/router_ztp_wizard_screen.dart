@@ -483,8 +483,12 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
       await Future.delayed(const Duration(seconds: 4));
       final routerSlug = _ztpPayload?['slug']?.toString() ?? _ztpPayload?['router_slug']?.toString() ?? _effectiveRouterName.toLowerCase();
       checkData = await _ztpService.verifyCloudConnection(_effectiveRouterId, slug: routerSlug);
+      final bool isSuccess = checkData['is_connected'] == true || 
+                             checkData['is_fully_verified'] == true || 
+                             (checkData['status'] == 'online') ||
+                             (checkData['audit_score'] != null && checkData['audit_score'].toString().contains('6/6'));
 
-      if (checkData['is_connected'] == true) {
+      if (isSuccess) {
         isConnected = true;
         break;
       }
