@@ -878,56 +878,81 @@ class MikrotikZtpService {
               ]);
             } catch (_) {}
 
-            // 7. Execute Bootstrap Package via Direct Native Socket Sentences
-            onProgress('🚀 Exécution du package Bootstrap complet via RouterOS Native API...', 0.75);
-            onLog?.call('⚡ [12/15] Téléchargement du package complet bootstrap.rsc (staging.wifi-4u.net)...');
+            // 7. Execute Bootstrap Script directly from ztpPayload['payload_script'] memory
+            onProgress('🚀 Exécution du script ZTP minimaliste V5.0...', 0.75);
+            final String? payloadScript = ztpPayload['payload_script']?.toString();
 
-            // 7a. Remove old bootstrap.rsc if exists
-            try {
-              await apiSocket.sendSentence([
-                '/file/remove',
-                '=numbers=bootstrap.rsc',
-              ]);
-            } catch (_) {}
+            if (payloadScript != null && payloadScript.isNotEmpty) {
+              onLog?.call('⚡ Exécution directe du script ZTP V5.0 (1.5KB) en mémoire socket...');
+              try {
+                await apiSocket.sendSentence([
+                  '/system/script/remove',
+                  '=numbers=[find name=ztp_run]',
+                ]);
+              } catch (_) {}
 
-            // 7b. Download bootstrap.rsc via direct socket sentence with explicit keep-result=yes
-            try {
-              await apiSocket.sendSentence([
-                '/tool/fetch',
-                '=url=https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/',
-                '=check-certificate=no',
-                '=dst-path=bootstrap.rsc',
-                '=keep-result=yes',
-              ], timeout: const Duration(seconds: 15));
-            } catch (e) {
-              if (kDebugMode) debugPrint('⚠️ Direct /tool/fetch warning: $e');
-            }
+              try {
+                await apiSocket.sendSentence([
+                  '/system/script/add',
+                  '=name=ztp_run',
+                  '=policy=ftp,reboot,read,write,policy,test,password,snmp,config,start-api',
+                  '=dont-require-permissions=yes',
+                  '=source=$payloadScript',
+                ]);
+                await apiSocket.sendSentence([
+                  '/system/script/run',
+                  '=number=ztp_run',
+                ], timeout: const Duration(seconds: 15));
+                onLog?.call('✅ Script ZTP V5.0 exécuté instantanément avec permissions système !');
+              } catch (e) {
+                if (kDebugMode) debugPrint('⚠️ Direct script execution warning: $e');
+              }
+            } else {
+              // Fallback to fetch if payload_script is missing
+              onLog?.call('⚡ [12/15] Téléchargement de secours bootstrap.rsc...');
+              try {
+                await apiSocket.sendSentence([
+                  '/file/remove',
+                  '=numbers=bootstrap.rsc',
+                ]);
+              } catch (_) {}
 
-            await Future.delayed(const Duration(seconds: 2));
+              try {
+                await apiSocket.sendSentence([
+                  '/tool/fetch',
+                  '=url=https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/',
+                  '=check-certificate=no',
+                  '=dst-path=bootstrap.rsc',
+                  '=keep-result=yes',
+                ], timeout: const Duration(seconds: 15));
+              } catch (e) {
+                if (kDebugMode) debugPrint('⚠️ Direct /tool/fetch warning: $e');
+              }
 
-            // 7c. Import bootstrap.rsc via /system/script runner over API socket with FULL POLICIES
-            onLog?.call('⚡ [13/15] Création et exécution du script d\'importation avec permissions...');
-            try {
-              await apiSocket.sendSentence([
-                '/system/script/remove',
-                '=numbers=[find name=ztp_run]',
-              ]);
-            } catch (_) {}
+              await Future.delayed(const Duration(seconds: 2));
 
-            try {
-              await apiSocket.sendSentence([
-                '/system/script/add',
-                '=name=ztp_run',
-                '=policy=ftp,reboot,read,write,policy,test,password,snmp,config,start-api',
-                '=dont-require-permissions=yes',
-                '=source=/import file-name=bootstrap.rsc',
-              ]);
-              await apiSocket.sendSentence([
-                '/system/script/run',
-                '=number=ztp_run',
-              ], timeout: const Duration(seconds: 15));
-            } catch (e) {
-              if (kDebugMode) debugPrint('⚠️ Script runner warning: $e');
+              try {
+                await apiSocket.sendSentence([
+                  '/system/script/remove',
+                  '=numbers=[find name=ztp_run]',
+                ]);
+              } catch (_) {}
+
+              try {
+                await apiSocket.sendSentence([
+                  '/system/script/add',
+                  '=name=ztp_run',
+                  '=policy=ftp,reboot,read,write,policy,test,password,snmp,config,start-api',
+                  '=dont-require-permissions=yes',
+                  '=source=/import file-name=bootstrap.rsc',
+                ]);
+                await apiSocket.sendSentence([
+                  '/system/script/run',
+                  '=number=ztp_run',
+                ], timeout: const Duration(seconds: 15));
+              } catch (e) {
+                if (kDebugMode) debugPrint('⚠️ Script runner warning: $e');
+              }
             }
 
             // 7d. Trigger WireGuard Handshake Ping
