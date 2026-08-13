@@ -485,6 +485,11 @@ class MikrotikZtpService {
       final String vpsIp = vpsMap?['primary_ip']?.toString() ?? '51.75.72.56';
       final String vpsPort = (vpsMap?['primary_port'] ?? 51820).toString();
 
+      final userVariants = [
+        defaultAdminUsername,
+        'tiknet-admin',
+      ];
+
       final passVariants = <String>{
         defaultAdminPassword,
         defaultAdminPassword.toUpperCase(),
@@ -495,43 +500,44 @@ class MikrotikZtpService {
       };
 
       for (final ip in candidateIps) {
-        for (final pwd in passVariants) {
-          MikrotikApiSocket apiSocket = MikrotikApiSocket(host: ip, port: 8728);
-          bool loggedIn = await apiSocket.connectAndLogin(
-            username: defaultAdminUsername,
-            password: pwd,
-            timeout: const Duration(seconds: 3),
-          );
-
-          // If socket fails (port 8728 disabled), attempt enabling API via RouterOS REST HTTP API
-          if (!loggedIn) {
-            try {
-              final enableDio = Dio(BaseOptions(
-                baseUrl: 'http://$ip',
-                connectTimeout: const Duration(seconds: 2),
-                receiveTimeout: const Duration(seconds: 2),
-                headers: {
-                  'Authorization': 'Basic ${base64Encode(utf8.encode('$defaultAdminUsername:$pwd'))}',
-                  'Content-Type': 'application/json',
-                },
-              ));
-              await enableDio.patch('/rest/system/service/api', data: {'disabled': false});
-              await enableDio.patch('/rest/system/service/set', data: {'numbers': 'api', 'disabled': false});
-            } catch (_) {}
-
-            // Retry socket login after REST enable attempt
-            apiSocket = MikrotikApiSocket(host: ip, port: 8728);
-            loggedIn = await apiSocket.connectAndLogin(
-              username: defaultAdminUsername,
+        for (final user in userVariants) {
+          for (final pwd in passVariants) {
+            MikrotikApiSocket apiSocket = MikrotikApiSocket(host: ip, port: 8728);
+            bool loggedIn = await apiSocket.connectAndLogin(
+              username: user,
               password: pwd,
               timeout: const Duration(seconds: 3),
             );
-          }
 
-          if (loggedIn) {
-            onProgress('🚀 Configuration instantanée via API socket ($ip)...', 0.50);
-            onLog?.call('🔌 [TCP 8728] Connexion Socket API établie avec $ip');
-            onLog?.call('🔑 [Auth] Connexion réussie en tant que "$defaultAdminUsername"');
+            // If socket fails (port 8728 disabled), attempt enabling API via RouterOS REST HTTP API
+            if (!loggedIn) {
+              try {
+                final enableDio = Dio(BaseOptions(
+                  baseUrl: 'http://$ip',
+                  connectTimeout: const Duration(seconds: 2),
+                  receiveTimeout: const Duration(seconds: 2),
+                  headers: {
+                    'Authorization': 'Basic ${base64Encode(utf8.encode('$user:$pwd'))}',
+                    'Content-Type': 'application/json',
+                  },
+                ));
+                await enableDio.patch('/rest/system/service/api', data: {'disabled': false});
+                await enableDio.patch('/rest/system/service/set', data: {'numbers': 'api', 'disabled': false});
+              } catch (_) {}
+
+              // Retry socket login after REST enable attempt
+              apiSocket = MikrotikApiSocket(host: ip, port: 8728);
+              loggedIn = await apiSocket.connectAndLogin(
+                username: user,
+                password: pwd,
+                timeout: const Duration(seconds: 3),
+              );
+            }
+
+            if (loggedIn) {
+              onProgress('🚀 Configuration instantanée via API socket ($ip)...', 0.50);
+              onLog?.call('🔌 [TCP 8728] Connexion Socket API établie avec $ip');
+              onLog?.call('🔑 [Auth] Connexion réussie en tant que "$user"');
 
             // 0. Enable API & Winbox for all subnets (including WireGuard 10.0.0.0/8)
             onLog?.call('⚡ [1/15] Activation /ip/service api sur 0.0.0.0/0...');
@@ -987,8 +993,9 @@ class MikrotikZtpService {
           return true;
         }
         apiSocket.close();
+          }
+        }
       }
-    }
     }
 
     Dio restDio = Dio(

@@ -2,7 +2,7 @@
 {{flutter_build_config}}
 
 // Safe target version accessor
-var activeVersion = (typeof targetVersion !== 'undefined' && targetVersion) ? targetVersion : '1.3.016';
+var activeVersion = (typeof targetVersion !== 'undefined' && targetVersion) ? targetVersion : '1.3.017';
 
 _flutter.loader.load({
   serviceWorkerSettings: {
