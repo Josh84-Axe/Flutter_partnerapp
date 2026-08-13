@@ -536,6 +536,27 @@ class MikrotikZtpService {
                   await enableDio.post('/rest/system/script/ztp_run/run');
                   onLog?.call('✅ Script ZTP V5.0 exécuté via REST API HTTP ($ip) !');
                   onProgress('✅ Tunnel WireGuard initialisé via REST HTTP !', 0.85);
+
+                  // Notify central backend to register router online
+                  final bootstrapToken = ztpPayload['bootstrap_token']?.toString() ?? '';
+                  final registerUrl = ztpPayload['register_url']?.toString() ?? '';
+                  if (registerUrl.isNotEmpty && bootstrapToken.isNotEmpty) {
+                    try {
+                      onLog?.call('🌐 Enregistrement du routeur auprès du backend central...');
+                      await _centralApiDio.post(
+                        registerUrl,
+                        options: Options(
+                          headers: {
+                            'X-TIKNET-TOKEN': bootstrapToken,
+                          },
+                        ),
+                      );
+                      onLog?.call('✅ Enregistrement backend central validé !');
+                    } catch (e) {
+                      if (kDebugMode) debugPrint('⚠️ Registration warning: $e');
+                    }
+                  }
+
                   return true;
                 }
               } catch (e) {
