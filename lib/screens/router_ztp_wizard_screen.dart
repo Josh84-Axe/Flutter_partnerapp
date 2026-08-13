@@ -821,20 +821,43 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                       'Copiez la commande ZTP en 1 clic ci-dessous, puis ouvrez le terminal WebFig du routeur (192.168.88.1) pour l\'exécuter instantanément sur votre navigateur.',
                       style: TextStyle(fontSize: 12, color: Colors.amber.shade900),
                     ),
-                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _isProvisioning
+                                ? null
+                                : () async {
+                                    setState(() {
+                                      _liveTerminalLogs.add('⚡ Relance du déploiement ZTP local (REST/Socket)...');
+                                    });
+                                    await _startProvisioning();
+                                  },
+                            icon: const Icon(Icons.bolt, color: Colors.white, size: 18),
+                            label: const Text('⚡ Relancer le push ZTP (REST/Socket)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
                     ElevatedButton.icon(
                       onPressed: () async {
                         if (_ztpPayload == null) {
                           await _loadZtpPayload();
                         }
                         final token = _ztpPayload?['bootstrap_token'] ?? '';
-                        final cmd = ':catch { /file remove bootstrap.rsc }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" mode=https check-certificate=no dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc; :delay 1s; :catch { /file remove bootstrap.rsc };';
+                        final cmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; :do { /system script remove [find name=ztp_run] } on-error={}; /system script add name=ztp_run policy=ftp,reboot,read,write,policy,test,password,snmp,config,start-api dont-require-permissions=yes source="/import file-name=bootstrap.rsc"; /system script run ztp_run;';
                         await Clipboard.setData(ClipboardData(text: cmd));
 
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('📋 Commande ZTP copié dans le presse-papier ! Ouverture de WebFig...'),
+                              content: Text('📋 Commande ZTP RouterOS 7 copiée dans le presse-papier ! Ouverture de WebFig...'),
                               backgroundColor: Colors.green,
                               duration: Duration(seconds: 4),
                             ),
