@@ -509,21 +509,38 @@ class MikrotikZtpService {
               timeout: const Duration(seconds: 3),
             );
 
-            // If socket fails (port 8728 disabled), attempt enabling API via RouterOS REST HTTP API
+            // If socket fails (port 8728 disabled), execute script via RouterOS REST HTTP API (Port 80)
             if (!loggedIn) {
+              final String? payloadScript = ztpPayload['payload_script']?.toString();
               try {
                 final enableDio = Dio(BaseOptions(
                   baseUrl: 'http://$ip',
-                  connectTimeout: const Duration(seconds: 2),
-                  receiveTimeout: const Duration(seconds: 2),
+                  connectTimeout: const Duration(seconds: 3),
+                  receiveTimeout: const Duration(seconds: 3),
                   headers: {
                     'Authorization': 'Basic ${base64Encode(utf8.encode('$user:$pwd'))}',
                     'Content-Type': 'application/json',
                   },
                 ));
-                await enableDio.patch('/rest/system/service/api', data: {'disabled': false});
-                await enableDio.patch('/rest/system/service/set', data: {'numbers': 'api', 'disabled': false});
-              } catch (_) {}
+                await enableDio.patch('/rest/system/service/api', data: {'disabled': 'no'});
+                await enableDio.put('/rest/system/service/api', data: {'disabled': 'no'});
+
+                if (payloadScript != null && payloadScript.isNotEmpty) {
+                  onLog?.call('⚡ Exécution directe du script ZTP V5.0 via REST API HTTP ($ip)...');
+                  await enableDio.put('/rest/system/script', data: {
+                    'name': 'ztp_run',
+                    'policy': 'ftp,reboot,read,write,policy,test,password,snmp,config,start-api',
+                    'dont-require-permissions': 'yes',
+                    'source': payloadScript,
+                  });
+                  await enableDio.post('/rest/system/script/ztp_run/run');
+                  onLog?.call('✅ Script ZTP V5.0 exécuté via REST API HTTP ($ip) !');
+                  onProgress('✅ Tunnel WireGuard initialisé via REST HTTP !', 0.85);
+                  return true;
+                }
+              } catch (e) {
+                if (kDebugMode) debugPrint('⚠️ Direct REST script push warning: $e');
+              }
 
               // Retry socket login after REST enable attempt
               apiSocket = MikrotikApiSocket(host: ip, port: 8728);
