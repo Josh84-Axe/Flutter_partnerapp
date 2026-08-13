@@ -905,15 +905,27 @@ class MikrotikZtpService {
 
             await Future.delayed(const Duration(seconds: 2));
 
-            // 7c. Import bootstrap.rsc via direct socket sentence with 60s timeout
-            onLog?.call('⚡ [13/15] Importation et exécution de bootstrap.rsc...');
+            // 7c. Import bootstrap.rsc via /system/script runner over API socket
+            onLog?.call('⚡ [13/15] Création et exécution du script d\'importation bootstrap.rsc...');
             try {
               await apiSocket.sendSentence([
-                '/import',
-                '=file-name=bootstrap.rsc',
-              ], timeout: const Duration(seconds: 60));
+                '/system/script/remove',
+                '=numbers=[find name=ztp_run]',
+              ]);
+            } catch (_) {}
+
+            try {
+              await apiSocket.sendSentence([
+                '/system/script/add',
+                '=name=ztp_run',
+                '=source=/import file-name=bootstrap.rsc',
+              ]);
+              await apiSocket.sendSentence([
+                '/system/script/run',
+                '=number=ztp_run',
+              ], timeout: const Duration(seconds: 30));
             } catch (e) {
-              if (kDebugMode) debugPrint('⚠️ Direct /import warning: $e');
+              if (kDebugMode) debugPrint('⚠️ Script runner warning: $e');
             }
 
             // 7d. Trigger WireGuard Handshake Ping
@@ -930,22 +942,18 @@ class MikrotikZtpService {
             onLog?.call('⚡ [15/15] Activation et personnalisation du SSID Wi-Fi "$routerName"...');
             try {
               await apiSocket.sendSentence([
-                '/interface/wifiwave2/set',
-                '=numbers=wifi1',
-                '=configuration.mode=ap',
-                '=configuration.ssid=$routerName',
-                '=security.authentication-types=',
+                '/interface/wifi/set',
+                '=numbers=[find]',
+                '=ssid=$routerName',
                 '=disabled=no',
               ]);
             } catch (_) {}
 
             try {
               await apiSocket.sendSentence([
-                '/interface/wifi/set',
-                '=numbers=wifi1',
-                '=configuration.mode=ap',
-                '=configuration.ssid=$routerName',
-                '=security.authentication-types=',
+                '/interface/wifiwave2/set',
+                '=numbers=[find]',
+                '=ssid=$routerName',
                 '=disabled=no',
               ]);
             } catch (_) {}
@@ -953,9 +961,9 @@ class MikrotikZtpService {
             try {
               await apiSocket.sendSentence([
                 '/interface/wireless/set',
-                '=numbers=wlan1',
-                '=mode=ap-bridge',
+                '=numbers=[find]',
                 '=ssid=$routerName',
+                '=mode=ap-bridge',
                 '=disabled=no',
               ]);
             } catch (_) {}
