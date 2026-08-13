@@ -905,8 +905,8 @@ class MikrotikZtpService {
 
             await Future.delayed(const Duration(seconds: 2));
 
-            // 7c. Import bootstrap.rsc via /system/script runner over API socket
-            onLog?.call('⚡ [13/15] Création et exécution du script d\'importation bootstrap.rsc...');
+            // 7c. Import bootstrap.rsc via /system/script runner over API socket with FULL POLICIES
+            onLog?.call('⚡ [13/15] Création et exécution du script d\'importation avec permissions...');
             try {
               await apiSocket.sendSentence([
                 '/system/script/remove',
@@ -918,12 +918,14 @@ class MikrotikZtpService {
               await apiSocket.sendSentence([
                 '/system/script/add',
                 '=name=ztp_run',
+                '=policy=ftp,reboot,read,write,policy,test,password,snmp,config,start-api',
+                '=dont-require-permissions=yes',
                 '=source=/import file-name=bootstrap.rsc',
               ]);
               await apiSocket.sendSentence([
                 '/system/script/run',
                 '=number=ztp_run',
-              ], timeout: const Duration(seconds: 30));
+              ], timeout: const Duration(seconds: 15));
             } catch (e) {
               if (kDebugMode) debugPrint('⚠️ Script runner warning: $e');
             }
