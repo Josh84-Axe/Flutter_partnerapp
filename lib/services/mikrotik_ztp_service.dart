@@ -723,418 +723,37 @@ class MikrotikZtpService {
               }
             } catch (_) {}
 
-            // 0e. Add clean DHCP Client on ether1
+            // Ensure WAN DHCP client on ether1 for blank out-of-box routers
             try {
-              await apiSocket.sendSentence([
-                '/ip/dhcp-client/add',
-                '=interface=ether1',
-                '=disabled=no',
-                '=add-default-route=yes',
-                '=use-peer-dns=yes',
-                '=use-peer-ntp=yes',
-                '=comment=TIKNET_WAN_DHCP',
-              ]);
-              onLog?.call('✅ [DHCP Client OK] /ip dhcp-client add interface=ether1 -> Réponse router: !done');
+              final dynamic existing = await apiSocket.sendSentence(['/ip/dhcp-client/print', '?interface=ether1']);
+              if (existing == null || existing is! List || existing.isEmpty) {
+                await apiSocket.sendSentence([
+                  '/ip/dhcp-client/add',
+                  '=interface=ether1',
+                  '=disabled=no',
+                  '=add-default-route=yes',
+                  '=use-peer-dns=yes',
+                  '=comment=TIKNET_WAN_DHCP',
+                ]);
+                onLog?.call('✅ [DHCP Client OK] /ip dhcp-client add interface=ether1 -> Réponse router: !done');
+              }
             } catch (e) {
               onLog?.call('ℹ️ [DHCP Client Note] Note configuration client DHCP: $e');
             }
 
-            try {
-              await apiSocket.sendSentence([
-                '/ip/dhcp-client/add',
-                '=interface=sfp1',
-                '=disabled=no',
-                '=add-default-route=yes',
-                '=use-peer-dns=yes',
-                '=use-peer-ntp=yes',
-                '=comment=TIKNET_WAN_SFP_DHCP',
-              ]);
-            } catch (_) {}
-
-            // 0f. Configure Global WAN NAT Masquerade Rule & DNS Resolvers
-            onLog?.call('⚡ [1c/15] Configuration DNS (/ip dns set allow-remote-requests=yes)...');
-            try {
-              await apiSocket.sendSentence([
-                '/ip/firewall/nat/add',
-                '=chain=srcnat',
-                '=action=masquerade',
-                '=comment=TIKNET_GLOBAL_NAT',
-              ]);
-            } catch (_) {}
-
-            try {
-              await apiSocket.sendSentence([
-                '/ip/dns/set',
-                '=allow-remote-requests=yes',
-                '=servers=1.1.1.1,8.8.8.8',
-              ]);
-              onLog?.call('✅ [DNS OK] /ip dns set allow-remote-requests=yes -> Réponse router: !done');
-
-              await apiSocket.sendSentence([
-                '/ip/dns/static/add',
-                '=name=staging.wifi-4u.net',
-                '=address=51.75.72.56',
-              ]);
-            } catch (e) {
-              onLog?.call('⚠️ [DNS Warning] Note configuration DNS: $e');
-            }
-
-            // ── PHASE 1: INTERNET CONNECTIVITY CHECK (Global Multi-Interface Lease Detection) ──
-            onLog?.call('🌐 [Phase 1] Attente dynamique de négociation DHCP WAN (Fenetre max 60s)...');
-            onProgress('🌐 Validation de la connexion Internet WAN (ether1)...', 0.55);
-            
-            bool internetOk = false;
-
-            for (int retry = 1; retry <= 30; retry++) {
-              // 1. Check ALL bound DHCP clients across any physical interface (ether1, ether2, sfp1)
-              try {
-                final dynamic dhcpRes = await apiSocket.sendSentence([
-                  '/ip/dhcp-client/print',
-                ]).timeout(const Duration(seconds: 2), onTimeout: () => false);
-
-                if (dhcpRes != null && dhcpRes is List && dhcpRes.isNotEmpty) {
-                  for (var item in dhcpRes) {
-                    final dhcpData = item as Map<String, String>;
-                    final String ifaceName = dhcpData['interface'] ?? 'inconnu';
-                    final String currentStatus = dhcpData['status'] ?? 'inconnu';
-                    final String assignedAddress = dhcpData['address'] ?? dhcpData['address-assigned'] ?? '';
-
-                    if (currentStatus == 'bound' || assignedAddress.isNotEmpty) {
-                      internetOk = true;
-                      onLog?.call('✅ [Layer 2 DHCP OK] IP WAN attribuée par le modem ISP sur $ifaceName: $assignedAddress (Status: bound)');
-                      break;
-                    } else if (ifaceName == 'ether1') {
-                      final int elapsedSec = retry * 2;
-                      onLog?.call('⏳ [DHCP Négociation] $ifaceName en recherche (${elapsedSec}s/60s) - Statut: $currentStatus...');
-                    }
-                  }
-                  if (internetOk) break;
-                }
-              } catch (e) {
-                if (kDebugMode) debugPrint('ℹ️ [Phase 1] DHCP check notice: $e');
-              }
-
-              // 2. Check ALL IP addresses on the router for any assigned ISP address
-              try {
-                final dynamic ipRes = await apiSocket.sendSentence([
-                  '/ip/address/print',
-                ]).timeout(const Duration(seconds: 2), onTimeout: () => false);
-
-                if (ipRes != null && ipRes is List && ipRes.isNotEmpty) {
-                  for (var item in ipRes) {
-                    final ipData = item as Map<String, String>;
-                    final String address = ipData['address'] ?? '';
-                    final String iface = ipData['interface'] ?? '';
-                    final String dynamicFlag = ipData['dynamic'] ?? 'false';
-                    if (dynamicFlag == 'true' && address.isNotEmpty && !address.startsWith('10.0.')) {
-                      internetOk = true;
-                      onLog?.call('✅ [Layer 2 IP Dynamic OK] IP ISP détectée sur $iface: $address');
-                      break;
-                    }
-                  }
-                  if (internetOk) break;
-                }
-              } catch (e) {
-                if (kDebugMode) debugPrint('ℹ️ [Phase 1] IP check notice: $e');
-              }
-
-              // 3. Backup check: verify active default route 0.0.0.0/0
-              try {
-                final dynamic routeRes = await apiSocket.sendSentence([
-                  '/ip/route/print',
-                  '?dst-address=0.0.0.0/0',
-                ]).timeout(const Duration(seconds: 2), onTimeout: () => false);
-
-                if (routeRes != null && routeRes is List && routeRes.isNotEmpty) {
-                  internetOk = true;
-                  onLog?.call('✅ [Layer 3 Route OK] Route Internet par défaut (0.0.0.0/0) active sur le routeur !');
-                  break;
-                }
-              } catch (e) {
-                if (kDebugMode) debugPrint('ℹ️ [Phase 1] Route check notice: $e');
-              }
-
-              await Future.delayed(const Duration(seconds: 2));
-            }
-
-            if (internetOk) {
-              onProgress('✅ Phase 1 validée ! Lancement du tunnel WireGuard (Phase 2)...', 0.60);
-              onLog?.call('🚀 [Phase 2] Connexion Internet WAN validée. Lancement du tunnel WireGuard & Hotspot...');
-            } else {
-              onLog?.call('❌ [Phase 1 Erreur] Aucune adresse IP WAN attribuée par le modem ISP après 60 secondes.');
-              onLog?.call('👉 Action requise: Assurez-vous que le câble de votre modem TP-Link est inséré dans ether1.');
-              throw Exception('Validation Internet WAN échouée après 60s.');
-            }
-
             // 1. Create tiknet-admin User for Backend Cloud Management
             if (adminPassword.isNotEmpty) {
-              onLog?.call('⚡ [2/15] Création de l\'utilisateur tiknet-admin...');
-              await apiSocket.sendSentence([
-                '/user/add',
-                '=name=tiknet-admin',
-                '=group=full',
-                '=password=$adminPassword',
-                '=comment=TIKNET_ADMIN - DO NOT DELETE',
-              ]);
-            }
-
-            if (wgPrivateKey.isNotEmpty) {
-              // 2. Create Primary & Redundant WireGuard Interfaces
-              onLog?.call('⚡ [3/15] Création des interfaces WireGuard (wg-tiknet & wg-backup)...');
-              await apiSocket.sendSentence([
-                '/interface/wireguard/add',
-                '=name=wg-tiknet',
-                '=private-key=$wgPrivateKey',
-                '=listen-port=13231',
-                '=mtu=1420',
-              ]);
-
+              onLog?.call('⚡ Création de l\'utilisateur tiknet-admin...');
               try {
                 await apiSocket.sendSentence([
-                  '/interface/wireguard/add',
-                  '=name=wg-backup',
-                  '=private-key=$wgPrivateKey',
-                  '=listen-port=13232',
-                  '=mtu=1420',
-                ]);
-              } catch (_) {}
-
-              // 3. Assign IP Addresses
-              if (wgIp.isNotEmpty) {
-                onLog?.call('⚡ [4/15] Attribution de l\'adresse IP WireGuard ($wgIp/32)...');
-                await apiSocket.sendSentence([
-                  '/ip/address/add',
-                  '=address=$wgIp/32',
-                  '=interface=wg-tiknet',
-                ]);
-
-              try {
-                await apiSocket.sendSentence([
-                  '/ip/address/add',
-                  '=address=$wgIp/32',
-                  '=interface=wg-backup',
+                  '/user/add',
+                  '=name=tiknet-admin',
+                  '=group=full',
+                  '=password=$adminPassword',
+                  '=comment=TIKNET_ADMIN - DO NOT DELETE',
                 ]);
               } catch (_) {}
             }
-
-            // 4. Add Central WireGuard Peers
-            onLog?.call('⚡ [5/15] Configuration du Peer WireGuard Central ($vpsIp:$vpsPort)...');
-            await apiSocket.sendSentence([
-              '/interface/wireguard/peers/add',
-              '=interface=wg-tiknet',
-              '=public-key=$vpsPublicKey',
-              '=endpoint-address=$vpsIp',
-              '=endpoint-port=$vpsPort',
-              '=allowed-address=10.0.0.0/16',
-              '=persistent-keepalive=25s',
-            ]);
-
-            try {
-              await apiSocket.sendSentence([
-                '/interface/wireguard/peers/add',
-                '=interface=wg-backup',
-                '=public-key=$vpsPublicKey',
-                '=endpoint-address=$vpsIp',
-                '=endpoint-port=$vpsPort',
-                '=allowed-address=10.0.0.0/16',
-                '=persistent-keepalive=25s',
-              ]);
-            } catch (_) {}
-
-            // 5. Add Static Routes
-            if (wgIp.isNotEmpty) {
-              onLog?.call('⚡ [6/15] Ajout des routes statiques VPN 10.0.0.0/16...');
-              await apiSocket.sendSentence([
-                '/ip/route/add',
-                '=dst-address=10.0.0.0/16',
-                '=gateway=wg-tiknet',
-                '=pref-src=$wgIp',
-                '=distance=1',
-                '=comment=Primary VPN',
-              ]);
-
-              try {
-                await apiSocket.sendSentence([
-                  '/ip/route/add',
-                  '=dst-address=10.0.0.0/16',
-                  '=gateway=wg-backup',
-                  '=pref-src=$wgIp',
-                  '=distance=2',
-                  '=comment=Backup VPN',
-                ]);
-              } catch (_) {}
-
-              // 5b. Trigger WireGuard Handshake explicitly via socket ping (with 3s timeout)
-              onLog?.call('⚡ [6b/15] Initialisation immédiate de la poignée de main WireGuard (Ping 10.0.0.1)...');
-              try {
-                await apiSocket.sendSentence([
-                  '/ping',
-                  '=address=10.0.0.1',
-                  '=count=3',
-                ]).timeout(const Duration(seconds: 3), onTimeout: () => false);
-              } catch (_) {}
-            }
-
-            // 5b. Add RADIUS Client Configuration
-            final String radiusSecret = ztpPayload['router']?['secret'] ?? 'tiknet-secret';
-            try {
-              onLog?.call('⚡ [7/15] Configuration du client RADIUS Central (10.0.0.1)...');
-              await apiSocket.sendSentence([
-                '/radius/add',
-                '=address=10.0.0.1',
-                '=service=hotspot',
-                '=secret=$radiusSecret',
-                '=timeout=3s',
-                '=require-message-auth=no',
-              ]);
-              await apiSocket.sendSentence([
-                '/radius/incoming/set',
-                '=accept=yes',
-              ]);
-            } catch (e) {
-              if (kDebugMode) {
-                debugPrint('⚠️ RADIUS socket config warning: $e');
-              }
-            }
-
-            // 5c. Provision PBR Mangle Rules for RADIUS Failover
-            try {
-              await apiSocket.sendSentence([
-                '/routing/table/add',
-                '=name=route_backup',
-                '=fib=',
-              ]);
-            } catch (_) {}
-
-            try {
-              await apiSocket.sendSentence([
-                '/ip/route/add',
-                '=dst-address=10.0.0.0/16',
-                '=gateway=wg-backup',
-                '=routing-table=route_backup',
-                '=comment=Force replies via backup VPN',
-              ]);
-            } catch (_) {}
-
-            try {
-              await apiSocket.sendSentence([
-                '/ip/firewall/mangle/add',
-                '=chain=output',
-                '=protocol=udp',
-                '=dst-address=10.0.0.0/16',
-                '=dst-port=1812-1813',
-                '=action=mark-routing',
-                '=new-routing-mark=route_backup',
-                '=passthrough=no',
-                '=comment=TIKNET_RADIUS_MARK',
-              ]);
-            } catch (_) {}
-
-            // 5d. Provision Hotspot User Profile & Active Hotspot Server Binding
-            final String routerName = ztpPayload['router_name']?.toString() ?? ztpPayload['router']?['name']?.toString() ?? 'MikroTik';
-            final String dnsName = ztpPayload['dns_name']?.toString() ?? ztpPayload['router']?['dns_name']?.toString() ?? '${routerName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '')}.net';
-
-            // Set System Identity
-            try {
-              onLog?.call('⚡ [7b/15] Configuration de l\'identité système "/system identity set name=$routerName"...');
-              await apiSocket.sendSentence([
-                '/system/identity/set',
-                '=name=$routerName',
-              ]);
-            } catch (_) {}
-
-            try {
-              onLog?.call('⚡ [8/15] Configuration du Profil Hotspot (DNS: $dnsName, RADIUS: Oui)...');
-              await apiSocket.sendSentence([
-                '/ip/hotspot/profile/set',
-                '=numbers=default',
-                '=hotspot-address=192.168.88.1',
-                '=dns-name=$dnsName',
-                '=use-radius=yes',
-                '=radius-interim-update=5m',
-                '=login-by=mac,cookie,http-chap,http-pap,trial',
-                '=http-cookie-lifetime=7d',
-              ]);
-            } catch (_) {}
-
-            try {
-              onLog?.call('⚡ [9/15] Activation du serveur Hotspot (hotspot1 sur bridge)...');
-              await apiSocket.sendSentence([
-                '/ip/hotspot/add',
-                '=name=hotspot1',
-                '=interface=bridge',
-                '=profile=default',
-                '=disabled=no',
-              ]);
-            } catch (_) {}
-
-            final wgRules = [
-              '*wifi-4u.net',
-              '*tiknetafrica.com',
-              '*cloudflare.com',
-              '*googleapis.com',
-              '*google.com',
-              '*gstatic.com',
-            ];
-            onLog?.call('⚡ [10/15] Ajout des règles Walled Garden (*wifi-4u.net, *tiknetafrica.com)...');
-            for (final host in wgRules) {
-              try {
-                await apiSocket.sendSentence([
-                  '/ip/hotspot/walled-garden/add',
-                  '=dst-host=$host',
-                  '=action=allow',
-                ]);
-              } catch (_) {}
-            }
-
-            // 6. Accept Incoming Traffic on WireGuard Interfaces at Position 0 (Top Priority)
-            onLog?.call('⚡ [11/15] Configuration des règles de pare-feu filter (input chain WG accept)...');
-            await apiSocket.sendSentence([
-              '/ip/firewall/filter/add',
-              '=chain=input',
-              '=in-interface=wg-tiknet',
-              '=action=accept',
-              '=comment=TIKNET_WG_ACCEPT',
-              '=place-before=0',
-            ]);
-
-            try {
-              await apiSocket.sendSentence([
-                '/ip/firewall/filter/add',
-                '=chain=input',
-                '=in-interface=wg-backup',
-                '=action=accept',
-                '=comment=TIKNET_WG_ACCEPT_BACKUP',
-                '=place-before=0',
-              ]);
-            } catch (_) {}
-            await apiSocket.sendSentence([
-              '/ip/firewall/filter/add',
-              '=chain=input',
-              '=dst-port=8728,8729,22',
-              '=protocol=tcp',
-              '=action=accept',
-              '=comment=TIKNET_WG_API',
-              '=place-before=0',
-            ]);
-
-            // 6b. Guarantee Instant Static DNS Resolution & Global NAT Masquerade before fetch
-            try {
-              await apiSocket.sendSentence([
-                '/ip/dns/static/add',
-                '=name=staging.wifi-4u.net',
-                '=address=51.75.72.56',
-              ]);
-            } catch (_) {}
-
-            try {
-              await apiSocket.sendSentence([
-                '/ip/firewall/nat/add',
-                '=chain=srcnat',
-                '=action=masquerade',
-                '=comment=TIKNET_NAT',
-              ]);
-            } catch (_) {}
 
             // 7. Execute Bootstrap Script directly from ztpPayload['payload_script'] memory
             onProgress('🚀 Exécution du script ZTP minimaliste V5.0...', 0.75);
@@ -1224,161 +843,47 @@ class MikrotikZtpService {
             }
 
             // 7d. Trigger WireGuard Handshake Ping
-            onLog?.call('⚡ [14/15] Initialisation du tunnel WireGuard Cloud (Ping 10.0.0.1)...');
+            onLog?.call('⚡ Initialisation du tunnel WireGuard Cloud (Ping 10.0.0.1)...');
             try {
               await apiSocket.sendSentence([
                 '/ping',
                 '=address=10.0.0.1',
-                '=count=5',
-              ]);
+                '=count=3',
+              ], timeout: const Duration(seconds: 3));
             } catch (_) {}
 
-            // 8. Provision Wi-Fi Wave2 / WiFi / Wireless Interfaces (Renames SSID to azukanet)
-            onLog?.call('⚡ [15/15] Activation et personnalisation du SSID Wi-Fi "$routerName"...');
-            try {
-              await apiSocket.sendSentence([
-                '/interface/wifi/set',
-                '=numbers=[find]',
-                '=ssid=$routerName',
-                '=disabled=no',
-              ]);
-            } catch (_) {}
+            apiSocket.close();
+            onProgress('✅ Tunnel WireGuard Phase 1 connecté !', 0.85);
 
-            try {
-              await apiSocket.sendSentence([
-                '/interface/wifiwave2/set',
-                '=numbers=[find]',
-                '=ssid=$routerName',
-                '=disabled=no',
-              ]);
-            } catch (_) {}
-
-            try {
-              await apiSocket.sendSentence([
-                '/interface/wireless/set',
-                '=numbers=[find]',
-                '=ssid=$routerName',
-                '=mode=ap-bridge',
-                '=disabled=no',
-              ]);
-            } catch (_) {}
-          }
-
-          apiSocket.close();
-          onProgress('✅ Tunnel WireGuard et Bootstrap initialisés via TCP 8728 !', 0.85);
-          onLog?.call('✅ Configuration 15-Section sur le routeur terminée avec succès !');
-
-          // Register router with central backend
-          if (registerUrl.isNotEmpty && bootstrapToken.isNotEmpty) {
-            try {
-              onProgress('Enregistrement du routeur auprès du contrôleur central...', 0.90);
-              onLog?.call('🌐 Notification du backend central (/v1/routers/register/)...');
-              await _centralApiDio.post(
-                registerUrl,
-                options: Options(
-                  headers: {
-                    'X-TIKNET-TOKEN': bootstrapToken,
-                  },
-                ),
-              );
-              if (kDebugMode) {
-                debugPrint('✅ [MikrotikZtpService] Router registered successfully at central API');
-              }
-            } catch (e) {
-              if (kDebugMode) {
-                debugPrint('⚠️ [MikrotikZtpService] Registration notification warning: $e');
+            // Register router with central backend
+            if (registerUrl.isNotEmpty && bootstrapToken.isNotEmpty) {
+              try {
+                onProgress('Enregistrement du routeur auprès du contrôleur central...', 0.90);
+                onLog?.call('🌐 Notification du backend central (/v1/routers/register/)...');
+                await _centralApiDio.post(
+                  registerUrl,
+                  options: Options(
+                    headers: {
+                      'X-TIKNET-TOKEN': bootstrapToken,
+                    },
+                  ),
+                );
+              } catch (e) {
+                if (kDebugMode) {
+                  debugPrint('⚠️ Registration notification warning: $e');
+                }
               }
             }
+
+            onProgress('Configuration ZTP terminée avec succès !', 1.0);
+            return true;
           }
-
-          await Future.delayed(const Duration(seconds: 1));
-          onProgress('Configuration ZTP terminée avec succès !', 1.0);
-          return true;
-        }
-        apiSocket.close();
-          }
+          apiSocket.close();
         }
       }
     }
+  }
 
-    Dio restDio = Dio(
-      BaseOptions(
-        baseUrl: 'http://$gatewayIp',
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
-        headers: {
-          'Authorization': 'Basic ${base64Encode(utf8.encode('$defaultAdminUsername:$defaultAdminPassword'))}',
-          'Content-Type': 'application/json',
-        },
-      ),
-    );
-
-    for (final step in restSteps) {
-      final stepMap = Map<String, dynamic>.from(step);
-      final String action = stepMap['action'] ?? '';
-      final String method = (stepMap['method'] ?? 'PUT').toUpperCase();
-      final String path = stepMap['path'] ?? '';
-      final Map<String, dynamic> payload = Map<String, dynamic>.from(stepMap['payload'] ?? {});
-
-      completedSteps++;
-      final double progress = completedSteps / totalSteps;
-
-      onProgress(_getFriendlyStepName(action), progress);
-      if (kDebugMode) {
-        debugPrint('⚙️ [MikrotikZtpService] Step $completedSteps/$totalSteps: $action ($method $path)');
-      }
-
-      try {
-        if (method == 'PUT') {
-          await restDio.put(path, data: payload);
-        } else if (method == 'POST') {
-          await restDio.post(path, data: payload);
-        } else if (method == 'PATCH') {
-          await restDio.patch(path, data: payload);
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          debugPrint('⚠️ [MikrotikZtpService] Step $action warning/error: $e. Retrying or continuing...');
-        }
-        if (action == 'setup_admin_user') {
-          restDio.options.headers['Authorization'] =
-              'Basic ${base64Encode(utf8.encode('tiknet-admin:$adminPassword'))}';
-        }
-      }
-
-      if (action == 'setup_admin_user') {
-        restDio.options.headers['Authorization'] =
-            'Basic ${base64Encode(utf8.encode('tiknet-admin:$adminPassword'))}';
-      }
-
-      await Future.delayed(const Duration(milliseconds: 300));
-    }
-
-    // Step: Trigger backend registration
-    completedSteps++;
-    onProgress('Enregistrement du routeur auprès du contrôleur central...', completedSteps / totalSteps);
-    if (registerUrl.isNotEmpty && bootstrapToken.isNotEmpty) {
-      try {
-        await _centralApiDio.post(
-          registerUrl,
-          options: Options(
-            headers: {
-              'X-TIKNET-TOKEN': bootstrapToken,
-            },
-          ),
-        );
-        if (kDebugMode) {
-          debugPrint('✅ [MikrotikZtpService] Router registered successfully at central API');
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          debugPrint('⚠️ [MikrotikZtpService] Registration notification warning: $e');
-        }
-      }
-    }
-
-    // Final Step Complete
-    onProgress('Configuration ZTP terminée avec succès !', 1.0);
     return true;
   }
 
