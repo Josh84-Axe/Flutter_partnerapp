@@ -987,7 +987,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                       await _loadZtpPayload();
                     }
                     final token = _ztpPayload?['bootstrap_token'] ?? '';
-                    final cmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; :do { /system script remove [find name=ztp_run] } on-error={}; /system script add name=ztp_run policy=ftp,reboot,read,write,policy,test,password,snmp,config,start-api dont-require-permissions=yes source="/import file-name=bootstrap.rsc"; /system script run ztp_run;';
+                    final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
                     await Clipboard.setData(ClipboardData(text: cmd));
 
                     if (mounted) {
@@ -1284,7 +1284,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                                 await _loadZtpPayload();
                               }
                               final token = _ztpPayload?['bootstrap_token'] ?? '';
-                              final cmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; :do { /system script remove [find name=ztp_run] } on-error={}; /system script add name=ztp_run policy=ftp,reboot,read,write,policy,test,password,snmp,config,start-api dont-require-permissions=yes source="/import file-name=bootstrap.rsc"; /system script run ztp_run;';
+                              final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
                               
                               await Clipboard.setData(ClipboardData(text: cmd));
 

@@ -552,59 +552,10 @@ class MikrotikZtpService {
       return true;
     }
 
-    // --- 1. Native Mobile RouterOS API Provisioning over TCP 8728 ---
+    // --- 1. Native Mobile RouterOS API Provisioning over TCP 8728 / REST ---
     if (!kIsWeb && bootstrapToken.isNotEmpty) {
-      // ── PRE-ZTP CLEAN SLATE AUTO-RESET PHASE ─────────────────────
-      onProgress('🧹 Nettoyage d\'usine (Clean Slate)... Réinitialisation sans défauts.', 0.10);
-      onLog?.call('🧹 [Pre-ZTP] Envoi de la commande de réinitialisation d\'usine sans défauts (no-defaults=yes)...');
-      final resetTargetIps = <String>{
-        if (gatewayIp.isNotEmpty && !gatewayIp.startsWith('10.')) gatewayIp,
-        '192.168.88.1',
-        '192.168.0.1',
-      };
-      final resetUserVariants = [defaultAdminUsername, 'admin', 'tiknet-admin'];
-      final String adminPassword = ztpPayload['admin_password']?.toString() ?? '';
-      final resetPassVariants = <String>{defaultAdminPassword, adminPassword, '', 'admin'};
-
-      bool resetSuccess = false;
-      for (final targetIp in resetTargetIps) {
-        if (resetSuccess) break;
-        for (final u in resetUserVariants) {
-          if (resetSuccess) break;
-          for (final p in resetPassVariants) {
-            try {
-              final dioReset = Dio(BaseOptions(
-                baseUrl: 'http://$targetIp',
-                connectTimeout: const Duration(seconds: 2),
-                receiveTimeout: const Duration(seconds: 2),
-                headers: {
-                  'Authorization': 'Basic ${base64Encode(utf8.encode('$u:$p'))}',
-                  'Content-Type': 'application/json',
-                },
-              ));
-              await dioReset.post(
-                '/rest/system/reset-configuration',
-                data: {'no-defaults': 'yes', 'skip-backup': 'true'},
-              );
-              if (kDebugMode) {
-                debugPrint('🧹 [MikrotikZtpService] Pre-ZTP Clean-Slate reset issued to $targetIp ($u)!');
-              }
-              onLog?.call('✅ Commande de réinitialisation d\'usine transmise avec succès à $targetIp ($u) !');
-              resetSuccess = true;
-              break;
-            } catch (e) {
-              if (kDebugMode) {
-                debugPrint('ℹ️ [MikrotikZtpService] Reset attempt notice for $targetIp ($u): $e');
-              }
-            }
-          }
-        }
-      }
-      onProgress('⏳ Redémarrage du routeur vierge... (18 secondes)', 0.20);
-      onLog?.call('⏳ Redémarrage du routeur vierge en cours (18s)... Le routeur sera accessible via admin (sans mot de passe).');
-      await Future.delayed(const Duration(seconds: 18));
-
-      onProgress('⚡ Connexion au socket TCP 8728 RouterOS API (Compte admin vierge)...', 0.35);
+      onProgress('⚡ Initialisation du tunnel WireGuard Phase 1 (< 3s)...', 0.20);
+      onLog?.call('⚡ Exécution immédiate du script d\'onboarding minimaliste Phase 1...');
       final candidateIps = <String>{
         if (gatewayIp.isNotEmpty && !gatewayIp.startsWith('10.')) gatewayIp,
         '192.168.88.1',

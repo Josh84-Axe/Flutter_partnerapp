@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tiknet-pwa-v1.3.043';
+const CACHE_NAME = 'tiknet-pwa-v1.3.044';
 const RESOURCES_TO_CACHE = [
     './',
     './index.html',
@@ -10,7 +10,7 @@ const RESOURCES_TO_CACHE = [
 
 // Install Event
 self.addEventListener('install', (event) => {
-    console.log('📦 [Service Worker] Installing v1.3.043');
+    console.log('📦 [Service Worker] Installing v1.3.044');
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(RESOURCES_TO_CACHE);
