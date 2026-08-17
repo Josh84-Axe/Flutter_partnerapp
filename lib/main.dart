@@ -58,7 +58,8 @@ void main() async {
     await SentryFlutter.init(
       (options) {
         options.dsn = sentryDsn;
-        options.tracesSampleRate = 1.0;
+        options.tracesSampleRate = 0.1;
+        options.sampleRate = 0.2;
       },
       appRunner: () => _runApp(),
     );
