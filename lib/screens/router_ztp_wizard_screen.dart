@@ -1277,7 +1277,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          // 1-Click Paste ZTP Command & Run
+                          // 1-Click Paste ZTP Command & Run (with WebFig Auto Launch on Web PWA)
                           ElevatedButton.icon(
                             onPressed: () async {
                               if (_ztpPayload == null) {
@@ -1286,28 +1286,45 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                               final token = _ztpPayload?['bootstrap_token'] ?? '';
                               final cmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; :do { /system script remove [find name=ztp_run] } on-error={}; /system script add name=ztp_run policy=ftp,reboot,read,write,policy,test,password,snmp,config,start-api dont-require-permissions=yes source="/import file-name=bootstrap.rsc"; /system script run ztp_run;';
                               
+                              await Clipboard.setData(ClipboardData(text: cmd));
+
                               setModalState(() {
                                 cmdController.text = cmd;
                                 terminalOutput.add('[admin@MikroTik] > $cmd');
-                                terminalOutput.add('⚡ Executing ZTP Fetch & Bootstrap Script over API...');
+                                terminalOutput.add('📋 Commande ZTP copiée dans le presse-papier !');
                               });
 
-                              final res = await _ztpService.executeZtpProvisioning(
-                                gatewayIp: gatewayIp,
-                                ztpPayload: _ztpPayload!,
-                                defaultAdminUsername: _customAdminUsername,
-                                defaultAdminPassword: _customAdminPassword,
-                                onProgress: (status, progress) {},
-                                onLog: (line) {
-                                  setModalState(() {
-                                    terminalOutput.add(line);
-                                  });
-                                },
-                              );
+                              if (kIsWeb) {
+                                setModalState(() {
+                                  terminalOutput.add('🌐 [PWA Mode] Ouverture automatique du Terminal WebFig (192.168.88.1)...');
+                                  terminalOutput.add('👉 Collez la commande (Cmd/Ctrl + V) et appuyez sur Entrée dans WebFig !');
+                                });
+                                final uri = Uri.parse('http://$gatewayIp/webfig/#Terminal');
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                }
+                              } else {
+                                setModalState(() {
+                                  terminalOutput.add('⚡ Executing ZTP Fetch & Bootstrap Script over Socket API...');
+                                });
 
-                              setModalState(() {
-                                terminalOutput.add(res ? '✅ Command executed successfully! (!done)' : '⚠️ Execution finished with notes.');
-                              });
+                                final res = await _ztpService.executeZtpProvisioning(
+                                  gatewayIp: gatewayIp,
+                                  ztpPayload: _ztpPayload!,
+                                  defaultAdminUsername: _customAdminUsername,
+                                  defaultAdminPassword: _customAdminPassword,
+                                  onProgress: (status, progress) {},
+                                  onLog: (line) {
+                                    setModalState(() {
+                                      terminalOutput.add(line);
+                                    });
+                                  },
+                                );
+
+                                setModalState(() {
+                                  terminalOutput.add(res ? '✅ Command executed successfully! (!done)' : '⚠️ Execution finished with notes.');
+                                });
+                              }
                             },
                             icon: const Icon(Icons.flash_on, size: 14, color: Colors.black),
                             label: const Text('⚡ Coller & Exécuter ZTP (1-Clic)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black)),
