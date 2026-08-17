@@ -334,13 +334,27 @@ class MikrotikZtpService {
     '172.16.0.1',    // Class B subnet
   ];
 
+  /// Stream live telemetry log lines directly to the central backend for real-time tracking
+  Future<void> streamZtpTelemetry(int routerId, String logLine) async {
+    if (routerId <= 0) return;
+    try {
+      await _centralApiDio.post(
+        '/routers/$routerId/ztp-telemetry/',
+        data: {'log': logLine},
+      );
+    } catch (_) {}
+  }
+
   /// Smart Multi-Subnet & Platform Discovery: Probes candidate gateways & platform connected routers
   Future<MikrotikDeviceInfo> discoverLocalGateway({
     String username = 'admin',
     String password = '',
     String? preferredIp,
     List<Map<String, dynamic>>? registeredPlatformRouters,
+    Function(String logLine)? onLog,
   }) async {
+    void log(String msg) => addDiagLog(msg, onLog: onLog);
+    log('🔍 [ZTP DISCOVERY] Lancement du balayage réseau local sur les sous-réseaux (192.168.88.1, 192.168.0.1, 192.168.1.1)...');
     final List<String> ipsToScan = [];
     if (preferredIp != null && preferredIp.trim().isNotEmpty) {
       ipsToScan.add(preferredIp.trim());
@@ -380,9 +394,7 @@ class MikrotikZtpService {
     // 1. Return unauthenticated responsive MikroTik device first
     for (final info in results) {
       if (info.isRestSupported && !info.isAuthRequired) {
-        if (kDebugMode) {
-          debugPrint('✅ [MikrotikZtpService] Found out-of-box MikroTik at ${info.gatewayIp}');
-        }
+        log('✅ Routeur MikroTik réactif détecté (compte vierge) sur ${info.gatewayIp} !');
         return info;
       }
     }
@@ -390,12 +402,12 @@ class MikrotikZtpService {
     // 2. Return password-protected responsive MikroTik device
     for (final info in results) {
       if (info.isRestSupported && info.isAuthRequired) {
-        if (kDebugMode) {
-          debugPrint('🔒 [MikrotikZtpService] Found password-protected MikroTik at ${info.gatewayIp}');
-        }
+        log('🔒 Routeur MikroTik réactif détecté sur ${info.gatewayIp} (Mot de passe requis).');
         return info;
       }
     }
+
+    log('⚠️ [ÉCHEC BALAYAGE LOCAL] Aucun routeur MikroTik réactif détecté sur (${ipsToScan.join(", ")}). Vérifiez la connexion Wi-Fi ou le câble LAN.');
 
     // 3. Smart Platform Fallback: If local HTTP probe is blocked by HTTPS browser CORS, but user has registered routers on platform
     if (registeredPlatformRouters != null && registeredPlatformRouters.isNotEmpty) {
@@ -927,24 +939,6 @@ class MikrotikZtpService {
       }
     }
     return fetchedLogs;
-  }
-
-  /// Stream real-time telemetry event during ZTP execution to central backend for live analysis
-  Future<void> streamZtpTelemetry(int routerId, String logLine) async {
-    if (routerId <= 0 || logLine.isEmpty) return;
-    try {
-      await _centralApiDio.post(
-        '/routers/$routerId/ztp-telemetry/',
-        data: {
-          'timestamp': DateTime.now().toIso8601String(),
-          'log': logLine,
-        },
-      );
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('ℹ️ [MikrotikZtpService] Telemetry stream notice: $e');
-      }
-    }
   }
 
   /// Rollback incomplete or failed ZTP session for a router back to a 100% clean slate

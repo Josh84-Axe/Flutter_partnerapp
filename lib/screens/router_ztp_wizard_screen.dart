@@ -354,6 +354,15 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
       password: _customAdminPassword,
       preferredIp: _gatewayIpController.text.trim(),
       registeredPlatformRouters: userRouters,
+      onLog: (line) {
+        if (mounted) {
+          final formatted = '[${DateTime.now().toIso8601String().substring(11, 19)}] $line';
+          setState(() {
+            _liveTerminalLogs.add(formatted);
+          });
+          _ztpService.streamZtpTelemetry(_effectiveRouterId, formatted);
+        }
+      },
     );
 
     if (info.isAuthRequired) {
