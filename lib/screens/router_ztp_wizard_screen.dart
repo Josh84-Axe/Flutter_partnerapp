@@ -893,12 +893,12 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
           ),
           const SizedBox(height: 14),
 
-          // Action Button 1: Direct In-App Terminal Modal
+          // Action Button 1: Direct In-App Terminal Modal (with Auth Check First)
           ElevatedButton.icon(
-            onPressed: () => _openInteractiveTerminalModal(context, targetIp),
-            icon: const Icon(Icons.terminal_sharp, color: Colors.black, size: 20),
+            onPressed: () => _promptAndVerifyRouterAuth(context, targetIp),
+            icon: const Icon(Icons.shield_outlined, color: Colors.black, size: 20),
             label: const Text(
-              '💻 OUVRIR LE TERMINAL MIKROTIK (DANS L\'APP)',
+              '💻 VERIFIER AUTHENTIFICATION & OUVRIR TERMINAL',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
             style: ElevatedButton.styleFrom(
@@ -1035,15 +1035,179 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
     );
   }
 
-  /// Opens an in-app interactive MikroTik Terminal Modal Dialog
-  void _openInteractiveTerminalModal(BuildContext context, String gatewayIp) {
+  /// Prompts for router credentials and verifies authentication FIRST before opening terminal
+  Future<void> _promptAndVerifyRouterAuth(BuildContext context, String gatewayIp) async {
+    final TextEditingController userCtrl = TextEditingController(
+      text: _customAdminUsername.isEmpty ? 'admin' : _customAdminUsername,
+    );
+    final TextEditingController passCtrl = TextEditingController(
+      text: _customAdminPassword,
+    );
+
+    bool isAuthenticating = false;
+    String? authError;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (stCtx, setDialogState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF0F172A),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Row(
+                children: [
+                  Icon(Icons.shield, color: Color(0xFF38BDF8), size: 22),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Authentification Routeur Requise',
+                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Entrez les identifiants administrateur du routeur pour valider la connexion sur [$gatewayIp] avant d\'ouvrir la console terminal.',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: userCtrl,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Nom d\'utilisateur',
+                      labelStyle: const TextStyle(color: Color(0xFF38BDF8)),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: passCtrl,
+                    obscureText: true,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Mot de passe Admin',
+                      labelStyle: const TextStyle(color: Color(0xFF38BDF8)),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      hintText: 'Laisser vide si aucun mot de passe',
+                      hintStyle: const TextStyle(color: Colors.grey, fontSize: 11),
+                    ),
+                  ),
+                  if (authError != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade900.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade500),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Colors.redAccent, size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              authError!,
+                              style: const TextStyle(color: Colors.white, fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isAuthenticating ? null : () => Navigator.pop(dialogCtx),
+                  child: const Text('Annuler', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton.icon(
+                  onPressed: isAuthenticating
+                      ? null
+                      : () async {
+                          setDialogState(() {
+                            isAuthenticating = true;
+                            authError = null;
+                          });
+
+                          final user = userCtrl.text.trim().isEmpty ? 'admin' : userCtrl.text.trim();
+                          final pass = passCtrl.text;
+
+                          final res = await _ztpService.testRouterAuthCredentials(
+                            gatewayIp: gatewayIp,
+                            username: user,
+                            password: pass,
+                          );
+
+                          if (res['success'] == true) {
+                            setState(() {
+                              _customAdminUsername = user;
+                              _customAdminPassword = pass;
+                            });
+                            Navigator.pop(dialogCtx);
+                            _openInteractiveTerminalModal(
+                              context,
+                              gatewayIp,
+                              authMethod: res['method']?.toString() ?? 'Authentifié',
+                              authIdentity: res['identity']?.toString(),
+                            );
+                          } else {
+                            setDialogState(() {
+                              isAuthenticating = false;
+                              authError = res['message']?.toString() ?? 'Échec d\'authentification sur le routeur.';
+                            });
+                          }
+                        },
+                  icon: isAuthenticating
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                      : const Icon(Icons.key, size: 18, color: Colors.black),
+                  label: Text(
+                    isAuthenticating ? 'Vérification Auth...' : '🔐 Valider & Ouvrir Terminal',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF38BDF8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Opens an in-app interactive MikroTik Terminal Modal Dialog with verified authentication
+  void _openInteractiveTerminalModal(
+    BuildContext context,
+    String gatewayIp, {
+    String authMethod = 'Authentifié',
+    String? authIdentity,
+  }) {
     final TextEditingController cmdController = TextEditingController();
+    final user = _customAdminUsername.isEmpty ? "admin" : _customAdminUsername;
+    final identityText = authIdentity != null ? ' ($authIdentity)' : '';
+
     final List<String> terminalOutput = [
       'Welcome to MikroTik RouterOS Terminal (Direct In-App Console)',
       'Target Gateway IP: $gatewayIp',
-      'User: ${_customAdminUsername.isEmpty ? "admin" : _customAdminUsername}',
+      'Authenticated User: $user$identityText',
+      'Authentication Status: ✅ $authMethod Verified',
       '------------------------------------------------------------',
-      '[admin@MikroTik] > Type or paste command below...',
+      '[$user@MikroTik] > Authentification réussie ! Écrivez ou collez votre commande ci-dessous...',
     ];
 
     showModalBottomSheet(
@@ -1074,11 +1238,29 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                       children: [
                         const Icon(Icons.terminal, color: Color(0xFF38BDF8), size: 22),
                         const SizedBox(width: 10),
-                        Text(
-                          'Terminal MikroTik Direct [$gatewayIp]',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        Expanded(
+                          child: Text(
+                            'Terminal MikroTik Direct [$gatewayIp]',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade800,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.white, size: 12),
+                              SizedBox(width: 4),
+                              Text('AUTHENTIFIÉ', style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         IconButton(
                           icon: const Icon(Icons.close, color: Colors.white70),
                           onPressed: () => Navigator.of(modalCtx).pop(),

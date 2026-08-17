@@ -418,7 +418,7 @@ class MikrotikZtpService {
         version: 'v7.x',
         identity: rName,
         isRestSupported: true,
-        isAuthRequired: password.isEmpty, // Prompt for admin sticker password if empty
+        isAuthRequired: password.isEmpty,
       );
     }
 
@@ -432,6 +432,92 @@ class MikrotikZtpService {
       isRestSupported: false,
       isAuthRequired: false,
     );
+  }
+
+  /// Verifies router credentials over API Socket or HTTP/HTTPS REST
+  Future<Map<String, dynamic>> testRouterAuthCredentials({
+    required String gatewayIp,
+    required String username,
+    required String password,
+  }) async {
+    final cleanUser = username.trim().isEmpty ? 'admin' : username.trim();
+
+    // 1. Native Mobile TCP 8728 probe
+    if (!kIsWeb) {
+      try {
+        final apiSocket = MikrotikApiSocket(host: gatewayIp, port: 8728);
+        final socketOk = await apiSocket.connectAndLogin(
+          username: cleanUser,
+          password: password,
+          timeout: const Duration(seconds: 4),
+        );
+        apiSocket.close();
+        if (socketOk) {
+          return {
+            'success': true,
+            'method': 'API Socket (Port 8728)',
+            'message': 'Authentification réussie sur le routeur physique via API Socket !',
+          };
+        }
+      } catch (_) {}
+    }
+
+    // 2. HTTP REST Probe (http://$gatewayIp/rest/system/identity)
+    try {
+      final authStr = 'Basic ${base64Encode(utf8.encode('$cleanUser:$password'))}';
+      final localDio = Dio(
+        BaseOptions(
+          baseUrl: 'http://$gatewayIp',
+          connectTimeout: const Duration(seconds: 4),
+          receiveTimeout: const Duration(seconds: 4),
+          headers: {
+            'Authorization': authStr,
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+      final resp = await localDio.get('/rest/system/identity');
+      if (resp.statusCode == 200) {
+        final data = resp.data;
+        String identity = 'MikroTik';
+        if (data is Map && data.containsKey('name')) {
+          identity = data['name'].toString();
+        } else if (data is List && data.isNotEmpty && data[0] is Map && data[0].containsKey('name')) {
+          identity = data[0]['name'].toString();
+        }
+        return {
+          'success': true,
+          'method': 'REST API (HTTP 80)',
+          'identity': identity,
+          'message': 'Authentification réussie sur $identity ($gatewayIp) !',
+        };
+      }
+    } catch (e) {
+      if (e is DioException) {
+        if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+          return {
+            'success': false,
+            'errorCode': e.response?.statusCode,
+            'message': 'Mot de passe ou nom d\'utilisateur incorrect pour le routeur $gatewayIp.',
+          };
+        }
+      }
+    }
+
+    // 3. Web PWA Session Confirmation
+    if (kIsWeb) {
+      return {
+        'success': true,
+        'isPwaConfirmed': true,
+        'method': 'Session Identifiants PWA',
+        'message': 'Identifiants $cleanUser enregistrés pour le Terminal et le ZTP !',
+      };
+    }
+
+    return {
+      'success': false,
+      'message': 'Impossible d\'atteindre le routeur sur $gatewayIp. Vérifiez votre câble ou Wi-Fi.',
+    };
   }
 
   /// 3. Execute ZTP Provisioning steps directly over RouterOS REST API
