@@ -124,12 +124,14 @@ jobs:
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'actions@github.com'
+          git checkout -- web/index.html 2>/dev/null || true
           git add version.json
           # Only commit if there are changes
           if git diff --staged --quiet; then
             echo "No changes to version.json"
           else
             git commit -m "chore: Update version.json to ${{ env.VERSION }} [skip ci]"
-            git pull --rebase origin ${{ github.ref_name }}
+            git fetch origin ${{ github.ref_name }}
+            git rebase -Xours origin/${{ github.ref_name }} || git rebase --abort
             git push origin HEAD:${{ github.ref_name }}
           fi
