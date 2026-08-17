@@ -257,6 +257,17 @@ class AuthProvider with ChangeNotifier {
         _partnerCountry = userData['country']?.toString() ?? userData['country_name']?.toString();
       }
 
+      final phoneStr = userData['phone']?.toString() ?? '';
+      if (_partnerCountry == null || _partnerCountry!.isEmpty || _partnerCountry == 'null') {
+        if (phoneStr.contains('234')) {
+          _partnerCountry = 'Nigeria';
+        } else if (phoneStr.contains('233')) {
+          _partnerCountry = 'Ghana';
+        } else if (phoneStr.contains('225')) {
+          _partnerCountry = 'Ivory Coast';
+        }
+      }
+
       final rawSymbol = userData['currency_symbol']?.toString() ?? (userData['partner'] is Map ? userData['partner']['currency_symbol']?.toString() : null);
       final rawCode = userData['currency_code']?.toString() ?? (userData['partner'] is Map ? userData['partner']['currency_code']?.toString() : null);
 

@@ -468,7 +468,57 @@ class MikrotikZtpService {
 
     // --- 1. Native Mobile RouterOS API Provisioning over TCP 8728 ---
     if (!kIsWeb && bootstrapToken.isNotEmpty) {
-      onProgress('⚡ Connexion au socket TCP 8728 RouterOS API...', 0.35);
+      // ── PRE-ZTP CLEAN SLATE AUTO-RESET PHASE ─────────────────────
+      onProgress('🧹 Nettoyage d\'usine (Clean Slate)... Réinitialisation sans défauts.', 0.10);
+      onLog?.call('🧹 [Pre-ZTP] Envoi de la commande de réinitialisation d\'usine sans défauts (no-defaults=yes)...');
+      final resetTargetIps = <String>{
+        if (gatewayIp.isNotEmpty && !gatewayIp.startsWith('10.')) gatewayIp,
+        '192.168.88.1',
+        '192.168.0.1',
+      };
+      final resetUserVariants = [defaultAdminUsername, 'admin', 'tiknet-admin'];
+      final String adminPassword = ztpPayload['admin_password']?.toString() ?? '';
+      final resetPassVariants = <String>{defaultAdminPassword, adminPassword, '', 'admin'};
+
+      bool resetSuccess = false;
+      for (final targetIp in resetTargetIps) {
+        if (resetSuccess) break;
+        for (final u in resetUserVariants) {
+          if (resetSuccess) break;
+          for (final p in resetPassVariants) {
+            try {
+              final dioReset = Dio(BaseOptions(
+                baseUrl: 'http://$targetIp',
+                connectTimeout: const Duration(seconds: 2),
+                receiveTimeout: const Duration(seconds: 2),
+                headers: {
+                  'Authorization': 'Basic ${base64Encode(utf8.encode('$u:$p'))}',
+                  'Content-Type': 'application/json',
+                },
+              ));
+              await dioReset.post(
+                '/rest/system/reset-configuration',
+                data: {'no-defaults': 'yes', 'skip-backup': 'true'},
+              );
+              if (kDebugMode) {
+                debugPrint('🧹 [MikrotikZtpService] Pre-ZTP Clean-Slate reset issued to $targetIp ($u)!');
+              }
+              onLog?.call('✅ Commande de réinitialisation d\'usine transmise avec succès à $targetIp ($u) !');
+              resetSuccess = true;
+              break;
+            } catch (e) {
+              if (kDebugMode) {
+                debugPrint('ℹ️ [MikrotikZtpService] Reset attempt notice for $targetIp ($u): $e');
+              }
+            }
+          }
+        }
+      }
+      onProgress('⏳ Redémarrage du routeur vierge... (18 secondes)', 0.20);
+      onLog?.call('⏳ Redémarrage du routeur vierge en cours (18s)... Le routeur sera accessible via admin (sans mot de passe).');
+      await Future.delayed(const Duration(seconds: 18));
+
+      onProgress('⚡ Connexion au socket TCP 8728 RouterOS API (Compte admin vierge)...', 0.35);
       final candidateIps = <String>{
         if (gatewayIp.isNotEmpty && !gatewayIp.startsWith('10.')) gatewayIp,
         '192.168.88.1',
@@ -477,7 +527,6 @@ class MikrotikZtpService {
         '10.0.0.1',
       };
 
-      final String adminPassword = ztpPayload['admin_password']?.toString() ?? '';
       final String wgPrivateKey = ztpPayload['wg_private_key']?.toString() ?? '';
       final String wgIp = ztpPayload['wg_ip']?.toString() ?? '';
       final Map<String, dynamic>? vpsMap = ztpPayload['vps'] as Map<String, dynamic>?;
@@ -486,16 +535,17 @@ class MikrotikZtpService {
       final String vpsPort = (vpsMap?['primary_port'] ?? 51820).toString();
 
       final userVariants = [
+        'admin',
         defaultAdminUsername,
         'tiknet-admin',
       ];
 
       final passVariants = <String>{
+        '',
         defaultAdminPassword,
         defaultAdminPassword.toUpperCase(),
         defaultAdminPassword.toLowerCase(),
         adminPassword,
-        '',
         'admin',
       };
 
@@ -586,19 +636,57 @@ class MikrotikZtpService {
               '=disabled=no',
             ]);
 
-            // 0b. Configure WAN DHCP Client on ether1 & sfp1 for instant ISP Internet access
-            onLog?.call('⚡ [1b/15] Activation du client DHCP WAN (ether1 & sfp1)...');
+            // 0b. Layer 1 Physical Link Check on ether1
+            onLog?.call('⚡ [1a/15] Vérification du lien physique Layer 1 sur ether1...');
             try {
-              await apiSocket.sendSentence([
-                '/ip/dhcp-client/set',
-                '=numbers=[find interface=ether1]',
-                '=disabled=no',
-                '=add-default-route=yes',
-                '=use-peer-dns=yes',
-                '=use-peer-ntp=yes',
-              ]);
+              // Force enable physical interface ether1
+              await apiSocket.sendSentence(['/interface/enable', '=numbers=ether1']);
+              
+              final dynamic linkRes = await apiSocket.sendSentence([
+                '/interface/ethernet/monitor',
+                '=numbers=ether1',
+                '=once=',
+              ]).timeout(const Duration(seconds: 2), onTimeout: () => false);
+
+              if (linkRes != null && linkRes is List && linkRes.isNotEmpty) {
+                final linkData = linkRes.first as Map<String, String>;
+                final String linkStatus = linkData['status'] ?? 'inconnu';
+                final String linkRate = linkData['rate'] ?? linkData['auto-negotiation'] ?? '';
+                onLog?.call('🔍 [Layer 1 Link] ether1 statut: $linkStatus ($linkRate)');
+                if (linkStatus == 'no-link') {
+                  onLog?.call('⚠️ [Attention Layer 1] Aucun câble Ethernet physique détecté sur le port ether1.');
+                }
+              }
             } catch (_) {}
 
+            // 0c. Ensure ether1 is completely un-bridged and isolated
+            try {
+              final dynamic bridgePorts = await apiSocket.sendSentence(['/interface/bridge/port/print', '?interface=ether1']);
+              if (bridgePorts != null && bridgePorts is List && bridgePorts.isNotEmpty) {
+                for (var item in bridgePorts) {
+                  final String? id = (item as Map<String, String>)['.id'];
+                  if (id != null) {
+                    await apiSocket.sendSentence(['/interface/bridge/port/remove', '=.id=$id']);
+                    onLog?.call('🧹 [Bridge Isolation] Retrait du port ether1 du bridge effectué.');
+                  }
+                }
+              }
+            } catch (_) {}
+
+            // 0d. Clean up any stale DHCP clients on ether1
+            try {
+              final dynamic existing = await apiSocket.sendSentence(['/ip/dhcp-client/print', '?interface=ether1']);
+              if (existing != null && existing is List && existing.isNotEmpty) {
+                for (var item in existing) {
+                  final String? id = (item as Map<String, String>)['.id'];
+                  if (id != null) {
+                    await apiSocket.sendSentence(['/ip/dhcp-client/remove', '=.id=$id']);
+                  }
+                }
+              }
+            } catch (_) {}
+
+            // 0e. Add clean DHCP Client on ether1
             try {
               await apiSocket.sendSentence([
                 '/ip/dhcp-client/add',
@@ -609,7 +697,10 @@ class MikrotikZtpService {
                 '=use-peer-ntp=yes',
                 '=comment=TIKNET_WAN_DHCP',
               ]);
-            } catch (_) {}
+              onLog?.call('✅ [DHCP Client OK] /ip dhcp-client add interface=ether1 -> Réponse router: !done');
+            } catch (e) {
+              onLog?.call('ℹ️ [DHCP Client Note] Note configuration client DHCP: $e');
+            }
 
             try {
               await apiSocket.sendSentence([
@@ -623,7 +714,8 @@ class MikrotikZtpService {
               ]);
             } catch (_) {}
 
-            // 0c. Configure Global WAN NAT Masquerade Rule & DNS Resolvers
+            // 0f. Configure Global WAN NAT Masquerade Rule & DNS Resolvers
+            onLog?.call('⚡ [1c/15] Configuration DNS (/ip dns set allow-remote-requests=yes)...');
             try {
               await apiSocket.sendSentence([
                 '/ip/firewall/nat/add',
@@ -639,12 +731,103 @@ class MikrotikZtpService {
                 '=allow-remote-requests=yes',
                 '=servers=1.1.1.1,8.8.8.8',
               ]);
+              onLog?.call('✅ [DNS OK] /ip dns set allow-remote-requests=yes -> Réponse router: !done');
+
               await apiSocket.sendSentence([
                 '/ip/dns/static/add',
                 '=name=staging.wifi-4u.net',
                 '=address=51.75.72.56',
               ]);
-            } catch (_) {}
+            } catch (e) {
+              onLog?.call('⚠️ [DNS Warning] Note configuration DNS: $e');
+            }
+
+            // ── PHASE 1: INTERNET CONNECTIVITY CHECK (Global Multi-Interface Lease Detection) ──
+            onLog?.call('🌐 [Phase 1] Attente dynamique de négociation DHCP WAN (Fenetre max 60s)...');
+            onProgress('🌐 Validation de la connexion Internet WAN (ether1)...', 0.55);
+            
+            bool internetOk = false;
+
+            for (int retry = 1; retry <= 30; retry++) {
+              // 1. Check ALL bound DHCP clients across any physical interface (ether1, ether2, sfp1)
+              try {
+                final dynamic dhcpRes = await apiSocket.sendSentence([
+                  '/ip/dhcp-client/print',
+                ]).timeout(const Duration(seconds: 2), onTimeout: () => false);
+
+                if (dhcpRes != null && dhcpRes is List && dhcpRes.isNotEmpty) {
+                  for (var item in dhcpRes) {
+                    final dhcpData = item as Map<String, String>;
+                    final String ifaceName = dhcpData['interface'] ?? 'inconnu';
+                    final String currentStatus = dhcpData['status'] ?? 'inconnu';
+                    final String assignedAddress = dhcpData['address'] ?? dhcpData['address-assigned'] ?? '';
+
+                    if (currentStatus == 'bound' || assignedAddress.isNotEmpty) {
+                      internetOk = true;
+                      onLog?.call('✅ [Layer 2 DHCP OK] IP WAN attribuée par le modem ISP sur $ifaceName: $assignedAddress (Status: bound)');
+                      break;
+                    } else if (ifaceName == 'ether1') {
+                      final int elapsedSec = retry * 2;
+                      onLog?.call('⏳ [DHCP Négociation] $ifaceName en recherche (${elapsedSec}s/60s) - Statut: $currentStatus...');
+                    }
+                  }
+                  if (internetOk) break;
+                }
+              } catch (e) {
+                if (kDebugMode) debugPrint('ℹ️ [Phase 1] DHCP check notice: $e');
+              }
+
+              // 2. Check ALL IP addresses on the router for any assigned ISP address
+              try {
+                final dynamic ipRes = await apiSocket.sendSentence([
+                  '/ip/address/print',
+                ]).timeout(const Duration(seconds: 2), onTimeout: () => false);
+
+                if (ipRes != null && ipRes is List && ipRes.isNotEmpty) {
+                  for (var item in ipRes) {
+                    final ipData = item as Map<String, String>;
+                    final String address = ipData['address'] ?? '';
+                    final String iface = ipData['interface'] ?? '';
+                    final String dynamicFlag = ipData['dynamic'] ?? 'false';
+                    if (dynamicFlag == 'true' && address.isNotEmpty && !address.startsWith('10.0.')) {
+                      internetOk = true;
+                      onLog?.call('✅ [Layer 2 IP Dynamic OK] IP ISP détectée sur $iface: $address');
+                      break;
+                    }
+                  }
+                  if (internetOk) break;
+                }
+              } catch (e) {
+                if (kDebugMode) debugPrint('ℹ️ [Phase 1] IP check notice: $e');
+              }
+
+              // 3. Backup check: verify active default route 0.0.0.0/0
+              try {
+                final dynamic routeRes = await apiSocket.sendSentence([
+                  '/ip/route/print',
+                  '?dst-address=0.0.0.0/0',
+                ]).timeout(const Duration(seconds: 2), onTimeout: () => false);
+
+                if (routeRes != null && routeRes is List && routeRes.isNotEmpty) {
+                  internetOk = true;
+                  onLog?.call('✅ [Layer 3 Route OK] Route Internet par défaut (0.0.0.0/0) active sur le routeur !');
+                  break;
+                }
+              } catch (e) {
+                if (kDebugMode) debugPrint('ℹ️ [Phase 1] Route check notice: $e');
+              }
+
+              await Future.delayed(const Duration(seconds: 2));
+            }
+
+            if (internetOk) {
+              onProgress('✅ Phase 1 validée ! Lancement du tunnel WireGuard (Phase 2)...', 0.60);
+              onLog?.call('🚀 [Phase 2] Connexion Internet WAN validée. Lancement du tunnel WireGuard & Hotspot...');
+            } else {
+              onLog?.call('❌ [Phase 1 Erreur] Aucune adresse IP WAN attribuée par le modem ISP après 60 secondes.');
+              onLog?.call('👉 Action requise: Assurez-vous que le câble de votre modem TP-Link est inséré dans ether1.');
+              throw Exception('Validation Internet WAN échouée après 60s.');
+            }
 
             // 1. Create tiknet-admin User for Backend Cloud Management
             if (adminPassword.isNotEmpty) {
@@ -744,14 +927,14 @@ class MikrotikZtpService {
                 ]);
               } catch (_) {}
 
-              // 5b. Trigger WireGuard Handshake explicitly via socket ping
+              // 5b. Trigger WireGuard Handshake explicitly via socket ping (with 3s timeout)
               onLog?.call('⚡ [6b/15] Initialisation immédiate de la poignée de main WireGuard (Ping 10.0.0.1)...');
               try {
                 await apiSocket.sendSentence([
                   '/ping',
                   '=address=10.0.0.1',
                   '=count=3',
-                ]);
+                ]).timeout(const Duration(seconds: 3), onTimeout: () => false);
               } catch (_) {}
             }
 
@@ -923,10 +1106,15 @@ class MikrotikZtpService {
             if (payloadScript != null && payloadScript.isNotEmpty) {
               onLog?.call('⚡ Exécution directe du script ZTP V5.0 (1.5KB) en mémoire socket...');
               try {
-                await apiSocket.sendSentence([
-                  '/system/script/remove',
-                  '=numbers=[find name=ztp_run]',
-                ]);
+                final dynamic scriptCheck = await apiSocket.sendSentence(['/system/script/print', '?name=ztp_run']);
+                if (scriptCheck != null && scriptCheck is List && scriptCheck.isNotEmpty) {
+                  for (var item in scriptCheck) {
+                    final String? id = (item as Map<String, String>)['.id'];
+                    if (id != null) {
+                      await apiSocket.sendSentence(['/system/script/remove', '=.id=$id']);
+                    }
+                  }
+                }
               } catch (_) {}
 
               try {
@@ -949,10 +1137,15 @@ class MikrotikZtpService {
               // Fallback to fetch if payload_script is missing
               onLog?.call('⚡ [12/15] Téléchargement de secours bootstrap.rsc...');
               try {
-                await apiSocket.sendSentence([
-                  '/file/remove',
-                  '=numbers=bootstrap.rsc',
-                ]);
+                final dynamic fileCheck = await apiSocket.sendSentence(['/file/print', '?name=bootstrap.rsc']);
+                if (fileCheck != null && fileCheck is List && fileCheck.isNotEmpty) {
+                  for (var item in fileCheck) {
+                    final String? id = (item as Map<String, String>)['.id'];
+                    if (id != null) {
+                      await apiSocket.sendSentence(['/file/remove', '=.id=$id']);
+                    }
+                  }
+                }
               } catch (_) {}
 
               try {
@@ -1152,8 +1345,90 @@ class MikrotikZtpService {
     return true;
   }
 
+  /// Fetches internal MikroTik system logs (/log/print or /rest/log) and streams them to telemetry UI & backend
+  Future<List<String>> fetchAndStreamRouterOSLogs({
+    required String gatewayIp,
+    required String username,
+    required String password,
+    required int routerId,
+    Function(String logLine)? onLog,
+  }) async {
+    final fetchedLogs = <String>[];
+    try {
+      final dioLog = Dio(BaseOptions(
+        baseUrl: 'http://$gatewayIp',
+        connectTimeout: const Duration(seconds: 3),
+        receiveTimeout: const Duration(seconds: 3),
+        headers: {
+          'Authorization': 'Basic ${base64Encode(utf8.encode('$username:$password'))}',
+          'Content-Type': 'application/json',
+        },
+      ));
+      final res = await dioLog.get('/rest/log');
+      if (res.data is List) {
+        final list = res.data as List;
+        final recent = list.length > 20 ? list.sublist(list.length - 20) : list;
+        onLog?.call('📋 [ROUTEROS_LOGS] Capture des journaux système internes du routeur (/log/print)...');
+        for (final item in recent) {
+          final time = item['time'] ?? '';
+          final topics = item['topics'] ?? '';
+          final message = item['message'] ?? '';
+          final line = '📋 [ROUTER_LOG] $time [$topics] $message';
+          fetchedLogs.add(line);
+          onLog?.call(line);
+          streamZtpTelemetry(routerId, line);
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('ℹ️ [MikrotikZtpService] Internal RouterOS log fetch notice: $e');
+      }
+    }
+    return fetchedLogs;
+  }
+
+  /// Stream real-time telemetry event during ZTP execution to central backend for live analysis
+  Future<void> streamZtpTelemetry(int routerId, String logLine) async {
+    if (routerId <= 0 || logLine.isEmpty) return;
+    try {
+      await _centralApiDio.post(
+        '/routers/$routerId/ztp-telemetry/',
+        data: {
+          'timestamp': DateTime.now().toIso8601String(),
+          'log': logLine,
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('ℹ️ [MikrotikZtpService] Telemetry stream notice: $e');
+      }
+    }
+  }
+
   /// Rollback incomplete or failed ZTP session for a router back to a 100% clean slate
-  Future<bool> rollbackZtpRouter(int routerId) async {
+  Future<bool> rollbackZtpRouter(int routerId, {String? targetIp}) async {
+    // 1. Issue factory configuration reset command to local physical router
+    try {
+      final String baseRouterUrl = 'http://${targetIp ?? "192.168.88.1"}/rest';
+      final dioLocal = Dio(BaseOptions(
+        connectTimeout: const Duration(seconds: 3),
+        receiveTimeout: const Duration(seconds: 3),
+      ));
+      await dioLocal.post(
+        '$baseRouterUrl/system/reset-configuration',
+        data: {'no-defaults': 'no', 'skip-backup': 'true'},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+      if (kDebugMode) {
+        debugPrint('🧹 [MikrotikZtpService] Physical router factory reset command issued successfully!');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('ℹ️ [MikrotikZtpService] Local router factory reset notice: $e');
+      }
+    }
+
+    // 2. Rollback central Django backend database state
     try {
       final response = await _centralApiDio.post(
         '/routers/$routerId/ztp-rollback/',

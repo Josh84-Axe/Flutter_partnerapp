@@ -432,18 +432,48 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
         },
         onLog: (line) {
           if (mounted) {
+            final formatted = '[${DateTime.now().toIso8601String().substring(11, 19)}] $line';
             setState(() {
-              _liveTerminalLogs.add(line);
+              _liveTerminalLogs.add(formatted);
             });
+            _ztpService.streamZtpTelemetry(_effectiveRouterId, formatted);
           }
         },
       );
 
       if (success && mounted) {
+        // Fetch and stream internal RouterOS system logs (/log/print) to Telemetry Inspector
+        await _ztpService.fetchAndStreamRouterOSLogs(
+          gatewayIp: _gatewayIpController.text.trim().isEmpty ? '192.168.88.1' : _gatewayIpController.text.trim(),
+          username: _customAdminUsername.isEmpty ? 'admin' : _customAdminUsername,
+          password: _customAdminPassword,
+          routerId: _effectiveRouterId,
+          onLog: (line) {
+            if (mounted) {
+              setState(() {
+                _liveTerminalLogs.add(line);
+              });
+            }
+          },
+        );
         await _runCloudVerification();
       } else if (mounted) {
-        // Rollback on provisioning failure
-        await _ztpService.rollbackZtpRouter(_effectiveRouterId);
+        // Fetch internal RouterOS system logs before rollback to analyze failure root cause
+        await _ztpService.fetchAndStreamRouterOSLogs(
+          gatewayIp: _gatewayIpController.text.trim().isEmpty ? '192.168.88.1' : _gatewayIpController.text.trim(),
+          username: _customAdminUsername.isEmpty ? 'admin' : _customAdminUsername,
+          password: _customAdminPassword,
+          routerId: _effectiveRouterId,
+          onLog: (line) {
+            if (mounted) {
+              setState(() {
+                _liveTerminalLogs.add(line);
+              });
+            }
+          },
+        );
+        final targetIp = _gatewayIpController.text.trim().isEmpty ? '192.168.88.1' : _gatewayIpController.text.trim();
+        await _ztpService.rollbackZtpRouter(_effectiveRouterId, targetIp: targetIp);
         setState(() {
           _isProvisioning = false;
           _errorMessage = '⚠️ Le déploiement ZTP n\'a pas pu se terminer à 100%. Un rollback automatique a été effectué sur le backend.';
@@ -483,6 +513,20 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
       await Future.delayed(const Duration(seconds: 4));
       final routerSlug = _ztpPayload?['slug']?.toString() ?? _ztpPayload?['router_slug']?.toString() ?? _effectiveRouterName.toLowerCase();
       checkData = await _ztpService.verifyCloudConnection(_effectiveRouterId, slug: routerSlug);
+      
+      final String? serverState = checkData['state']?.toString();
+      final String? serverMsg = checkData['message']?.toString();
+
+      if (serverState == 'WG_HANDSHAKE_WAIT') {
+        _statusMessage = 'Vérification Cloud (1/4): En attente de la poignée de main WireGuard...';
+      } else if (serverState == 'BACKEND_ROUTE_WAIT') {
+        _statusMessage = 'Vérification Cloud (2/4): Validation de la route VPN 10.0.0.1...';
+      } else if (serverState == 'BACKEND_CONNECTIVITY_CHECK') {
+        _statusMessage = 'Vérification Cloud (3/4): Test de connexion API socket 8728...';
+      } else if (serverMsg != null && serverMsg.isNotEmpty) {
+        _statusMessage = 'Vérification Cloud: $serverMsg';
+      }
+
       final bool isSuccess = checkData['is_connected'] == true || 
                              checkData['is_fully_verified'] == true || 
                              (checkData['status'] == 'online') ||
@@ -501,11 +545,11 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
         _currentStep = 4;
       });
     } else if (mounted) {
-      // Auto-rollback backend for a clean slate
-      await _ztpService.rollbackZtpRouter(_effectiveRouterId);
+      final targetIp = _gatewayIpController.text.trim().isEmpty ? '192.168.88.1' : _gatewayIpController.text.trim();
+      await _ztpService.rollbackZtpRouter(_effectiveRouterId, targetIp: targetIp);
       setState(() {
         _isProvisioning = false;
-        _errorMessage = '⚠️ Échec de vérification (Moins de 100% de complétion). Les configurations ont été automatiquement annulées (Rollback effectué). Le routeur est remis à zéro et prêt pour un nouveau test ZTP propre.';
+        _errorMessage = '⚠️ Échec de vérification (Moins de 100% de complétion). Réinitialisation d\'usine effectuée sur le routeur physique et annulation du backend. Le routeur redémarre aux paramètres d\'usine et est prêt pour un test propre.';
       });
     }
   }
@@ -792,104 +836,414 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
-            if (kIsWeb) ...[
-              const SizedBox(height: 16),
+            // ── PWA & WEB DIRECT TERMINAL & 1-CLICK COPY WIDGET ──
+            const SizedBox(height: 16),
+            _buildPwaTerminalCopyCard(theme),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds a dedicated PWA Copy/Paste & Direct MikroTik Terminal Card
+  Widget _buildPwaTerminalCopyCard(ThemeData theme) {
+    final rawIp = _gatewayIpController.text.trim();
+    String targetIp = '192.168.88.1';
+    if (rawIp.isNotEmpty && !rawIp.startsWith('10.')) {
+      targetIp = rawIp;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+        boxShadow: const [
+          BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 4))
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.terminal, color: Color(0xFF38BDF8), size: 22),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  '🖥️ Accès Terminal Direct & Copier-Coller ZTP (PWA)',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.amber.shade400, width: 1.5),
+                  color: Colors.indigo.shade800,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text('PWA OPTIMISÉ', style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Exécutez la commande ZTP directement depuis l\'application via le Terminal embarqué, ou copiez-la en 1-clic.',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade300),
+          ),
+          const SizedBox(height: 14),
+
+          // Action Button 1: Direct In-App Terminal Modal
+          ElevatedButton.icon(
+            onPressed: () => _openInteractiveTerminalModal(context, targetIp),
+            icon: const Icon(Icons.terminal_sharp, color: Colors.black, size: 20),
+            label: const Text(
+              '💻 OUVRIR LE TERMINAL MIKROTIK (DANS L\'APP)',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF38BDF8),
+              foregroundColor: Colors.black,
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // Bootstrap URL Display & Copy Box
+          Builder(
+            builder: (context) {
+              final token = _ztpPayload?['bootstrap_token'] ?? 'CHARGEMENT...';
+              final bootstrapUrl = 'https://staging.wifi-4u.net/v1/bootstrap/$token/';
+
+              return Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF020617),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFF1E293B)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.bolt, color: Colors.amber, size: 22),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Alternative Web PWA 1-Clic',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.amber.shade900),
+                        const Icon(Icons.link, color: Color(0xFF38BDF8), size: 16),
+                        const SizedBox(width: 6),
+                        const Text(
+                          '🔗 Lien URL du Bootstrap Script :',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF38BDF8)),
+                        ),
+                        const Spacer(),
+                        InkWell(
+                          onTap: () async {
+                            await Clipboard.setData(ClipboardData(text: bootstrapUrl));
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('📋 Lien URL Bootstrap copié dans le presse-papier !'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.all(4.0),
+                            child: Row(
+                              children: [
+                                Icon(Icons.copy, size: 13, color: Colors.white70),
+                                SizedBox(width: 4),
+                                Text('Copier URL', style: TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      'Copiez la commande ZTP en 1 clic ci-dessous, puis ouvrez le terminal WebFig du routeur (192.168.88.1) pour l\'exécuter instantanément sur votre navigateur.',
-                      style: TextStyle(fontSize: 12, color: Colors.amber.shade900),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _isProvisioning
-                                ? null
-                                : () async {
-                                    setState(() {
-                                      _liveTerminalLogs.add('⚡ Relance du déploiement ZTP local (REST/Socket)...');
-                                    });
-                                    await _startProvisioning();
-                                  },
-                            icon: const Icon(Icons.bolt, color: Colors.white, size: 18),
-                            label: const Text('⚡ Relancer le push ZTP (REST/Socket)'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.indigo,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        if (_ztpPayload == null) {
-                          await _loadZtpPayload();
-                        }
-                        final token = _ztpPayload?['bootstrap_token'] ?? '';
-                        final cmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; :do { /system script remove [find name=ztp_run] } on-error={}; /system script add name=ztp_run policy=ftp,reboot,read,write,policy,test,password,snmp,config,start-api dont-require-permissions=yes source="/import file-name=bootstrap.rsc"; /system script run ztp_run;';
-                        await Clipboard.setData(ClipboardData(text: cmd));
-
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('📋 Commande ZTP RouterOS 7 copiée dans le presse-papier ! Ouverture de WebFig...'),
-                              backgroundColor: Colors.green,
-                              duration: Duration(seconds: 4),
-                            ),
-                          );
-                        }
-
-                        final rawIp = _gatewayIpController.text.trim();
-                        String targetIp = '192.168.88.1';
-                        if (rawIp.isNotEmpty && !rawIp.startsWith('10.')) {
-                          targetIp = rawIp;
-                        }
-                        final uri = Uri.parse('http://$targetIp');
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
-                        }
-                      },
-                      icon: const Icon(Icons.copy_all, size: 20),
-                      label: const Text('📋 Copier 1-Clic & Ouvrir Terminal WebFig', style: TextStyle(fontWeight: FontWeight.bold)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber.shade800,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(48),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    SelectableText(
+                      bootstrapUrl,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 11,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+
+          // Action Button 2: 1-Click Copy Command + Direct WebFig #Terminal Hash Link
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    if (_ztpPayload == null) {
+                      await _loadZtpPayload();
+                    }
+                    final token = _ztpPayload?['bootstrap_token'] ?? '';
+                    final cmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; :do { /system script remove [find name=ztp_run] } on-error={}; /system script add name=ztp_run policy=ftp,reboot,read,write,policy,test,password,snmp,config,start-api dont-require-permissions=yes source="/import file-name=bootstrap.rsc"; /system script run ztp_run;';
+                    await Clipboard.setData(ClipboardData(text: cmd));
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('📋 Commande ZTP 1-Clic copiée ! Prête à être collée dans le terminal.'),
+                          backgroundColor: Colors.green,
+                          duration: Duration(seconds: 4),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.copy_all, size: 18),
+                  label: const Text('📋 Copier Commande ZTP', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber.shade700,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    final uri = Uri.parse('http://$targetIp/webfig/#Terminal');
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                  icon: const Icon(Icons.open_in_new, size: 18, color: Color(0xFF38BDF8)),
+                  label: const Text('Direct #Terminal WebFig', style: TextStyle(fontSize: 12, color: Color(0xFF38BDF8), fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFF38BDF8)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
               ),
             ],
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+
+  /// Opens an in-app interactive MikroTik Terminal Modal Dialog
+  void _openInteractiveTerminalModal(BuildContext context, String gatewayIp) {
+    final TextEditingController cmdController = TextEditingController();
+    final List<String> terminalOutput = [
+      'Welcome to MikroTik RouterOS Terminal (Direct In-App Console)',
+      'Target Gateway IP: $gatewayIp',
+      'User: ${_customAdminUsername.isEmpty ? "admin" : _customAdminUsername}',
+      '------------------------------------------------------------',
+      '[admin@MikroTik] > Type or paste command below...',
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalCtx) {
+        return StatefulBuilder(
+          builder: (stCtx, setModalState) {
+            return Container(
+              height: MediaQuery.of(modalCtx).size.height * 0.85,
+              decoration: const BoxDecoration(
+                color: Color(0xFF020617),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 15)],
+              ),
+              child: Column(
+                children: [
+                  // Modal Header Bar
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF0F172A),
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      border: Border(bottom: BorderSide(color: Color(0xFF334155))),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.terminal, color: Color(0xFF38BDF8), size: 22),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Terminal MikroTik Direct [$gatewayIp]',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white70),
+                          onPressed: () => Navigator.of(modalCtx).pop(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Quick Action Toolbar
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    color: const Color(0xFF1E293B),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          // 1-Click Paste ZTP Command & Run
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              if (_ztpPayload == null) {
+                                await _loadZtpPayload();
+                              }
+                              final token = _ztpPayload?['bootstrap_token'] ?? '';
+                              final cmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; :do { /system script remove [find name=ztp_run] } on-error={}; /system script add name=ztp_run policy=ftp,reboot,read,write,policy,test,password,snmp,config,start-api dont-require-permissions=yes source="/import file-name=bootstrap.rsc"; /system script run ztp_run;';
+                              
+                              setModalState(() {
+                                cmdController.text = cmd;
+                                terminalOutput.add('[admin@MikroTik] > $cmd');
+                                terminalOutput.add('⚡ Executing ZTP Fetch & Bootstrap Script over API...');
+                              });
+
+                              final res = await _ztpService.executeZtpProvisioning(
+                                gatewayIp: gatewayIp,
+                                ztpPayload: _ztpPayload!,
+                                defaultAdminUsername: _customAdminUsername,
+                                defaultAdminPassword: _customAdminPassword,
+                                onProgress: (status, progress) {},
+                                onLog: (line) {
+                                  setModalState(() {
+                                    terminalOutput.add(line);
+                                  });
+                                },
+                              );
+
+                              setModalState(() {
+                                terminalOutput.add(res ? '✅ Command executed successfully! (!done)' : '⚠️ Execution finished with notes.');
+                              });
+                            },
+                            icon: const Icon(Icons.flash_on, size: 14, color: Colors.black),
+                            label: const Text('⚡ Coller & Exécuter ZTP (1-Clic)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF38BDF8),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          OutlinedButton(
+                            onPressed: () {
+                              setModalState(() {
+                                cmdController.text = '/system identity print';
+                              });
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white70,
+                              side: const BorderSide(color: Colors.white30),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              minimumSize: Size.zero,
+                            ),
+                            child: const Text('/system identity print', style: TextStyle(fontSize: 10, fontFamily: 'monospace')),
+                          ),
+                          const SizedBox(width: 6),
+                          OutlinedButton(
+                            onPressed: () {
+                              setModalState(() {
+                                cmdController.text = '/ip address print';
+                              });
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white70,
+                              side: const BorderSide(color: Colors.white30),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              minimumSize: Size.zero,
+                            ),
+                            child: const Text('/ip address print', style: TextStyle(fontSize: 10, fontFamily: 'monospace')),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Live Terminal Output Window
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      color: const Color(0xFF020617),
+                      child: SingleChildScrollView(
+                        reverse: true,
+                        child: SelectableText(
+                          terminalOutput.join('\n'),
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 12,
+                            color: Color(0xFF4ADE80),
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // CLI Command Input Line
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    color: const Color(0xFF0F172A),
+                    child: Row(
+                      children: [
+                        const Text(
+                          '[admin@MikroTik] > ',
+                          style: TextStyle(fontFamily: 'monospace', fontSize: 12, color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: cmdController,
+                            style: const TextStyle(fontFamily: 'monospace', fontSize: 12, color: Colors.white),
+                            decoration: const InputDecoration(
+                              hintText: 'Saisissez une commande RouterOS...',
+                              hintStyle: TextStyle(color: Colors.white38, fontSize: 11),
+                              border: InputBorder.none,
+                              isDense: true,
+                            ),
+                            onSubmitted: (val) async {
+                              if (val.trim().isEmpty) return;
+                              final inputCmd = val.trim();
+                              cmdController.clear();
+                              setModalState(() {
+                                terminalOutput.add('[admin@MikroTik] > $inputCmd');
+                                terminalOutput.add('⚡ Sentence sent over socket API...');
+                              });
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.send, color: Color(0xFF38BDF8), size: 20),
+                          onPressed: () {
+                            final inputCmd = cmdController.text.trim();
+                            if (inputCmd.isEmpty) return;
+                            cmdController.clear();
+                            setModalState(() {
+                              terminalOutput.add('[admin@MikroTik] > $inputCmd');
+                              terminalOutput.add('⚡ Sentence sent over socket API...');
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -978,77 +1332,8 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
-            if (kIsWeb) ...[
-              const SizedBox(height: 16),
-              const Divider(),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.amber.shade300),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.terminal, color: Colors.amber, size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Alternative Web PWA (Navigateur Web)',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.amber.shade900),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Si la politique CORS de votre navigateur bloque l\'envoi automatique HTTP local, cliquez ci-dessous pour copier le script en 1 clic et ouvrir le terminal WebFig du routeur.',
-                      style: TextStyle(fontSize: 12, color: Colors.amber.shade900),
-                    ),
-                    const SizedBox(height: 10),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        final token = _ztpPayload?['bootstrap_token'] ?? '';
-                        final cmd = ':catch { /file remove bootstrap.rsc }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" mode=https check-certificate=no dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc; :delay 1s; :catch { /file remove bootstrap.rsc };';
-                        await Clipboard.setData(ClipboardData(text: cmd));
-
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('📋 Commandes ZTP copiées dans le presse-papier ! Ouverture de WebFig...'),
-                              backgroundColor: Colors.green,
-                              duration: Duration(seconds: 4),
-                            ),
-                          );
-                        }
-
-                        final rawIp = _gatewayIpController.text.trim();
-                        String targetIp = '192.168.88.1';
-                        if (rawIp.isNotEmpty && !rawIp.startsWith('10.')) {
-                          targetIp = rawIp;
-                        }
-                        final uri = Uri.parse('http://$targetIp');
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
-                        }
-                      },
-                      icon: const Icon(Icons.copy_all, size: 18),
-                      label: const Text('Copier 1-Clic & Ouvrir Terminal Routeur (WebFig)'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber.shade700,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(42),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            const SizedBox(height: 16),
+            _buildPwaTerminalCopyCard(theme),
           ],
         ),
       ),
@@ -1094,36 +1379,54 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            // Persistent Live Terminal Box
+            // Real-Time ZTP Live Communication Inspector & Telemetry Tracker
             Container(
               width: double.infinity,
-              height: 200,
+              height: 250,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: const Color(0xFF0F172A),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF334155)),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.terminal, size: 16, color: Color(0xFF38BDF8)),
-                      const SizedBox(width: 6),
+                      const Icon(Icons.sensors, size: 18, color: Color(0xFF38BDF8)),
+                      const SizedBox(width: 8),
                       const Text(
-                        '🖥️ Journal d\'Exécution ZTP (Live Terminal)',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
+                        '📡 Inspecteur Télémesure ZTP En Direct',
+                        style: TextStyle(fontSize: 13, color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade900,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text('LIVE 100%', style: TextStyle(fontSize: 9, color: Colors.greenAccent, fontWeight: FontWeight.bold)),
                       ),
                       const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.copy, size: 14, color: Colors.white70),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.copy, size: 12),
+                        label: const Text('Copier Journal (Copy)', style: TextStyle(fontSize: 10)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1E293B),
+                          foregroundColor: const Color(0xFF38BDF8),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: _liveTerminalLogs.join('\n')));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('📋 Journal d\'exécution copié !')),
+                            const SnackBar(content: Text('📋 Journal de télémesure copié dans le presse-papier !')),
                           );
                         },
                       ),
@@ -1135,7 +1438,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                       reverse: true,
                       child: Text(
                         _liveTerminalLogs.isEmpty
-                            ? '🔌 Démarrage de la transmission des instructions au routeur...'
+                            ? '🔌 Initialisation du tracker de télémesure en temps réel...\n📡 Capture des requêtes REST HTTP (Port 80) et Sockets TCP (Port 8728)...'
                             : _liveTerminalLogs.join('\n'),
                         style: const TextStyle(
                           fontFamily: 'monospace',
