@@ -799,16 +799,19 @@ class MikrotikZtpService {
                 ], timeout: const Duration(seconds: 15));
                 onLog?.call('✅ Script ZTP V5.0 exécuté instantanément avec permissions système !');
 
+                // Allow 3 seconds for physical ISP modem WAN DHCP lease negotiation
+                await Future.delayed(const Duration(seconds: 3));
+
                 // Explicitly send initial WireGuard handshake ping over API socket
                 try {
                   onLog?.call('⚡ Émission du paquet de poignée de main WireGuard vers le VPS (10.0.0.1)...');
                   await apiSocket.sendSentence([
                     '/ping',
                     '=address=10.0.0.1',
-                    '=count=4',
+                    '=count=5',
                     '=interface=wg-backup',
                   ]);
-                  onLog?.call('✅ Poignée de main WireGuard initialisée (4/4 paquets transmis) !');
+                  onLog?.call('✅ Poignée de main WireGuard initialisée (5/5 paquets transmis) !');
                 } catch (_) {}
               } catch (e) {
                 if (kDebugMode) debugPrint('⚠️ Direct script execution warning: $e');
