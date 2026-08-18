@@ -680,15 +680,27 @@ class MikrotikZtpService {
             // 0. Enable API & Winbox for all subnets (including WireGuard 10.0.0.0/8)
             onLog?.call('⚡ [1/4] Activation /ip/service api sur 0.0.0.0/0...');
             try {
-              await apiSocket.sendSentence(['/ip/service/enable', '=numbers=api']);
-              await apiSocket.sendSentence(['/ip/service/set', '=numbers=api', '=address=0.0.0.0/0']);
+              final dynamic svcPrint = await apiSocket.sendSentence(['/ip/service/print', '?name=api']);
+              if (svcPrint != null && svcPrint is List && svcPrint.isNotEmpty) {
+                final String? id = (svcPrint.first as Map)['.id']?.toString();
+                if (id != null) {
+                  await apiSocket.sendSentence(['/ip/service/enable', '=.id=$id']);
+                  await apiSocket.sendSentence(['/ip/service/set', '=.id=$id', '=address=0.0.0.0/0', '=disabled=no']);
+                }
+              }
             } catch (_) {}
 
             // 0b. Layer 1 Physical Link Check on ether1
             onLog?.call('⚡ [1a/4] Vérification du lien physique Layer 1 sur ether1...');
             try {
-              // Force enable physical interface ether1
-              await apiSocket.sendSentence(['/interface/enable', '=numbers=ether1']);
+              // Force enable physical interface ether1 via .id lookup
+              final dynamic intfPrint = await apiSocket.sendSentence(['/interface/print', '?name=ether1']);
+              if (intfPrint != null && intfPrint is List && intfPrint.isNotEmpty) {
+                final String? id = (intfPrint.first as Map)['.id']?.toString();
+                if (id != null) {
+                  await apiSocket.sendSentence(['/interface/enable', '=.id=$id']);
+                }
+              }
               
               final dynamic linkRes = await apiSocket.sendSentence([
                 '/interface/ethernet/monitor',
@@ -843,7 +855,7 @@ class MikrotikZtpService {
                   '=endpoint-address=$vpsIp',
                   '=endpoint-port=$vpsPort',
                   '=allowed-address=0.0.0.0/0',
-                  '=persistent-keepalive=10s',
+                  '=persistent-keepalive=10',
                   '=disabled=no',
                 ]);
                 onLog?.call('✅ [WireGuard Peer OK] Peer connecté vers $vpsIp:$vpsPort !');
@@ -879,23 +891,32 @@ class MikrotikZtpService {
 
               // Top-of-Chain Firewall Accept Rules
               try {
-                await apiSocket.sendSentence([
+                final dynamic fwRules = await apiSocket.sendSentence(['/ip/firewall/filter/print']);
+                String? firstFwId;
+                if (fwRules != null && fwRules is List && fwRules.isNotEmpty) {
+                  firstFwId = (fwRules.first as Map)['.id']?.toString();
+                }
+
+                final List<String> rule1 = [
                   '/ip/firewall/filter/add',
                   '=chain=input',
                   '=action=accept',
                   '=protocol=udp',
                   '=dst-port=13232',
                   '=comment=TIKNET_WG_INPUT',
-                  '=place-before=0',
-                ]).catchError((_) => false);
-                await apiSocket.sendSentence([
+                ];
+                if (firstFwId != null) rule1.add('=.id=$firstFwId');
+                await apiSocket.sendSentence(rule1).catchError((_) => false);
+
+                final List<String> rule2 = [
                   '/ip/firewall/filter/add',
                   '=chain=input',
                   '=action=accept',
                   '=in-interface=wg-backup',
                   '=comment=TIKNET_WG_INTF',
-                  '=place-before=0',
-                ]).catchError((_) => false);
+                ];
+                if (firstFwId != null) rule2.add('=.id=$firstFwId');
+                await apiSocket.sendSentence(rule2).catchError((_) => false);
               } catch (_) {}
             }
 
