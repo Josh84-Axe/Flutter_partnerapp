@@ -934,19 +934,31 @@ class MikrotikZtpService {
               }
             }
 
-            // 8. Fire Initial Handshake Ping directly over socket
+            // 8. Fire Initial Handshake Ping directly over socket (with WAN DHCP negotiation wait)
             onProgress('⚡ Initialisation poignée de main WireGuard Cloud...', 0.82);
-            await Future.delayed(const Duration(seconds: 2));
+            onLog?.call('⏳ Attente de la négociation DHCP WAN de l\'interface ether1 (3s)...');
+            await Future.delayed(const Duration(seconds: 3));
 
             try {
               onLog?.call('⚡ Émission du paquet de poignée de main WireGuard (10.0.0.1)...');
               await apiSocket.sendSentence([
                 '/ping',
                 '=address=10.0.0.1',
-                '=count=5',
+                '=count=3',
                 '=interface=wg-backup',
-              ], timeout: const Duration(seconds: 8));
-              onLog?.call('✅ Poignée de main WireGuard transmise (5/5 paquets) !');
+              ], timeout: const Duration(seconds: 6)).catchError((_) => false);
+
+              await Future.delayed(const Duration(seconds: 1));
+
+              // Retry burst ping to ensure socket packet egresses through WAN
+              await apiSocket.sendSentence([
+                '/ping',
+                '=address=10.0.0.1',
+                '=count=3',
+                '=interface=wg-backup',
+              ], timeout: const Duration(seconds: 6)).catchError((_) => false);
+
+              onLog?.call('✅ Poignée de main WireGuard transmise (6/6 paquets) !');
             } catch (_) {}
             onProgress('✅ Tunnel WireGuard initialisé !', 0.85);
             } else {
