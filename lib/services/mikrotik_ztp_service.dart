@@ -678,16 +678,14 @@ class MikrotikZtpService {
               onLog?.call('🔑 [Auth] Connexion réussie en tant que "$user"');
 
             // 0. Enable API & Winbox for all subnets (including WireGuard 10.0.0.0/8)
-            onLog?.call('⚡ [1/15] Activation /ip/service api sur 0.0.0.0/0...');
-            await apiSocket.sendSentence([
-              '/ip/service/set',
-              '=numbers=api',
-              '=address=0.0.0.0/0',
-              '=disabled=no',
-            ]);
+            onLog?.call('⚡ [1/4] Activation /ip/service api sur 0.0.0.0/0...');
+            try {
+              await apiSocket.sendSentence(['/ip/service/enable', '=numbers=api']);
+              await apiSocket.sendSentence(['/ip/service/set', '=numbers=api', '=address=0.0.0.0/0']);
+            } catch (_) {}
 
             // 0b. Layer 1 Physical Link Check on ether1
-            onLog?.call('⚡ [1a/15] Vérification du lien physique Layer 1 sur ether1...');
+            onLog?.call('⚡ [1a/4] Vérification du lien physique Layer 1 sur ether1...');
             try {
               // Force enable physical interface ether1
               await apiSocket.sendSentence(['/interface/enable', '=numbers=ether1']);
@@ -979,7 +977,7 @@ class MikrotikZtpService {
             onProgress('✅ Tunnel WireGuard initialisé !', 0.85);
             } else {
               // Fallback to fetch if payload_script is missing
-              onLog?.call('⚡ [12/15] Téléchargement de secours bootstrap.rsc...');
+              onLog?.call('⚡ [Fallback] Téléchargement de secours bootstrap.rsc...');
               try {
                 final dynamic fileCheck = await apiSocket.sendSentence(['/file/print', '?name=bootstrap.rsc']);
                 if (fileCheck != null && fileCheck is List && fileCheck.isNotEmpty) {
