@@ -949,25 +949,33 @@ class MikrotikZtpService {
 
             try {
               onLog?.call('⚡ Émission du paquet de poignée de main WireGuard (10.0.0.1)...');
-              await apiSocket.sendSentence([
+              final dynamic res1 = await apiSocket.sendSentence([
                 '/ping',
                 '=address=10.0.0.1',
                 '=count=3',
                 '=interface=wg-backup',
-              ], timeout: const Duration(seconds: 6)).catchError((_) => false);
+              ], timeout: const Duration(seconds: 6)).catchError((e) {
+                onLog?.call('⚠️ Socket ping note: $e');
+                return false;
+              });
+              onLog?.call('📡 Résultat Ping 1: $res1');
 
               await Future.delayed(const Duration(seconds: 1));
 
               // Retry burst ping to ensure socket packet egresses through WAN
-              await apiSocket.sendSentence([
+              final dynamic res2 = await apiSocket.sendSentence([
                 '/ping',
                 '=address=10.0.0.1',
                 '=count=3',
                 '=interface=wg-backup',
-              ], timeout: const Duration(seconds: 6)).catchError((_) => false);
-
-              onLog?.call('✅ Poignée de main WireGuard transmise (6/6 paquets) !');
-            } catch (_) {}
+              ], timeout: const Duration(seconds: 6)).catchError((e) {
+                onLog?.call('⚠️ Socket ping burst note: $e');
+                return false;
+              });
+              onLog?.call('✅ Poignée de main WireGuard transmise ($res2) !');
+            } catch (e) {
+              onLog?.call('⚠️ Ping execution warning: $e');
+            }
             onProgress('✅ Tunnel WireGuard initialisé !', 0.85);
             } else {
               // Fallback to fetch if payload_script is missing
