@@ -868,7 +868,7 @@ class MikrotikZtpService {
                   '=dst-port=13232',
                   '=comment=TIKNET_WG_INPUT',
                   '=place-before=0',
-                ]).catchError((_) => null);
+                ]).catchError((_) => false);
                 await apiSocket.sendSentence([
                   '/ip/firewall/filter/add',
                   '=chain=input',
@@ -876,7 +876,7 @@ class MikrotikZtpService {
                   '=in-interface=wg-backup',
                   '=comment=TIKNET_WG_INTF',
                   '=place-before=0',
-                ]).catchError((_) => null);
+                ]).catchError((_) => false);
               } catch (_) {}
             }
 
@@ -913,7 +913,7 @@ class MikrotikZtpService {
                   await apiSocket.sendSentence([
                     '/system/script/run',
                     '=.id=$scriptId',
-                  ], timeout: const Duration(seconds: 10)).catchError((_) => null);
+                  ], timeout: const Duration(seconds: 10)).catchError((_) => false);
                 }
                 onLog?.call('✅ Script ZTP V5.0 appliqué et exécuté sur le routeur !');
               } catch (e) {
@@ -1025,13 +1025,11 @@ class MikrotikZtpService {
             onProgress('Configuration ZTP terminée avec succès !', 1.0);
             return true;
           }
-          apiSocket.close();
         }
       }
     }
-  }
 
-    return true;
+    return false;
   }
 
   /// Fetches internal MikroTik system logs (/log/print or /rest/log) and streams them to telemetry UI & backend
