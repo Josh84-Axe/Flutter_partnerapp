@@ -582,6 +582,7 @@ class MikrotikZtpService {
       final String vpsPublicKey = vpsMap?['primary_public_key']?.toString() ?? 'J6EwfTlpIN7RQS97tpHVjYZBm0lt21OoMyjvwT9OhA8=';
       final String vpsIp = vpsMap?['primary_ip']?.toString() ?? '51.75.72.56';
       final String vpsPort = (vpsMap?['primary_port'] ?? 51820).toString();
+      String activePublicKey = '';
 
       final userVariants = [
         'admin',
@@ -778,7 +779,6 @@ class MikrotikZtpService {
             if (wgPrivateKey.isNotEmpty && wgIp.isNotEmpty) {
               onLog?.call('⚡ [Direct Socket] Configuration Interface WireGuard ($wgIp)...');
               
-              // Clean existing wg-backup interface if needed
               try {
                 final dynamic existingWg = await apiSocket.sendSentence(['/interface/wireguard/print', '?name=wg-backup']);
                 if (existingWg == null || existingWg is! List || existingWg.isEmpty) {
@@ -800,6 +800,14 @@ class MikrotikZtpService {
                     '=mtu=1420',
                     '=disabled=no',
                   ]);
+                }
+
+                final dynamic wgInfo = await apiSocket.sendSentence(['/interface/wireguard/print', '?name=wg-backup']);
+                if (wgInfo != null && wgInfo is List && wgInfo.isNotEmpty) {
+                  activePublicKey = (wgInfo.first as Map<String, String>)['public-key'] ?? '';
+                  if (activePublicKey.isNotEmpty) {
+                    onLog?.call('🔑 Clé publique WireGuard active: $activePublicKey');
+                  }
                 }
               } catch (e) {
                 onLog?.call('⚠️ WireGuard interface note: $e');
@@ -1034,6 +1042,7 @@ class MikrotikZtpService {
                 onLog?.call('🌐 Notification du backend central (/v1/routers/register/)...');
                 await _centralApiDio.post(
                   registerUrl,
+                  data: activePublicKey.isNotEmpty ? {'wg_public_key': activePublicKey} : null,
                   options: Options(
                     headers: {
                       'X-TIKNET-TOKEN': bootstrapToken,
