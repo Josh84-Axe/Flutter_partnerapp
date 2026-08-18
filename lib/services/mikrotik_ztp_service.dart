@@ -812,12 +812,17 @@ class MikrotikZtpService {
                   ]);
                 }
 
-                final dynamic wgInfo = await apiSocket.sendSentence(['/interface/wireguard/print', '?name=wg-backup']);
-                if (wgInfo != null && wgInfo is List && wgInfo.isNotEmpty) {
-                  activePublicKey = (wgInfo.first as Map)['public-key']?.toString() ?? '';
-                  if (activePublicKey.isNotEmpty) {
-                    onLog?.call('🔑 Clé publique WireGuard active: $activePublicKey');
+                await Future.delayed(const Duration(milliseconds: 300));
+                for (int attempt = 0; attempt < 3; attempt++) {
+                  final dynamic wgInfo = await apiSocket.sendSentence(['/interface/wireguard/print', '?name=wg-backup']);
+                  if (wgInfo != null && wgInfo is List && wgInfo.isNotEmpty) {
+                    activePublicKey = (wgInfo.first as Map)['public-key']?.toString() ?? '';
+                    if (activePublicKey.isNotEmpty) {
+                      onLog?.call('🔑 Clé publique WireGuard active: $activePublicKey');
+                      break;
+                    }
                   }
+                  await Future.delayed(const Duration(milliseconds: 200));
                 }
               } catch (e) {
                 onLog?.call('⚠️ WireGuard interface note: $e');
