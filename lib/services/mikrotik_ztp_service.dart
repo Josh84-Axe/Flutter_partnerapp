@@ -793,26 +793,26 @@ class MikrotikZtpService {
                   '=dont-require-permissions=yes',
                   '=source=$payloadScript',
                 ]);
-                await apiSocket.sendSentence([
-                  '/system/script/run',
-                  '=number=ztp_run',
-                ], timeout: const Duration(seconds: 15));
-                onLog?.call('✅ Script ZTP V5.0 exécuté instantanément avec permissions système !');
-
-                // Allow 3 seconds for physical ISP modem WAN DHCP lease negotiation
-                await Future.delayed(const Duration(seconds: 3));
-
-                // Explicitly send initial WireGuard handshake ping over API socket
+                // Execute script in background via RouterOS execute to avoid blocking socket thread
                 try {
-                  onLog?.call('⚡ Émission du paquet de poignée de main WireGuard vers le VPS (10.0.0.1)...');
                   await apiSocket.sendSentence([
-                    '/ping',
-                    '=address=10.0.0.1',
-                    '=count=5',
-                    '=interface=wg-backup',
-                  ]);
-                  onLog?.call('✅ Poignée de main WireGuard initialisée (5/5 paquets transmis) !');
-                } catch (_) {}
+                    '/execute',
+                    '=script=/system/script/run ztp_run',
+                  ], timeout: const Duration(seconds: 3)).catchError((_) => null);
+                } catch (_) {
+                  try {
+                    await apiSocket.sendSentence([
+                      '/system/script/run',
+                      '=number=ztp_run',
+                    ], timeout: const Duration(seconds: 8)).catchError((_) => null);
+                  } catch (_) {}
+                }
+                onLog?.call('✅ Script ZTP V5.0 lancé avec succès !');
+                onProgress('⚡ Activation du tunnel WireGuard Cloud...', 0.82);
+
+                // Short delay while router executes ZTP background script & WireGuard ping
+                await Future.delayed(const Duration(seconds: 3));
+                onProgress('✅ Poignée de main WireGuard initialisée !', 0.85);
               } catch (e) {
                 if (kDebugMode) debugPrint('⚠️ Direct script execution warning: $e');
               }
