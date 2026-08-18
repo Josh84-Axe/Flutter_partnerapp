@@ -693,28 +693,21 @@ class MikrotikZtpService {
             // 0b. Layer 1 Physical Link Check on ether1
             onLog?.call('⚡ [1a/4] Vérification du lien physique Layer 1 sur ether1...');
             try {
-              // Force enable physical interface ether1 via .id lookup
               final dynamic intfPrint = await apiSocket.sendSentence(['/interface/print', '?name=ether1']);
               if (intfPrint != null && intfPrint is List && intfPrint.isNotEmpty) {
-                final String? id = (intfPrint.first as Map)['.id']?.toString();
-                if (id != null) {
+                final intfData = intfPrint.first as Map;
+                final String? id = intfData['.id']?.toString();
+                final String isRunning = intfData['running']?.toString() ?? 'false';
+                final String isDisabled = intfData['disabled']?.toString() ?? 'false';
+
+                if (isDisabled == 'true' && id != null) {
                   await apiSocket.sendSentence(['/interface/enable', '=.id=$id']);
                 }
-              }
-              
-              final dynamic linkRes = await apiSocket.sendSentence([
-                '/interface/ethernet/monitor',
-                '=numbers=ether1',
-                '=once=',
-              ]).timeout(const Duration(seconds: 2), onTimeout: () => false);
 
-              if (linkRes != null && linkRes is List && linkRes.isNotEmpty) {
-                final linkData = linkRes.first as Map;
-                final String linkStatus = linkData['status'] ?? 'inconnu';
-                final String linkRate = linkData['rate'] ?? linkData['auto-negotiation'] ?? '';
-                onLog?.call('🔍 [Layer 1 Link] ether1 statut: $linkStatus ($linkRate)');
-                if (linkStatus == 'no-link') {
-                  onLog?.call('⚠️ [Attention Layer 1] Aucun câble Ethernet physique détecté sur le port ether1.');
+                if (isRunning != 'true') {
+                  onLog?.call('⚠️ [Attention Layer 1] Câble Ethernet non détecté comme actif sur ether1.');
+                } else {
+                  onLog?.call('🔍 [Layer 1 Link] ether1 statut: actif (running)');
                 }
               }
             } catch (_) {}
