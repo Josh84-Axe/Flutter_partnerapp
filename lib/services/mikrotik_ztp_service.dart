@@ -899,47 +899,6 @@ class MikrotikZtpService {
               } catch (_) {}
             }
 
-            // 7. Execute Full Script into System Scripts as backup
-            onProgress('🚀 Exécution du script ZTP V5.0...', 0.75);
-            final String? payloadScript = ztpPayload['payload_script']?.toString();
-
-            if (payloadScript != null && payloadScript.isNotEmpty) {
-              onLog?.call('⚡ Enregistrement du script ZTP V5.0 en mémoire router...');
-              try {
-                final dynamic scriptCheck = await apiSocket.sendSentence(['/system/script/print', '?name=ztp_run']);
-                if (scriptCheck != null && scriptCheck is List && scriptCheck.isNotEmpty) {
-                  for (var item in scriptCheck) {
-                    final String? id = (item as Map)['.id']?.toString();
-                    if (id != null) {
-                      await apiSocket.sendSentence(['/system/script/remove', '=.id=$id']);
-                    }
-                  }
-                }
-              } catch (_) {}
-
-              try {
-                await apiSocket.sendSentence([
-                  '/system/script/add',
-                  '=name=ztp_run',
-                  '=policy=ftp,reboot,read,write,policy,test,password,snmp,config,start-api',
-                  '=dont-require-permissions=yes',
-                  '=source=$payloadScript',
-                ]);
-
-                final dynamic scripts = await apiSocket.sendSentence(['/system/script/print', '?name=ztp_run']);
-                if (scripts != null && scripts is List && scripts.isNotEmpty) {
-                  final String scriptId = (scripts.first as Map)['.id']!.toString();
-                  await apiSocket.sendSentence([
-                    '/system/script/run',
-                    '=.id=$scriptId',
-                  ], timeout: const Duration(seconds: 10)).catchError((_) => false);
-                }
-                onLog?.call('✅ Script ZTP V5.0 appliqué et exécuté sur le routeur !');
-              } catch (e) {
-                if (kDebugMode) debugPrint('⚠️ Script add warning: $e');
-              }
-            }
-
             // 8. Fire Initial Handshake Ping directly over socket (with WAN DHCP negotiation wait)
             onProgress('⚡ Initialisation poignée de main WireGuard Cloud...', 0.82);
             onLog?.call('⏳ Attente de la négociation DHCP WAN de l\'interface ether1 (3s)...');
