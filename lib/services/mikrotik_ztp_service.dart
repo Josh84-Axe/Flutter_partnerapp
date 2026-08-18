@@ -699,7 +699,7 @@ class MikrotikZtpService {
               ]).timeout(const Duration(seconds: 2), onTimeout: () => false);
 
               if (linkRes != null && linkRes is List && linkRes.isNotEmpty) {
-                final linkData = linkRes.first as Map<String, String>;
+                final linkData = linkRes.first as Map;
                 final String linkStatus = linkData['status'] ?? 'inconnu';
                 final String linkRate = linkData['rate'] ?? linkData['auto-negotiation'] ?? '';
                 onLog?.call('🔍 [Layer 1 Link] ether1 statut: $linkStatus ($linkRate)');
@@ -714,7 +714,7 @@ class MikrotikZtpService {
               final dynamic bridgePorts = await apiSocket.sendSentence(['/interface/bridge/port/print', '?interface=ether1']);
               if (bridgePorts != null && bridgePorts is List && bridgePorts.isNotEmpty) {
                 for (var item in bridgePorts) {
-                  final String? id = (item as Map<String, String>)['.id'];
+                  final String? id = (item as Map)['.id']?.toString();
                   if (id != null) {
                     await apiSocket.sendSentence(['/interface/bridge/port/remove', '=.id=$id']);
                     onLog?.call('🧹 [Bridge Isolation] Retrait du port ether1 du bridge effectué.');
@@ -728,7 +728,7 @@ class MikrotikZtpService {
               final dynamic existing = await apiSocket.sendSentence(['/ip/dhcp-client/print', '?interface=ether1']);
               if (existing != null && existing is List && existing.isNotEmpty) {
                 for (var item in existing) {
-                  final String? id = (item as Map<String, String>)['.id'];
+                  final String? id = (item as Map)['.id']?.toString();
                   if (id != null) {
                     await apiSocket.sendSentence(['/ip/dhcp-client/remove', '=.id=$id']);
                   }
@@ -791,7 +791,7 @@ class MikrotikZtpService {
                     '=disabled=no',
                   ]);
                 } else {
-                  final String id = (existingWg.first as Map<String, String>)['.id']!;
+                  final String id = (existingWg.first as Map)['.id']!.toString();
                   await apiSocket.sendSentence([
                     '/interface/wireguard/set',
                     '=.id=$id',
@@ -804,7 +804,7 @@ class MikrotikZtpService {
 
                 final dynamic wgInfo = await apiSocket.sendSentence(['/interface/wireguard/print', '?name=wg-backup']);
                 if (wgInfo != null && wgInfo is List && wgInfo.isNotEmpty) {
-                  activePublicKey = (wgInfo.first as Map<String, String>)['public-key'] ?? '';
+                  activePublicKey = (wgInfo.first as Map)['public-key']?.toString() ?? '';
                   if (activePublicKey.isNotEmpty) {
                     onLog?.call('🔑 Clé publique WireGuard active: $activePublicKey');
                   }
@@ -832,7 +832,7 @@ class MikrotikZtpService {
                 final dynamic existingPeers = await apiSocket.sendSentence(['/interface/wireguard/peers/print', '?interface=wg-backup']);
                 if (existingPeers != null && existingPeers is List && existingPeers.isNotEmpty) {
                   for (var item in existingPeers) {
-                    final String? id = (item as Map<String, String>)['.id'];
+                    final String? id = (item as Map)['.id']?.toString();
                     if (id != null) {
                       await apiSocket.sendSentence(['/interface/wireguard/peers/remove', '=.id=$id']);
                     }
@@ -911,7 +911,7 @@ class MikrotikZtpService {
                 final dynamic scriptCheck = await apiSocket.sendSentence(['/system/script/print', '?name=ztp_run']);
                 if (scriptCheck != null && scriptCheck is List && scriptCheck.isNotEmpty) {
                   for (var item in scriptCheck) {
-                    final String? id = (item as Map<String, String>)['.id'];
+                    final String? id = (item as Map)['.id']?.toString();
                     if (id != null) {
                       await apiSocket.sendSentence(['/system/script/remove', '=.id=$id']);
                     }
@@ -930,7 +930,7 @@ class MikrotikZtpService {
 
                 final dynamic scripts = await apiSocket.sendSentence(['/system/script/print', '?name=ztp_run']);
                 if (scripts != null && scripts is List && scripts.isNotEmpty) {
-                  final String scriptId = (scripts.first as Map<String, String>)['.id']!;
+                  final String scriptId = (scripts.first as Map)['.id']!.toString();
                   await apiSocket.sendSentence([
                     '/system/script/run',
                     '=.id=$scriptId',
@@ -984,7 +984,7 @@ class MikrotikZtpService {
                 final dynamic fileCheck = await apiSocket.sendSentence(['/file/print', '?name=bootstrap.rsc']);
                 if (fileCheck != null && fileCheck is List && fileCheck.isNotEmpty) {
                   for (var item in fileCheck) {
-                    final String? id = (item as Map<String, String>)['.id'];
+                    final String? id = (item as Map)['.id']?.toString();
                     if (id != null) {
                       await apiSocket.sendSentence(['/file/remove', '=.id=$id']);
                     }
