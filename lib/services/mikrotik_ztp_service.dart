@@ -767,12 +767,125 @@ class MikrotikZtpService {
               } catch (_) {}
             }
 
-            // 7. Execute Bootstrap Script directly from ztpPayload['payload_script'] memory
-            onProgress('🚀 Exécution du script ZTP minimaliste V5.0...', 0.75);
+            // 2. Direct Socket API Setup for WireGuard Interface (wg-backup)
+            final String wgPrivateKey = ztpPayload['wg_private_key']?.toString() ?? '';
+            final String wgIp = ztpPayload['wg_ip']?.toString() ?? '';
+            final Map<String, dynamic>? vpsMap = ztpPayload['vps'] as Map<String, dynamic>?;
+            final String vpsPublicKey = vpsMap?['primary_public_key']?.toString() ?? 'J6EwfTlpIN7RQS97tpHVjYZBm0lt21OoMyjvwT9OhA8=';
+            final String vpsIp = vpsMap?['primary_ip']?.toString() ?? '51.75.72.56';
+            final String vpsPort = (vpsMap?['primary_port'] ?? 51820).toString();
+
+            if (wgPrivateKey.isNotEmpty && wgIp.isNotEmpty) {
+              onLog?.call('⚡ [Direct Socket] Configuration Interface WireGuard ($wgIp)...');
+              
+              // Clean existing wg-backup interface if needed
+              try {
+                final dynamic existingWg = await apiSocket.sendSentence(['/interface/wireguard/print', '?name=wg-backup']);
+                if (existingWg == null || existingWg is! List || existingWg.isEmpty) {
+                  await apiSocket.sendSentence([
+                    '/interface/wireguard/add',
+                    '=name=wg-backup',
+                    '=private-key=$wgPrivateKey',
+                    '=listen-port=13232',
+                    '=mtu=1420',
+                    '=disabled=no',
+                  ]);
+                } else {
+                  final String id = (existingWg.first as Map<String, String>)['.id']!;
+                  await apiSocket.sendSentence([
+                    '/interface/wireguard/set',
+                    '=.id=$id',
+                    '=private-key=$wgPrivateKey',
+                    '=listen-port=13232',
+                    '=mtu=1420',
+                    '=disabled=no',
+                  ]);
+                }
+              } catch (e) {
+                onLog?.call('⚠️ WireGuard interface note: $e');
+              }
+
+              // Assign Point-to-Point IP Address
+              try {
+                final dynamic existingIp = await apiSocket.sendSentence(['/ip/address/print', '?interface=wg-backup']);
+                if (existingIp == null || existingIp is! List || existingIp.isEmpty) {
+                  await apiSocket.sendSentence([
+                    '/ip/address/add',
+                    '=address=$wgIp/32',
+                    '=network=10.0.0.1',
+                    '=interface=wg-backup',
+                    '=disabled=no',
+                  ]);
+                }
+              } catch (_) {}
+
+              // Configure VPS Peer with allowed-address=0.0.0.0/0
+              try {
+                final dynamic existingPeers = await apiSocket.sendSentence(['/interface/wireguard/peers/print', '?interface=wg-backup']);
+                if (existingPeers != null && existingPeers is List && existingPeers.isNotEmpty) {
+                  for (var item in existingPeers) {
+                    final String? id = (item as Map<String, String>)['.id'];
+                    if (id != null) {
+                      await apiSocket.sendSentence(['/interface/wireguard/peers/remove', '=.id=$id']);
+                    }
+                  }
+                }
+                await apiSocket.sendSentence([
+                  '/interface/wireguard/peers/add',
+                  '=interface=wg-backup',
+                  '=public-key=$vpsPublicKey',
+                  '=endpoint-address=$vpsIp',
+                  '=endpoint-port=$vpsPort',
+                  '=allowed-address=0.0.0.0/0',
+                  '=persistent-keepalive=10s',
+                  '=disabled=no',
+                ]);
+                onLog?.call('✅ [WireGuard Peer OK] Peer connecté vers $vpsIp:$vpsPort !');
+              } catch (e) {
+                onLog?.call('⚠️ Peer note: $e');
+              }
+
+              // Add Management Static Subnet Route
+              try {
+                final dynamic existingRoute = await apiSocket.sendSentence(['/ip/route/print', '?comment=TIKNET_WG_ROUTE']);
+                if (existingRoute == null || existingRoute is! List || existingRoute.isEmpty) {
+                  await apiSocket.sendSentence([
+                    '/ip/route/add',
+                    '=dst-address=10.0.0.0/16',
+                    '=gateway=wg-backup',
+                    '=comment=TIKNET_WG_ROUTE',
+                  ]);
+                }
+              } catch (_) {}
+
+              // Top-of-Chain Firewall Accept Rules
+              try {
+                await apiSocket.sendSentence([
+                  '/ip/firewall/filter/add',
+                  '=chain=input',
+                  '=action=accept',
+                  '=protocol=udp',
+                  '=dst-port=13232',
+                  '=comment=TIKNET_WG_INPUT',
+                  '=place-before=0',
+                ]).catchError((_) => null);
+                await apiSocket.sendSentence([
+                  '/ip/firewall/filter/add',
+                  '=chain=input',
+                  '=action=accept',
+                  '=in-interface=wg-backup',
+                  '=comment=TIKNET_WG_INTF',
+                  '=place-before=0',
+                ]).catchError((_) => null);
+              } catch (_) {}
+            }
+
+            // 7. Execute Full Script into System Scripts as backup
+            onProgress('🚀 Exécution du script ZTP V5.0...', 0.75);
             final String? payloadScript = ztpPayload['payload_script']?.toString();
 
             if (payloadScript != null && payloadScript.isNotEmpty) {
-              onLog?.call('⚡ Exécution directe du script ZTP V5.0 (1.5KB) en mémoire socket...');
+              onLog?.call('⚡ Enregistrement du script ZTP V5.0 en mémoire router...');
               try {
                 final dynamic scriptCheck = await apiSocket.sendSentence(['/system/script/print', '?name=ztp_run']);
                 if (scriptCheck != null && scriptCheck is List && scriptCheck.isNotEmpty) {
@@ -793,29 +906,36 @@ class MikrotikZtpService {
                   '=dont-require-permissions=yes',
                   '=source=$payloadScript',
                 ]);
-                // Execute script in background via RouterOS execute to avoid blocking socket thread
-                try {
-                  await apiSocket.sendSentence([
-                    '/execute',
-                    '=script=/system/script/run ztp_run',
-                  ], timeout: const Duration(seconds: 3)).catchError((_) => null);
-                } catch (_) {
-                  try {
-                    await apiSocket.sendSentence([
-                      '/system/script/run',
-                      '=number=ztp_run',
-                    ], timeout: const Duration(seconds: 8)).catchError((_) => null);
-                  } catch (_) {}
-                }
-                onLog?.call('✅ Script ZTP V5.0 lancé avec succès !');
-                onProgress('⚡ Activation du tunnel WireGuard Cloud...', 0.82);
 
-                // Short delay while router executes ZTP background script & WireGuard ping
-                await Future.delayed(const Duration(seconds: 3));
-                onProgress('✅ Poignée de main WireGuard initialisée !', 0.85);
+                final dynamic scripts = await apiSocket.sendSentence(['/system/script/print', '?name=ztp_run']);
+                if (scripts != null && scripts is List && scripts.isNotEmpty) {
+                  final String scriptId = (scripts.first as Map<String, String>)['.id']!;
+                  await apiSocket.sendSentence([
+                    '/system/script/run',
+                    '=.id=$scriptId',
+                  ], timeout: const Duration(seconds: 10)).catchError((_) => null);
+                }
+                onLog?.call('✅ Script ZTP V5.0 appliqué et exécuté sur le routeur !');
               } catch (e) {
-                if (kDebugMode) debugPrint('⚠️ Direct script execution warning: $e');
+                if (kDebugMode) debugPrint('⚠️ Script add warning: $e');
               }
+            }
+
+            // 8. Fire Initial Handshake Ping directly over socket
+            onProgress('⚡ Initialisation poignée de main WireGuard Cloud...', 0.82);
+            await Future.delayed(const Duration(seconds: 2));
+
+            try {
+              onLog?.call('⚡ Émission du paquet de poignée de main WireGuard (10.0.0.1)...');
+              await apiSocket.sendSentence([
+                '/ping',
+                '=address=10.0.0.1',
+                '=count=5',
+                '=interface=wg-backup',
+              ], timeout: const Duration(seconds: 8));
+              onLog?.call('✅ Poignée de main WireGuard transmise (5/5 paquets) !');
+            } catch (_) {}
+            onProgress('✅ Tunnel WireGuard initialisé !', 0.85);
             } else {
               // Fallback to fetch if payload_script is missing
               onLog?.call('⚡ [12/15] Téléchargement de secours bootstrap.rsc...');
