@@ -845,18 +845,31 @@ class MikrotikZtpService {
                 onLog?.call('⚠️ Peer note: $e');
               }
 
-              // Add Management Static Subnet Route
+              // Add Management Static Subnet Route (with RouterOS 7 fallback)
               try {
                 final dynamic existingRoute = await apiSocket.sendSentence(['/ip/route/print', '?comment=TIKNET_WG_ROUTE']);
                 if (existingRoute == null || existingRoute is! List || existingRoute.isEmpty) {
-                  await apiSocket.sendSentence([
-                    '/ip/route/add',
-                    '=dst-address=10.0.0.0/16',
-                    '=gateway=wg-backup',
-                    '=comment=TIKNET_WG_ROUTE',
-                  ]);
+                  try {
+                    await apiSocket.sendSentence([
+                      '/ip/route/add',
+                      '=dst-address=10.0.0.0/16',
+                      '=gateway=wg-backup',
+                      '=comment=TIKNET_WG_ROUTE',
+                    ]);
+                  } catch (_) {
+                    await apiSocket.sendSentence([
+                      '/ip/route/add',
+                      '=dst-address=10.0.0.0/16',
+                      '=gateway=wg-backup',
+                      '=routing-table=main',
+                      '=comment=TIKNET_WG_ROUTE',
+                    ]);
+                  }
+                  onLog?.call('✅ [Route OK] Route 10.0.0.0/16 via wg-backup configurée !');
                 }
-              } catch (_) {}
+              } catch (e) {
+                onLog?.call('⚠️ Route note: $e');
+              }
 
               // Top-of-Chain Firewall Accept Rules
               try {
