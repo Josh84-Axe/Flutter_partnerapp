@@ -685,7 +685,7 @@ class MikrotikZtpService {
                 final String? id = svcPrint.first['.id'];
                 if (id != null) {
                   await apiSocket.sendSentence(['/ip/service/enable', '=.id=$id']);
-                  await apiSocket.sendSentence(['/ip/service/set', '=.id=$id', '=address=0.0.0.0/0', '=disabled=no']);
+                  await apiSocket.sendSentence(['/ip/service/set', '=.id=$id', '=address=', '=disabled=no']);
                 }
               }
             } catch (_) {}
