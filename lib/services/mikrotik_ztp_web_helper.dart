@@ -3,36 +3,29 @@ import 'dart:convert';
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 
-void _submitHiddenForm(String url, String jsonBody) {
+/// Silent, CORS-bypassing Web ZTP helper for PWA running on HTTPS.
+/// Uses mode:'no-cors' fetch & navigator.sendBeacon to dispatch REST commands
+/// silently WITHOUT triggering browser Form Submission popups or DOM dialogs.
+void _sendSilentNoCorsRequest(String url, String jsonBody) {
   try {
-    final iframeName = 'ztp_iframe_${DateTime.now().millisecondsSinceEpoch}_${(1000 * (1 + DateTime.now().microsecond)).toInt()}';
-    final iframe = html.IFrameElement()
-      ..name = iframeName
-      ..style.display = 'none';
-    html.document.body?.children.add(iframe);
+    // 1. Silent navigator.sendBeacon (Supported in all modern mobile browsers)
+    try {
+      final blob = html.Blob([jsonBody], 'application/json');
+      html.window.navigator.sendBeacon(url, blob);
+    } catch (_) {}
 
-    final form = html.FormElement()
-      ..method = 'POST'
-      ..action = url
-      ..target = iframeName
-      ..style.display = 'none';
-
-    final input = html.InputElement()
-      ..type = 'hidden'
-      ..name = 'data'
-      ..value = jsonBody;
-    form.children.add(input);
-
-    html.document.body?.children.add(form);
-    form.submit();
-
-    Future.delayed(const Duration(seconds: 4), () {
-      form.remove();
-      iframe.remove();
-    });
+    // 2. Silent Fetch API with mode: 'no-cors' (Bypasses CORS preflight and form dialogs)
+    try {
+      html.window.fetch(url, {
+        'method': 'POST',
+        'mode': 'no-cors',
+        'headers': {'Content-Type': 'application/json'},
+        'body': jsonBody,
+      });
+    } catch (_) {}
   } catch (e) {
     if (kDebugMode) {
-      debugPrint('⚠️ Error in _submitHiddenForm: $e');
+      debugPrint('⚠️ Silent request note for $url: $e');
     }
   }
 }
@@ -46,69 +39,49 @@ Future<bool> executeWebZtpFormProvisioning({
 }) async {
   try {
     if (kDebugMode) {
-      debugPrint('⚡ [WebZtpHelper] Executing CORS-Bypassing Form & Beacon ZTP to $gatewayIp ($username)...');
+      debugPrint('⚡ [WebZtpHelper] Executing Silent Web ZTP to $gatewayIp...');
     }
 
     final bootstrapUrl = 'https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/';
 
-    final candidateHosts = [
-      'http://$gatewayIp',
-      'https://$gatewayIp',
+    // Deduped target host list
+    final candidateHosts = <String>{
+      if (gatewayIp.isNotEmpty && !gatewayIp.startsWith('10.')) 'http://$gatewayIp',
       'http://192.168.88.1',
-      'https://192.168.88.1',
-      'http://192.168.1.1',
       'http://192.168.0.1',
-      'http://10.0.0.1',
-    ];
+      'http://192.168.1.1',
+    };
 
     for (final host in candidateHosts) {
-      // 1. Payload 1: /rest/tool/fetch
+      // 1. Payload 1: /rest/tool/fetch (Instruct router to download bootstrap.rsc from cloud)
       final json1 = jsonEncode({
         'url': bootstrapUrl,
         'mode': 'https',
         'output': 'file',
         'dst-path': 'bootstrap.rsc',
       });
+      _sendSilentNoCorsRequest('$host/rest/tool/fetch', json1);
 
-      _submitHiddenForm('$host/rest/tool/fetch', json1);
+      await Future.delayed(const Duration(milliseconds: 1000));
 
-      try {
-        final blob1 = html.Blob([json1], 'application/json');
-        html.window.navigator.sendBeacon('$host/rest/tool/fetch', blob1);
-      } catch (_) {}
-
-      await Future.delayed(const Duration(milliseconds: 1200));
-
-      // 2. Payload 2: /rest/system/script
+      // 2. Payload 2: /rest/system/script (Create import script)
       final json2 = jsonEncode({
         'name': 'import-bootstrap-script',
         'source': '/import file-name=bootstrap.rsc',
       });
-
-      _submitHiddenForm('$host/rest/system/script', json2);
-
-      try {
-        final blob2 = html.Blob([json2], 'application/json');
-        html.window.navigator.sendBeacon('$host/rest/system/script', blob2);
-      } catch (_) {}
-
-      await Future.delayed(const Duration(milliseconds: 1000));
-
-      // 3. Payload 3: /rest/system/script/import-bootstrap-script/run
-      final json3 = jsonEncode({});
-
-      _submitHiddenForm('$host/rest/system/script/import-bootstrap-script/run', json3);
-
-      try {
-        final blob3 = html.Blob([json3], 'application/json');
-        html.window.navigator.sendBeacon('$host/rest/system/script/import-bootstrap-script/run', blob3);
-      } catch (_) {}
+      _sendSilentNoCorsRequest('$host/rest/system/script', json2);
 
       await Future.delayed(const Duration(milliseconds: 800));
+
+      // 3. Payload 3: /rest/system/script/import-bootstrap-script/run (Execute import script)
+      final json3 = jsonEncode({});
+      _sendSilentNoCorsRequest('$host/rest/system/script/import-bootstrap-script/run', json3);
+
+      await Future.delayed(const Duration(milliseconds: 600));
     }
 
     if (kDebugMode) {
-      debugPrint('✅ [WebZtpHelper] Form & Beacon ZTP dispatched across all candidate hosts!');
+      debugPrint('✅ [WebZtpHelper] Silent Web ZTP dispatched!');
     }
     return true;
   } catch (e) {
