@@ -7,6 +7,11 @@ import 'package:flutter/foundation.dart';
 /// Bypasses HTTP/REST and WebFig to execute commands directly on RouterOS socket.
 class MikrotikApiSocket {
   Socket? _socket;
+  StreamSubscription<Uint8List>? _socketSub;
+  Completer<List<String>>? _activeCompleter;
+  final List<String> _responseWords = [];
+  final List<int> _readBuffer = [];
+
   final String host;
   final int port;
 
@@ -32,13 +37,18 @@ class MikrotikApiSocket {
       _socket = await Socket.connect(host, port, timeout: timeout);
       log('Connected to TCP $host:$port!');
 
+      _readBuffer.clear();
+      _responseWords.clear();
+      _socketSub = _socket!.listen(
+        _onData,
+        onError: _onError,
+        onDone: _onDone,
+        cancelOnError: false,
+      );
+
       final cleanUser = username.trim();
       final cleanPass = password.trim();
 
-      // RouterOS 7.x Plain Login Sentence:
-      // /login
-      // =name=admin
-      // =password=EWQCI2IHXX
       final loginSentence = [
         '/login',
         '=name=$cleanUser',
@@ -63,6 +73,31 @@ class MikrotikApiSocket {
     } catch (e) {
       log('SOCKET ERROR on $host:$port -> $e');
       return false;
+    }
+  }
+
+  void _onData(Uint8List data) {
+    _readBuffer.addAll(data);
+    final parsed = _parseSentences(_readBuffer);
+    if (parsed.isNotEmpty) {
+      _responseWords.addAll(parsed);
+      if (parsed.contains('!done') || parsed.contains('!trap')) {
+        if (_activeCompleter != null && !_activeCompleter!.isCompleted) {
+          _activeCompleter!.complete(List<String>.from(_responseWords));
+        }
+      }
+    }
+  }
+
+  void _onError(dynamic err) {
+    if (_activeCompleter != null && !_activeCompleter!.isCompleted) {
+      _activeCompleter!.completeError(err);
+    }
+  }
+
+  void _onDone() {
+    if (_activeCompleter != null && !_activeCompleter!.isCompleted) {
+      _activeCompleter!.complete(List<String>.from(_responseWords));
     }
   }
 
@@ -98,7 +133,6 @@ class MikrotikApiSocket {
     Duration timeout = const Duration(seconds: 8),
   }) async {
     try {
-      // 1. /system/script/add =name=scriptName =source=scriptSource
       final addSentence = [
         '/system/script/add',
         '=name=$scriptName',
@@ -108,7 +142,6 @@ class MikrotikApiSocket {
       final addOk = addResp.any((w) => w == '!done');
 
       if (!addOk) {
-        // If script already exists, set source instead
         final setSentence = [
           '/system/script/set',
           '=numbers=$scriptName',
@@ -117,7 +150,6 @@ class MikrotikApiSocket {
         await _sendSentenceAndReadResponse(setSentence, timeout: timeout);
       }
 
-      // 2. /system/script/run =number=scriptName
       final runSentence = [
         '/system/script/run',
         '=number=$scriptName',
@@ -135,8 +167,12 @@ class MikrotikApiSocket {
   /// Close connection
   void close() {
     try {
+      _socketSub?.cancel();
+    } catch (_) {}
+    try {
       _socket?.destroy();
     } catch (_) {}
+    _socketSub = null;
     _socket = null;
   }
 
@@ -144,6 +180,9 @@ class MikrotikApiSocket {
 
   Future<List<String>> _sendSentenceAndReadResponse(List<String> words, {required Duration timeout}) async {
     if (_socket == null) return [];
+
+    _responseWords.clear();
+    _activeCompleter = Completer<List<String>>();
 
     final bytes = <int>[];
     for (final word in words) {
@@ -156,36 +195,8 @@ class MikrotikApiSocket {
     _socket!.add(Uint8List.fromList(bytes));
     await _socket!.flush();
 
-    final completer = Completer<List<String>>();
-    final responseWords = <String>[];
-    final buffer = <int>[];
-
-    late StreamSubscription<Uint8List> sub;
-    sub = _socket!.listen(
-      (data) {
-        buffer.addAll(data);
-        final parsed = _parseSentences(buffer);
-        if (parsed.isNotEmpty) {
-          responseWords.addAll(parsed);
-          if (parsed.contains('!done') || parsed.contains('!trap')) {
-            sub.cancel();
-            if (!completer.isCompleted) completer.complete(responseWords);
-          }
-        }
-      },
-      onError: (err) {
-        sub.cancel();
-        if (!completer.isCompleted) completer.completeError(err);
-      },
-      onDone: () {
-        sub.cancel();
-        if (!completer.isCompleted) completer.complete(responseWords);
-      },
-    );
-
-    return completer.future.timeout(timeout, onTimeout: () {
-      sub.cancel();
-      return responseWords;
+    return _activeCompleter!.future.timeout(timeout, onTimeout: () {
+      return List<String>.from(_responseWords);
     });
   }
 
@@ -213,19 +224,18 @@ class MikrotikApiSocket {
 
     while (offset < buffer.length) {
       final lenResult = _decodeLength(buffer, offset);
-      if (lenResult == null) break; // Incomplete length byte
+      if (lenResult == null) break;
 
       final len = lenResult['length'] as int;
       final lenBytesRead = lenResult['bytesRead'] as int;
 
       if (offset + lenBytesRead + len > buffer.length) {
-        break; // Incomplete word bytes
+        break;
       }
 
       offset += lenBytesRead;
 
       if (len == 0) {
-        // End of sentence
         continue;
       }
 
