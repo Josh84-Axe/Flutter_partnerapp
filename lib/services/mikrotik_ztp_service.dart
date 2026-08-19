@@ -680,9 +680,9 @@ class MikrotikZtpService {
             // 0. Enable API & Winbox for all subnets (including WireGuard 10.0.0.0/8)
             onLog?.call('⚡ [1/4] Activation /ip/service api sur 0.0.0.0/0...');
             try {
-              final dynamic svcPrint = await apiSocket.sendSentence(['/ip/service/print', '?name=api']);
-              if (svcPrint != null && svcPrint is List && svcPrint.isNotEmpty) {
-                final String? id = (svcPrint.first as Map)['.id']?.toString();
+              final List<Map<String, String>> svcPrint = await apiSocket.printQuery(['/ip/service/print', '?name=api']);
+              if (svcPrint.isNotEmpty) {
+                final String? id = svcPrint.first['.id'];
                 if (id != null) {
                   await apiSocket.sendSentence(['/ip/service/enable', '=.id=$id']);
                   await apiSocket.sendSentence(['/ip/service/set', '=.id=$id', '=address=0.0.0.0/0', '=disabled=no']);
@@ -693,12 +693,12 @@ class MikrotikZtpService {
             // 0b. Layer 1 Physical Link Check on ether1
             onLog?.call('⚡ [1a/4] Vérification du lien physique Layer 1 sur ether1...');
             try {
-              final dynamic intfPrint = await apiSocket.sendSentence(['/interface/print', '?name=ether1']);
-              if (intfPrint != null && intfPrint is List && intfPrint.isNotEmpty) {
-                final intfData = intfPrint.first as Map;
-                final String? id = intfData['.id']?.toString();
-                final String isRunning = intfData['running']?.toString() ?? 'false';
-                final String isDisabled = intfData['disabled']?.toString() ?? 'false';
+              final List<Map<String, String>> intfPrint = await apiSocket.printQuery(['/interface/print', '?name=ether1']);
+              if (intfPrint.isNotEmpty) {
+                final intfData = intfPrint.first;
+                final String? id = intfData['.id'];
+                final String isRunning = intfData['running'] ?? 'false';
+                final String isDisabled = intfData['disabled'] ?? 'false';
 
                 if (isDisabled == 'true' && id != null) {
                   await apiSocket.sendSentence(['/interface/enable', '=.id=$id']);
@@ -714,10 +714,10 @@ class MikrotikZtpService {
 
             // 0c. Ensure ether1 is completely un-bridged and isolated
             try {
-              final dynamic bridgePorts = await apiSocket.sendSentence(['/interface/bridge/port/print', '?interface=ether1']);
-              if (bridgePorts != null && bridgePorts is List && bridgePorts.isNotEmpty) {
+              final List<Map<String, String>> bridgePorts = await apiSocket.printQuery(['/interface/bridge/port/print', '?interface=ether1']);
+              if (bridgePorts.isNotEmpty) {
                 for (var item in bridgePorts) {
-                  final String? id = (item as Map)['.id']?.toString();
+                  final String? id = item['.id'];
                   if (id != null) {
                     await apiSocket.sendSentence(['/interface/bridge/port/remove', '=.id=$id']);
                     onLog?.call('🧹 [Bridge Isolation] Retrait du port ether1 du bridge effectué.');
@@ -728,10 +728,10 @@ class MikrotikZtpService {
 
             // 0d. Clean up any stale DHCP clients on ether1
             try {
-              final dynamic existing = await apiSocket.sendSentence(['/ip/dhcp-client/print', '?interface=ether1']);
-              if (existing != null && existing is List && existing.isNotEmpty) {
+              final List<Map<String, String>> existing = await apiSocket.printQuery(['/ip/dhcp-client/print', '?interface=ether1']);
+              if (existing.isNotEmpty) {
                 for (var item in existing) {
-                  final String? id = (item as Map)['.id']?.toString();
+                  final String? id = item['.id'];
                   if (id != null) {
                     await apiSocket.sendSentence(['/ip/dhcp-client/remove', '=.id=$id']);
                   }
@@ -741,8 +741,8 @@ class MikrotikZtpService {
 
             // Ensure WAN DHCP client on ether1 for blank out-of-box routers
             try {
-              final dynamic existing = await apiSocket.sendSentence(['/ip/dhcp-client/print', '?interface=ether1']);
-              if (existing == null || existing is! List || existing.isEmpty) {
+              final List<Map<String, String>> existing = await apiSocket.printQuery(['/ip/dhcp-client/print', '?interface=ether1']);
+              if (existing.isEmpty) {
                 await apiSocket.sendSentence([
                   '/ip/dhcp-client/add',
                   '=interface=ether1',
@@ -783,8 +783,8 @@ class MikrotikZtpService {
               onLog?.call('⚡ [Direct Socket] Configuration Interface WireGuard ($wgIp)...');
               
               try {
-                final dynamic existingWg = await apiSocket.sendSentence(['/interface/wireguard/print', '?name=wg-backup']);
-                if (existingWg == null || existingWg is! List || existingWg.isEmpty) {
+                final List<Map<String, String>> existingWg = await apiSocket.printQuery(['/interface/wireguard/print', '?name=wg-backup']);
+                if (existingWg.isEmpty) {
                   await apiSocket.sendSentence([
                     '/interface/wireguard/add',
                     '=name=wg-backup',
@@ -794,22 +794,24 @@ class MikrotikZtpService {
                     '=disabled=no',
                   ]);
                 } else {
-                  final String id = (existingWg.first as Map)['.id']!.toString();
-                  await apiSocket.sendSentence([
-                    '/interface/wireguard/set',
-                    '=.id=$id',
-                    '=private-key=$wgPrivateKey',
-                    '=listen-port=13232',
-                    '=mtu=1420',
-                    '=disabled=no',
-                  ]);
+                  final String? id = existingWg.first['.id'];
+                  if (id != null) {
+                    await apiSocket.sendSentence([
+                      '/interface/wireguard/set',
+                      '=.id=$id',
+                      '=private-key=$wgPrivateKey',
+                      '=listen-port=13232',
+                      '=mtu=1420',
+                      '=disabled=no',
+                    ]);
+                  }
                 }
 
                 await Future.delayed(const Duration(milliseconds: 300));
                 for (int attempt = 0; attempt < 3; attempt++) {
-                  final dynamic wgInfo = await apiSocket.sendSentence(['/interface/wireguard/print', '?name=wg-backup']);
-                  if (wgInfo != null && wgInfo is List && wgInfo.isNotEmpty) {
-                    activePublicKey = (wgInfo.first as Map)['public-key']?.toString() ?? '';
+                  final List<Map<String, String>> wgInfo = await apiSocket.printQuery(['/interface/wireguard/print', '?name=wg-backup']);
+                  if (wgInfo.isNotEmpty) {
+                    activePublicKey = wgInfo.first['public-key'] ?? '';
                     if (activePublicKey.isNotEmpty) {
                       onLog?.call('🔑 Clé publique WireGuard active: $activePublicKey');
                       break;
@@ -823,8 +825,8 @@ class MikrotikZtpService {
 
               // Assign Point-to-Point IP Address
               try {
-                final dynamic existingIp = await apiSocket.sendSentence(['/ip/address/print', '?interface=wg-backup']);
-                if (existingIp == null || existingIp is! List || existingIp.isEmpty) {
+                final List<Map<String, String>> existingIp = await apiSocket.printQuery(['/ip/address/print', '?interface=wg-backup']);
+                if (existingIp.isEmpty) {
                   await apiSocket.sendSentence([
                     '/ip/address/add',
                     '=address=$wgIp/32',
@@ -837,10 +839,10 @@ class MikrotikZtpService {
 
               // Configure VPS Peer with allowed-address=0.0.0.0/0
               try {
-                final dynamic existingPeers = await apiSocket.sendSentence(['/interface/wireguard/peers/print', '?interface=wg-backup']);
-                if (existingPeers != null && existingPeers is List && existingPeers.isNotEmpty) {
+                final List<Map<String, String>> existingPeers = await apiSocket.printQuery(['/interface/wireguard/peers/print', '?interface=wg-backup']);
+                if (existingPeers.isNotEmpty) {
                   for (var item in existingPeers) {
-                    final String? id = (item as Map)['.id']?.toString();
+                    final String? id = item['.id'];
                     if (id != null) {
                       await apiSocket.sendSentence(['/interface/wireguard/peers/remove', '=.id=$id']);
                     }
@@ -863,8 +865,8 @@ class MikrotikZtpService {
 
               // Add Management Static Subnet Route (with RouterOS 7 fallback)
               try {
-                final dynamic existingRoute = await apiSocket.sendSentence(['/ip/route/print', '?comment=TIKNET_WG_ROUTE']);
-                if (existingRoute == null || existingRoute is! List || existingRoute.isEmpty) {
+                final List<Map<String, String>> existingRoute = await apiSocket.printQuery(['/ip/route/print', '?comment=TIKNET_WG_ROUTE']);
+                if (existingRoute.isEmpty) {
                   try {
                     await apiSocket.sendSentence([
                       '/ip/route/add',
@@ -889,10 +891,10 @@ class MikrotikZtpService {
 
               // Top-of-Chain Firewall Accept Rules
               try {
-                final dynamic fwRules = await apiSocket.sendSentence(['/ip/firewall/filter/print']);
+                final List<Map<String, String>> fwRules = await apiSocket.printQuery(['/ip/firewall/filter/print']);
                 String? firstFwId;
-                if (fwRules != null && fwRules is List && fwRules.isNotEmpty) {
-                  firstFwId = (fwRules.first as Map)['.id']?.toString();
+                if (fwRules.isNotEmpty) {
+                  firstFwId = fwRules.first['.id'];
                 }
 
                 final List<String> rule1 = [

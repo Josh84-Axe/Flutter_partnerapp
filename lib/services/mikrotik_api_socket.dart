@@ -101,7 +101,7 @@ class MikrotikApiSocket {
     }
   }
 
-  /// Send arbitrary RouterOS API sentence
+  /// Send arbitrary RouterOS API action sentence (add, set, remove, enable)
   Future<bool> sendSentence(List<String> words, {Duration timeout = const Duration(seconds: 4)}) async {
     try {
       final resp = await _sendSentenceAndReadResponse(words, timeout: timeout);
@@ -111,56 +111,55 @@ class MikrotikApiSocket {
     }
   }
 
+  /// Execute print query sentence and return structured List of key-value maps
+  Future<List<Map<String, String>>> printQuery(List<String> words, {Duration timeout = const Duration(seconds: 4)}) async {
+    try {
+      final resp = await _sendSentenceAndReadResponse(words, timeout: timeout);
+      final items = <Map<String, String>>[];
+      Map<String, String>? currentItem;
+
+      for (final word in resp) {
+        if (word == '!re') {
+          if (currentItem != null && currentItem.isNotEmpty) {
+            items.add(currentItem);
+          }
+          currentItem = <String, String>{};
+        } else if (word == '!done' || word == '!trap') {
+          if (currentItem != null && currentItem.isNotEmpty) {
+            items.add(currentItem);
+            currentItem = null;
+          }
+        } else if (word.startsWith('=')) {
+          final eqIdx = word.indexOf('=', 1);
+          if (eqIdx > 1) {
+            final key = word.substring(1, eqIdx);
+            final val = word.substring(eqIdx + 1);
+            currentItem ??= <String, String>{};
+            currentItem[key] = val;
+          }
+        }
+      }
+
+      if (currentItem != null && currentItem.isNotEmpty) {
+        items.add(currentItem);
+      }
+
+      return items;
+    } catch (_) {
+      return [];
+    }
+  }
+
   /// Read System Identity from RouterOS API
   Future<String?> getSystemIdentity({Duration timeout = const Duration(seconds: 3)}) async {
     try {
-      final resp = await _sendSentenceAndReadResponse(['/system/identity/print'], timeout: timeout);
-      for (final word in resp) {
-        if (word.startsWith('=name=')) {
-          return word.substring(6);
-        }
+      final items = await printQuery(['/system/identity/print'], timeout: timeout);
+      if (items.isNotEmpty) {
+        return items.first['name'];
       }
       return null;
     } catch (_) {
       return null;
-    }
-  }
-
-  /// Create and execute script on RouterOS API
-  Future<bool> executeScript({
-    required String scriptName,
-    required String scriptSource,
-    Duration timeout = const Duration(seconds: 8),
-  }) async {
-    try {
-      final addSentence = [
-        '/system/script/add',
-        '=name=$scriptName',
-        '=source=$scriptSource',
-      ];
-      final addResp = await _sendSentenceAndReadResponse(addSentence, timeout: timeout);
-      final addOk = addResp.any((w) => w == '!done');
-
-      if (!addOk) {
-        final setSentence = [
-          '/system/script/set',
-          '=numbers=$scriptName',
-          '=source=$scriptSource',
-        ];
-        await _sendSentenceAndReadResponse(setSentence, timeout: timeout);
-      }
-
-      final runSentence = [
-        '/system/script/run',
-        '=number=$scriptName',
-      ];
-      final runResp = await _sendSentenceAndReadResponse(runSentence, timeout: timeout);
-      return runResp.any((w) => w == '!done');
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('⚠️ [MikrotikApiSocket] Script execution error: $e');
-      }
-      return false;
     }
   }
 
