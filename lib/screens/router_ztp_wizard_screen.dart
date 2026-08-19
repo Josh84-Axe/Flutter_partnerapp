@@ -1297,37 +1297,30 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                                 terminalOutput.add('📋 Commande ZTP copiée dans le presse-papier !');
                               });
 
-                              if (kIsWeb) {
-                                setModalState(() {
-                                  terminalOutput.add('🌐 [PWA Mode] Ouverture automatique du Terminal WebFig (192.168.88.1)...');
-                                  terminalOutput.add('👉 Collez la commande (Cmd/Ctrl + V) et appuyez sur Entrée dans WebFig !');
-                                });
-                                final uri = Uri.parse('http://$gatewayIp/webfig/#Terminal');
-                                if (await canLaunchUrl(uri)) {
-                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                }
-                              } else {
-                                setModalState(() {
-                                  terminalOutput.add('⚡ Executing ZTP Fetch & Bootstrap Script over Socket API...');
-                                });
+                              setModalState(() {
+                                terminalOutput.add('⚡ Initialisation du provisionnement ZTP dans la console in-app...');
+                              });
 
-                                final res = await _ztpService.executeZtpProvisioning(
-                                  gatewayIp: gatewayIp,
-                                  ztpPayload: _ztpPayload!,
-                                  defaultAdminUsername: _customAdminUsername,
-                                  defaultAdminPassword: _customAdminPassword,
-                                  onProgress: (status, progress) {},
-                                  onLog: (line) {
-                                    setModalState(() {
-                                      terminalOutput.add(line);
-                                    });
-                                  },
-                                );
+                              final res = await _ztpService.executeZtpProvisioning(
+                                gatewayIp: gatewayIp,
+                                ztpPayload: _ztpPayload!,
+                                defaultAdminUsername: _customAdminUsername,
+                                defaultAdminPassword: _customAdminPassword,
+                                onProgress: (status, progress) {
+                                  setModalState(() {
+                                    terminalOutput.add('⏳ $status (${(progress * 100).toInt()}%)');
+                                  });
+                                },
+                                onLog: (line) {
+                                  setModalState(() {
+                                    terminalOutput.add(line);
+                                  });
+                                },
+                              );
 
-                                setModalState(() {
-                                  terminalOutput.add(res ? '✅ Command executed successfully! (!done)' : '⚠️ Execution finished with notes.');
-                                });
-                              }
+                              setModalState(() {
+                                terminalOutput.add(res ? '✅ Provisionnement ZTP exécuté avec succès dans le terminal !' : '⚠️ Exécution terminée avec des remarques.');
+                              });
                             },
                             icon: const Icon(Icons.flash_on, size: 14, color: Colors.black),
                             label: const Text('⚡ Coller & Exécuter ZTP (1-Clic)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black)),
