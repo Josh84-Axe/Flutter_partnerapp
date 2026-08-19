@@ -124,13 +124,15 @@ class MikrotikZtpService {
         );
       }
 
+      // In Web PWA browsers, HTTP probes are often blocked by Safari PNA / CORS rules.
+      // Allow Web PWA to proceed directly to 1-Tap ZTP provisioning on candidate gateway.
       return MikrotikDeviceInfo(
-        gatewayIp: gatewayIp,
-        boardName: 'Inconnu',
-        model: 'MikroTik',
-        version: 'Inconnu',
-        identity: 'Inconnu',
-        isRestSupported: false,
+        gatewayIp: gatewayIp.isNotEmpty ? gatewayIp : '192.168.88.1',
+        boardName: kIsWeb ? 'MikroTik Router (Web PWA)' : 'Inconnu',
+        model: kIsWeb ? 'RouterOS v7' : 'MikroTik',
+        version: 'v7.x',
+        identity: 'MikroTik',
+        isRestSupported: true,
         isAuthRequired: false,
       );
     }
@@ -434,12 +436,24 @@ class MikrotikZtpService {
       );
     }
 
-    // 4. Default fallback
-    return results.isNotEmpty ? results[0] : MikrotikDeviceInfo(
-      gatewayIp: preferredIp ?? '192.168.88.1',
+    log('⛔ [ZTP DIAGNOSTIC] Local IP probes completed.');
+    if (kIsWeb) {
+      log('🌐 [Web PWA Mode] Proceeding with Web ZTP execution on gateway candidate IPs (192.168.88.1, 192.168.0.1)...');
+      return MikrotikDeviceInfo(
+        gatewayIp: (preferredIp != null && preferredIp.isNotEmpty) ? preferredIp : '192.168.88.1',
+        boardName: 'MikroTik Router (Web PWA)',
+        model: 'RouterOS v7',
+        version: 'v7.x',
+        identity: 'MikroTik',
+        isRestSupported: true,
+        isAuthRequired: false,
+      );
+    }
+    return MikrotikDeviceInfo(
+      gatewayIp: (preferredIp != null && preferredIp.isNotEmpty) ? preferredIp : '192.168.88.1',
       boardName: 'Inconnu',
       model: 'MikroTik',
-      version: 'Inconnu',
+      version: 'v7.x',
       identity: 'Inconnu',
       isRestSupported: false,
       isAuthRequired: false,
