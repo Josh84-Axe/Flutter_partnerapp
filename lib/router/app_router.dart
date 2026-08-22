@@ -11,7 +11,7 @@ import '../screens/campus_schedules_screen.dart';
 import '../screens/family_add_device_screen.dart';
 import '../screens/family_devices_screen.dart';
 import '../screens/family_content_policy_screen.dart';
-import '../screens/family_schedule_manager_screen.dart';
+import '../screens/family_rules_screen.dart';
 import '../screens/family_profiles_screen.dart';
 import '../screens/family_network_zones_screen.dart';
 import '../screens/campus_map_screen.dart';
@@ -134,7 +134,7 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/family-schedules',
-      builder: (context, state) => const FamilyScheduleManagerScreen(),
+      builder: (context, state) => const FamilyRulesScreen(),
     ),
     GoRoute(
       path: '/family-profiles',

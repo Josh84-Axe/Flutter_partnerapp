@@ -14,7 +14,7 @@ import '../services/pwa_service.dart';
 import '../widgets/skeleton_loader.dart';
 import '../widgets/app_drawer.dart';
 import 'family_add_device_screen.dart';
-import 'family_schedule_manager_screen.dart';
+import 'family_rules_screen.dart';
 import 'family_network_zones_screen.dart';
 import '../widgets/pwa_install_dialog.dart';
 import '../services/family_api_service.dart';
@@ -346,7 +346,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                 color: colorScheme.tertiary,
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const FamilyScheduleManagerScreen()),
+                    MaterialPageRoute(builder: (_) => const FamilyRulesScreen()),
                   );
                 },
               ).animate().fadeIn(delay: 200.ms),
