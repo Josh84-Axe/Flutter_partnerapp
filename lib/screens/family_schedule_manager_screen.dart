@@ -299,9 +299,14 @@ class _NewScheduleFormState extends State<_NewScheduleForm> {
               const SizedBox(height: 16),
               DropdownButtonFormField<FamilyDevice>(
                 initialValue: _selectedDevice,
-                decoration: const InputDecoration(labelText: 'Select Device'),
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Select Device',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
                 items: devices
-                    .map((d) => DropdownMenuItem(value: d, child: Text(d.deviceName)))
+                    .map((d) => DropdownMenuItem(value: d, child: Text(d.deviceName, overflow: TextOverflow.ellipsis)))
                     .toList(),
                 onChanged: (val) => setState(() => _selectedDevice = val),
                 validator: (v) => v == null ? 'Please select a device' : null,
@@ -311,9 +316,17 @@ class _NewScheduleFormState extends State<_NewScheduleForm> {
                   ? const Center(child: CircularProgressIndicator())
                   : DropdownButtonFormField<ContentPolicy>(
                       initialValue: _selectedPolicy,
-                      decoration: const InputDecoration(labelText: 'Apply Policy'),
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Apply Action / Policy',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
                       items: _policies
-                          .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
+                          .map((p) => DropdownMenuItem(
+                                value: p,
+                                child: Text(p.displayName, overflow: TextOverflow.ellipsis),
+                              ))
                           .toList(),
                       onChanged: (val) => setState(() => _selectedPolicy = val),
                       validator: (v) => v == null ? 'Please select a policy' : null,

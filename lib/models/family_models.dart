@@ -132,12 +132,14 @@ class PolicySchedule {
 class ContentPolicy {
   final int id;
   final String name;
+  final String displayName;
   final String description;
   final Map<String, dynamic> categories;
 
   ContentPolicy({
     required this.id,
     required this.name,
+    required this.displayName,
     required this.description,
     required this.categories,
   });
@@ -146,6 +148,7 @@ class ContentPolicy {
     return ContentPolicy(
       id: json['id'],
       name: json['name'] ?? '',
+      displayName: json['display_name'] ?? json['name'] ?? '',
       description: json['description'] ?? '',
       categories: Map<String, dynamic>.from(json['categories'] ?? {}),
     );
