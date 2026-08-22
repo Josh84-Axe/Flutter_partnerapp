@@ -205,6 +205,7 @@ class ScreenTimeRule {
   final List<int> allowedDays;
   final TimeOfDay? accessStart;
   final TimeOfDay? accessEnd;
+  final bool isBlockWindow;
   bool isEnabled;
 
   ScreenTimeRule({
@@ -216,6 +217,7 @@ class ScreenTimeRule {
     required this.allowedDays,
     this.accessStart,
     this.accessEnd,
+    this.isBlockWindow = true,
     this.isEnabled = true,
   });
 
@@ -243,6 +245,7 @@ class ScreenTimeRule {
       allowedDays: (json['allowed_days'] as List<dynamic>?)?.map((e) => e as int).toList() ?? [],
       accessStart: _parseTime(json['access_start']),
       accessEnd: _parseTime(json['access_end']),
+      isBlockWindow: json['is_block_window'] ?? true,
       isEnabled: json['is_enabled'] ?? true,
     );
   }
@@ -254,6 +257,7 @@ class ScreenTimeRule {
       'allowed_days': allowedDays,
       'access_start': _formatTime(accessStart),
       'access_end': _formatTime(accessEnd),
+      'is_block_window': isBlockWindow,
       'is_enabled': isEnabled,
     };
   }

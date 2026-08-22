@@ -669,6 +669,7 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
       allowedDays: _selectedDays.toList()..sort(),
       accessStart: _automationType == AutomationType.timeWindow || _hasTimeWindow ? _accessStart : null,
       accessEnd: _automationType == AutomationType.timeWindow || _hasTimeWindow ? _accessEnd : null,
+      isBlockWindow: _automationType == AutomationType.timeWindow,
     );
 
     Navigator.pop(context, rule);
