@@ -88,14 +88,22 @@ class _PaymentGatewayScreenState extends State<PaymentGatewayScreen> {
   @override
   Widget build(BuildContext context) {
     final rawCountry = widget.userData?['country']?.toString().toLowerCase() ?? '';
+    final currencyUpper = widget.currency.trim().toUpperCase();
+
+    final isAnglophoneCurrency = currencyUpper == 'GHS' || currencyUpper == 'NGN' || currencyUpper == 'KES' || 
+                                 currencyUpper == 'USD' || currencyUpper == 'ZAR' || currencyUpper == 'GH₵' || 
+                                 currencyUpper == '₦' || currencyUpper == 'KSH';
+
+    final isAnglophoneCountry = rawCountry == 'gh' || rawCountry == 'ng' || rawCountry == 'ke' || rawCountry == 'za' || rawCountry == 'us';
+
     final isFrancophoneCountry = rawCountry == 'ci' || rawCountry == 'sn' || rawCountry == 'ml' || rawCountry == 'bj' || 
                                  rawCountry == 'bf' || rawCountry == 'ne' || rawCountry == 'tg' || rawCountry == 'cm' || 
                                  rawCountry == 'ga' || rawCountry == 'cg' || rawCountry == 'td' || rawCountry == 'gn';
 
-    final isFrancophoneCurrency = widget.currency == 'XOF' || widget.currency == 'XAF' || widget.currency == 'GNF' || 
-                                  widget.currency == 'FG' || widget.currency == 'CFA' || widget.currency.contains('CFA');
+    final isFrancophoneCurrency = currencyUpper == 'XOF' || currencyUpper == 'XAF' || currencyUpper == 'GNF' || 
+                                  currencyUpper == 'FG' || currencyUpper == 'CFA' || currencyUpper.contains('CFA');
 
-    final bool isCinetPay = isFrancophoneCurrency || isFrancophoneCountry || widget.email == 'ketiglo15@gmail.com';
+    final bool isCinetPay = !isAnglophoneCurrency && !isAnglophoneCountry && (isFrancophoneCurrency || isFrancophoneCountry);
     
     return PopScope(
       canPop: _isExiting,
