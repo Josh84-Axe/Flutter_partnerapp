@@ -108,10 +108,14 @@ class FamilyProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> pauseAllInternet(bool pause) async {
+  Future<bool> pauseAllInternet(bool pause, {int? durationMinutes}) async {
     _isLoading = true;
     _error = null;
     
+    final pauseUntil = pause && durationMinutes != null 
+        ? DateTime.now().add(Duration(minutes: durationMinutes))
+        : null;
+
     // Batch Optimistic Update
     final originalDevices = List<FamilyDevice>.from(_devices);
     for (int i = 0; i < _devices.length; i++) {
@@ -122,7 +126,7 @@ class FamilyProvider extends ChangeNotifier {
         macAddress: _devices[i].macAddress,
         isPaused: pause,
         isOnline: _devices[i].isOnline,
-        pauseUntil: null,
+        pauseUntil: pauseUntil,
         activePolicyId: _devices[i].activePolicyId,
         activePolicyName: _devices[i].activePolicyName,
         vendor: _devices[i].vendor,
@@ -136,8 +140,8 @@ class FamilyProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Use the new batch endpoint on the backend
-      final success = await FamilyApiService.pauseAllDevices(pause);
+      // Use the batch endpoint on the backend with optional duration
+      final success = await FamilyApiService.pauseAllDevices(pause, durationMinutes: durationMinutes);
       
       if (!success) {
         _devices = originalDevices;

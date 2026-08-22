@@ -23,10 +23,21 @@ class VoucherProvider with ChangeNotifier {
 
     try {
       final vouchers = await _repository.fetchVouchers(planId);
-      // Safeguard: Filter by planId on frontend in case backend returns unfiltered list
+      // Safeguard 1: Filter by planId on frontend in case backend returns unfiltered list
       final filtered = vouchers.where((v) => v.planId == planId).toList();
-      if (kDebugMode) debugPrint('🎫 [VoucherProvider] Loaded ${vouchers.length} vouchers, ${filtered.length} matched plan $planId');
-      _planVouchers[planId] = filtered;
+      
+      // Safeguard 2: Deduplicate by unique voucher code/id to prevent duplicate UI items
+      final Map<String, VoucherModel> uniqueMap = {};
+      for (var v in filtered) {
+        final key = v.code.isNotEmpty ? v.code : v.id;
+        if (key.isNotEmpty) {
+          uniqueMap[key] = v;
+        }
+      }
+      
+      final deduplicated = uniqueMap.values.toList();
+      if (kDebugMode) debugPrint('🎫 [VoucherProvider] Loaded ${vouchers.length} vouchers, ${deduplicated.length} unique matched plan $planId');
+      _planVouchers[planId] = deduplicated;
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -42,12 +53,26 @@ class VoucherProvider with ChangeNotifier {
 
     try {
       final newVouchers = await _repository.generateVouchers(planId, quantity);
-      // Safeguard: Also filter new vouchers to ensure they belong to this plan
+      // Safeguard 1: Also filter new vouchers to ensure they belong to this plan
       final filteredNew = newVouchers.where((v) => v.planId == planId).toList();
-      if (kDebugMode) debugPrint('🎫 [VoucherProvider] Generated ${newVouchers.length} vouchers, ${filteredNew.length} matched plan $planId');
       
       final currentVouchers = _planVouchers[planId] ?? [];
-      _planVouchers[planId] = [...filteredNew, ...currentVouchers];
+      
+      // Safeguard 2: Deduplicate combined list by unique voucher code/id
+      final Map<String, VoucherModel> uniqueMap = {};
+      for (var v in currentVouchers) {
+        final key = v.code.isNotEmpty ? v.code : v.id;
+        if (key.isNotEmpty) uniqueMap[key] = v;
+      }
+      for (var v in filteredNew) {
+        final key = v.code.isNotEmpty ? v.code : v.id;
+        if (key.isNotEmpty) uniqueMap[key] = v;
+      }
+
+      final deduplicatedCombined = uniqueMap.values.toList();
+      if (kDebugMode) debugPrint('🎫 [VoucherProvider] Generated ${newVouchers.length} vouchers, total unique: ${deduplicatedCombined.length}');
+      
+      _planVouchers[planId] = deduplicatedCombined;
       
       return filteredNew;
     } catch (e) {

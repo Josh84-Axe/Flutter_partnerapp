@@ -48,7 +48,14 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
       orElse: () => null,
     );
 
-    final vouchers = provider.getVouchersForPlan(widget.planId).where((v) {
+    final rawVouchers = provider.getVouchersForPlan(widget.planId);
+    final Map<String, VoucherModel> uniqueVouchersMap = {};
+    for (var v in rawVouchers) {
+      final key = v.code.isNotEmpty ? v.code : v.id;
+      if (key.isNotEmpty) uniqueVouchersMap[key] = v;
+    }
+
+    final vouchers = uniqueVouchersMap.values.where((v) {
       return _showUsed ? true : v.isActive;
     }).toList();
     

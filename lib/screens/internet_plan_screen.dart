@@ -118,7 +118,19 @@ class _InternetPlanScreenState extends State<InternetPlanScreen> {
   Widget build(BuildContext context) {
     final networkProvider = context.watch<NetworkProvider>();
     final userProvider = context.watch<UserProvider>();
-    final plans = networkProvider.plans;
+    final activeRouters = networkProvider.visibleRouters;
+    final activeRouterIds = activeRouters.map((r) => r.id.toString()).toSet();
+    final activeRouterNamesSet = activeRouters.map((r) => r.name.toLowerCase()).toSet();
+
+    final plans = networkProvider.plans.where((plan) {
+      if (plan.routers.isEmpty) return true; // Global plan
+      return plan.routers.any((pr) {
+        final prName = pr.name.toLowerCase();
+        final prId = pr.id.toString();
+        return (prId != '0' && activeRouterIds.contains(prId)) ||
+               (prName.isNotEmpty && activeRouterNamesSet.contains(prName));
+      });
+    }).toList();
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 

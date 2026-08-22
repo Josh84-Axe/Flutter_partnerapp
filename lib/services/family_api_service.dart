@@ -74,9 +74,10 @@ class FamilyApiService {
     return response.statusCode == 200;
   }
 
-  static Future<bool> pauseAllDevices(bool pause) async {
+  static Future<bool> pauseAllDevices(bool pause, {int? durationMinutes}) async {
     final response = await locator<Dio>().post('/devices/pause-all/', data: {
         'action': pause ? 'pause' : 'unpause',
+        if (durationMinutes != null) 'duration_minutes': durationMinutes,
       });
 
     return response.statusCode == 200;

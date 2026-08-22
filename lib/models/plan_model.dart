@@ -9,12 +9,23 @@ class PlanRouter {
     required this.dnsName,
   });
 
-  factory PlanRouter.fromJson(Map<String, dynamic> json) {
-    return PlanRouter(
-      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
-      name: json['name'] ?? '',
-      dnsName: json['dns_name'] ?? '',
-    );
+  factory PlanRouter.fromJson(dynamic json) {
+    if (json is Map<String, dynamic>) {
+      return PlanRouter(
+        id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '') ?? 0,
+        name: json['name']?.toString() ?? json['dns_name']?.toString() ?? '',
+        dnsName: json['dns_name']?.toString() ?? '',
+      );
+    } else if (json is int) {
+      return PlanRouter(id: json, name: '', dnsName: '');
+    } else if (json is String) {
+      final parsedId = int.tryParse(json);
+      if (parsedId != null) {
+        return PlanRouter(id: parsedId, name: '', dnsName: '');
+      }
+      return PlanRouter(id: 0, name: json, dnsName: json);
+    }
+    return PlanRouter(id: 0, name: '', dnsName: '');
   }
 }
 

@@ -181,6 +181,7 @@ class MikrotikApiSocket {
     if (_socket == null) return [];
 
     _responseWords.clear();
+    _readBuffer.clear();
     _activeCompleter = Completer<List<String>>();
 
     final bytes = <int>[];

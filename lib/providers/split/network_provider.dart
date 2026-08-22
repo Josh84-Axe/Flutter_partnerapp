@@ -198,7 +198,28 @@ class NetworkProvider with ChangeNotifier {
       if (slug.isEmpty) return;
       
       final resources = await fetchRouterResources(slug);
-      _routerResourceAlive[slug] = resources.isNotEmpty;
+      
+      // Unwrap data object if nested
+      final Map<String, dynamic> data = (resources['data'] is Map)
+          ? Map<String, dynamic>.from(resources['data'])
+          : ((resources['results'] is Map)
+              ? Map<String, dynamic>.from(resources['results'])
+              : resources);
+
+      // Check if backend explicitly reported router error or offline state
+      final bool isError = resources['error'] == true || data['error'] != null;
+      final bool isExplicitlyOffline = data['is_connected'] == false || 
+                                       data['is_online'] == false || 
+                                       data['status'] == 'offline';
+      
+      final bool hasLiveResourceData = data.containsKey('cpu-load') || 
+                                       data.containsKey('cpu_load') || 
+                                       data.containsKey('uptime') ||
+                                       data['is_connected'] == true ||
+                                       data['is_online'] == true ||
+                                       data['status'] == 'online';
+
+      _routerResourceAlive[slug] = !isError && !isExplicitlyOffline && hasLiveResourceData;
     } catch (e) {
       _routerResourceAlive[router.slug] = false;
     }
@@ -316,6 +337,7 @@ class NetworkProvider with ChangeNotifier {
     try {
       await _routerRepository!.deleteRouter(routerId);
       await loadRouters();
+      await loadPlans();
       _error = null;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [NetworkProvider] Error deleting router: $e');

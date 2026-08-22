@@ -27,8 +27,12 @@ class RouterModel {
       name: json['name'] ?? '',
       slug: json['slug'] ?? '',
       ipAddress: json['ip_address'],
-      // Basic mapping from 'is_active' until real health endpoints are integrated
-      status: (json['is_active'] == true) ? 'online' : 'offline',
+      // Prefer explicit connectivity status from API if present
+      status: (json['is_online'] == true || json['is_connected'] == true || json['status'] == 'online')
+          ? 'online'
+          : (json['status'] == 'offline' || json['is_connected'] == false || json['is_online'] == false
+              ? 'offline'
+              : ((json['is_active'] == true) ? 'online' : 'offline')),
       connectedUsers: json['connected_users'] ?? 0,
       dataUsageGB: (json['data_usage_gb'] as num?)?.toDouble() ?? 0.0,
       uptimeHours: json['uptime_hours'] ?? 0,

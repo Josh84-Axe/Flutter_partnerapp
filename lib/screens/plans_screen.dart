@@ -46,25 +46,59 @@ class _PlansScreenState extends State<PlansScreen> {
     final userProvider = context.watch<UserProvider>();
     final authProvider = context.watch<AuthProvider>();
     final user = userProvider.currentUser;
-    final allPlans = networkProvider.getPlansForUser(user?.role, user?.assignedRouters);
-    final filteredPlans = allPlans.where((plan) {
+    final activeRouters = networkProvider.visibleRouters;
+    
+    // Group active router names from active non-deleted routers
+    final allRouterNames = activeRouters
+        .map((r) => r.name)
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+
+    final activeRouterIds = activeRouters.map((r) => r.id.toString()).toSet();
+    final activeRouterNamesSet = activeRouters.map((r) => r.name.toLowerCase()).toSet();
+
+    final rawPlans = networkProvider.getPlansForUser(user?.role, user?.assignedRouters);
+
+    // Filter out plans attached ONLY to deleted routers
+    final validPlans = rawPlans.where((plan) {
+      if (plan.routers.isEmpty) return true; // Global plan
+      return plan.routers.any((pr) {
+        final prName = pr.name.toLowerCase();
+        final prId = pr.id.toString();
+        return (prId != '0' && activeRouterIds.contains(prId)) ||
+               (prName.isNotEmpty && activeRouterNamesSet.contains(prName));
+      });
+    }).toList();
+
+    final filteredPlans = validPlans.where((plan) {
       // Apply Search filter
       bool matchesSearch = _searchQuery.isEmpty || 
           plan.name.toLowerCase().contains(_searchQuery.toLowerCase());
       
       // Apply Router filter
-      bool matchesRouter = _selectedRouter == 'all' || 
-          plan.routers.any((r) => r.name == _selectedRouter);
+      bool matchesRouter = false;
+      if (_selectedRouter == 'all') {
+        matchesRouter = true;
+      } else {
+        // Find matching active router model if any
+        final selectedRouterModel = activeRouters.firstWhere(
+          (r) => r.name == _selectedRouter || r.id == _selectedRouter || r.slug == _selectedRouter,
+          orElse: () => activeRouters.isNotEmpty ? activeRouters.first : activeRouters.first,
+        );
+
+        matchesRouter = plan.routers.isEmpty || plan.routers.any((r) {
+          if (r.name.isNotEmpty && r.name.toLowerCase() == _selectedRouter.toLowerCase()) return true;
+          if (r.id > 0 && (r.id.toString() == _selectedRouter || r.id.toString() == selectedRouterModel.id)) return true;
+          if (selectedRouterModel.name.isNotEmpty && r.name.toLowerCase() == selectedRouterModel.name.toLowerCase()) return true;
+          return false;
+        });
+      }
           
       return matchesSearch && matchesRouter;
     }).toList();
 
-    // Group unique router names for filter dropdown
-    final allRouterNames = networkProvider.plans
-        .expand((plan) => plan.routers.map((r) => r.name))
-        .toSet()
-        .toList()
-      ..sort();
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 

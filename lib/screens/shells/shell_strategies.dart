@@ -221,7 +221,7 @@ class FamilyVariantStrategy implements AppVariantStrategy {
     return [
       NavigationDestination(icon: const Icon(Icons.home), label: 'Home'),
       NavigationDestination(icon: const Icon(Icons.family_restroom), label: 'Family'),
-      NavigationDestination(icon: const Icon(Icons.timer), label: 'Rules'),
+      NavigationDestination(icon: const Icon(Icons.schedule), label: 'Schedules & Rules'),
       NavigationDestination(icon: const Icon(Icons.router), label: 'Network'),
     ];
   }
@@ -231,7 +231,7 @@ class FamilyVariantStrategy implements AppVariantStrategy {
     return [
       NavigationRailDestination(icon: const Icon(Icons.home), label: Text('family_app.nav.home'.tr())),
       NavigationRailDestination(icon: const Icon(Icons.family_restroom), label: Text('family_app.nav.family'.tr())),
-      NavigationRailDestination(icon: const Icon(Icons.timer), label: Text('family_app.nav.rules'.tr())),
+      NavigationRailDestination(icon: const Icon(Icons.schedule), label: const Text('Schedules & Rules')),
       NavigationRailDestination(icon: const Icon(Icons.router), label: Text('family_app.nav.network'.tr())),
     ];
   }

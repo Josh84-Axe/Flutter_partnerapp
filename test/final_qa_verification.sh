@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Configuration
-API_KEY="aPuOwuzgw2HWPiWuVM5AcwexsVNiKKJkqEWXFHN2nHE"
+API_KEY="QNBBRFCO0rfnxFxS9buqx2cMjTbDwQEd3Zwhew_TXMI"
 BASE_URL="https://api.coleah.com/api/cases/external/cases"
-TEST_EMAIL="verification@tiknetafrica.com"
+TEST_EMAIL="tiknetassist@gmail.com"
 
 echo "🧪 [QA] Final Verification of Support Ticket System..."
 

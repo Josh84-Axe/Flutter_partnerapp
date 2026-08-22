@@ -119,21 +119,54 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
     final networkProvider = context.watch<NetworkProvider>();
     final userProvider = context.watch<UserProvider>();
     
-    // Filter logic
-    final plans = networkProvider.plans.where((plan) {
-      final matchesSearch = _searchQuery.isEmpty || 
-          plan.name.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesRouter = _selectedRouter == 'all' || 
-          plan.routers.any((r) => r.name == _selectedRouter);
-      return matchesSearch && matchesRouter;
-    }).toList();
-
-    // Unique router names for filtering
-    final allRouterNames = networkProvider.plans
-        .expand((plan) => plan.routers.map((r) => r.name))
+    final activeRouters = networkProvider.visibleRouters;
+    
+    // Group active router names from active non-deleted routers
+    final allRouterNames = activeRouters
+        .map((r) => r.name)
+        .where((name) => name.isNotEmpty)
         .toSet()
         .toList()
       ..sort();
+
+    final activeRouterIds = activeRouters.map((r) => r.id.toString()).toSet();
+    final activeRouterNamesSet = activeRouters.map((r) => r.name.toLowerCase()).toSet();
+
+    // Filter out plans attached ONLY to deleted routers
+    final validPlans = networkProvider.plans.where((plan) {
+      if (plan.routers.isEmpty) return true; // Global plan
+      return plan.routers.any((pr) {
+        final prName = pr.name.toLowerCase();
+        final prId = pr.id.toString();
+        return (prId != '0' && activeRouterIds.contains(prId)) ||
+               (prName.isNotEmpty && activeRouterNamesSet.contains(prName));
+      });
+    }).toList();
+
+    // Filter logic
+    final plans = validPlans.where((plan) {
+      final matchesSearch = _searchQuery.isEmpty || 
+          plan.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      
+      bool matchesRouter = false;
+      if (_selectedRouter == 'all') {
+        matchesRouter = true;
+      } else {
+        final selectedRouterModel = activeRouters.firstWhere(
+          (r) => r.name == _selectedRouter || r.id == _selectedRouter || r.slug == _selectedRouter,
+          orElse: () => activeRouters.isNotEmpty ? activeRouters.first : activeRouters.first,
+        );
+
+        matchesRouter = plan.routers.isEmpty || plan.routers.any((r) {
+          if (r.name.isNotEmpty && r.name.toLowerCase() == _selectedRouter.toLowerCase()) return true;
+          if (r.id > 0 && (r.id.toString() == _selectedRouter || r.id.toString() == selectedRouterModel.id)) return true;
+          if (selectedRouterModel.name.isNotEmpty && r.name.toLowerCase() == selectedRouterModel.name.toLowerCase()) return true;
+          return false;
+        });
+      }
+
+      return matchesSearch && matchesRouter;
+    }).toList();
 
     final colorScheme = Theme.of(context).colorScheme;
 
