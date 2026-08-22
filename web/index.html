@@ -375,9 +375,9 @@
           transaction_id: config.transactionId, amount: config.amount, currency: config.currency,
           channels: 'ALL', description: config.description, customer_name: config.customerName,
           customer_surname: config.customerSurname, customer_email: config.customerEmail,
-          customer_phone_number: config.customerPhoneNumber, customer_address: "Abidjan",
-          customer_city: "Abidjan", customer_country: "CI", customer_state: "CI",
-          customer_zip_code: "00225", return_url: config.returnUrl, wait_response: true
+          customer_phone_number: config.customerPhoneNumber, customer_address: config.address || "Main Street",
+          customer_city: config.city || (config.country === "TG" ? "Lomé" : "Abidjan"), customer_country: config.country || (config.currency === "XOF" ? "TG" : "CI"), customer_state: config.country || "TG",
+          customer_zip_code: config.country === "TG" ? "00228" : "00225", return_url: config.returnUrl, wait_response: true
         });
 
         CinetPay.waitResponse(function(data) {
