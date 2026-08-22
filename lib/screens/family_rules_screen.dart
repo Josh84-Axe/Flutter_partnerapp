@@ -617,6 +617,8 @@ class _EmptyState extends StatelessWidget {
 // Add Rule Bottom Sheet
 // ─────────────────────────────────────────────────────────────────────────────
 
+enum AutomationType { timeWindow, dailyCap }
+
 class _AddRuleSheet extends StatefulWidget {
   final List<FamilyDevice> devices;
 
@@ -630,13 +632,15 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
   final _formKey = GlobalKey<FormState>();
   final _labelController = TextEditingController();
 
+  AutomationType _automationType = AutomationType.timeWindow;
   FamilyDevice? _selectedDevice;
   double _dailyLimitMinutes = 120; // 2 hours default
-  bool _hasTimeWindow = false;
-  TimeOfDay _accessStart = const TimeOfDay(hour: 7, minute: 0);
-  TimeOfDay _accessEnd = const TimeOfDay(hour: 21, minute: 0);
+  bool _hasTimeWindow = true;
+  TimeOfDay _accessStart = const TimeOfDay(hour: 21, minute: 0);
+  TimeOfDay _accessEnd = const TimeOfDay(hour: 6, minute: 0);
   final Set<int> _selectedDays = {0, 1, 2, 3, 4, 5, 6};
   bool _unlimitedTime = false;
+  String _selectedPolicy = '⏸️ Bedtime Pause (Complete Block)';
 
   static const _dayLabels = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
@@ -654,13 +658,17 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
 
     final rule = ScreenTimeRule(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      label: _labelController.text.trim(),
+      label: _labelController.text.trim().isEmpty
+          ? (_automationType == AutomationType.timeWindow ? 'Schedule / Curfew' : 'Daily Limit')
+          : _labelController.text.trim(),
       deviceName: _selectedDevice!.deviceName,
       deviceId: _selectedDevice!.id,
-      dailyLimitMinutes: _unlimitedTime ? 0 : _dailyLimitMinutes.toInt(),
+      dailyLimitMinutes: _automationType == AutomationType.dailyCap
+          ? (_unlimitedTime ? 0 : _dailyLimitMinutes.toInt())
+          : 0,
       allowedDays: _selectedDays.toList()..sort(),
-      accessStart: _hasTimeWindow ? _accessStart : null,
-      accessEnd: _hasTimeWindow ? _accessEnd : null,
+      accessStart: _automationType == AutomationType.timeWindow || _hasTimeWindow ? _accessStart : null,
+      accessEnd: _automationType == AutomationType.timeWindow || _hasTimeWindow ? _accessEnd : null,
     );
 
     Navigator.pop(context, rule);
@@ -697,16 +705,49 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                 padding: EdgeInsets.fromLTRB(
                     20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 24),
                 children: [
-                  Text('New Screen Time Rule',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurface)),
+                  Text(
+                    _automationType == AutomationType.timeWindow
+                        ? 'New Time Schedule (Curfew)'
+                        : 'New Daily Usage Limit',
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Set limits on when and how long a device can be used.',
-                      style: TextStyle(
-                          color: colorScheme.onSurface.withValues(alpha: 0.6))),
-                  const SizedBox(height: 24),
+                  Text(
+                    'Configure automated access rules and device controls.',
+                    style: TextStyle(
+                        color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Unified Toggle Segment
+                  SegmentedButton<AutomationType>(
+                    segments: const [
+                      ButtonSegment(
+                        value: AutomationType.timeWindow,
+                        label: Text('🕒 Time Schedule'),
+                        icon: Icon(Icons.schedule),
+                      ),
+                      ButtonSegment(
+                        value: AutomationType.dailyCap,
+                        label: Text('⏳ Daily Cap'),
+                        icon: Icon(Icons.hourglass_top),
+                      ),
+                    ],
+                    selected: {_automationType},
+                    onSelectionChanged: (Set<AutomationType> newSelection) {
+                      setState(() {
+                        _automationType = newSelection.first;
+                        if (_automationType == AutomationType.timeWindow) {
+                          _hasTimeWindow = true;
+                        }
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
                   Form(
                     key: _formKey,
                     child: Column(
@@ -716,8 +757,10 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                         TextFormField(
                           controller: _labelController,
                           decoration: InputDecoration(
-                            labelText: 'Rule Name',
-                            hintText: 'e.g. Bedtime, School Day',
+                            labelText: _automationType == AutomationType.timeWindow
+                                ? 'Schedule Name (e.g. Bedtime, Study Hour)'
+                                : 'Rule Name (e.g. Weekday Limit)',
+                            hintText: 'e.g. Bedtime',
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12)),
                           ),
@@ -740,7 +783,42 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                               setState(() => _selectedDevice = v),
                           validator: (v) => v == null ? 'Select a device' : null,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
+
+                        // Action / Policy Selector for Time Schedules
+                        if (_automationType == AutomationType.timeWindow) ...[
+                          DropdownButtonFormField<String>(
+                            value: _selectedPolicy,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              labelText: 'Apply Action / Policy',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: '⏸️ Bedtime Pause (Complete Block)',
+                                child: Text('⏸️ Bedtime Pause (Complete Block)'),
+                              ),
+                              DropdownMenuItem(
+                                value: '🛡️ Family Safe (Strict)',
+                                child: Text('🛡️ Family Safe (Strict)'),
+                              ),
+                              DropdownMenuItem(
+                                value: '🔒 Security Enhanced',
+                                child: Text('🔒 Security Enhanced'),
+                              ),
+                              DropdownMenuItem(
+                                value: '🌐 Unfiltered (Full Access)',
+                                child: Text('🌐 Unfiltered (Full Access)'),
+                              ),
+                            ],
+                            onChanged: (v) {
+                              if (v != null) setState(() => _selectedPolicy = v);
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                        ],
 
                         // Daily Limit
                         _SectionHeader(
