@@ -17,6 +17,7 @@ import 'family_add_device_screen.dart';
 import 'family_schedule_manager_screen.dart';
 import 'family_network_zones_screen.dart';
 import '../widgets/pwa_install_dialog.dart';
+import '../services/family_api_service.dart';
 import '../widgets/active_traffic_feed_widget.dart';
 import 'package:flutter/foundation.dart';
 
@@ -52,11 +53,22 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
     super.dispose();
   }
 
+  List<UnclaimedDevice> _unclaimedDevices = [];
+
+  Future<void> _fetchUnclaimed() async {
+    try {
+      final list = await FamilyApiService.fetchUnclaimedDevices();
+      if (mounted) setState(() => _unclaimedDevices = list);
+    } catch (_) {}
+  }
+
   Future<void> _handleRefresh(BuildContext context) async {
     final familyProvider = context.read<FamilyProvider>();
     final userProvider = context.read<UserProvider>();
     final networkProvider = context.read<NetworkProvider>();
     final authProvider = context.read<AuthProvider>();
+
+    _fetchUnclaimed();
 
     await Future.wait([
       familyProvider.loadData(forceRefresh: true),
@@ -320,6 +332,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                 title: 'Add\nDevice', 
                 icon: Icons.add_to_home_screen, 
                 color: colorScheme.primary,
+                badgeCount: _unclaimedDevices.length,
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const FamilyAddDeviceScreen()),
@@ -342,18 +355,17 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                 title: 'Pause\nInternet', 
                 icon: Icons.pause_circle_filled, 
                 color: colorScheme.error,
-                onTap: () async {
+                onTap: () {
                   final provider = context.read<FamilyProvider>();
                   final currentlyPaused = provider.devices.isNotEmpty && provider.devices.every((d) => d.isPaused);
                   
-                  final success = await provider.pauseAllInternet(!currentlyPaused);
-                  
-                  if (context.mounted) {
+                  if (currentlyPaused) {
+                    provider.pauseAllInternet(false);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(success 
-                        ? (currentlyPaused ? 'Internet restored for all devices' : 'All devices paused') 
-                        : 'Failed to update devices')),
+                      const SnackBar(content: Text('Internet restored for all devices')),
                     );
+                  } else {
+                    _showBatchPauseOptions(context, provider);
                   }
                 },
               ).animate().fadeIn(delay: 300.ms),
@@ -567,7 +579,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
     );
   }
 
-  Widget _buildActionCard(BuildContext context, {required String title, required IconData icon, required Color color, required VoidCallback onTap}) {
+  Widget _buildActionCard(BuildContext context, {required String title, required IconData icon, required Color color, required VoidCallback onTap, int? badgeCount}) {
     return SizedBox(
       width: 75,
       child: Material(
@@ -582,15 +594,38 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  height: 60,
-                  width: 60,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: color.withValues(alpha: 0.2)),
-                  ),
-                  child: Icon(icon, color: color, size: 28),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      height: 60,
+                      width: 60,
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: color.withValues(alpha: 0.2)),
+                      ),
+                      child: Icon(icon, color: color, size: 28),
+                    ),
+                    if (badgeCount != null && badgeCount > 0)
+                      Positioned(
+                        top: -4,
+                        right: -4,
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                          child: Text(
+                            '$badgeCount',
+                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -826,6 +861,62 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                 }),
                 _buildPauseOption(context, Icons.pause_circle_filled, 'Indefinitely', () {
                   provider.toggleDevicePause(device.id, true);
+                }, isDestructive: true),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showBatchPauseOptions(BuildContext context, FamilyProvider provider) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                  child: Text(
+                    'Pause All Household Devices', 
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildPauseOption(context, Icons.restaurant, 'For 30 minutes (Dinner Time)', () {
+                  provider.pauseAllInternet(true, durationMinutes: 30);
+                  Navigator.of(context).pop();
+                }),
+                _buildPauseOption(context, Icons.hourglass_bottom, 'For 1 hour (Study Break)', () {
+                  provider.pauseAllInternet(true, durationMinutes: 60);
+                  Navigator.of(context).pop();
+                }),
+                _buildPauseOption(context, Icons.bedtime, 'For 2 hours (Bedtime)', () {
+                  provider.pauseAllInternet(true, durationMinutes: 120);
+                  Navigator.of(context).pop();
+                }),
+                _buildPauseOption(context, Icons.pause_circle_filled, 'Indefinitely', () {
+                  provider.pauseAllInternet(true);
+                  Navigator.of(context).pop();
                 }, isDestructive: true),
                 const SizedBox(height: 16),
               ],

@@ -175,12 +175,19 @@ class _FamilyContentPolicyScreenState extends State<FamilyContentPolicyScreen> {
   }
 
   IconData _getIconForPolicy(String name) {
+    if (name.contains('PAUSED')) return Icons.pause_circle_filled;
     if (name.contains('UNFILTERED')) return Icons.public;
     if (name.contains('CIPA')) return Icons.gavel;
+    if (name.contains('SECURITY_ENHANCED')) return Icons.security;
     return Icons.family_restroom;
   }
 
   String _formatPolicyName(String name) {
+    if (name.contains('PAUSED')) return '⏸️ Complete Internet Pause (Bedtime Block)';
+    if (name.contains('FAMILY_SAFE')) return '🧒 Safe Child (Kids Under 12)';
+    if (name.contains('CIPA')) return '🧑 Strict Protection (Teens 13-17)';
+    if (name.contains('UNFILTERED')) return '🔓 Unfiltered (Adults / Work)';
+    if (name.contains('SECURITY_ENHANCED')) return '🔒 Security Enhanced (Malware Block)';
     return name.replaceAll('TIKNET_POLICY_', '').replaceAll('_', ' ');
   }
 
