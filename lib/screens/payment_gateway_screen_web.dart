@@ -7,6 +7,7 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'payment_gateway_cinetpay_web.dart';
 import '../services/api/token_storage.dart';
+import '../services/api/api_config.dart';
 
 /// Sealed Gateway Wrapper with Unified Response Logic (v1.1.103)
 class PaymentGatewayScreen extends StatefulWidget {
@@ -218,10 +219,11 @@ class PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
     try {
       final token = await TokenStorage().getAccessToken();
       final response = await Dio().get(
-        'https://staging.wifi-4u.net/v1/partner/subscription-plans/check/',
+        '${ApiConfig.baseUrl}/family/subscription/current/',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
-      if (response.data != null && response.data['is_active'] == true) {
+      final data = response.data?['data'];
+      if (data != null && (data['has_active_subscription'] == true || data['status'] == 'active')) {
          _statusTimer?.cancel();
          if (mounted) setState(() => _status = 'SUCCESS');
          Future.delayed(const Duration(seconds: 1), () { 
