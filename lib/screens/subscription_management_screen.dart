@@ -426,7 +426,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                     SizedBox(
                                       width: double.infinity,
                                       child: FilledButton(
-                                        onPressed: () => _purchasePlan(plan.id, plan.priceId, plan.name, plan.price, plan.currency),
+                                        onPressed: () => _purchasePlan(plan.id, plan.priceId, plan.name, plan.price, plan.currency, priceDisplay: plan.priceDisplay),
                                         style: FilledButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(vertical: 16),
                                           shape: RoundedRectangleBorder(
@@ -447,7 +447,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                     SizedBox(
                                       width: double.infinity,
                                       child: OutlinedButton(
-                                        onPressed: () => _purchasePlan(plan.id, plan.priceId, plan.name, plan.price, plan.currency),
+                                        onPressed: () => _purchasePlan(plan.id, plan.priceId, plan.name, plan.price, plan.currency, priceDisplay: plan.priceDisplay),
                                         style: OutlinedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(vertical: 16),
                                           shape: RoundedRectangleBorder(
@@ -501,7 +501,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
     );
   }
 
-  Future<void> _purchasePlan(String planId, String? priceId, String planName, double amount, String? currencyCode) async {
+  Future<void> _purchasePlan(String planId, String? priceId, String planName, double amount, String? currencyCode, {String? priceDisplay}) async {
     final userProvider = context.read<UserProvider>();
     
     final confirmed = await showDialog<bool>(
@@ -520,7 +520,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             ),
             const SizedBox(height: 8),
             Text(
-              CurrencyUtils.formatPrice(amount, userProvider.partnerCountry, currencyCode: currencyCode),
+              priceDisplay ?? CurrencyUtils.formatPrice(amount, userProvider.partnerCountry, currencyCode: currencyCode),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,

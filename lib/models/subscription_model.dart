@@ -149,6 +149,8 @@ class SubscriptionPlanModel {
     Map<String, dynamic>? priceInfo;
     if (json['price_info'] is Map) {
       priceInfo = Map<String, dynamic>.from(json['price_info'] as Map);
+    } else if (json['prices'] is List && (json['prices'] as List).isNotEmpty) {
+      priceInfo = Map<String, dynamic>.from((json['prices'] as List).first as Map);
     }
 
     final double price = parseDouble(priceInfo?['price'] ?? json['price']);
@@ -156,6 +158,7 @@ class SubscriptionPlanModel {
     final String? countryName = (priceInfo?['country_name'] ?? priceInfo?['country'])?.toString();
     final String? priceId = (priceInfo?['id'] ?? json['price_id'])?.toString();
     final String duration = (json['duration'] ?? priceInfo?['duration'] ?? 'monthly').toString();
+    final String parsedCurrency = (priceInfo?['currency_code'] ?? priceInfo?['currency'] ?? json['currency_code'] ?? json['currency'] ?? 'GHS').toString();
 
     return SubscriptionPlanModel(
       id: (json['id'] ?? '').toString(),
@@ -166,7 +169,7 @@ class SubscriptionPlanModel {
       priceDisplay: priceDisplay,
       features: parsedFeatures,
       isPopular: json['is_popular'] == true || json['isPopular'] == true,
-      currency: (json['currency'] ?? json['currency_code'] ?? 'XOF').toString(),
+      currency: parsedCurrency,
       duration: duration,
       countryName: countryName,
     );
