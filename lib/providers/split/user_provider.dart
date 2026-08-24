@@ -124,10 +124,10 @@ class UserProvider with ChangeNotifier {
     required double amount,
     String? planCurrency,
   }) {
-    final email = _authProvider?.currentUser?.email;
-    if (email == null) {
-      throw Exception('User email not found');
-    }
+    final rawEmail = _authProvider?.currentUser?.email;
+    final email = (rawEmail != null && rawEmail.trim().isNotEmpty && rawEmail.contains('@'))
+        ? rawEmail.trim()
+        : 'customer@tiknetafrica.com';
     
     final userCountry = _authProvider?.currentUser?.country ?? _partnerCountry;
     
