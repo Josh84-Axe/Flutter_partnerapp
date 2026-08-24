@@ -12,6 +12,8 @@ class SubscriptionModel {
   final DateTime? renewalDate;
   final bool isActive;
   final double monthlyFee;
+  final String? priceDisplay;
+  final String? currencyCode;
   final List<String> features;
 
   SubscriptionModel({
@@ -20,6 +22,8 @@ class SubscriptionModel {
     this.renewalDate,
     required this.isActive,
     required this.monthlyFee,
+    this.priceDisplay,
+    this.currencyCode,
     required this.features,
   });
 
@@ -49,6 +53,9 @@ class SubscriptionModel {
       return null;
     }
 
+    final pDisplay = (json['price_display'] ?? plan?['price_display'])?.toString();
+    final cCode = (json['currency_code'] ?? plan?['currency_code'])?.toString();
+
     return SubscriptionModel(
       id: (json['subscription_id'] ?? plan?['id'] ?? json['id'] ?? '').toString(),
       tier: (json['plan_name'] ?? plan?['name'] ?? json['tier'] ?? json['name'] ?? 'Unknown').toString(),
@@ -60,6 +67,8 @@ class SubscriptionModel {
                    ),
       isActive: json['status'] == 'active' || json['has_active_subscription'] == true || json['active'] == true || json['isActive'] == true || json['is_active'] == true,
       monthlyFee: parseDouble(json['price'] ?? plan?['price_info']?['price'] ?? plan?['price'] ?? json['monthlyFee'] ?? json['monthly_fee']),
+      priceDisplay: pDisplay,
+      currencyCode: cCode,
       features: parsedFeatures,
     );
   }

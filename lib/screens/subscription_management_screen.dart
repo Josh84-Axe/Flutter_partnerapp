@@ -167,7 +167,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                               context,
                               Icons.payments_outlined,
                               'monthly_fee'.tr(),
-                              CurrencyUtils.formatPrice(subscription.monthlyFee, userProvider.partnerCountry, currencyCode: null), // Subscription model doesn't store currency yet, fallback to country
+                              subscription.priceDisplay ?? CurrencyUtils.formatPrice(subscription.monthlyFee, userProvider.partnerCountry, currencyCode: subscription.currencyCode),
                             ),
                             const SizedBox(height: 8),
                             _buildInfoRow(

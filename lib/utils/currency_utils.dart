@@ -96,20 +96,32 @@ class CurrencyUtils {
     return 0.0;
   }
   
-  /// Format price with currency symbol based on country
-  /// 
-  /// Examples:
-  /// - Ghana: GHS 2,500.00
-  /// - Ivory Coast: 1.000 CFA
-  /// - Guinea: 25.000 FG
-  /// - USA: $2,500.00
+  /// Get currency symbol directly by currency code (e.g. GHS -> GHS, XOF -> CFA, USD -> $)
+  static String getCurrencySymbolByCode(String? code) {
+    if (code == null || code.isEmpty) return '\$';
+    final normalized = code.trim().toUpperCase();
+    switch (normalized) {
+      case 'GHS': return 'GHS';
+      case 'XOF': 
+      case 'XAF': return 'CFA';
+      case 'NGN': return '₦';
+      case 'KES': return 'KSh';
+      case 'UGX': return 'USh';
+      case 'TZS': return 'TSh';
+      case 'RWF': return 'RF';
+      case 'ZAR': return 'R';
+      case 'GNF': return 'FG';
+      case 'USD': return '\$';
+      default: return normalized;
+    }
+  }
+
+  /// Format price with currency symbol based on country or currency code
   static String formatPrice(double price, String? country, {String? currencyCode}) {
-    // If currencyCode is provided, use it directly (e.g. from API)
-    // Otherwise fallback to country-based lookup
     final code = currencyCode ?? getCurrencyCode(country);
-    
-    // Determine symbol based on code
-    final symbol = getCurrencySymbol(country);
+    final symbol = currencyCode != null && currencyCode.isNotEmpty 
+        ? getCurrencySymbolByCode(currencyCode) 
+        : getCurrencySymbol(country);
 
     // Currencies with no decimals
     const zeroDecimalCodes = {'XOF', 'XAF', 'GNF', 'UGX', 'RWF', 'TZS'};
