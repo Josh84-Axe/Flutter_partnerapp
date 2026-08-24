@@ -113,7 +113,8 @@ class UserProvider with ChangeNotifier {
   Stream<LocalNotification> get localNotificationStream => _localNotificationService.notificationStream;
 
   String get currencyCode {
-    return CurrencyUtils.getCurrencySymbol(_partnerCountry ?? _authProvider?.partnerCountry);
+    final userCountry = _authProvider?.currentUser?.country ?? _partnerCountry ?? _authProvider?.partnerCountry;
+    return CurrencyUtils.getCurrencyCode(userCountry);
   }
 
   /// Get payment details for Paystack inline popup
@@ -128,10 +129,12 @@ class UserProvider with ChangeNotifier {
       throw Exception('User email not found');
     }
     
+    final userCountry = _authProvider?.currentUser?.country ?? _partnerCountry;
+    
     // Normalize currency: priority to planCurrency if valid, otherwise user default
     final rawCurrencyCode = (planCurrency != null && planCurrency.isNotEmpty && planCurrency != 'Unknown') 
         ? planCurrency 
-        : _getCurrencyCodeForPayment();
+        : CurrencyUtils.getCurrencyCode(userCountry);
         
     final normalizedCurrency = _normalizeCurrencyCode(rawCurrencyCode);
     
@@ -146,7 +149,7 @@ class UserProvider with ChangeNotifier {
         'lastName': _authProvider?.currentUser?.lastName,
         'address': _authProvider?.currentUser?.address,
         'city': _authProvider?.currentUser?.city,
-        'country': _getIsoCountryCode(_partnerCountry) ?? '', 
+        'country': _getIsoCountryCode(userCountry) ?? '', 
         'phone': _authProvider?.currentUser?.phone,
       },
     };
