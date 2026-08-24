@@ -359,11 +359,14 @@
       if (!window.CinetPay) {
         console.warn("CinetPay SDK unavailable. Falling back to Paystack gateway...");
         if (window.launchPaystack) {
+          const paystackKey = ((config.currency || '').toUpperCase() === 'NGN') 
+            ? 'pk_live_17ec7671a46b89cb2cc5314eb69e93d21e9afa9e' 
+            : 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426';
           window.launchPaystack({
-            key: config.apiKey || 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426',
+            key: paystackKey,
             email: config.email,
             amount: config.amount * 100,
-            currency: config.currency || 'XOF',
+            currency: (config.currency === 'CFA' || config.currency === 'XOF') ? 'GHS' : (config.currency || 'GHS'),
             ref: config.transactionId,
             planName: config.description
           });
