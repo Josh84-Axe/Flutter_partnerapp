@@ -29,7 +29,7 @@
 
   <title>Tiknet App</title>
   <script>
-    var targetVersion = '1.2.284';
+    var targetVersion = '1.2.285';
     window.targetVersion = targetVersion;
     let flavor = 'partner';
     let flavorTitle = 'Tiknet Partner';
@@ -161,7 +161,7 @@
   </div>
 
   <div id="build-version" style="display: none; position: fixed; bottom: 4px; right: 8px; font-family: monospace; font-size: 10px; color: rgba(0,0,0,0.3); z-index: 999999; pointer-events: none;">
-    WIFI-4U APP - BUILD 1.2.284 (MOBILE VIEWPORT & CSP WORKER ENGINE FIX)
+    WIFI-4U APP - BUILD 1.2.285 (MOBILE VIEWPORT & CSP WORKER ENGINE FIX)
   </div>
 
   <script>
@@ -362,7 +362,7 @@
           const paystackKey = ((config.currency || '').toUpperCase() === 'NGN') 
             ? 'pk_live_17ec7671a46b89cb2cc5314eb69e93d21e9afa9e' 
             : 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426';
-          const validEmail = (config.email && config.email.indexOf('@') > 0) ? config.email.trim() : 'customer@tiknetafrica.com';
+          const validEmail = (config.email && config.email.indexOf('@') > 0) ? config.email.trim() : 'dematexperts@gmail.com';
           window.launchPaystack({
             key: paystackKey,
             email: validEmail,
@@ -384,7 +384,7 @@
         CinetPay.getCheckout({
           transaction_id: config.transactionId, amount: config.amount, currency: config.currency,
           channels: 'ALL', description: config.description, customer_name: config.customerName,
-          customer_surname: config.customerSurname, customer_email: config.email && config.email.indexOf('@') > 0 ? config.email : 'customer@tiknetafrica.com',
+          customer_surname: config.customerSurname, customer_email: config.email && config.email.indexOf('@') > 0 ? config.email : 'dematexperts@gmail.com',
           customer_phone_number: config.customerPhoneNumber, customer_address: config.address || "Main Street",
           customer_city: config.city || (config.country === "TG" ? "Lomé" : "Abidjan"), customer_country: config.country || (config.currency === "XOF" ? "TG" : "CI"), customer_state: config.country || "TG",
           customer_zip_code: config.country === "TG" ? "00228" : "00225", return_url: config.returnUrl, wait_response: true
@@ -418,7 +418,7 @@
       try {
         const currency = (config.currency || 'GHS').toUpperCase();
         const channels = currency === 'GHS' ? ['mobile_money', 'card'] : ['card', 'bank', 'ussd', 'bank_transfer'];
-        const validEmail = (config.email && config.email.indexOf('@') > 0) ? config.email.trim() : 'customer@tiknetafrica.com';
+        const validEmail = (config.email && config.email.indexOf('@') > 0) ? config.email.trim() : 'dematexperts@gmail.com';
         const handler = PaystackPop.setup({
           key: config.key, email: validEmail, amount: config.amount, currency: currency, channels: channels, ref: config.ref,
           metadata: {

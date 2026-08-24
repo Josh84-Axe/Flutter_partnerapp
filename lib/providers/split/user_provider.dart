@@ -124,10 +124,12 @@ class UserProvider with ChangeNotifier {
     required double amount,
     String? planCurrency,
   }) {
-    final rawEmail = _authProvider?.currentUser?.email;
+    final rawEmail = (_authProvider?.currentUser?.email != null && _authProvider!.currentUser!.email.contains('@'))
+        ? _authProvider!.currentUser!.email
+        : (_authProvider?.lastLoginEmail ?? _authProvider?.registrationEmail);
     final email = (rawEmail != null && rawEmail.trim().isNotEmpty && rawEmail.contains('@'))
         ? rawEmail.trim()
-        : 'customer@tiknetafrica.com';
+        : 'dematexperts@gmail.com';
     
     final userCountry = _authProvider?.currentUser?.country ?? _partnerCountry;
     

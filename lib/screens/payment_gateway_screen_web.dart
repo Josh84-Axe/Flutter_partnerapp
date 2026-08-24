@@ -236,7 +236,7 @@ class PaymentGatewayPaystackWebState extends State<PaymentGatewayPaystackWeb> {
      
      final jsData = JSObject();
      final paystackKey = widget.currency.trim().toUpperCase() == 'NGN' ? 'pk_live_17ec7671a46b89cb2cc5314eb69e93d21e9afa9e' : 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426';
-     final validEmail = (widget.email.trim().isNotEmpty && widget.email.contains('@')) ? widget.email.trim() : 'customer@tiknetafrica.com';
+     final validEmail = (widget.email.trim().isNotEmpty && widget.email.contains('@')) ? widget.email.trim() : 'dematexperts@gmail.com';
      jsData.setProperty('key'.toJS, paystackKey.toJS);
      jsData.setProperty('email'.toJS, validEmail.toJS);
      jsData.setProperty('amount'.toJS, (widget.amount * 100).toInt().toJS);
