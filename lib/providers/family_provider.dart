@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/family_models.dart';
 import '../services/family_api_service.dart';
+import '../flavors.dart';
 
 class FamilyProvider extends ChangeNotifier {
   List<FamilyDevice> _devices = [];
@@ -19,6 +20,9 @@ class FamilyProvider extends ChangeNotifier {
   String? get error => _error;
 
   Future<void> loadData({bool forceRefresh = false}) async {
+    if (F.name != 'family') {
+      return;
+    }
     if (!forceRefresh && _lastFetch != null && DateTime.now().difference(_lastFetch!).inSeconds < 60) {
       return; // Return from cache
     }
