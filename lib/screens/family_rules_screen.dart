@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../providers/family_provider.dart';
 import '../models/family_models.dart';
@@ -505,9 +506,9 @@ class _PresetsTab extends StatelessWidget {
               ),
               child: Icon(p.icon, color: p.color, size: 22),
             ),
-            title: Text(p.title,
+            title: Text(p.title.tr(),
                 style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(p.subtitle,
+            subtitle: Text(p.subtitle.tr(),
                 style: TextStyle(
                     color: colorScheme.onSurface.withValues(alpha: 0.6),
                     fontSize: 13)),
@@ -519,7 +520,7 @@ class _PresetsTab extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
               ),
-              child: const Text('Apply'),
+              child: Text('apply'.tr()),
             ),
           ),
         );
@@ -725,16 +726,16 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
 
                   // Unified Toggle Segment
                   SegmentedButton<AutomationType>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: AutomationType.timeWindow,
-                        label: Text('🕒 Time Schedule'),
-                        icon: Icon(Icons.schedule),
+                        label: Text('🕒 ${"Time Schedule".tr()}'),
+                        icon: const Icon(Icons.schedule),
                       ),
                       ButtonSegment(
                         value: AutomationType.dailyCap,
-                        label: Text('⏳ Daily Cap'),
-                        icon: Icon(Icons.hourglass_top),
+                        label: Text('⏳ ${"Daily Cap".tr()}'),
+                        icon: const Icon(Icons.hourglass_top),
                       ),
                     ],
                     selected: {_automationType},
@@ -759,9 +760,9 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                           controller: _labelController,
                           decoration: InputDecoration(
                             labelText: _automationType == AutomationType.timeWindow
-                                ? 'Schedule Name (e.g. Bedtime, Study Hour)'
-                                : 'Rule Name (e.g. Weekday Limit)',
-                            hintText: 'e.g. Bedtime',
+                                ? 'Schedule Name (e.g. Bedtime, Study Hour)'.tr()
+                                : 'Rule Name (e.g. Weekday Limit)'.tr(),
+                            hintText: 'e.g. Bedtime'.tr(),
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12)),
                           ),
@@ -772,7 +773,7 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                         // Device selector
                         DropdownButtonFormField<FamilyDevice>(
                           decoration: InputDecoration(
-                            labelText: 'Device',
+                            labelText: 'Device'.tr(),
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12)),
                           ),
@@ -782,7 +783,7 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                               .toList(),
                           onChanged: (v) =>
                               setState(() => _selectedDevice = v),
-                          validator: (v) => v == null ? 'Select a device' : null,
+                          validator: (v) => v == null ? 'Select a device'.tr() : null,
                         ),
                         const SizedBox(height: 20),
 
@@ -792,26 +793,14 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                             value: _selectedPolicy,
                             isExpanded: true,
                             decoration: InputDecoration(
-                              labelText: 'Apply Action / Policy',
+                              labelText: 'Apply Action / Policy'.tr(),
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12)),
                             ),
-                            items: const [
+                            items: [
                               DropdownMenuItem(
                                 value: '⏸️ Bedtime Pause (Complete Block)',
-                                child: Text('⏸️ Bedtime Pause (Complete Block)'),
-                              ),
-                              DropdownMenuItem(
-                                value: '🛡️ Family Safe (Strict)',
-                                child: Text('🛡️ Family Safe (Strict)'),
-                              ),
-                              DropdownMenuItem(
-                                value: '🔒 Security Enhanced',
-                                child: Text('🔒 Security Enhanced'),
-                              ),
-                              DropdownMenuItem(
-                                value: '🌐 Unfiltered (Full Access)',
-                                child: Text('🌐 Unfiltered (Full Access)'),
+                                child: Text('⏸️ Bedtime Pause (Complete Block)'.tr()),
                               ),
                             ],
                             onChanged: (v) {
@@ -824,7 +813,7 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                         // Daily Limit
                         _SectionHeader(
                             icon: Icons.hourglass_bottom,
-                            label: 'Daily Time Limit'),
+                            label: 'Daily Time Limit'.tr()),
                         const SizedBox(height: 8),
                         Row(
                           children: [
@@ -855,7 +844,7 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            const Text('Unlimited'),
+                            Text('Unlimited'.tr()),
                             Switch(
                               value: _unlimitedTime,
                               onChanged: (v) =>
@@ -868,7 +857,7 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                         // Allowed Days
                         _SectionHeader(
                             icon: Icons.calendar_today_outlined,
-                            label: 'Allowed Days'),
+                            label: 'Allowed Days'.tr()),
                         const SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -913,12 +902,12 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                         // Access Window
                         _SectionHeader(
                             icon: Icons.access_time_outlined,
-                            label: 'Restrict to Time Window'),
+                            label: 'Restrict to Time Window'.tr()),
                         Row(
                           children: [
                             Expanded(
                               child: Text(
-                                'Only allow access between set hours',
+                                'Only allow access between set hours'.tr(),
                                 style: TextStyle(
                                     color: colorScheme.onSurface.withValues(alpha: 0.6),
                                     fontSize: 13),
@@ -937,7 +926,7 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                             children: [
                               Expanded(
                                 child: _TimeTile(
-                                  label: 'From',
+                                  label: 'From'.tr(),
                                   time: _accessStart,
                                   onTap: () async {
                                     final t = await showTimePicker(
@@ -952,7 +941,7 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: _TimeTile(
-                                  label: 'Until',
+                                  label: 'Until'.tr(),
                                   time: _accessEnd,
                                   onTap: () async {
                                     final t = await showTimePicker(
@@ -980,8 +969,8 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14)),
                             ),
-                            child: const Text('Save Rule',
-                                style: TextStyle(fontSize: 16)),
+                            child: Text('Save Rule'.tr(),
+                                style: const TextStyle(fontSize: 16)),
                           ),
                         ),
                       ],

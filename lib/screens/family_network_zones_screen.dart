@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/split/network_provider.dart';
 import '../providers/family_provider.dart';
 import '../models/router_model.dart';
@@ -25,7 +26,7 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Network Zones'),
+        title: Text('Network Zones'.tr()),
       ),
       body: Consumer<NetworkProvider>(
         builder: (context, provider, child) {
@@ -44,7 +45,7 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => provider.loadRouters(),
-                    child: const Text('Retry'),
+                    child: Text('Retry'.tr()),
                   ),
                 ],
               ),
@@ -62,9 +63,9 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                   children: [
                     Icon(Icons.router_outlined, size: 64, color: Theme.of(context).colorScheme.outline),
                     const SizedBox(height: 16),
-                    const Text('No Network Zones', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text('No Network Zones'.tr(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
-                    const Text('You do not have any routers configured for your account yet.', textAlign: TextAlign.center),
+                    Text('You do not have any routers configured for your account yet.'.tr(), textAlign: TextAlign.center),
                   ],
                 ),
               ),
@@ -105,11 +106,11 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
            ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Add Router functionality coming soon!')),
+            SnackBar(content: Text('add_router_coming_soon'.tr())),
           );
         },
         icon: const Icon(Icons.add),
-        label: const Text('New Zone'),
+        label: Text('New Zone'.tr()),
       ),
     );
   }
@@ -168,7 +169,7 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                   value: isOnline,
                   onChanged: (val) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Toggling routers requires admin permission')),
+                      SnackBar(content: Text('toggle_router_permission'.tr())),
                     );
                   },
                   activeTrackColor: color.withValues(alpha: 0.5),
@@ -185,7 +186,7 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                   Icon(Icons.history, size: 14, color: colorScheme.onSurfaceVariant),
                   const SizedBox(width: 4),
                   Text(
-                    'Last seen: ${timeago.format(router.lastSeen!)}',
+                    '${"last_seen".tr()}: ${timeago.format(router.lastSeen!)}',
                     style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant)
                   ),
                   const Spacer(),
@@ -193,7 +194,7 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                     Icon(Icons.people, size: 14, color: colorScheme.onSurfaceVariant),
                     const SizedBox(width: 4),
                     Text(
-                      '${router.connectedUsers} devices',
+                      '${router.connectedUsers} ${"devices".tr()}',
                       style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant)
                     ),
                   ]
@@ -207,16 +208,16 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                 TextButton.icon(
                   onPressed: () => _showWifiSettingsBottomSheet(context),
                   icon: const Icon(Icons.wifi_lock),
-                  label: const Text('Wi-Fi Password'),
+                  label: Text('wifi_password'.tr()),
                 ),
                 TextButton.icon(
                   onPressed: () {
                      ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon!')),
+                      SnackBar(content: Text('coming_soon'.tr())),
                     );
                   },
                   icon: const Icon(Icons.settings),
-                  label: const Text('Settings'),
+                  label: Text('settings'.tr()),
                 ),
               ],
             ),
@@ -269,15 +270,15 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Configure your home Wi-Fi SSID and WPA2 Passphrase.',
-                    style: TextStyle(color: Colors.grey),
+                  Text(
+                    'configure_home_wifi_desc'.tr(),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                   const SizedBox(height: 20),
                   TextField(
                     controller: ssidController,
                     decoration: InputDecoration(
-                      labelText: 'Wi-Fi Network Name (SSID)',
+                      labelText: 'wifi_ssid_label'.tr(),
                       prefixIcon: const Icon(Icons.wifi),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -287,7 +288,7 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                     controller: passController,
                     obscureText: obscurePassword,
                     decoration: InputDecoration(
-                      labelText: 'Wi-Fi Password (Passphrase)',
+                      labelText: 'wifi_passphrase_label'.tr(),
                       prefixIcon: const Icon(Icons.key),
                       suffixIcon: IconButton(
                         icon: Icon(obscurePassword ? Icons.visibility : Icons.visibility_off),
@@ -306,7 +307,7 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                         final pass = passController.text.trim();
                         if (pass.length < 8) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Password must be at least 8 characters long')),
+                            SnackBar(content: Text('password_min_8_char'.tr())),
                           );
                           return;
                         }

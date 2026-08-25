@@ -234,14 +234,19 @@ class FamilyApiService {
     }
   }
 
-  static Future<List<ContentPolicy>> fetchPolicies() async {
+  static Future<List<ContentPolicy>> fetchPolicies({bool forSchedule = false}) async {
     try {
-      final response = await locator<Dio>().get('/policies/');
+      final endpoint = forSchedule ? '/policies/?for_schedule=true' : '/policies/';
+      final response = await locator<Dio>().get(endpoint);
 
       if (response.statusCode == 200) {
         final body = response.data;
         final List<dynamic> list = body['data'] ?? [];
-        return list.map((json) => ContentPolicy.fromJson(json)).toList();
+        final policies = list.map((json) => ContentPolicy.fromJson(json)).toList();
+        if (forSchedule) {
+          return policies.where((p) => !p.name.toUpperCase().contains('PAUSED')).toList();
+        }
+        return policies;
       }
       return [];
     } catch (e) {

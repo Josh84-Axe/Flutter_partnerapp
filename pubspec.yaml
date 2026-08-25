@@ -119,6 +119,7 @@ flutter:
     - assets/branding/
     - assets/html/
     - assets/legal/
+    - assets/l10n/
     - lib/l10n/
 
   # To add assets to your application, add an assets section, like this:

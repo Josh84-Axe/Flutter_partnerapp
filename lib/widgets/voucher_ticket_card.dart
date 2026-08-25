@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/voucher_model.dart';
 import '../models/plan_model.dart';
 import '../providers/split/network_provider.dart';
+import '../utils/network_policy_formatter.dart';
 
 class VoucherTicketCard extends StatefulWidget {
   final VoucherModel voucher;
@@ -64,7 +65,7 @@ class _VoucherTicketCardState extends State<VoucherTicketCard> {
           final pId = int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null);
           return pId == widget.plan!.networkPolicy;
         });
-        policyName = policy['name']?.toString();
+        policyName = NetworkPolicyFormatter.format(policy['name']?.toString() ?? policy['policy_name']?.toString());
         if (policyName == 'Unknown Policy') policyName = null;
       } catch (e) {
         // Ignore

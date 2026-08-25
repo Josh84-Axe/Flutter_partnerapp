@@ -14,7 +14,7 @@ import '../services/pwa_service.dart';
 import '../widgets/skeleton_loader.dart';
 import '../widgets/app_drawer.dart';
 import 'family_add_device_screen.dart';
-import 'family_rules_screen.dart';
+import 'family_schedule_manager_screen.dart';
 import 'family_network_zones_screen.dart';
 import '../widgets/pwa_install_dialog.dart';
 import '../services/family_api_service.dart';
@@ -120,7 +120,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                             Expanded(
                               child: _buildMetricWidget(
                                 context,
-                                title: 'Active Devices',
+                                title: 'Active Devices'.tr(),
                                 value: provider.devices.where((d) => d.isOnline).length.toString(),
                                 icon: Icons.devices,
                                 isLoading: provider.isLoading,
@@ -132,8 +132,8 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                             Expanded(
                               child: _buildMetricWidget(
                                 context,
-                                title: 'Network Status',
-                                value: 'Online',
+                                title: 'Network Status'.tr(),
+                                value: 'Online'.tr(),
                                 icon: Icons.cloud_done,
                                 isLoading: false,
                                 colorScheme: colorScheme,
@@ -188,13 +188,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
           ),
         ),
       ),
-      floatingActionButton: provider.devices.isNotEmpty 
-        ? FloatingActionButton.extended(
-            onPressed: () => context.push('/family-add-device'),
-            icon: const Icon(Icons.add),
-            label: const Text('Add Device'),
-          ).animate().scale(delay: 500.ms, curve: Curves.elasticOut)
-        : null,
+      floatingActionButton: null,
     );
   }
 
@@ -321,7 +315,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Quick Actions', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))
+          Text('quick_actions'.tr(), style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))
               .animate().fadeIn().slideX(begin: -0.1),
           const SizedBox(height: 16),
           Row(
@@ -329,7 +323,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
             children: [
               _buildActionCard(
                 context, 
-                title: 'Add\nDevice', 
+                title: 'Add Device'.tr(), 
                 icon: Icons.add_to_home_screen, 
                 color: colorScheme.primary,
                 badgeCount: _unclaimedDevices.length,
@@ -341,18 +335,18 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
               ).animate().fadeIn(delay: 100.ms),
               _buildActionCard(
                 context, 
-                title: 'Schedules\n& Rules', 
-                icon: Icons.access_time_filled, 
+                title: 'Schedule'.tr(), 
+                icon: Icons.schedule, 
                 color: colorScheme.tertiary,
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const FamilyRulesScreen()),
+                    MaterialPageRoute(builder: (_) => const FamilyScheduleManagerScreen()),
                   );
                 },
               ).animate().fadeIn(delay: 200.ms),
               _buildActionCard(
                 context, 
-                title: 'Pause\nInternet', 
+                title: 'Pause Net'.tr(), 
                 icon: Icons.pause_circle_filled, 
                 color: colorScheme.error,
                 onTap: () {
@@ -362,7 +356,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                   if (currentlyPaused) {
                     provider.pauseAllInternet(false);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Internet restored for all devices')),
+                      SnackBar(content: Text('internet_restored_all'.tr())),
                     );
                   } else {
                     _showBatchPauseOptions(context, provider);
@@ -371,7 +365,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
               ).animate().fadeIn(delay: 300.ms),
               _buildActionCard(
                 context, 
-                title: 'Guest\nWi-Fi', 
+                title: 'Wi-Fi Hub'.tr(), 
                 icon: Icons.wifi_lock, 
                 color: Colors.orange,
                 onTap: () {
@@ -416,12 +410,12 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
             children: [
               const Icon(Icons.system_update_rounded, color: Colors.white, size: 28),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Update Available!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text('A new version of Tiknet Family is ready.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    Text('update_available'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text('update_family_ready'.tr(), style: const TextStyle(color: Colors.white70, fontSize: 12)),
                   ],
                 ),
               ),
@@ -434,7 +428,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                child: const Text('Update Now', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text('update_now'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -485,12 +479,12 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                     size: 28
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Install App', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('Add to home screen for quick access', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        Text('install_app'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text('add_to_home_screen'.tr(), style: const TextStyle(color: Colors.white70, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -904,19 +898,15 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                 const SizedBox(height: 8),
                 _buildPauseOption(context, Icons.restaurant, 'For 30 minutes (Dinner Time)', () {
                   provider.pauseAllInternet(true, durationMinutes: 30);
-                  Navigator.of(context).pop();
                 }),
                 _buildPauseOption(context, Icons.hourglass_bottom, 'For 1 hour (Study Break)', () {
                   provider.pauseAllInternet(true, durationMinutes: 60);
-                  Navigator.of(context).pop();
                 }),
                 _buildPauseOption(context, Icons.bedtime, 'For 2 hours (Bedtime)', () {
                   provider.pauseAllInternet(true, durationMinutes: 120);
-                  Navigator.of(context).pop();
                 }),
                 _buildPauseOption(context, Icons.pause_circle_filled, 'Indefinitely', () {
                   provider.pauseAllInternet(true);
-                  Navigator.of(context).pop();
                 }, isDestructive: true),
                 const SizedBox(height: 16),
               ],

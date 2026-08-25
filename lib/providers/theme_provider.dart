@@ -8,18 +8,29 @@ import 'dart:convert';
 
 class ThemeProvider with ChangeNotifier {
   ThemeConfig? _dynamicThemeConfig;
+  bool _isDarkMode = false;
+
+  bool get isDarkMode => _isDarkMode;
+
+  String get _darkModeKey => 'isDarkMode_${F.appFlavor.name}';
   String get _dynamicThemeKey => 'dynamicThemeConfig_${F.appFlavor.name}';
 
-  TiknetThemeVariant get currentVariant {
+  TiknetThemeVariant get defaultVariant {
     switch (F.appFlavor) {
       case Flavor.campus:
         return TiknetThemeVariant.vibrantOrange;
       case Flavor.family:
         return TiknetThemeVariant.elevatedDynamicBlue;
-      case Flavor.partner:
       default:
         return TiknetThemeVariant.flatLightGreen;
     }
+  }
+
+  TiknetThemeVariant get currentVariant {
+    if (_isDarkMode) {
+      return TiknetThemeVariant.pillRoundedDark;
+    }
+    return defaultVariant;
   }
 
   ThemeData get currentTheme {
@@ -33,9 +44,7 @@ class ThemeProvider with ChangeNotifier {
     if (_dynamicThemeConfig != null) {
       return _dynamicThemeConfig!.isDarkMode ? ThemeMode.dark : ThemeMode.light;
     }
-    return currentVariant == TiknetThemeVariant.pillRoundedDark
-        ? ThemeMode.dark
-        : ThemeMode.light;
+    return _isDarkMode ? ThemeMode.dark : ThemeMode.light;
   }
 
   ThemeProvider() {
@@ -44,6 +53,7 @@ class ThemeProvider with ChangeNotifier {
 
   Future<void> _loadThemePreference() async {
     final prefs = await SharedPreferences.getInstance();
+    _isDarkMode = prefs.getBool(_darkModeKey) ?? false;
     
     // Load flavor-scoped dynamic theme if exists
     final dynamicThemeJson = prefs.getString(_dynamicThemeKey);
@@ -54,6 +64,13 @@ class ThemeProvider with ChangeNotifier {
         debugPrint('Error parsing dynamic theme: $e');
       }
     }
+    notifyListeners();
+  }
+
+  Future<void> setDarkMode(bool isDark) async {
+    _isDarkMode = isDark;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_darkModeKey, isDark);
     notifyListeners();
   }
 
@@ -72,21 +89,17 @@ class ThemeProvider with ChangeNotifier {
   }
 
   void setThemeVariant(TiknetThemeVariant variant) {
-    // No-op for compile-time theming
+    if (variant == TiknetThemeVariant.pillRoundedDark) {
+      setDarkMode(true);
+    } else {
+      setDarkMode(false);
+    }
   }
 
   String getVariantName(TiknetThemeVariant variant) {
-    if (_dynamicThemeConfig != null) {
-      return _dynamicThemeConfig!.appName;
+    if (_isDarkMode || variant == TiknetThemeVariant.pillRoundedDark) {
+      return 'Dark Mode';
     }
-    switch (F.appFlavor) {
-      case Flavor.family:
-        return 'Tiknet Family';
-      case Flavor.campus:
-        return 'Tiknet Campus';
-      case Flavor.partner:
-      default:
-        return 'Tiknet Partner';
-    }
+    return 'Default Theme';
   }
 }

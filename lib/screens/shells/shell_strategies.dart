@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../flavors.dart';
 import '../../providers/split/auth_provider.dart';
+import '../../widgets/theme_selection_dialog.dart';
 
 import '../../providers/campus_provider.dart';
 
@@ -221,7 +222,7 @@ class FamilyVariantStrategy implements AppVariantStrategy {
     return [
       NavigationDestination(icon: const Icon(Icons.home), label: 'Home'),
       NavigationDestination(icon: const Icon(Icons.family_restroom), label: 'Family'),
-      NavigationDestination(icon: const Icon(Icons.schedule), label: 'Schedules & Rules'),
+      NavigationDestination(icon: const Icon(Icons.security), label: 'Rules'),
       NavigationDestination(icon: const Icon(Icons.router), label: 'Network'),
     ];
   }
@@ -231,7 +232,7 @@ class FamilyVariantStrategy implements AppVariantStrategy {
     return [
       NavigationRailDestination(icon: const Icon(Icons.home), label: Text('family_app.nav.home'.tr())),
       NavigationRailDestination(icon: const Icon(Icons.family_restroom), label: Text('family_app.nav.family'.tr())),
-      NavigationRailDestination(icon: const Icon(Icons.schedule), label: const Text('Schedules & Rules')),
+      NavigationRailDestination(icon: const Icon(Icons.security), label: const Text('Rules')),
       NavigationRailDestination(icon: const Icon(Icons.router), label: Text('family_app.nav.network'.tr())),
     ];
   }
@@ -304,7 +305,7 @@ class FamilyVariantStrategy implements AppVariantStrategy {
         title: Text('theme'.tr()),
         onTap: () {
           context.pop();
-          context.push('/settings');
+          showThemeSelectionDialog(context);
         },
       ),
       const Divider(),
@@ -468,7 +469,7 @@ class CampusVariantStrategy implements AppVariantStrategy {
         title: Text('theme'.tr()),
         onTap: () {
           context.pop();
-          context.push('/settings');
+          showThemeSelectionDialog(context);
         },
       ),
       const Divider(),

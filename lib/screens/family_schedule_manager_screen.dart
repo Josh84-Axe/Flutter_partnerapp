@@ -232,7 +232,7 @@ class _NewScheduleFormState extends State<_NewScheduleForm> {
   }
 
   Future<void> _loadPolicies() async {
-    final policies = await FamilyApiService.fetchPolicies();
+    final policies = await FamilyApiService.fetchPolicies(forSchedule: true);
     if (mounted) {
       setState(() {
         _policies = policies;

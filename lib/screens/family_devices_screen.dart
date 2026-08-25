@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -161,7 +162,7 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('cancel'.tr()),
             ),
             FilledButton(
               onPressed: () {
@@ -171,7 +172,7 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                   provider.toggleDevicePause(device.id, true, durationMinutes: minutes);
                 }
               },
-              child: const Text('Apply Pause'),
+              child: Text('apply_pause'.tr()),
             ),
           ],
         );
@@ -182,9 +183,9 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
   Future<void> _confirmRemoveDevice(BuildContext context, FamilyDevice device, FamilyProvider provider) async {
     final confirmed = await ConfirmationModal.show(
       context: context,
-      title: 'Remove Device',
+      title: 'Remove Device'.tr(),
       message: 'Are you sure you want to remove "${device.deviceName}" from your family network?',
-      confirmText: 'Remove',
+      confirmText: 'Remove'.tr(),
       isDestructive: true,
     );
 
@@ -211,13 +212,13 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Family Devices', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Family Devices'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => provider.loadData(forceRefresh: true),
-            tooltip: 'Refresh Devices',
+            tooltip: 'refresh'.tr(),
           ),
         ],
       ),
@@ -242,7 +243,7 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                       controller: _searchController,
                       onChanged: (val) => setState(() => _searchQuery = val),
                       decoration: InputDecoration(
-                        hintText: 'Search devices by name or MAC...',
+                        hintText: 'Search devices by name or MAC...'.tr(),
                         prefixIcon: const Icon(Icons.search),
                         suffixIcon: _searchQuery.isNotEmpty
                             ? IconButton(
@@ -343,7 +344,7 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                                 );
                               },
                               icon: const Icon(Icons.add),
-                              label: const Text('Add First Device'),
+                              label: Text('add_first_device'.tr()),
                             ),
                           ],
                         ],
@@ -368,15 +369,7 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const FamilyAddDeviceScreen()),
-          );
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Add Device'),
-      ),
+      floatingActionButton: null,
     );
   }
 

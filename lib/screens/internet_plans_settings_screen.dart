@@ -9,6 +9,7 @@ import 'create_edit_plan_screen.dart';
 import '../utils/permissions.dart';
 import '../utils/permission_mapping.dart';
 import '../widgets/permission_denied_dialog.dart';
+import '../utils/network_policy_formatter.dart';
 
 class InternetPlansSettingsScreen extends StatefulWidget {
   const InternetPlansSettingsScreen({super.key});
@@ -405,7 +406,7 @@ class _InternetPlansSettingsScreenState extends State<InternetPlansSettingsScree
         final pId = int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null);
         return pId == policyId;
       });
-      return policy['name']?.toString() ?? 'Unknown Policy';
+      return NetworkPolicyFormatter.format(policy['name']?.toString() ?? policy['policy_name']?.toString());
     } catch (e) {
       return 'Unknown Policy';
     }

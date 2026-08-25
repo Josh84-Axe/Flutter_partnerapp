@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/split/network_provider.dart';
 import '../providers/split/auth_provider.dart';
 import '../services/hotspot_configuration_service.dart';
+import '../utils/network_policy_formatter.dart';
 
 class CreateEditInternetPlanScreen extends StatefulWidget {
   final Map<String, dynamic>? planData;
@@ -197,24 +198,29 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                     onChanged: (value) => setState(() => _selectedHotspotProfile = value),
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<int>(
-                    initialValue: _selectedNetworkPolicy,
-                    decoration: InputDecoration(
-                      labelText: 'select_network_policy'.tr(),
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: networkProvider.networkPolicies.isEmpty
-                        ? [DropdownMenuItem<int>(value: null, child: Text('no_network_policies_configured'.tr()))]
-                        : [
-                            DropdownMenuItem<int>(value: null, child: Text('none'.tr())),
-                            ...networkProvider.networkPolicies
-                                .map((p) => DropdownMenuItem<int>(
-                                      value: p['id'] as int?,
-                                      child: Text(p['name']?.toString() ?? 'Unknown'),
-                                    ))
-                                ,
-                          ],
-                    onChanged: (value) => setState(() => _selectedNetworkPolicy = value),
+                  Builder(
+                    builder: (context) {
+                      final selectablePolicies = NetworkPolicyFormatter.filterSelectablePolicies(networkProvider.networkPolicies);
+                      return DropdownButtonFormField<int>(
+                        initialValue: _selectedNetworkPolicy,
+                        decoration: InputDecoration(
+                          labelText: 'select_network_policy'.tr(),
+                          border: const OutlineInputBorder(),
+                        ),
+                        items: selectablePolicies.isEmpty
+                            ? [DropdownMenuItem<int>(value: null, child: Text('no_network_policies_configured'.tr()))]
+                            : [
+                                DropdownMenuItem<int>(value: null, child: Text('none'.tr())),
+                                ...selectablePolicies
+                                    .map((p) => DropdownMenuItem<int>(
+                                          value: int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null),
+                                          child: Text(NetworkPolicyFormatter.format(p['name']?.toString() ?? p['policy_name']?.toString())),
+                                        ))
+                                    ,
+                              ],
+                        onChanged: (value) => setState(() => _selectedNetworkPolicy = value),
+                      );
+                    }
                   ),
                   ],
                 ),

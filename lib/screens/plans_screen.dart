@@ -6,6 +6,7 @@ import '../providers/split/network_provider.dart';
 import '../providers/split/user_provider.dart';
 import '../providers/split/auth_provider.dart';
 import 'create_edit_plan_screen.dart';
+import '../utils/network_policy_formatter.dart';
 
 class PlansScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -431,7 +432,7 @@ class _PlansScreenState extends State<PlansScreen> {
         final pId = int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null);
         return pId == policyId;
       });
-      return policy['name']?.toString() ?? 'Unknown Policy';
+      return NetworkPolicyFormatter.format(policy['name']?.toString() ?? policy['policy_name']?.toString());
     } catch (e) {
       return 'Unknown Policy';
     }

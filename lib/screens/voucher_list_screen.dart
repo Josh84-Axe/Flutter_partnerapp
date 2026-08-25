@@ -6,6 +6,7 @@ import '../providers/split/network_provider.dart';
 import '../services/voucher_export_service.dart';
 import '../widgets/voucher_ticket_card.dart';
 import '../models/voucher_model.dart';
+import '../utils/network_policy_formatter.dart';
 
 class VoucherListScreen extends StatefulWidget {
   final String planId;
@@ -66,7 +67,7 @@ class _VoucherListScreenState extends State<VoucherListScreen> {
           final pId = int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null);
           return pId == planModel!.networkPolicy;
         });
-        policyName = policy['name']?.toString();
+        policyName = NetworkPolicyFormatter.format(policy['name']?.toString() ?? policy['policy_name']?.toString());
       } catch (e) {
         // Ignore
       }

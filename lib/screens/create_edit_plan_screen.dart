@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../providers/split/network_provider.dart';
 import '../providers/split/user_provider.dart';
 import '../providers/split/billing_provider.dart';
+import '../utils/network_policy_formatter.dart';
 
 class CreateEditPlanScreen extends StatefulWidget {
   final Map<String, dynamic>? planData;
@@ -224,9 +225,10 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                   // Network Policy Dropdown
                   Builder(
                     builder: (context) {
+                      final selectablePolicies = NetworkPolicyFormatter.filterSelectablePolicies(networkProvider.networkPolicies);
                       int? currentPolicy = _selectedNetworkPolicy;
-                      if (currentPolicy != null && networkProvider.networkPolicies.isNotEmpty) {
-                        final exists = networkProvider.networkPolicies.any((p) {
+                      if (currentPolicy != null && selectablePolicies.isNotEmpty) {
+                        final exists = selectablePolicies.any((p) {
                           final pId = int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null);
                           return pId == currentPolicy;
                         });
@@ -242,14 +244,14 @@ class _CreateEditPlanScreenState extends State<CreateEditPlanScreen> {
                           border: const OutlineInputBorder(),
                           prefixIcon: const Icon(Icons.policy),
                         ),
-                        items: networkProvider.networkPolicies.isEmpty
+                        items: selectablePolicies.isEmpty
                             ? [DropdownMenuItem<int>(value: null, child: Text('no_network_policies_configured'.tr()))]
                             : [
                                 DropdownMenuItem<int>(value: null, child: Text('none'.tr())),
-                                ...networkProvider.networkPolicies
+                                ...selectablePolicies
                                     .map((p) => DropdownMenuItem<int>(
                                           value: int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null),
-                                          child: Text(p['name']?.toString() ?? 'Unknown'),
+                                          child: Text(NetworkPolicyFormatter.format(p['name']?.toString() ?? p['policy_name']?.toString())),
                                         ))
                                     ,
                               ],

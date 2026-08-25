@@ -8,6 +8,7 @@ import '../models/user_model.dart';
 import '../utils/app_theme.dart';
 import '../utils/permissions.dart';
 import 'assign_routers_screen.dart';
+import '../utils/network_policy_formatter.dart';
 
 class UserDetailsScreen extends StatefulWidget {
   final UserModel user;
@@ -686,10 +687,10 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                       ),
                       items: [
                         DropdownMenuItem<int>(value: null, child: Text('none'.tr())),
-                        ...networkProvider.networkPolicies
+                        ...NetworkPolicyFormatter.filterSelectablePolicies(networkProvider.networkPolicies)
                             .map((p) => DropdownMenuItem<int>(
                                   value: p['id'] as int?,
-                                  child: Text(p['name']?.toString() ?? 'Unknown'),
+                                  child: Text(NetworkPolicyFormatter.format(p['name']?.toString() ?? p['policy_name']?.toString())),
                                 ))
                             ,
                       ],

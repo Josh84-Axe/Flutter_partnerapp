@@ -5,7 +5,8 @@ import 'package:easy_localization/easy_localization.dart';
 
 import '../providers/split/auth_provider.dart';
 import '../providers/theme_provider.dart';
-import '../theme/tiknet_themes.dart';
+import '../flavors.dart';
+import '../widgets/theme_selection_dialog.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -15,6 +16,8 @@ class SettingsScreen extends StatelessWidget {
 
     final authProvider = context.watch<AuthProvider>();
     final themeProvider = context.watch<ThemeProvider>();
+    final currentVariant = authProvider.currentUser?.appVariant ?? F.name;
+    final isPartner = currentVariant == 'partner';
 
     return Scaffold(
       appBar: AppBar(
@@ -36,15 +39,17 @@ class SettingsScreen extends StatelessWidget {
             context,
             title: 'account'.tr(),
             items: [
-              _buildSettingItem(
-                context,
-                icon: Icons.router_outlined,
-                title: 'hotspot_management'.tr(),
-                subtitle: 'manage_hotspot_desc'.tr(),
-                onTap: () {
-                  _showHotspotManagementDialog(context);
-                },
-              ),
+              if (isPartner) ...[
+                _buildSettingItem(
+                  context,
+                  icon: Icons.router_outlined,
+                  title: 'hotspot_management'.tr(),
+                  subtitle: 'manage_hotspot_desc'.tr(),
+                  onTap: () {
+                    _showHotspotManagementDialog(context);
+                  },
+                ),
+              ],
               _buildSettingItem(
                 context,
                 icon: Icons.router,
@@ -54,15 +59,17 @@ class SettingsScreen extends StatelessWidget {
                   context.push('/router-settings');
                 },
               ),
-              _buildSettingItem(
-                context,
-                icon: Icons.wifi,
-                title: 'internet_plan'.tr(),
-                subtitle: 'manage_plans_desc'.tr(),
-                onTap: () {
-                  context.push('/internet-plans-settings');
-                },
-              ),
+              if (isPartner) ...[
+                _buildSettingItem(
+                  context,
+                  icon: Icons.wifi,
+                  title: 'internet_plan'.tr(),
+                  subtitle: 'manage_plans_desc'.tr(),
+                  onTap: () {
+                    context.push('/internet-plans-settings');
+                  },
+                ),
+              ],
               _buildSettingItem(
                 context,
                 icon: Icons.card_membership_outlined,
@@ -114,15 +121,17 @@ class SettingsScreen extends StatelessWidget {
             context,
             title: 'security'.tr(),
             items: [
-              _buildSettingItem(
-                context,
-                icon: Icons.person_outline,
-                title: 'partner_profile'.tr(),
-                subtitle: 'manage_business_desc'.tr(),
-                onTap: () {
-                  context.push('/partner-profile');
-                },
-              ),
+              if (isPartner) ...[
+                _buildSettingItem(
+                  context,
+                  icon: Icons.person_outline,
+                  title: 'partner_profile'.tr(),
+                  subtitle: 'manage_business_desc'.tr(),
+                  onTap: () {
+                    context.push('/partner-profile');
+                  },
+                ),
+              ],
               _buildSettingItem(
                 context,
                 icon: Icons.security_outlined,
@@ -132,15 +141,17 @@ class SettingsScreen extends StatelessWidget {
                   context.push('/security/password-2fa');
                 },
               ),
-              _buildSettingItem(
-                context,
-                icon: Icons.admin_panel_settings_outlined,
-                title: 'user_roles_permissions'.tr(),
-                subtitle: 'manage_access_desc'.tr(),
-                onTap: () {
-                  context.push('/role-permissions');
-                },
-              ),
+              if (isPartner) ...[
+                _buildSettingItem(
+                  context,
+                  icon: Icons.admin_panel_settings_outlined,
+                  title: 'user_roles_permissions'.tr(),
+                  subtitle: 'manage_access_desc'.tr(),
+                  onTap: () {
+                    context.push('/role-permissions');
+                  },
+                ),
+              ],
             ],
           ),
           _buildSection(
@@ -292,39 +303,6 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showThemeSelectionDialog(BuildContext context, ThemeProvider themeProvider) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'theme'.tr(),
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: TiknetThemeVariant.values.map((variant) {
-              return RadioListTile<TiknetThemeVariant>(
-                title: Text(themeProvider.getVariantName(variant)),
-                value: variant,
-                groupValue: themeProvider.currentVariant,
-                onChanged: (value) {
-                  if (value != null) {
-                    themeProvider.setThemeVariant(value);
-                    context.pop();
-                  }
-                },
-                activeColor: Theme.of(context).colorScheme.primary,
-              );
-            }).toList(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => context.pop(),
-            child: Text('close'.tr()),
-          ),
-        ],
-      ),
-    );
+    showThemeSelectionDialog(context);
   }
 }

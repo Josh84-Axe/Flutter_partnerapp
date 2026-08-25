@@ -137,6 +137,8 @@ class PwaServiceWeb implements PwaService {
 
   @override
   Future<void> applyUpdate() async {
+    _isUpdateAvailable = false;
+    _updateAvailableController.add(false);
     try {
       applyPwaUpdateJs();
     } catch (e) {
