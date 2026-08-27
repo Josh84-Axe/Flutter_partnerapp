@@ -390,7 +390,7 @@ class AuthProvider with ChangeNotifier {
     required String city,
     required String country,
     required int numberOfRouters,
-    String appVariant = 'partner',
+    String? appVariant,
   }) async {
     _setLoading(true);
     _registrationEmail = email; // Store email for verification
@@ -399,6 +399,15 @@ class AuthProvider with ChangeNotifier {
     try {
       if (_authRepository == null) throw Exception('AuthRepository not initialized');
       
+      String effectiveVariant = appVariant ?? 'partner';
+      if (effectiveVariant == 'partner') {
+        if (F.appFlavor == Flavor.family) {
+          effectiveVariant = 'family';
+        } else if (F.appFlavor == Flavor.campus) {
+          effectiveVariant = 'campus';
+        }
+      }
+
       final result = await _authRepository!.register(
         firstName: firstName,
         email: email,
@@ -410,7 +419,7 @@ class AuthProvider with ChangeNotifier {
         city: city,
         country: country,
         numberOfRouters: numberOfRouters,
-        appVariant: appVariant,
+        appVariant: effectiveVariant,
       );
       
       _setLoading(false);

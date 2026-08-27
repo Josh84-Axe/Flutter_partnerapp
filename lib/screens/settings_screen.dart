@@ -121,17 +121,23 @@ class SettingsScreen extends StatelessWidget {
             context,
             title: 'security'.tr(),
             items: [
-              if (isPartner) ...[
-                _buildSettingItem(
-                  context,
-                  icon: Icons.person_outline,
-                  title: 'partner_profile'.tr(),
-                  subtitle: 'manage_business_desc'.tr(),
-                  onTap: () {
-                    context.push('/partner-profile');
-                  },
-                ),
-              ],
+              _buildSettingItem(
+                context,
+                icon: Icons.person_outline,
+                title: F.name == 'family'
+                    ? 'family_profile_title'.tr()
+                    : F.name == 'campus'
+                        ? 'campus_profile_title'.tr()
+                        : 'partner_profile_title'.tr(),
+                subtitle: F.name == 'family'
+                    ? 'manage_family_profile_desc'.tr()
+                    : F.name == 'campus'
+                        ? 'manage_student_profile_desc'.tr()
+                        : 'manage_business_desc'.tr(),
+                onTap: () {
+                  context.push('/partner-profile');
+                },
+              ),
               _buildSettingItem(
                 context,
                 icon: Icons.security_outlined,

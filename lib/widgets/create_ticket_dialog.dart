@@ -43,13 +43,20 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
       final authProvider = context.read<AuthProvider>();
       final currentUser = authProvider.currentUser;
 
-      if (currentUser == null) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('error_user_not_found'.tr())),
-        );
-        return;
-      }
+      final email = (currentUser?.email != null && currentUser!.email.trim().isNotEmpty)
+          ? currentUser.email.trim()
+          : 'dematexperts@gmail.com';
+
+      final rawUsername = currentUser?.username;
+      final name = (currentUser?.name != null && currentUser!.name.trim().isNotEmpty)
+          ? currentUser.name.trim()
+          : (rawUsername != null && rawUsername.trim().isNotEmpty)
+              ? rawUsername.trim()
+              : 'Family User';
+
+      final phone = (currentUser?.phone != null && currentUser!.phone!.trim().isNotEmpty)
+          ? currentUser.phone!.trim()
+          : null;
 
       final ticketProvider = context.read<TicketProvider>();
       final fullDescription = '[Category: ${_selectedCategory.toUpperCase()}]\n\n${_descriptionController.text.trim()}';
@@ -60,10 +67,10 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
           description: fullDescription,
           category: _selectedCategory,
           priority: _selectedPriority,
-          email: currentUser.email,
-          name: currentUser.name,
-          phone: currentUser.phone,
-          country: currentUser.country,
+          email: email,
+          name: name,
+          phone: phone,
+          country: currentUser?.country,
         );
 
         if (mounted) {
@@ -189,111 +196,195 @@ class _CreateTicketDialogState extends State<CreateTicketDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('create_ticket'.tr()),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _subjectController,
-                decoration: InputDecoration(
-                  labelText: 'subject'.tr(),
-                  hintText: 'brief_summary_issue'.tr(),
-                  border: const OutlineInputBorder(),
+    final scheme = Theme.of(context).colorScheme;
+
+    return Dialog(
+      backgroundColor: scheme.surface,
+      surfaceTintColor: scheme.surfaceTint,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: scheme.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.confirmation_number_outlined, color: scheme.primary, size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        'create_ticket'.tr(),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close_rounded, color: scheme.onSurfaceVariant),
+                      onPressed: _isLoading ? null : () => context.pop(),
+                    ),
+                  ],
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'field_required'.tr();
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              DropdownButtonFormField<String>(
-                initialValue: _selectedCategory,
-                decoration: InputDecoration(
-                  labelText: 'category'.tr(),
-                  border: const OutlineInputBorder(),
+                const SizedBox(height: 20),
+
+                TextFormField(
+                  controller: _subjectController,
+                  decoration: InputDecoration(
+                    labelText: 'subject'.tr(),
+                    hintText: 'brief_summary_issue'.tr(),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: scheme.outlineVariant),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: scheme.primary, width: 2),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'field_required'.tr();
+                    }
+                    return null;
+                  },
                 ),
-                items: _categories.map((cat) {
-                  return DropdownMenuItem(
-                    value: cat,
-                    child: Text(cat.toUpperCase()),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedCategory = value;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              DropdownButtonFormField<String>(
-                initialValue: _selectedPriority,
-                decoration: InputDecoration(
-                  labelText: 'priority'.tr(),
-                  border: const OutlineInputBorder(),
+                const SizedBox(height: 16),
+                
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedCategory,
+                  decoration: InputDecoration(
+                    labelText: 'category'.tr(),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: scheme.outlineVariant),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: scheme.primary, width: 2),
+                    ),
+                  ),
+                  items: _categories.map((cat) {
+                    return DropdownMenuItem(
+                      value: cat,
+                      child: Text(cat.toUpperCase()),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _selectedCategory = value;
+                      });
+                    }
+                  },
                 ),
-                items: _priorities.map((prio) {
-                  return DropdownMenuItem(
-                    value: prio,
-                    child: Text(prio),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedPriority = value;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              TextFormField(
-                controller: _descriptionController,
-                decoration: InputDecoration(
-                  labelText: 'description'.tr(),
-                  hintText: 'detailed_explanation'.tr(),
-                  border: const OutlineInputBorder(),
-                  alignLabelWithHint: true,
+                const SizedBox(height: 16),
+                
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedPriority,
+                  decoration: InputDecoration(
+                    labelText: 'priority'.tr(),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: scheme.outlineVariant),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: scheme.primary, width: 2),
+                    ),
+                  ),
+                  items: _priorities.map((prio) {
+                    return DropdownMenuItem(
+                      value: prio,
+                      child: Text(prio),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _selectedPriority = value;
+                      });
+                    }
+                  },
                 ),
-                maxLines: 4,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'field_required'.tr();
-                  }
-                  return null;
-                },
-              ),
-            ],
+                const SizedBox(height: 16),
+                
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(
+                    labelText: 'description'.tr(),
+                    hintText: 'detailed_explanation'.tr(),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: scheme.outlineVariant),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: scheme.primary, width: 2),
+                    ),
+                    alignLabelWithHint: true,
+                  ),
+                  maxLines: 4,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'field_required'.tr();
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton(
+                      onPressed: _isLoading ? null : () => context.pop(),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text('cancel'.tr()),
+                    ),
+                    const SizedBox(width: 12),
+                    FilledButton(
+                      onPressed: _isLoading ? null : _submitTicket,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: scheme.primary,
+                        foregroundColor: scheme.onPrimary,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: _isLoading 
+                          ? const SizedBox(
+                              width: 20, 
+                              height: 20, 
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
+                            )
+                          : Text('submit'.tr()),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => context.pop(),
-          child: Text('cancel'.tr()),
-        ),
-        FilledButton(
-          onPressed: _isLoading ? null : _submitTicket,
-          child: _isLoading 
-              ? const SizedBox(
-                  width: 20, 
-                  height: 20, 
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
-                )
-              : Text('submit'.tr()),
-        ),
-      ],
     );
   }
 }

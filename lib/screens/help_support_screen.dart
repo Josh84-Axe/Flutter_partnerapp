@@ -2,14 +2,13 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../utils/app_theme.dart';
 import '../widgets/create_ticket_dialog.dart';
 import 'support_ticket_list_screen.dart';
+import '../flavors.dart';
 
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
 
-  // Support contact details
   static const String _supportEmail = 'assist@tiknetafrica.com';
 
   Future<void> _launchEmail() async {
@@ -17,7 +16,7 @@ class HelpSupportScreen extends StatelessWidget {
       scheme: 'mailto',
       path: _supportEmail,
       query: _encodeQueryParameters(<String, String>{
-        'subject': 'Support Request: Partner App',
+        'subject': 'Support Request: ${F.name.toUpperCase()} App',
       }),
     );
 
@@ -41,6 +40,9 @@ class HelpSupportScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('support_help'.tr()),
@@ -55,18 +57,17 @@ class HelpSupportScreen extends StatelessWidget {
           // Header Section
           Text(
             'contact_support'.tr(),
-            style: const TextStyle(
-              fontSize: 24,
+            style: textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w800,
               letterSpacing: -0.5,
+              color: scheme.onSurface,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
-            'choose_support_method'.tr(), // Make sure this exists or use a fallback
-            style: TextStyle(
-              fontSize: 14,
-              color: AppTheme.textLight,
+            'choose_support_method'.tr(),
+            style: textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 24),
@@ -77,7 +78,7 @@ class HelpSupportScreen extends StatelessWidget {
             icon: Icons.add_circle_outline_rounded,
             title: 'create_ticket'.tr(),
             subtitle: 'response_time_msg'.tr(),
-            color: AppTheme.brandGreen,
+            color: scheme.primary,
             onTap: () => _showCreateTicketDialog(context),
             isPrimary: true,
           ),
@@ -87,7 +88,7 @@ class HelpSupportScreen extends StatelessWidget {
             icon: Icons.question_answer_outlined,
             title: 'my_support_tickets'.tr(),
             subtitle: 'view_ticket_history'.tr(),
-            color: Colors.orange,
+            color: scheme.secondary,
             onTap: () {
               Navigator.push(
                 context,
@@ -101,52 +102,103 @@ class HelpSupportScreen extends StatelessWidget {
           _buildActionCard(
             context,
             icon: Icons.email_outlined,
-            title: 'Email Support',
+            title: 'email_support'.tr(),
             subtitle: _supportEmail,
-            color: Colors.blueGrey,
+            color: scheme.tertiary,
             onTap: _launchEmail,
           ),
 
-          const SizedBox(height: 48),
+          const SizedBox(height: 40),
 
-          // FAQ Section
+          // FAQ Section Header
           Row(
             children: [
-              const Icon(Icons.help_outline_rounded, size: 20, color: Colors.blue),
+              Icon(Icons.help_outline_rounded, size: 22, color: scheme.primary),
               const SizedBox(width: 8),
               Text(
                 'frequently_asked_questions'.tr(),
-                style: const TextStyle(
-                  fontSize: 18,
+                style: textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: scheme.onSurface,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          _buildFAQItem(
-            context,
-            question: 'faq_reset_password_q'.tr(),
-            answer: 'faq_reset_password_a'.tr(),
-          ),
-          _buildFAQItem(
-            context,
-            question: 'faq_add_router_q'.tr(),
-            answer: 'faq_add_router_a'.tr(),
-          ),
-          _buildFAQItem(
-            context,
-            question: 'faq_payout_q'.tr(),
-            answer: 'faq_payout_a'.tr(),
-          ),
-          _buildFAQItem(
-            context,
-            question: 'faq_update_profile_q'.tr(),
-            answer: 'faq_update_profile_a'.tr(),
-          ),
+
+          // Variant-aware FAQ items
+          ..._buildVariantFAQs(context),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildVariantFAQs(BuildContext context) {
+    if (F.name == 'family') {
+      return [
+        _buildFAQItem(
+          context,
+          question: 'faq_family_pause_q'.tr(),
+          answer: 'faq_family_pause_a'.tr(),
+        ),
+        _buildFAQItem(
+          context,
+          question: 'faq_family_rules_q'.tr(),
+          answer: 'faq_family_rules_a'.tr(),
+        ),
+        _buildFAQItem(
+          context,
+          question: 'faq_family_wifi_q'.tr(),
+          answer: 'faq_family_wifi_a'.tr(),
+        ),
+        _buildFAQItem(
+          context,
+          question: 'faq_family_account_q'.tr(),
+          answer: 'faq_family_account_a'.tr(),
+        ),
+      ];
+    } else if (F.name == 'campus') {
+      return [
+        _buildFAQItem(
+          context,
+          question: 'faq_campus_connect_q'.tr(),
+          answer: 'faq_campus_connect_a'.tr(),
+        ),
+        _buildFAQItem(
+          context,
+          question: 'faq_campus_focus_q'.tr(),
+          answer: 'faq_campus_focus_a'.tr(),
+        ),
+        _buildFAQItem(
+          context,
+          question: 'faq_campus_account_q'.tr(),
+          answer: 'faq_campus_account_a'.tr(),
+        ),
+      ];
+    } else {
+      return [
+        _buildFAQItem(
+          context,
+          question: 'faq_add_router_q'.tr(),
+          answer: 'faq_add_router_a'.tr(),
+        ),
+        _buildFAQItem(
+          context,
+          question: 'faq_payout_q'.tr(),
+          answer: 'faq_payout_a'.tr(),
+        ),
+        _buildFAQItem(
+          context,
+          question: 'faq_reset_password_q'.tr(),
+          answer: 'faq_reset_password_a'.tr(),
+        ),
+        _buildFAQItem(
+          context,
+          question: 'faq_update_profile_q'.tr(),
+          answer: 'faq_update_profile_a'.tr(),
+        ),
+      ];
+    }
   }
 
   Widget _buildActionCard(
@@ -158,12 +210,14 @@ class HelpSupportScreen extends StatelessWidget {
     required VoidCallback onTap,
     bool isPrimary = false,
   }) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.1),
+            color: color.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -172,11 +226,15 @@ class HelpSupportScreen extends StatelessWidget {
       child: Card(
         elevation: 0,
         margin: EdgeInsets.zero,
+        color: scheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: isPrimary 
-            ? BorderSide(color: color.withValues(alpha: 0.3), width: 1)
-            : BorderSide(color: Colors.grey.withValues(alpha: 0.1), width: 1),
+          side: BorderSide(
+            color: isPrimary 
+              ? color.withValues(alpha: 0.4) 
+              : scheme.outlineVariant.withValues(alpha: 0.5), 
+            width: isPrimary ? 1.5 : 1,
+          ),
         ),
         child: InkWell(
           onTap: onTap,
@@ -188,7 +246,7 @@ class HelpSupportScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
+                    color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 28),
@@ -200,9 +258,10 @@ class HelpSupportScreen extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 17,
+                          fontSize: 16,
+                          color: scheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -210,7 +269,7 @@ class HelpSupportScreen extends StatelessWidget {
                         subtitle,
                         style: TextStyle(
                           fontSize: 13,
-                          color: AppTheme.textLight,
+                          color: scheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -218,8 +277,8 @@ class HelpSupportScreen extends StatelessWidget {
                 ),
                 Icon(
                   Icons.arrow_forward_ios_rounded, 
-                  color: Colors.grey.withValues(alpha: 0.5), 
-                  size: 16
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.5), 
+                  size: 16,
                 ),
               ],
             ),
@@ -230,20 +289,37 @@ class HelpSupportScreen extends StatelessWidget {
   }
 
   Widget _buildFAQItem(BuildContext context, {required String question, required String answer}) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0,
+      color: scheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
       child: ExpansionTile(
         title: Text(
           question,
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+            color: scheme.onSurface,
+          ),
         ),
+        iconColor: scheme.primary,
+        collapsedIconColor: scheme.onSurfaceVariant,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Text(
               answer,
-              style: TextStyle(color: AppTheme.textLight),
+              style: TextStyle(
+                color: scheme.onSurfaceVariant,
+                fontSize: 14,
+                height: 1.4,
+              ),
             ),
           ),
         ],

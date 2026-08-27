@@ -14,8 +14,10 @@ class AppDrawer extends StatelessWidget {
     final authProvider = context.watch<AuthProvider>();
     final currentUser = authProvider.currentUser;
     
-    // Check current app variant via current user or compile-time flavor fallback
-    final currentVariant = currentUser?.appVariant ?? F.name;
+    // Check current app variant via compile-time flavor F.name (authoritative for domain builds)
+    final currentVariant = (F.name.isNotEmpty && F.name != 'partner') 
+        ? F.name 
+        : (currentUser?.appVariant ?? F.name);
     
     final strategy = getStrategy(currentVariant);
     final headerTitle = strategy.getDrawerHeaderTitle();

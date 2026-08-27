@@ -14,10 +14,10 @@ import '../utils/error_message_helper.dart';
 
 class FamilyRegistrationScreen extends StatefulWidget {
   /// The app variant selected by the user on VariantSelectionScreen.
-  /// Defaults to 'partner' (commercial) if not provided.
+  /// Defaults to 'family' for FamilyRegistrationScreen.
   final String appVariant;
 
-  const FamilyRegistrationScreen({super.key, this.appVariant = 'partner'});
+  const FamilyRegistrationScreen({super.key, this.appVariant = 'family'});
 
   @override
   State<FamilyRegistrationScreen> createState() => _FamilyRegistrationScreenState();
@@ -147,12 +147,12 @@ class _FamilyRegistrationScreenState extends State<FamilyRegistrationScreen> {
         password: _passwordController.text,
         password2: _confirmPasswordController.text,
         phone: phoneWithCode,
-        businessName: '',
+        businessName: _fullNameController.text.trim().isNotEmpty ? '${_fullNameController.text.trim()} Household' : 'Family Household',
         address: '',
-        city: _cityController.text.trim(),
+        city: _cityController.text.trim().isNotEmpty ? _cityController.text.trim() : 'Home City',
         country: _selectedCountry ?? 'GH',
         numberOfRouters: 1,
-        appVariant: widget.appVariant,
+        appVariant: widget.appVariant.isNotEmpty ? widget.appVariant : 'family',
       );
 
       if (success && mounted) {

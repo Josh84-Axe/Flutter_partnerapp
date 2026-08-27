@@ -718,26 +718,42 @@ class UserProvider with ChangeNotifier {
   }
 
   String? _getIsoCountryCode(String? countryName) {
-    if (countryName == null) return null;
-    switch (countryName.toLowerCase()) {
+    if (countryName == null || countryName.isEmpty) return null;
+    final normalized = countryName.toLowerCase().trim();
+    switch (normalized) {
       case 'côte d\'ivoire':
       case 'cote d\'ivoire':
-      case 'ivory coast': return 'CI';
-      case 'senegal': return 'SN';
-      case 'mali': return 'ML';
-      case 'benin': return 'BJ';
-      case 'togo': return 'TG';
-      case 'guinea': return 'GN';
-      case 'burkina faso': return 'BF';
-      case 'niger': return 'NE';
-      case 'cameroon': return 'CM';
-      case 'gabon': return 'GA';
-      case 'congo': return 'CG';
-      case 'chad': return 'TD';
-      case 'nigeria': return 'NG';
-      case 'ghana': return 'GH';
-      case 'kenya': return 'KE';
-      default: return null; 
+      case 'ivory coast':
+      case 'ci': return 'CI';
+      case 'senegal':
+      case 'sn': return 'SN';
+      case 'mali':
+      case 'ml': return 'ML';
+      case 'benin':
+      case 'bj': return 'BJ';
+      case 'togo':
+      case 'tg': return 'TG';
+      case 'guinea':
+      case 'gn': return 'GN';
+      case 'burkina faso':
+      case 'bf': return 'BF';
+      case 'niger':
+      case 'ne': return 'NE';
+      case 'cameroon':
+      case 'cm': return 'CM';
+      case 'gabon':
+      case 'ga': return 'GA';
+      case 'congo':
+      case 'cg': return 'CG';
+      case 'chad':
+      case 'td': return 'TD';
+      case 'nigeria':
+      case 'ng': return 'NG';
+      case 'ghana':
+      case 'gh': return 'GH';
+      case 'kenya':
+      case 'ke': return 'KE';
+      default: return normalized.length == 2 ? normalized.toUpperCase() : null; 
     }
   }
 }

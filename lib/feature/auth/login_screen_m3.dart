@@ -222,7 +222,7 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                       const SizedBox(height: 8),
                       Text(
                         F.name == 'family'
-                            ? 'onboarding.familyDesc'.tr()
+                            ? 'Safe digital habits for families.'.tr()
                             : F.name == 'campus'
                                 ? 'onboarding.campusDesc'.tr()
                                 : 'manage_wifi_zone'.tr(),

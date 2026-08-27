@@ -14,10 +14,10 @@ import '../utils/error_message_helper.dart';
 
 class CampusRegistrationScreen extends StatefulWidget {
   /// The app variant selected by the user on VariantSelectionScreen.
-  /// Defaults to 'partner' (commercial) if not provided.
+  /// Defaults to 'campus' for CampusRegistrationScreen.
   final String appVariant;
 
-  const CampusRegistrationScreen({super.key, this.appVariant = 'partner'});
+  const CampusRegistrationScreen({super.key, this.appVariant = 'campus'});
 
   @override
   State<CampusRegistrationScreen> createState() => _CampusRegistrationScreenState();

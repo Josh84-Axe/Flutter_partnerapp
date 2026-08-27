@@ -4,6 +4,7 @@ import '../providers/split/auth_provider.dart';
 import 'shells/shell_strategies.dart';
 import '../widgets/app_drawer.dart';
 import 'auth_wrapper.dart';
+import '../flavors.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,8 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     
     final isTablet = MediaQuery.of(context).size.width >= 600;
-    final appVariant = currentUser.appVariant;
-    
+    final appVariant = F.name.isNotEmpty ? F.name : currentUser.appVariant;
     final strategy = getStrategy(appVariant);
     
     // Ensure index doesn't go out of bounds if switching variants

@@ -45,14 +45,14 @@ class _FlavorBackground extends StatelessWidget {
         break;
       case Flavor.family:
       default:
-        bgColor = const Color(0xFF0B192C);
-        glowColor = const Color(0xFF00E676);
-        strokeColor = const Color(0xFF00E676);
+        bgColor = const Color(0xFFFDFBF7);
+        glowColor = const Color(0xFFFEF3C7);
+        strokeColor = const Color(0xFFD97706);
         break;
     }
 
-    final double opacity = (flavor == Flavor.family) ? 0.06 : 0.08;
-    final bool isDark = flavor == Flavor.family;
+    final double opacity = (flavor == Flavor.family) ? 0.04 : 0.08;
+    final bool isDark = false;
 
     return Stack(
       children: [

@@ -1,6 +1,7 @@
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../flavors.dart';
 
 class SupportTicketService {
   final Dio _dio;
@@ -31,18 +32,26 @@ class SupportTicketService {
     String? priority,
     String? partnerCountry,
   }) async {
-    final payload = {
+    final safeEmail = contactEmail.trim().isNotEmpty ? contactEmail.trim() : 'dematexperts@gmail.com';
+    final safeName = contactName.trim().isNotEmpty ? contactName.trim() : 'Family User';
+
+    final Map<String, dynamic> payload = {
       'subject': subject,
       'description': '$description\n\n[Diagnostic Timestamp: ${DateTime.now().toIso8601String()}]',
-      'contact_email': contactEmail,
-      'contact_name': contactName,
-      'contact_phone': contactPhone,
+      'contact_email': safeEmail,
+      'contact_name': safeName,
+      'email': safeEmail,
+      'name': safeName,
       'priority': priority ?? 'MEDIUM',
       'country': _getCountryIsoCode(partnerCountry),
       'metadata': {
-        'origin': 'partner_app'
+        'origin': '${F.name}_app'
       }
     };
+
+    if (contactPhone != null && contactPhone.trim().isNotEmpty) {
+      payload['contact_phone'] = contactPhone.trim();
+    }
 
     if (kDebugMode || true) { // Force logging for troubleshooting
       debugPrint('📡 [SupportTicketService] Sending Ticket Payload: $payload');

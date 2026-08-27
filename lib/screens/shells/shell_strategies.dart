@@ -156,7 +156,7 @@ class PartnerVariantStrategy implements AppVariantStrategy {
       ),
       ListTile(
         leading: const Icon(Icons.person_outline),
-        title: Text('partner_profile'.tr()),
+        title: Text('family_profile_title'.tr()),
         onTap: () {
           context.pop();
           context.push('/partner-profile');
@@ -315,7 +315,7 @@ class FamilyVariantStrategy implements AppVariantStrategy {
       ),
       ListTile(
         leading: const Icon(Icons.person_outline),
-        title: Text('partner_profile'.tr()),
+        title: Text('campus_profile_title'.tr()),
         onTap: () {
           context.pop();
           context.push('/partner-profile');
@@ -479,7 +479,7 @@ class CampusVariantStrategy implements AppVariantStrategy {
       ),
       ListTile(
         leading: const Icon(Icons.person_outline),
-        title: Text('partner_profile'.tr()),
+        title: Text('partner_profile_title'.tr()),
         onTap: () {
           context.pop();
           context.push('/partner-profile');
@@ -535,7 +535,12 @@ class CampusVariantStrategy implements AppVariantStrategy {
 }
 
 AppVariantStrategy getStrategy(String? appVariant) {
-  final variant = (appVariant != null && appVariant.isNotEmpty) ? appVariant : F.name;
+  // F.name is the compile-time flavor (e.g. 'family', 'campus', 'partner').
+  // It MUST take precedence so domain variants (e.g. family.tiknetafrica.com) ALWAYS load their respective strategy!
+  final variant = (F.name.isNotEmpty && F.name != 'partner') 
+      ? F.name 
+      : ((appVariant != null && appVariant.isNotEmpty) ? appVariant : F.name);
+      
   switch (variant) {
     case 'campus':
       return CampusVariantStrategy();

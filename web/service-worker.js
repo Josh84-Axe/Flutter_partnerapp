@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tiknet-pwa-v1.2.293';
+const CACHE_NAME = 'tiknet-pwa-v1.2.304';
 const RESOURCES_TO_CACHE = [
     './',
     './index.html',
@@ -10,7 +10,8 @@ const RESOURCES_TO_CACHE = [
 
 // Install Event
 self.addEventListener('install', (event) => {
-    console.log('📦 [Service Worker] Installing v1.2.293');
+    console.log('📦 [Service Worker] Installing v1.2.304');
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(RESOURCES_TO_CACHE);
@@ -18,24 +19,27 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// Activate Event: Clean old caches (NO self.clients.claim() to prevent controllerchange reload loops)
+// Activate Event: Clean old caches & claim clients immediately
 self.addEventListener('activate', (event) => {
     console.log('🧹 [Service Worker] Activating & cleaning old caches');
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('🗑️ [Service Worker] Deleting old cache:', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
+        Promise.all([
+            self.clients.claim(),
+            caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
+                        if (cacheName !== CACHE_NAME) {
+                            console.log('🗑️ [Service Worker] Deleting old cache:', cacheName);
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            })
+        ])
     );
 });
 
-// Message Event: Only activate new worker when explicitly requested by user via PWA Update prompt
+// Message Event: Also allow explicit skipWaiting
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     console.log('⚡ [Service Worker] User triggered update activation');

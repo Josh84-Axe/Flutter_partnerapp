@@ -29,7 +29,7 @@
 
   <title>Tiknet App</title>
   <script>
-    var targetVersion = '1.2.293';
+    var targetVersion = '1.2.304';
     window.targetVersion = targetVersion;
     let flavor = 'partner';
     let flavorTitle = 'Tiknet Partner';
@@ -161,7 +161,7 @@
   </div>
 
   <div id="build-version" style="display: none; position: fixed; bottom: 4px; right: 8px; font-family: monospace; font-size: 10px; color: rgba(0,0,0,0.3); z-index: 999999; pointer-events: none;">
-    WIFI-4U APP - BUILD 1.2.293 (MOBILE VIEWPORT & CSP WORKER ENGINE FIX)
+    WIFI-4U APP - BUILD 1.2.300 (MOBILE VIEWPORT & CSP WORKER ENGINE FIX)
   </div>
 
   <script>
@@ -178,12 +178,14 @@
     const text = document.getElementById('loader-status');
     const percent = document.getElementById('loader-percent');
 
-    if (loader) {
       if (flavor === 'family') {
-        // Option F1: Brighter Cyan-Teal Gradient + Inlined Family Protection Watermark
-        document.body.style.backgroundColor = '#0B192C';
-        loader.style.backgroundColor = '#0B192C';
-        loader.style.backgroundImage = "radial-gradient(circle at 50% 35%, rgba(0, 230, 118, 0.28) 0%, rgba(6, 182, 212, 0.18) 45%, transparent 75%), url(\"data:image/svg+xml,%3Csvg width='130' height='130' viewBox='0 0 130 130' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%2300E676' stroke-width='1.4' stroke-opacity='0.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 22 38 L 38 24 L 54 38 V 60 H 22 Z' /%3E%3Cpath d='M 34 47 C 34 43, 38 41, 38 47 C 38 41, 42 43, 42 47 C 42 51, 38 55, 38 55 C 38 55, 34 51, 34 47 Z' fill='%2300E676' fill-opacity='0.12' /%3E%3Cpath d='M 80 32 A 16 16 0 0 1 112 32' stroke='%2306B6D4' stroke-opacity='0.25' /%3E%3Cpath d='M 86 38 A 10 10 0 0 1 106 38' stroke='%2306B6D4' stroke-opacity='0.25' /%3E%3Ccircle cx='96' cy='44' r='2.5' fill='%2306B6D4' fill-opacity='0.25' /%3E%3Cpath d='M 28 88 C 28 88 44 82 44 88 C 44 104 28 112 28 112 C 28 112 12 104 12 88 C 12 82 28 88 28 88 Z' fill='%2300E676' fill-opacity='0.08' /%3E%3Crect x='80' y='88' width='26' height='18' rx='3' /%3E%3Cpath d='M 74 106 H 112' /%3E%3Crect x='114' y='92' width='10' height='14' rx='2' stroke='%2306B6D4' stroke-opacity='0.25' /%3E%3C/g%3E%3C/svg%3E\")";
+        // Soft Family Warmth & Protection (#FDFBF7 ivory canvas with soft amber & sky blue glow)
+        document.body.style.backgroundColor = '#FDFBF7';
+        loader.style.backgroundColor = '#FDFBF7';
+        loader.style.backgroundImage = "radial-gradient(circle at 50% 35%, rgba(254, 243, 199, 0.7) 0%, rgba(224, 242, 254, 0.45) 50%, transparent 75%), url(\"data:image/svg+xml,%3Csvg width='130' height='130' viewBox='0 0 130 130' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23D97706' stroke-width='1.2' stroke-opacity='0.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 22 38 L 38 24 L 54 38 V 60 H 22 Z' /%3E%3Cpath d='M 34 47 C 34 43, 38 41, 38 47 C 38 41, 42 43, 42 47 C 42 51, 38 55, 38 55 C 38 55, 34 51, 34 47 Z' fill='%23D97706' fill-opacity='0.08' /%3E%3Cpath d='M 80 32 A 16 16 0 0 1 112 32' stroke='%230284C7' stroke-opacity='0.18' /%3E%3Cpath d='M 86 38 A 10 10 0 0 1 106 38' stroke='%230284C7' stroke-opacity='0.18' /%3E%3Ccircle cx='96' cy='44' r='2.5' fill='%230284C7' fill-opacity='0.18' /%3E%3Cpath d='M 28 88 C 28 88 44 82 44 88 C 44 104 28 112 28 112 C 28 112 12 104 12 88 C 12 82 28 88 28 88 Z' fill='%23D97706' fill-opacity='0.06' /%3E%3Crect x='80' y='88' width='26' height='18' rx='3' /%3E%3Cpath d='M 74 106 H 112' /%3E%3Crect x='114' y='92' width='10' height='14' rx='2' stroke='%230284C7' stroke-opacity='0.18' /%3E%3C/g%3E%3C/svg%3E\")";
+        if (text) text.style.color = '#92400E';
+        if (percent) percent.style.color = '#B45309';
+        if (fill) fill.style.background = 'linear-gradient(90deg, #F59E0B 0%, #D97706 100%)';
       } else if (flavor === 'partner') {
         // Option P1: Lively Mint Growth Gradient + Inlined Merchant Network Watermark
         document.body.style.backgroundColor = '#DCFCE7';
@@ -357,17 +359,29 @@
     // Payment SDK Helpers
     window.launchCinetPay = function(config) {
       if (!window.CinetPay) {
-        console.warn("CinetPay SDK unavailable. Falling back to Paystack gateway...");
+        console.warn("CinetPay SDK unavailable. Falling back to regional WAEMU XOF Paystack gateway...");
         if (window.launchPaystack) {
-          const paystackKey = ((config.currency || '').toUpperCase() === 'NGN') 
+          const rawCountry = (config.country || '').toLowerCase();
+          const curr = (config.currency || '').toUpperCase();
+          const isNG = rawCountry === 'ng' || rawCountry === 'nigeria' || curr === 'NGN';
+          const isXOF = rawCountry === 'tg' || rawCountry === 'ci' || rawCountry === 'bj' || rawCountry === 'sn' || 
+                        rawCountry === 'bf' || rawCountry === 'ml' || rawCountry === 'ne' || 
+                        curr === 'XOF' || curr === 'CFA' || curr.indexOf('CFA') >= 0;
+          
+          const paystackKey = isNG 
             ? 'pk_live_17ec7671a46b89cb2cc5314eb69e93d21e9afa9e' 
-            : 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426';
+            : isXOF 
+              ? 'pk_live_0cf935a263256e6a1f8e9d59bb33b6c252691d75' 
+              : 'pk_live_ba6137ee394e83ff5b0cfec596851545e1dea426';
+
+          const targetCurrency = isNG ? 'NGN' : (isXOF ? 'XOF' : (curr || 'GHS'));
           const validEmail = (config.email && config.email.indexOf('@') > 0) ? config.email.trim() : 'dematexperts@gmail.com';
+          
           window.launchPaystack({
             key: paystackKey,
             email: validEmail,
             amount: config.amount * 100,
-            currency: (config.currency === 'CFA' || config.currency === 'XOF') ? 'GHS' : (config.currency || 'GHS'),
+            currency: targetCurrency,
             ref: config.transactionId,
             planName: config.description
           });
@@ -416,8 +430,11 @@
         return;
       }
       try {
-        const currency = (config.currency || 'GHS').toUpperCase();
-        const channels = currency === 'GHS' ? ['mobile_money', 'card'] : ['card', 'bank', 'ussd', 'bank_transfer'];
+        const rawCurr = (config.currency || '').toUpperCase();
+        const currency = (rawCurr === 'CFA' || rawCurr.indexOf('CFA') >= 0) ? 'XOF' : (rawCurr || 'GHS');
+        const channels = (currency === 'GHS' || currency === 'XOF') 
+            ? ['mobile_money', 'card'] 
+            : ['card', 'bank', 'ussd', 'bank_transfer', 'mobile_money'];
         const validEmail = (config.email && config.email.indexOf('@') > 0) ? config.email.trim() : 'dematexperts@gmail.com';
         const handler = PaystackPop.setup({
           key: config.key, email: validEmail, amount: config.amount, currency: currency, channels: channels, ref: config.ref,

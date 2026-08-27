@@ -11,6 +11,7 @@ import '../utils/country_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' as io;
+import '../flavors.dart';
 
 class PartnerProfileScreen extends StatefulWidget {
   const PartnerProfileScreen({super.key});
@@ -157,9 +158,15 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('partner_profile_title'.tr()),
+        title: Text(
+          F.name == 'family'
+              ? 'family_profile_title'.tr()
+              : F.name == 'campus'
+                  ? 'campus_profile_title'.tr()
+                  : 'partner_profile_title'.tr(),
+        ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
       ),
@@ -170,64 +177,78 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
               key: _formKey,
               child: ListView(
                 padding: const EdgeInsets.all(16),
-              children: [
-                Text(
-                  'registration_details'.tr(),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                children: [
+                  Text(
+                    'registration_details'.tr(),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: colorScheme.outlineVariant),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: colorScheme.outlineVariant),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildDetailRow(
+                          F.name == 'family'
+                              ? 'account_id'.tr()
+                              : F.name == 'campus'
+                                  ? 'student_id'.tr()
+                                  : 'partner_id'.tr(),
+                          authProvider.currentUser?.id ?? 'N/A',
+                        ),
+                        const Divider(height: 24),
+                        _buildDetailRow('registration_date'.tr(), 
+                          authProvider.currentUser?.createdAt != null 
+                            ? DateFormat('MMM d, yyyy').format(authProvider.currentUser!.createdAt) 
+                            : 'N/A'
+                        ),
+                        const Divider(height: 24),
+                        _buildDetailRow(
+                          'account_status'.tr(), 
+                          authProvider.currentUser?.isActive == true ? 'active'.tr() : 'inactive'.tr(),
+                          valueColor: authProvider.currentUser?.isActive == true ? AppTheme.successGreen : AppTheme.errorRed,
+                        ),
+                        const Divider(height: 24),
+                        _buildDetailRow(
+                          'role'.tr(), 
+                          F.name == 'family'
+                              ? 'FAMILY'
+                              : F.name == 'campus'
+                                  ? 'STUDENT'
+                                  : (authProvider.currentUser?.role.toUpperCase() ?? 'PARTNER'),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Column(
-                    children: [
-                      _buildDetailRow('partner_id'.tr(), authProvider.currentUser?.id ?? 'N/A'),
-                      const Divider(height: 24),
-                      _buildDetailRow('registration_date'.tr(), 
-                        authProvider.currentUser?.createdAt != null 
-                          ? DateFormat('MMM d, yyyy').format(authProvider.currentUser!.createdAt) 
-                          : 'N/A'
-                      ),
-                      const Divider(height: 24),
-                      _buildDetailRow(
-                        'account_status'.tr(), 
-                        authProvider.currentUser?.isActive == true ? 'active'.tr() : 'inactive'.tr(),
-                        valueColor: authProvider.currentUser?.isActive == true ? AppTheme.successGreen : AppTheme.errorRed,
-                      ),
-                      const Divider(height: 24),
-                      _buildDetailRow('role'.tr(), authProvider.currentUser?.role.toUpperCase() ?? 'N/A'),
-                    ],
+                  const SizedBox(height: 32),
+                  Text(
+                    'basic_information'.tr(),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  'basic_information'.tr(),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _companyNameController,
+                    label: F.name == 'partner' ? 'full_name_business_name'.tr() : 'full_name'.tr(),
+                    icon: F.name == 'partner' ? Icons.business : Icons.person_outline,
                   ),
-                ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _companyNameController,
-                  label: 'full_name_business_name'.tr(),
-                  icon: Icons.business,
-                ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _emailController,
-                  label: 'email_address'.tr(),
-                  icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _emailController,
+                    label: 'email_address'.tr(),
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 16),
                   InternationalPhoneNumberInput(
                     onInputChanged: (PhoneNumber number) {
                       // Controller is updated automatically
@@ -262,34 +283,43 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
                       return null;
                     },
                   ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _addressController,
-                  label: 'business_address'.tr(),
-                  icon: Icons.location_on_outlined,
-                ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _cityController,
-                  label: 'city'.tr(),
-                  icon: Icons.location_city,
-                ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _countryController,
-                  label: 'country'.tr(),
-                  icon: Icons.flag,
-                ),
-                _buildTextField(
-                  controller: _routersController,
-                  label: 'number_of_routers'.tr(),
-                  icon: Icons.router,
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 32),
-                _buildBrandingSection(),
-                const SizedBox(height: 32),
-              ],
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _addressController,
+                    label: F.name == 'family'
+                        ? 'home_address'.tr()
+                        : F.name == 'campus'
+                            ? 'campus_address'.tr()
+                            : 'business_address'.tr(),
+                    icon: Icons.location_on_outlined,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _cityController,
+                    label: 'city'.tr(),
+                    icon: Icons.location_city,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _countryController,
+                    label: 'country'.tr(),
+                    icon: Icons.flag,
+                  ),
+                  if (F.name == 'partner') ...[
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _routersController,
+                      label: 'number_of_routers'.tr(),
+                      icon: Icons.router,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
+                  if (F.name == 'partner') ...[
+                    const SizedBox(height: 32),
+                    _buildBrandingSection(),
+                  ],
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
           ),
