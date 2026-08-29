@@ -11,6 +11,11 @@ class SubscriptionModel {
   final String tier;
   final DateTime? renewalDate;
   final bool isActive;
+  final String status;
+  final bool isInGracePeriod;
+  final int graceDaysRemaining;
+  final DateTime? gracePeriodEnd;
+  final bool isExpired;
   final double monthlyFee;
   final String? priceDisplay;
   final String? currencyCode;
@@ -21,6 +26,11 @@ class SubscriptionModel {
     required this.tier,
     this.renewalDate,
     required this.isActive,
+    this.status = 'active',
+    this.isInGracePeriod = false,
+    this.graceDaysRemaining = 0,
+    this.gracePeriodEnd,
+    this.isExpired = false,
     required this.monthlyFee,
     this.priceDisplay,
     this.currencyCode,
@@ -55,6 +65,10 @@ class SubscriptionModel {
 
     final pDisplay = (json['price_display'] ?? plan?['price_display'])?.toString();
     final cCode = (json['currency_code'] ?? plan?['currency_code'])?.toString();
+    final parsedStatus = (json['status'] ?? (json['has_active_subscription'] == true ? 'active' : 'expired')).toString().toLowerCase();
+    final inGrace = json['is_in_grace_period'] == true || parsedStatus == 'grace_period';
+    final int graceDays = (json['grace_days_remaining'] is num) ? (json['grace_days_remaining'] as num).toInt() : (inGrace ? 7 : 0);
+    final expired = json['is_expired'] == true || parsedStatus == 'expired';
 
     return SubscriptionModel(
       id: (json['subscription_id'] ?? plan?['id'] ?? json['id'] ?? '').toString(),
@@ -65,7 +79,12 @@ class SubscriptionModel {
                      parseDate(json['start_date']),
                      plan?['duration'] ?? json['duration']
                    ),
-      isActive: json['status'] == 'active' || json['has_active_subscription'] == true || json['active'] == true || json['isActive'] == true || json['is_active'] == true,
+      isActive: (parsedStatus == 'active' || json['has_active_subscription'] == true || json['active'] == true) && !expired,
+      status: parsedStatus,
+      isInGracePeriod: inGrace,
+      graceDaysRemaining: graceDays,
+      gracePeriodEnd: parseDate(json['grace_period_end']),
+      isExpired: expired,
       monthlyFee: parseDouble(json['price'] ?? plan?['price_info']?['price'] ?? plan?['price'] ?? json['monthlyFee'] ?? json['monthly_fee']),
       priceDisplay: pDisplay,
       currencyCode: cCode,

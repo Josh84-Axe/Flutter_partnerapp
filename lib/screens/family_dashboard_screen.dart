@@ -79,6 +79,17 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
     ]);
   }
 
+  String _getLocalizedGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'good_morning'.tr();
+    } else if (hour < 17) {
+      return 'good_afternoon'.tr();
+    } else {
+      return 'good_evening'.tr();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -87,10 +98,12 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
     final userProvider = context.watch<UserProvider>();
     final networkProvider = context.watch<NetworkProvider>();
     final user = context.watch<AuthProvider>().currentUser;
-    final firstName = user?.firstName ?? 'Family';
+    final String firstName = (user != null && user.firstName.trim().isNotEmpty)
+        ? user.firstName.trim()
+        : 'Family User'.tr();
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: Colors.transparent,
       drawer: const AppDrawer(),
       body: Center(
         child: ConstrainedBox(
@@ -113,6 +126,9 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                           planName: userProvider.subscription?.tier ?? 'Home Basic',
                           renewalDate: userProvider.subscription?.renewalDate,
                           isLoading: userProvider.isLoading || networkProvider.isLoading,
+                          isInGracePeriod: userProvider.subscription?.isInGracePeriod ?? false,
+                          graceDaysRemaining: userProvider.subscription?.graceDaysRemaining ?? 0,
+                          isExpired: userProvider.subscription?.isExpired ?? false,
                         ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
                         const SizedBox(height: 16),
                         Row(
@@ -269,7 +285,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      'Good ${DateTime.now().hour < 12 ? "Morning" : DateTime.now().hour < 17 ? "Afternoon" : "Evening"},',
+                      '${_getLocalizedGreeting()},',
                       style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 16),
                     ).animate().fadeIn(delay: 100.ms).slideY(begin: -0.2),
                     const SizedBox(height: 4),
@@ -291,7 +307,7 @@ class _FamilyDashboardScreenState extends State<FamilyDashboardScreen> {
                           Icon(Icons.security, color: colorScheme.onPrimary, size: 16),
                           const SizedBox(width: 8),
                           Text(
-                            'Network is Secure',
+                            'network_is_secure'.tr(),
                             style: TextStyle(color: colorScheme.onPrimary, fontWeight: FontWeight.w500, fontSize: 13),
                           ),
                         ],

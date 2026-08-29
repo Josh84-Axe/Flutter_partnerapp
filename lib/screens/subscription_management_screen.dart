@@ -144,17 +144,29 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(
-                                    color: subscription.isActive 
-                                        ? Colors.green.shade100 
-                                        : Colors.grey.shade200,
+                                    color: subscription.isInGracePeriod
+                                        ? Colors.orange.shade100
+                                        : (subscription.isExpired
+                                            ? Colors.red.shade100
+                                            : (subscription.isActive 
+                                                ? Colors.green.shade100 
+                                                : Colors.grey.shade200)),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
-                                    subscription.isActive ? 'active'.tr() : 'inactive'.tr(),
+                                    subscription.isInGracePeriod
+                                        ? 'Période de grâce (${subscription.graceDaysRemaining}j)'
+                                        : (subscription.isExpired
+                                            ? 'Expiré / Suspendu'
+                                            : (subscription.isActive ? 'active'.tr() : 'inactive'.tr())),
                                     style: TextStyle(
-                                      color: subscription.isActive 
-                                          ? Colors.green.shade900 
-                                          : Colors.grey.shade700,
+                                      color: subscription.isInGracePeriod
+                                          ? Colors.orange.shade900
+                                          : (subscription.isExpired
+                                              ? Colors.red.shade900
+                                              : (subscription.isActive 
+                                                  ? Colors.green.shade900 
+                                                  : Colors.grey.shade700)),
                                       fontWeight: FontWeight.w600,
                                       fontSize: 12,
                                     ),
@@ -162,6 +174,64 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                 ),
                               ],
                             ),
+                            if (subscription.isInGracePeriod) ...[
+                              const SizedBox(height: 14),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.shade50,
+                                  border: Border.all(color: Colors.orange.shade300),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(Icons.schedule, color: Colors.orange.shade900, size: 20),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        "⚠️ Période de grâce active : Il reste ${subscription.graceDaysRemaining} jour(s) avant la coupure de vos équipements. Renouvelez dès maintenant pour préserver votre service.",
+                                        style: TextStyle(
+                                          color: Colors.orange.shade900,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            if (subscription.isExpired) ...[
+                              const SizedBox(height: 14),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.shade50,
+                                  border: Border.all(color: Colors.red.shade300),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(Icons.lock_outline, color: Colors.red.shade900, size: 20),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        "🔒 Accès suspendu : La période de grâce de 7 jours est terminée. Veuillez renouveler immédiatement pour débloquer l'accès Internet de vos appareils.",
+                                        style: TextStyle(
+                                          color: Colors.red.shade900,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 16),
                             _buildInfoRow(
                               context,
@@ -181,7 +251,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                             const SizedBox(height: 24),
                             SizedBox(
                               width: double.infinity,
-                              child: OutlinedButton(
+                              child: ElevatedButton(
                                 onPressed: () {
                                   try {
                                     final matchingPlan = availablePlans.firstWhere(
@@ -192,17 +262,23 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                                     _purchasePlan(subscription.id, null, subscription.tier, subscription.monthlyFee, null);
                                   }
                                 },
-                                style: OutlinedButton.styleFrom(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: subscription.isInGracePeriod
+                                      ? Colors.orange.shade700
+                                      : (subscription.isExpired ? Colors.red.shade700 : colorScheme.primary),
+                                  foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  side: BorderSide(color: colorScheme.primary),
                                 ),
                                 child: Text(
-                                  'renew_plan'.tr(),
-                                  style: TextStyle(
-                                    color: colorScheme.primary,
+                                  subscription.isInGracePeriod
+                                      ? 'Renouveler immédiatement (Sans coupure)'
+                                      : (subscription.isExpired
+                                          ? "Réactiver l'accès Internet"
+                                          : 'renew_plan'.tr()),
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
