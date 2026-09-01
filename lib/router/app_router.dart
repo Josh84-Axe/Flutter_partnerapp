@@ -286,6 +286,8 @@ final appRouter = GoRouter(
           rId = map['routerId'] is int ? map['routerId'] : int.tryParse(map['routerId']?.toString() ?? '');
           rName = map['routerName']?.toString();
         }
+        rId ??= int.tryParse(state.uri.queryParameters['routerId'] ?? '');
+        rName ??= state.uri.queryParameters['routerName'];
         return RouterZtpWizardScreen(routerId: rId, routerName: rName);
       },
     ),
