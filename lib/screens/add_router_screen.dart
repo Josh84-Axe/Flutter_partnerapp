@@ -342,7 +342,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                           ElevatedButton.icon(
                             onPressed: () {
                               final token = _extractBootstrapToken();
-                              final cmd = '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" mode=https output=file dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc';
+                              final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
                               cmdController.text = cmd;
                               _copyToClipboard(cmd);
                               setModalState(() {
@@ -485,7 +485,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
 
   String _buildZtpCommand() {
     final token = _extractBootstrapToken();
-    return '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" mode=https output=file dst-path=bootstrap.rsc; :delay 2s; /import file-name=bootstrap.rsc';
+    return ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
   }
 
   @override
