@@ -474,9 +474,13 @@ class _AddRouterScreenState extends State<AddRouterScreen>
       while (rData.containsKey('data') && rData['data'] is Map) {
         rData = rData['data'] as Map<String, dynamic>;
       }
-      return rData['bootstrap_token']?.toString() ?? rData['slug']?.toString() ?? _nameController.text.trim().toLowerCase();
+      return rData['bootstrap_token']?.toString() ??
+          rData['slug']?.toString() ??
+          _nameController.text.trim().toLowerCase();
     }
-    return _existingConfig?.slug ?? _nameController.text.trim().toLowerCase();
+    return _existingConfig?.bootstrapToken ??
+        _existingConfig?.slug ??
+        _nameController.text.trim().toLowerCase();
   }
 
   String _buildZtpCommand() {

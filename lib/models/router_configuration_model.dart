@@ -10,6 +10,7 @@ class RouterConfigurationModel {
   final String? radiusSecret;
   final int? coaPort;
   final bool? isActive;
+  final String? bootstrapToken;
 
   RouterConfigurationModel({
     required this.id,
@@ -23,6 +24,7 @@ class RouterConfigurationModel {
     this.radiusSecret,
     this.coaPort,
     this.isActive,
+    this.bootstrapToken,
   });
 
   factory RouterConfigurationModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +44,7 @@ class RouterConfigurationModel {
           ? json['coa_port']
           : int.tryParse(json['coa_port']?.toString() ?? ''),
       isActive: json['is_active'] as bool?,
+      bootstrapToken: json['bootstrap_token'] ?? json['bootstrapToken'],
     );
   }
 
@@ -58,6 +61,7 @@ class RouterConfigurationModel {
       if (radiusSecret != null) 'secret': radiusSecret,
       if (coaPort != null) 'coa_port': coaPort,
       if (isActive != null) 'is_active': isActive,
+      if (bootstrapToken != null) 'bootstrap_token': bootstrapToken,
     };
   }
 }
