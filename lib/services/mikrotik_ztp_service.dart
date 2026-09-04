@@ -203,8 +203,28 @@ class MikrotikZtpService {
       log('🧪 Testing Password Variant: "$maskPass"');
 
       for (final ip in candidateIps) {
-        // 1. Native Mobile Probe: RouterOS Native API over TCP 8728
-        if (!kIsWeb) {
+        // 1. Native Mobile or Web Agent Probe: RouterOS Native API over TCP 8728
+        if (kIsWeb) {
+          try {
+            final hasAgent = await web_helper.isLocalAgentAvailable();
+            if (hasAgent) {
+              log('🔌 [Local Agent] Probing $ip:8728 as "$cleanUser"...');
+              final agentAuth = await web_helper.checkLocalAgentAuth(
+                gatewayIp: ip,
+                username: cleanUser,
+                password: pass,
+              );
+              if (agentAuth['success'] == true) {
+                log('✅ [SUCCESS] Authenticated on TCP $ip:8728 via Tiknet Agent with user "$cleanUser"!');
+                return true;
+              } else {
+                log('⚠️ [Local Agent] ${agentAuth["message"]}');
+              }
+            }
+          } catch (e) {
+            log('⚠️ [Agent Err] $e');
+          }
+        } else {
           log('🔌 [TCP 8728] Probing $ip:8728 as "$cleanUser"...');
           try {
             final apiSocket = MikrotikApiSocket(host: ip, port: 8728);
@@ -530,8 +550,29 @@ class MikrotikZtpService {
       }
     }
 
-    // 3. Web PWA Session Confirmation
+    // 3. Web PWA Authentication Check via Local Agent
     if (kIsWeb) {
+      final hasAgent = await web_helper.isLocalAgentAvailable();
+      if (hasAgent) {
+        final agentAuth = await web_helper.checkLocalAgentAuth(
+          gatewayIp: gatewayIp,
+          username: cleanUser,
+          password: password,
+        );
+        if (agentAuth['success'] == true) {
+          return {
+            'success': true,
+            'method': 'Tiknet Agent Local (Socket 8728)',
+            'message': agentAuth['message'] ?? 'Authentification réussie sur le routeur ($cleanUser@$gatewayIp) !',
+          };
+        } else {
+          return {
+            'success': false,
+            'message': agentAuth['message'] ?? 'Mot de passe ou identifiant incorrect pour le routeur $gatewayIp.',
+          };
+        }
+      }
+
       return {
         'success': true,
         'isPwaConfirmed': true,

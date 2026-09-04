@@ -46,6 +46,11 @@ void _handleRequest(HttpRequest req) async {
         'success': true,
         'routers': routers,
       });
+    } else if (path == '/auth-check' && req.method == 'POST') {
+      final bodyStr = await utf8.decodeStream(req);
+      final body = jsonDecode(bodyStr) as Map<String, dynamic>;
+      final result = await _executeAuthCheck(body);
+      _sendJson(res, result);
     } else if (path == '/provision' && req.method == 'POST') {
       final bodyStr = await utf8.decodeStream(req);
       final body = jsonDecode(bodyStr) as Map<String, dynamic>;
@@ -193,6 +198,50 @@ class _RouterClient {
   }
 }
 
+Future<Map<String, dynamic>> _executeAuthCheck(Map<String, dynamic> payload) async {
+  final gatewayIp = payload['gateway_ip']?.toString() ?? '192.168.88.1';
+  final username = payload['username']?.toString() ?? 'admin';
+  final password = payload['password']?.toString() ?? '';
+
+  _RouterClient? client;
+  try {
+    final socket = await Socket.connect(gatewayIp, 8728, timeout: const Duration(seconds: 4));
+    client = _RouterClient(socket);
+
+    final loginRes = await client.sendSentence([
+      '/login',
+      '=name=$username',
+      '=password=$password',
+    ]);
+
+    if (loginRes.contains('!done')) {
+      return {
+        'success': true,
+        'message': 'Authentification réussie sur le routeur ($username@$gatewayIp) !',
+      };
+    } else {
+      String errorMsg = 'Nom d\'utilisateur ou mot de passe incorrect';
+      for (final w in loginRes) {
+        if (w.startsWith('=message=')) {
+          errorMsg = w.substring(9);
+          break;
+        }
+      }
+      return {
+        'success': false,
+        'message': errorMsg,
+      };
+    }
+  } catch (e) {
+    return {
+      'success': false,
+      'message': 'Impossible de joindre le routeur sur $gatewayIp:8728 ($e)',
+    };
+  } finally {
+    client?.close();
+  }
+}
+
 Future<Map<String, dynamic>> _executeProvisioning(Map<String, dynamic> payload) async {
   final gatewayIp = payload['gateway_ip']?.toString() ?? '192.168.88.1';
   final username = payload['username']?.toString() ?? 'admin';
@@ -243,21 +292,33 @@ Future<Map<String, dynamic>> _executeProvisioning(Map<String, dynamic> payload) 
     // 3. Inject & run script if provided
     if (scriptSource != null && scriptSource.isNotEmpty) {
       log('Injecting and running Phase 1 bootstrap script...');
-      await client.sendSentence([
+      // Clean up previous script if any
+      try {
+        await client.sendSentence([
+          '/system/script/remove',
+          '=numbers=tiknet_ztp_p1',
+        ]);
+      } catch (_) {}
+
+      final addRes = await client.sendSentence([
         '/system/script/add',
         '=name=tiknet_ztp_p1',
         '=policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon',
         '=dont-require-permissions=yes',
         '=source=$scriptSource',
       ]);
+      log('Script add response: $addRes');
 
       final runRes = await client.sendSentence([
         '/system/script/run',
         '=number=tiknet_ztp_p1',
       ]);
+      log('Script run response: $runRes');
 
       if (runRes.contains('!done')) {
         log('✅ Script Phase 1 executed successfully on router hardware!');
+      } else {
+        log('⚠️ Script execution returned: $runRes');
       }
     }
 

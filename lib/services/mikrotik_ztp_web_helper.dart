@@ -18,6 +18,33 @@ Future<bool> isLocalAgentAvailable() async {
   return false;
 }
 
+/// Check authentication via Tiknet Local Agent on localhost:9876
+Future<Map<String, dynamic>> checkLocalAgentAuth({
+  required String gatewayIp,
+  String username = 'admin',
+  String password = '',
+}) async {
+  try {
+    final req = await html.HttpRequest.request(
+      'http://127.0.0.1:9876/auth-check',
+      method: 'POST',
+      sendData: jsonEncode({
+        'gateway_ip': gatewayIp,
+        'username': username,
+        'password': password,
+      }),
+      requestHeaders: {'Content-Type': 'application/json'},
+    ).timeout(const Duration(seconds: 4));
+
+    if (req.status == 200 && req.responseText != null) {
+      return jsonDecode(req.responseText!) as Map<String, dynamic>;
+    }
+  } catch (e) {
+    if (kDebugMode) debugPrint('⚠️ [WebZtpHelper] Local agent auth check failed: $e');
+  }
+  return {'success': false, 'message': 'Agent local non joignable'};
+}
+
 /// Execute ZTP via Tiknet Local Agent on localhost:9876
 Future<Map<String, dynamic>> executeLocalAgentProvisioning({
   required String gatewayIp,

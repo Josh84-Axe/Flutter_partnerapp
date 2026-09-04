@@ -47,6 +47,8 @@ class _AddRouterScreenState extends State<AddRouterScreen>
   // Live Telemeter State
   final List<String> _liveTerminalLogs = [];
   bool _isAuthenticating = false;
+  bool _obscureAdminPass = true;
+  bool _isRouterAuthenticated = false;
   Timer? _registrationPoller;
   String _routerOnlineStatus = 'pending'; // 'pending', 'handshake', 'online'
 
@@ -204,9 +206,9 @@ class _AddRouterScreenState extends State<AddRouterScreen>
 
   /// Run verification of credentials against target router gateway
   Future<void> _verifyRouterCredentials() async {
-    final gatewayIp = _gatewayIpController.text.trim();
-    final user = _adminUserCtrl.text.trim();
-    final pass = _adminPassCtrl.text.trim();
+    final gatewayIp = _gatewayIpController.text.trim().isNotEmpty ? _gatewayIpController.text.trim() : '192.168.88.1';
+    final user = _adminUserCtrl.text.trim().isNotEmpty ? _adminUserCtrl.text.trim() : 'admin';
+    final pass = _adminPassCtrl.text;
 
     setState(() => _isAuthenticating = true);
     _addLog('🔐 [Auth Check] Test des identifiants "$user" sur [$gatewayIp]...');
@@ -220,21 +222,24 @@ class _AddRouterScreenState extends State<AddRouterScreen>
       );
 
       if (mounted) {
-        setState(() => _isAuthenticating = false);
+        setState(() {
+          _isAuthenticating = false;
+          _isRouterAuthenticated = success;
+        });
         if (success) {
           _addLog('✅ [Auth Success] Authentification réussie sur le routeur ($gatewayIp) !');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('✅ Authentification réussie sur le routeur !'),
+              content: Text('✅ Authentification réussie sur le routeur ! Vous pouvez lancer le ZTP 1-Clic.'),
               backgroundColor: Colors.green,
             ),
           );
         } else {
-          _addLog('⚠️ [Auth Notice] Impossible d\'authentifier en direct (Mixed Content PWA ou identifiants incorrects).');
+          _addLog('❌ [Auth Error] Impossible d\'authentifier sur $gatewayIp. Vérifiez le mot de passe admin.');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('⚠️ Utilisez le bouton 1-Clic pour exécuter dans le Terminal WebFig.'),
-              backgroundColor: Colors.orange,
+              content: Text('❌ Authentification échouée. Vérifiez le mot de passe admin du routeur.'),
+              backgroundColor: Colors.redAccent,
             ),
           );
         }
@@ -341,8 +346,8 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                         children: [
                           ElevatedButton.icon(
                             onPressed: () async {
+                              final cmd = _buildZtpCommand();
                               final token = _extractBootstrapToken();
-                              final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
                               cmdController.text = cmd;
                               _copyToClipboard(cmd);
                               setModalState(() {
@@ -575,8 +580,6 @@ class _AddRouterScreenState extends State<AddRouterScreen>
     final provider = context.watch<NetworkProvider>();
 
     final hasConfig = isEdit || _serverResponse != null;
-    final ztpCommand = _buildZtpCommand();
-    final routerName = _nameController.text.trim().isNotEmpty ? _nameController.text.trim() : 'Routeur Tiknet';
 
     return Scaffold(
       appBar: AppBar(
@@ -691,23 +694,18 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                     ),
                     const SizedBox(height: 20),
 
-                    // 2. PROVISIONING ACTIONS & 1-CLICK ZTP EXECUTION BAR
+                    // 2. ROUTER AUTHENTICATION & DIRECT TERMINAL PROVISIONING
                     if (hasConfig) ...[
-                      // ── SECTION A: 1-CLICK COPY & EXECUTE ZTP ──
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
+                          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.15)),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF0284C7).withValues(alpha: 0.15),
-                              blurRadius: 16,
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 14,
                               offset: const Offset(0, 4),
                             ),
                           ],
@@ -715,34 +713,43 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Card Header with Status Badge
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                                    color: const Color(0xFF0284C7).withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
+                                  child: const Icon(Icons.security, color: Color(0xFF0284C7), size: 24),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Icon(Icons.bolt, color: Color(0xFF38BDF8), size: 14),
-                                      SizedBox(width: 4),
                                       Text(
-                                        'ZTP 1-CLIC AUTOMATISÉ',
-                                        style: TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 0.5),
+                                        'Authentification & Terminal',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          color: colorScheme.onSurface,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Accédez au routeur pour exécuter le ZTP 1-Clic',
+                                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const Spacer(),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                   decoration: BoxDecoration(
                                     color: _routerOnlineStatus == 'online'
-                                        ? Colors.green.withValues(alpha: 0.2)
-                                        : Colors.amber.withValues(alpha: 0.2),
+                                        ? Colors.green.withValues(alpha: 0.15)
+                                        : Colors.amber.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
                                       color: _routerOnlineStatus == 'online' ? Colors.green : Colors.amber,
@@ -755,16 +762,16 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                       Icon(
                                         _routerOnlineStatus == 'online' ? Icons.check_circle : Icons.sync,
                                         color: _routerOnlineStatus == 'online' ? Colors.green : Colors.amber,
-                                        size: 12,
+                                        size: 13,
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
                                         _routerOnlineStatus == 'online'
                                             ? 'EN LIGNE'
-                                            : (_routerOnlineStatus == 'handshake' ? 'TUNNEL WIREGUARD' : 'EN ATTENTE'),
+                                            : (_routerOnlineStatus == 'handshake' ? 'WIREGUARD CONNECTÉ' : 'EN ATTENTE'),
                                         style: TextStyle(
                                           color: _routerOnlineStatus == 'online' ? Colors.green : Colors.amber,
-                                          fontSize: 10,
+                                          fontSize: 11,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -773,112 +780,9 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 18),
 
-                            Text(
-                              'Commande ZTP Phase 1 pour $routerName',
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
-                            ),
-                            const SizedBox(height: 6),
-                            const Text(
-                              'Copiez et collez cette ligne unique dans le Terminal MikroTik. Le routeur s\'auto-provisionnera et rejoindra le contrôleur en 5 secondes.',
-                              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12, height: 1.4),
-                            ),
-                            const SizedBox(height: 14),
-
-                            // Command Code Block
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF020617),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFF334155)),
-                              ),
-                              child: SelectableText(
-                                ztpCommand,
-                                style: const TextStyle(
-                                  color: Color(0xFF38BDF8),
-                                  fontFamily: 'monospace',
-                                  fontSize: 11,
-                                  height: 1.5,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // 1-Click Copy Button
-                            SizedBox(
-                              width: double.infinity,
-                              height: 48,
-                              child: ElevatedButton.icon(
-                                onPressed: () => _copyToClipboard(ztpCommand, feedback: '📋 Commande ZTP 1-Clic copiée ! Prête à coller dans le Terminal.'),
-                                icon: const Icon(Icons.copy, size: 18, color: Colors.black),
-                                label: const Text(
-                                  '📋 COPIER LA COMMANDE ZTP 1-CLIC',
-                                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Colors.black, letterSpacing: 0.3),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF38BDF8),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  elevation: 2,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // ── SECTION B: TERMINAL AUTHENTICATION & WEBFIG ACCESS ──
-                      Container(
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.15)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.03),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF0284C7).withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Icon(Icons.terminal, color: Color(0xFF0284C7), size: 22),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Authentification Terminal & Accès WebFig',
-                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: colorScheme.onSurface),
-                                      ),
-                                      Text(
-                                        'Vérifiez la passerelle ou ouvrez directement la console',
-                                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Gateway IP Input
+                            // Inputs Row 1: Gateway IP & Username
                             Row(
                               children: [
                                 Expanded(
@@ -890,11 +794,11 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                       hintText: '192.168.88.1',
                                       isDense: true,
                                       prefixIcon: const Icon(Icons.lan_outlined, size: 18),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 10),
                                 Expanded(
                                   flex: 2,
                                   child: TextFormField(
@@ -903,134 +807,110 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                       labelText: 'Utilisateur',
                                       hintText: 'admin',
                                       isDense: true,
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                      prefixIcon: const Icon(Icons.person_outline, size: 18),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 12),
 
-                            // Action Buttons
+                            // Input Row 2: Admin Password
+                            TextFormField(
+                              controller: _adminPassCtrl,
+                              obscureText: _obscureAdminPass,
+                              decoration: InputDecoration(
+                                labelText: 'Mot de passe Admin Routeur',
+                                hintText: 'Laisser vide si aucun mot de passe',
+                                isDense: true,
+                                prefixIcon: const Icon(Icons.lock_outline, size: 18),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscureAdminPass ? Icons.visibility_off : Icons.visibility,
+                                    size: 18,
+                                    color: Colors.grey,
+                                  ),
+                                  onPressed: () {
+                                    setState(() => _obscureAdminPass = !_obscureAdminPass);
+                                  },
+                                ),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+
+                            // Action Buttons: Tester Auth & Ouvrir Terminal
                             Row(
                               children: [
                                 Expanded(
+                                  flex: 2,
                                   child: OutlinedButton.icon(
                                     onPressed: _isAuthenticating ? null : _verifyRouterCredentials,
                                     icon: _isAuthenticating
-                                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                                        : const Icon(Icons.security, size: 16),
+                                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                                        : Icon(
+                                            _isRouterAuthenticated ? Icons.check_circle : Icons.shield_outlined,
+                                            size: 18,
+                                            color: _isRouterAuthenticated ? Colors.green : null,
+                                          ),
                                     label: Text(
-                                      _isAuthenticating ? 'Vérification...' : 'Tester Auth',
-                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                      _isAuthenticating
+                                          ? 'Test en cours...'
+                                          : (_isRouterAuthenticated ? 'Authentifié ✅' : 'Tester Auth'),
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: _isRouterAuthenticated ? Colors.green : null,
+                                      ),
                                     ),
                                     style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      side: BorderSide(
+                                        color: _isRouterAuthenticated ? Colors.green : colorScheme.outline.withValues(alpha: 0.3),
+                                      ),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 10),
                                 Expanded(
+                                  flex: 3,
                                   child: FilledButton.icon(
-                                    onPressed: _openWebFigTerminal,
-                                    icon: const Icon(Icons.open_in_new, size: 16),
+                                    onPressed: () => _openInteractiveTerminalModal(
+                                      context,
+                                      _gatewayIpController.text.trim().isNotEmpty ? _gatewayIpController.text.trim() : '192.168.88.1',
+                                    ),
+                                    icon: const Icon(Icons.terminal, size: 18, color: Colors.black),
                                     label: const Text(
-                                      'WebFig #Terminal',
-                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                      '⚡ Terminal & ZTP 1-Clic',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.black,
+                                        letterSpacing: 0.3,
+                                      ),
                                     ),
                                     style: FilledButton.styleFrom(
-                                      backgroundColor: const Color(0xFF0F172A),
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      backgroundColor: const Color(0xFF38BDF8),
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      elevation: 3,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-
-                            // In-App Terminal Modal Trigger
-                            SizedBox(
-                              width: double.infinity,
-                              child: TextButton.icon(
-                                onPressed: () => _openInteractiveTerminalModal(context, _gatewayIpController.text.trim()),
-                                icon: const Icon(Icons.computer, size: 16, color: Color(0xFF0284C7)),
-                                label: const Text(
-                                  '💻 Ouvrir le Terminal Interactif In-App (Socket Console)',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0284C7)),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // ── SECTION C: LIVE TRACKER & TELEMETER CONSOLE ──
-                      Container(
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF020617),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: const Color(0xFF1E293B)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.track_changes, color: Color(0xFF4ADE80), size: 18),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'LIVE TELEMETER & DIAGNOSTIC LOGS',
-                                  style: TextStyle(
-                                    color: Color(0xFF4ADE80),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.6,
-                                  ),
-                                ),
-                                const Spacer(),
-                                IconButton(
-                                  icon: const Icon(Icons.copy, size: 14, color: Colors.white60),
-                                  tooltip: 'Copier les logs',
-                                  onPressed: () => _copyToClipboard(_liveTerminalLogs.join('\n')),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            const Divider(color: Color(0xFF1E293B), height: 1),
                             const SizedBox(height: 10),
 
-                            Container(
-                              height: 180,
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF090D16),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFF1E293B)),
-                              ),
-                              child: SingleChildScrollView(
-                                reverse: true,
-                                child: SelectableText(
-                                  _liveTerminalLogs.isEmpty
-                                      ? '[En attente de connexion...]'
-                                      : _liveTerminalLogs.join('\n'),
-                                  style: const TextStyle(
-                                    color: Color(0xFFCBD5E1),
-                                    fontSize: 11,
-                                    fontFamily: 'monospace',
-                                    height: 1.4,
-                                  ),
+                            // Subtle WebFig Link
+                            Center(
+                              child: TextButton.icon(
+                                onPressed: _openWebFigTerminal,
+                                icon: const Icon(Icons.open_in_new, size: 14, color: Colors.grey),
+                                label: const Text(
+                                  'Ouvrir l\'interface WebFig externe (http://192.168.88.1)',
+                                  style: TextStyle(fontSize: 11, color: Colors.grey),
                                 ),
                               ),
                             ),
