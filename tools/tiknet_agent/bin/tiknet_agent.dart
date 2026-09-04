@@ -214,24 +214,27 @@ Future<Map<String, dynamic>> _executeAuthCheck(Map<String, dynamic> payload) asy
       '=password=$password',
     ]);
 
-    if (loginRes.contains('!done')) {
-      return {
-        'success': true,
-        'message': 'Authentification réussie sur le routeur ($username@$gatewayIp) !',
-      };
-    } else {
-      String errorMsg = 'Nom d\'utilisateur ou mot de passe incorrect';
-      for (final w in loginRes) {
-        if (w.startsWith('=message=')) {
-          errorMsg = w.substring(9);
-          break;
-        }
+    if (!loginRes.contains('!trap') && loginRes.contains('!done')) {
+      final identityRes = await client.sendSentence(['/system/identity/print']);
+      if (identityRes.any((w) => w.startsWith('=name=')) || (identityRes.contains('!re') && !identityRes.contains('!trap'))) {
+        return {
+          'success': true,
+          'message': 'Authentification réussie sur le routeur ($username@$gatewayIp) !',
+        };
       }
-      return {
-        'success': false,
-        'message': errorMsg,
-      };
     }
+
+    String errorMsg = 'Nom d\'utilisateur ou mot de passe incorrect';
+    for (final w in loginRes) {
+      if (w.startsWith('=message=')) {
+        errorMsg = w.substring(9);
+        break;
+      }
+    }
+    return {
+      'success': false,
+      'message': errorMsg,
+    };
   } catch (e) {
     return {
       'success': false,

@@ -789,6 +789,9 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                   flex: 3,
                                   child: TextFormField(
                                     controller: _gatewayIpController,
+                                    onChanged: (_) {
+                                      if (_isRouterAuthenticated) setState(() => _isRouterAuthenticated = false);
+                                    },
                                     decoration: InputDecoration(
                                       labelText: 'IP Passerelle Routeur',
                                       hintText: '192.168.88.1',
@@ -803,6 +806,9 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                   flex: 2,
                                   child: TextFormField(
                                     controller: _adminUserCtrl,
+                                    onChanged: (_) {
+                                      if (_isRouterAuthenticated) setState(() => _isRouterAuthenticated = false);
+                                    },
                                     decoration: InputDecoration(
                                       labelText: 'Utilisateur',
                                       hintText: 'admin',
@@ -820,6 +826,9 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                             TextFormField(
                               controller: _adminPassCtrl,
                               obscureText: _obscureAdminPass,
+                              onChanged: (_) {
+                                if (_isRouterAuthenticated) setState(() => _isRouterAuthenticated = false);
+                              },
                               decoration: InputDecoration(
                                 labelText: 'Mot de passe Admin Routeur',
                                 hintText: 'Laisser vide si aucun mot de passe',
@@ -877,25 +886,32 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                 Expanded(
                                   flex: 3,
                                   child: FilledButton.icon(
-                                    onPressed: () => _openInteractiveTerminalModal(
-                                      context,
-                                      _gatewayIpController.text.trim().isNotEmpty ? _gatewayIpController.text.trim() : '192.168.88.1',
+                                    onPressed: _isRouterAuthenticated
+                                        ? () => _openInteractiveTerminalModal(
+                                              context,
+                                              _gatewayIpController.text.trim().isNotEmpty ? _gatewayIpController.text.trim() : '192.168.88.1',
+                                            )
+                                        : null,
+                                    icon: Icon(
+                                      _isRouterAuthenticated ? Icons.terminal : Icons.lock_outline,
+                                      size: 18,
+                                      color: _isRouterAuthenticated ? Colors.black : Colors.white54,
                                     ),
-                                    icon: const Icon(Icons.terminal, size: 18, color: Colors.black),
-                                    label: const Text(
-                                      '⚡ Terminal & ZTP 1-Clic',
+                                    label: Text(
+                                      _isRouterAuthenticated ? '⚡ Terminal & ZTP 1-Clic' : 'Verrouillé (Auth Requise)',
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w900,
-                                        color: Colors.black,
+                                        color: _isRouterAuthenticated ? Colors.black : Colors.white54,
                                         letterSpacing: 0.3,
                                       ),
                                     ),
                                     style: FilledButton.styleFrom(
                                       backgroundColor: const Color(0xFF38BDF8),
+                                      disabledBackgroundColor: Colors.grey.shade800,
                                       padding: const EdgeInsets.symmetric(vertical: 14),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      elevation: 3,
+                                      elevation: _isRouterAuthenticated ? 3 : 0,
                                     ),
                                   ),
                                 ),
