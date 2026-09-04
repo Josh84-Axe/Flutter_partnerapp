@@ -340,18 +340,44 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                       child: Row(
                         children: [
                           ElevatedButton.icon(
-                            onPressed: () {
+                            onPressed: () async {
                               final token = _extractBootstrapToken();
                               final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
                               cmdController.text = cmd;
                               _copyToClipboard(cmd);
                               setModalState(() {
                                 terminalOutput.add('[$user@MikroTik] > $cmd');
-                                terminalOutput.add('📋 Commande ZTP chargée et copiée dans le presse-papier !');
+                                terminalOutput.add('⚡ Exécution du provisionnement ZTP en cours...');
+                              });
+
+                              final payload = _serverResponse ?? {
+                                'bootstrap_token': token,
+                                'router_name': _nameController.text.trim(),
+                              };
+
+                              final res = await _ztpService.executeZtpProvisioning(
+                                gatewayIp: gatewayIp,
+                                ztpPayload: payload,
+                                defaultAdminUsername: user,
+                                defaultAdminPassword: _adminPassCtrl.text,
+                                onProgress: (status, prog) {
+                                  setModalState(() {
+                                    terminalOutput.add('⏳ $status (${(prog * 100).toInt()}%)');
+                                  });
+                                },
+                                onLog: (line) {
+                                  setModalState(() {
+                                    terminalOutput.add(line);
+                                  });
+                                },
+                              );
+
+                              setModalState(() {
+                                terminalOutput.add(res ? '✅ Provisionnement Phase 1 exécuté avec succès !' : '⚠️ Exécution terminée avec des remarques.');
                               });
                             },
                             icon: const Icon(Icons.flash_on, size: 14, color: Colors.black),
-                            label: const Text('⚡ Charger Commande ZTP', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black)),
+                            label: const Text('⚡ Coller & Exécuter ZTP (1-Clic)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF38BDF8),
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -430,29 +456,83 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                 hintText: 'Tapez une commande RouterOS...',
                                 hintStyle: TextStyle(color: Colors.white38, fontSize: 12),
                               ),
-                              onSubmitted: (val) {
+                              onSubmitted: (val) async {
                                 final cmd = val.trim();
                                 if (cmd.isEmpty) return;
+                                cmdController.clear();
                                 setModalState(() {
                                   terminalOutput.add('[$user@MikroTik] > $cmd');
-                                  terminalOutput.add('⚡ Sentence sent to router socket engine...');
-                                  cmdController.clear();
+                                  terminalOutput.add('⚡ Exécution de la commande...');
                                 });
                                 _addLog('💻 [Terminal Exec] $cmd');
+
+                                final payload = _serverResponse ?? {
+                                  'bootstrap_token': _extractBootstrapToken(),
+                                  'router_name': _nameController.text.trim(),
+                                  'payload_script': cmd,
+                                };
+
+                                final res = await _ztpService.executeZtpProvisioning(
+                                  gatewayIp: gatewayIp,
+                                  ztpPayload: payload,
+                                  defaultAdminUsername: user,
+                                  defaultAdminPassword: _adminPassCtrl.text,
+                                  onProgress: (status, prog) {
+                                    setModalState(() {
+                                      terminalOutput.add('⏳ $status');
+                                    });
+                                  },
+                                  onLog: (line) {
+                                    setModalState(() {
+                                      terminalOutput.add(line);
+                                    });
+                                  },
+                                );
+
+                                setModalState(() {
+                                  terminalOutput.add(res ? '✅ Commande exécutée avec succès !' : '⚠️ Exécution terminée.');
+                                });
                               },
                             ),
                           ),
                           IconButton(
                             icon: const Icon(Icons.send, color: Color(0xFF38BDF8), size: 18),
-                            onPressed: () {
+                            onPressed: () async {
                               final cmd = cmdController.text.trim();
                               if (cmd.isEmpty) return;
+                              cmdController.clear();
                               setModalState(() {
                                 terminalOutput.add('[$user@MikroTik] > $cmd');
-                                terminalOutput.add('⚡ Sentence sent to router socket engine...');
-                                cmdController.clear();
+                                terminalOutput.add('⚡ Exécution de la commande...');
                               });
                               _addLog('💻 [Terminal Exec] $cmd');
+
+                              final payload = _serverResponse ?? {
+                                'bootstrap_token': _extractBootstrapToken(),
+                                'router_name': _nameController.text.trim(),
+                                'payload_script': cmd,
+                              };
+
+                              final res = await _ztpService.executeZtpProvisioning(
+                                gatewayIp: gatewayIp,
+                                ztpPayload: payload,
+                                defaultAdminUsername: user,
+                                defaultAdminPassword: _adminPassCtrl.text,
+                                onProgress: (status, prog) {
+                                  setModalState(() {
+                                    terminalOutput.add('⏳ $status');
+                                  });
+                                },
+                                onLog: (line) {
+                                  setModalState(() {
+                                    terminalOutput.add(line);
+                                  });
+                                },
+                              );
+
+                              setModalState(() {
+                                terminalOutput.add(res ? '✅ Commande exécutée avec succès !' : '⚠️ Exécution terminée.');
+                              });
                             },
                           ),
                         ],
