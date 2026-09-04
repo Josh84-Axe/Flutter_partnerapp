@@ -12,10 +12,10 @@ jobs:
     name: Build & Deploy 3 Flutter Web Flavors
 
     env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_KEY }}
-      CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
-      CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN || secrets.CLOUDFLARE_API_KEY || 'ccc371fcab3109566b511d898831bf36a1e00' }}
+      CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY || 'ccc371fcab3109566b511d898831bf36a1e00' }}
+      CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL || 'sientey@hotmail.com' }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || 'cdbd00e3efae5135a49ed13ac47e0f68' }}
 
     steps:
       - name: Checkout code
