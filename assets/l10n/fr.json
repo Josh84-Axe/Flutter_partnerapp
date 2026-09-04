@@ -1233,7 +1233,7 @@
   "unfiltered_full_access": "Non filtré (Accès Complet)",
   "only_allow_access_hours": "Autoriser l'accès uniquement entre les heures définies",
   "pause_household_devices": "Mettre en pause tous les appareils de la maison",
-  "network_is_secure": "Le réseau est sécurisé",
+  "network_is_secure": "Réseau Sécurisé",
   "managed_devices": "Appareils gérés",
   "add_first_device": "Ajouter le premier appareil",
   "no_devices_yet": "Aucun appareil pour l'instant",
@@ -1389,9 +1389,9 @@
   "faq_campus_account_q": "Comment réinitialiser mon mot de passe étudiant ?",
   "faq_campus_account_a": "Cliquez sur Mot de passe oublié sur l'écran de connexion ou allez dans Paramètres > Profil.",
   "family_profile_title": "Profil Familial",
-  "campus_profile_title": "Profil Étudiant",
+  "campus_profile_title": "Profil Campus",
   "family_profile": "Profil Familial",
-  "campus_profile": "Profil Étudiant",
+  "campus_profile": "Profil Campus",
   "account_id": "ID Compte",
   "student_id": "ID Étudiant",
   "home_address": "Adresse Domicile",
@@ -1403,5 +1403,9 @@
   "Family Profile": "Profil Familial",
   "Campus Profile": "Profil Étudiant",
   "Partner Profile": "Profil Partenaire",
-  "Safe digital habits for families.": "Habitudes numériques sûres en famille."
+  "Safe digital habits for families.": "Habitudes numériques sûres en famille.",
+  "good_morning": "Bonjour",
+  "good_afternoon": "Bon après-midi",
+  "good_evening": "Bonsoir",
+  "Family User": "Utilisateur Familial"
 }

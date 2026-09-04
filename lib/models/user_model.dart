@@ -131,8 +131,28 @@ class UserModel {
   }
 
   // Getters for name parts
-  String get firstName => name.split(' ').first;
-  String get lastName => name.split(' ').length > 1 ? name.split(' ').sublist(1).join(' ') : '';
+  String get firstName {
+    final trimmedName = name.trim();
+    if (trimmedName.isNotEmpty) {
+      return trimmedName.split(' ').first;
+    }
+    if (username != null && username!.trim().isNotEmpty) {
+      return username!.trim();
+    }
+    if (email.trim().isNotEmpty && email.contains('@')) {
+      return email.trim().split('@').first;
+    }
+    return 'Family';
+  }
+
+  String get lastName {
+    final trimmedName = name.trim();
+    if (trimmedName.isNotEmpty) {
+      final parts = trimmedName.split(' ');
+      return parts.length > 1 ? parts.sublist(1).join(' ') : '';
+    }
+    return '';
+  }
 
   UserModel copyWith({
     String? id,

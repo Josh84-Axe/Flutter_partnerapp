@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -5,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../flavors.dart';
 import '../../providers/split/auth_provider.dart';
 import '../../widgets/theme_selection_dialog.dart';
+import '../../widgets/app_watermark_background.dart';
 
 import '../../providers/campus_provider.dart';
 
@@ -354,7 +356,9 @@ class FamilyVariantStrategy implements AppVariantStrategy {
   }
 
   @override
-  Widget wrapShell(Widget child) => child;
+  Widget wrapShell(Widget child) {
+    return AppWatermarkBackground(child: child);
+  }
 }
 
 class CampusVariantStrategy implements AppVariantStrategy {
@@ -535,12 +539,18 @@ class CampusVariantStrategy implements AppVariantStrategy {
 }
 
 AppVariantStrategy getStrategy(String? appVariant) {
-  // F.name is the compile-time flavor (e.g. 'family', 'campus', 'partner').
-  // It MUST take precedence so domain variants (e.g. family.tiknetafrica.com) ALWAYS load their respective strategy!
-  final variant = (F.name.isNotEmpty && F.name != 'partner') 
-      ? F.name 
-      : ((appVariant != null && appVariant.isNotEmpty) ? appVariant : F.name);
-      
+  if (kIsWeb) {
+    final host = Uri.base.host.toLowerCase();
+    if (host.contains('family')) return FamilyVariantStrategy();
+    if (host.contains('campus')) return CampusVariantStrategy();
+    if (host.contains('partner')) return PartnerVariantStrategy();
+  }
+
+  if (F.name == 'family') return FamilyVariantStrategy();
+  if (F.name == 'campus') return CampusVariantStrategy();
+  if (F.name == 'partner') return PartnerVariantStrategy();
+
+  final variant = (appVariant != null && appVariant.isNotEmpty) ? appVariant : F.name;
   switch (variant) {
     case 'campus':
       return CampusVariantStrategy();
