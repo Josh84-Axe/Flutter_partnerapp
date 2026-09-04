@@ -3,18 +3,60 @@ import 'dart:convert';
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 
+/// Check if Tiknet Local Provisioning Agent is running on localhost:9876
+Future<bool> isLocalAgentAvailable() async {
+  try {
+    final req = await html.HttpRequest.request(
+      'http://127.0.0.1:9876/health',
+      method: 'GET',
+      requestHeaders: {'Content-Type': 'application/json'},
+    ).timeout(const Duration(milliseconds: 800));
+    if (req.status == 200) {
+      return true;
+    }
+  } catch (_) {}
+  return false;
+}
+
+/// Execute ZTP via Tiknet Local Agent on localhost:9876
+Future<Map<String, dynamic>> executeLocalAgentProvisioning({
+  required String gatewayIp,
+  required String scriptSource,
+  String username = 'admin',
+  String password = '',
+  String? newPassword,
+}) async {
+  try {
+    final req = await html.HttpRequest.request(
+      'http://127.0.0.1:9876/provision',
+      method: 'POST',
+      sendData: jsonEncode({
+        'gateway_ip': gatewayIp,
+        'username': username,
+        'password': password,
+        'new_password': newPassword,
+        'script_source': scriptSource,
+      }),
+      requestHeaders: {'Content-Type': 'application/json'},
+    ).timeout(const Duration(seconds: 8));
+
+    if (req.status == 200 && req.responseText != null) {
+      return jsonDecode(req.responseText!) as Map<String, dynamic>;
+    }
+  } catch (e) {
+    if (kDebugMode) debugPrint('⚠️ [WebZtpHelper] Local agent call failed: $e');
+  }
+  return {'success': false, 'message': 'Agent local non joignable'};
+}
+
 /// Silent, CORS-bypassing Web ZTP helper for PWA running on HTTPS.
-/// Uses mode:'no-cors' fetch & navigator.sendBeacon to dispatch REST commands
-/// silently WITHOUT triggering browser Form Submission popups or DOM dialogs.
 void _sendSilentNoCorsRequest(String url, String jsonBody) {
   try {
-    // 1. Silent navigator.sendBeacon (Supported in all modern mobile browsers)
     try {
       final blob = html.Blob([jsonBody], 'application/json');
       html.window.navigator.sendBeacon(url, blob);
     } catch (_) {}
 
-    // 2. Silent Fetch API with mode: 'no-cors' (Bypasses CORS preflight and form dialogs)
     try {
       html.window.fetch(url, {
         'method': 'POST',
@@ -36,8 +78,22 @@ Future<bool> executeWebZtpFormProvisioning({
   required String routerName,
   String username = 'admin',
   String password = '',
+  String? scriptSource,
 }) async {
   try {
+    // 1. Try Tiknet Local Agent on localhost:9876 first
+    final hasAgent = await isLocalAgentAvailable();
+    if (hasAgent) {
+      if (kDebugMode) debugPrint('🔌 [WebZtpHelper] Found active Tiknet Local Agent on localhost:9876!');
+      final res = await executeLocalAgentProvisioning(
+        gatewayIp: gatewayIp,
+        scriptSource: scriptSource ?? '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;',
+        username: username,
+        password: password,
+      );
+      return res['success'] == true;
+    }
+
     if (kDebugMode) {
       debugPrint('⚡ [WebZtpHelper] Executing Silent Web ZTP to $gatewayIp...');
     }

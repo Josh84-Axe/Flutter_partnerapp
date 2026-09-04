@@ -150,16 +150,93 @@ class MikrotikApiSocket {
     }
   }
 
-  /// Read System Identity from RouterOS API
-  Future<String?> getSystemIdentity({Duration timeout = const Duration(seconds: 3)}) async {
+  /// Change RouterOS user password over API Socket
+  Future<bool> changePassword({
+    String oldPassword = '',
+    required String newPassword,
+    Duration timeout = const Duration(seconds: 4),
+  }) async {
     try {
-      final items = await printQuery(['/system/identity/print'], timeout: timeout);
-      if (items.isNotEmpty) {
-        return items.first['name'];
-      }
-      return null;
+      final sentence = [
+        '/password',
+        '=old-password=$oldPassword',
+        '=new-password=$newPassword',
+      ];
+      final resp = await _sendSentenceAndReadResponse(sentence, timeout: timeout);
+      return resp.any((w) => w == '!done');
     } catch (_) {
-      return null;
+      return false;
+    }
+  }
+
+  /// Inject and execute a RouterOS system script with full permissions over API Socket
+  Future<bool> injectAndRunScript({
+    required String name,
+    required String scriptSource,
+    Duration timeout = const Duration(seconds: 6),
+  }) async {
+    try {
+      // 1. Remove existing script with same name if any
+      final existing = await printQuery(['/system/script/print', '?name=$name']);
+      for (final item in existing) {
+        if (item['.id'] != null) {
+          await sendSentence(['/system/script/remove', '=.id=${item['.id']}']);
+        }
+      }
+
+      // 2. Add script with full policy
+      final addResp = await _sendSentenceAndReadResponse([
+        '/system/script/add',
+        '=name=$name',
+        '=policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon',
+        '=dont-require-permissions=yes',
+        '=source=$scriptSource',
+      ], timeout: timeout);
+
+      if (!addResp.any((w) => w == '!done')) {
+        // Fallback without policy if strict validation
+        await sendSentence([
+          '/system/script/add',
+          '=name=$name',
+          '=source=$scriptSource',
+        ]);
+      }
+
+      // 3. Run script
+      final runResp = await _sendSentenceAndReadResponse([
+        '/system/script/run',
+        '=number=$name',
+      ], timeout: timeout);
+
+      return runResp.any((w) => w == '!done');
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Verify if WireGuard peer has established active handshake
+  Future<bool> checkWireGuardHandshake({
+    String interfaceName = 'wg-backup',
+    Duration timeout = const Duration(seconds: 4),
+  }) async {
+    try {
+      final peers = await printQuery([
+        '/interface/wireguard/peers/print',
+        '?interface=$interfaceName',
+      ], timeout: timeout);
+
+      if (peers.isEmpty) return false;
+      for (final p in peers) {
+        final lastHandshake = p['last-handshake'];
+        final rx = int.tryParse(p['rx'] ?? '0') ?? 0;
+        final tx = int.tryParse(p['tx'] ?? '0') ?? 0;
+        if (lastHandshake != null && lastHandshake.isNotEmpty && (rx > 0 || tx > 0)) {
+          return true;
+        }
+      }
+      return false;
+    } catch (_) {
+      return false;
     }
   }
 
