@@ -222,10 +222,10 @@ class FamilyVariantStrategy implements AppVariantStrategy {
   @override
   List<NavigationDestination> getDestinations() {
     return [
-      NavigationDestination(icon: const Icon(Icons.home), label: 'family_app.nav.home'.tr()),
-      NavigationDestination(icon: const Icon(Icons.family_restroom), label: 'family_app.nav.family'.tr()),
-      NavigationDestination(icon: const Icon(Icons.security), label: 'family_app.nav.rules'.tr()),
-      NavigationDestination(icon: const Icon(Icons.router), label: 'family_app.nav.network'.tr()),
+      NavigationDestination(icon: const Icon(Icons.home), label: 'Home'),
+      NavigationDestination(icon: const Icon(Icons.family_restroom), label: 'Family'),
+      NavigationDestination(icon: const Icon(Icons.security), label: 'Rules'),
+      NavigationDestination(icon: const Icon(Icons.router), label: 'Network'),
     ];
   }
 
@@ -234,13 +234,13 @@ class FamilyVariantStrategy implements AppVariantStrategy {
     return [
       NavigationRailDestination(icon: const Icon(Icons.home), label: Text('family_app.nav.home'.tr())),
       NavigationRailDestination(icon: const Icon(Icons.family_restroom), label: Text('family_app.nav.family'.tr())),
-      NavigationRailDestination(icon: const Icon(Icons.security), label: Text('family_app.nav.rules'.tr())),
+      NavigationRailDestination(icon: const Icon(Icons.security), label: const Text('Rules')),
       NavigationRailDestination(icon: const Icon(Icons.router), label: Text('family_app.nav.network'.tr())),
     ];
   }
 
   @override
-  String getDrawerHeaderTitle() => 'family_profile'.tr();
+  String getDrawerHeaderTitle() => 'Family Admin';
 
   @override
   List<Widget> getDrawerItems(BuildContext context) {
@@ -317,7 +317,7 @@ class FamilyVariantStrategy implements AppVariantStrategy {
       ),
       ListTile(
         leading: const Icon(Icons.person_outline),
-        title: Text('family_profile_title'.tr()),
+        title: Text('campus_profile_title'.tr()),
         onTap: () {
           context.pop();
           context.push('/partner-profile');
@@ -374,9 +374,9 @@ class CampusVariantStrategy implements AppVariantStrategy {
   @override
   List<NavigationDestination> getDestinations() {
     return [
-      NavigationDestination(icon: const Icon(Icons.school), label: 'campus_app.nav.home'.tr()),
-      NavigationDestination(icon: const Icon(Icons.map), label: 'campus_app.nav.map'.tr()),
-      NavigationDestination(icon: const Icon(Icons.help), label: 'campus_app.nav.support'.tr()),
+      NavigationDestination(icon: const Icon(Icons.school), label: 'Campus Home'),
+      NavigationDestination(icon: const Icon(Icons.map), label: 'Map'),
+      NavigationDestination(icon: const Icon(Icons.help), label: 'Support'),
     ];
   }
 
@@ -390,7 +390,7 @@ class CampusVariantStrategy implements AppVariantStrategy {
   }
 
   @override
-  String getDrawerHeaderTitle() => 'campus_profile'.tr();
+  String getDrawerHeaderTitle() => 'Campus Admin';
 
   @override
   List<Widget> getDrawerItems(BuildContext context) {
@@ -483,7 +483,7 @@ class CampusVariantStrategy implements AppVariantStrategy {
       ),
       ListTile(
         leading: const Icon(Icons.person_outline),
-        title: Text('campus_profile_title'.tr()),
+        title: Text('partner_profile_title'.tr()),
         onTap: () {
           context.pop();
           context.push('/partner-profile');
