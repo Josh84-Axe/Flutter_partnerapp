@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/family_models.dart';
 
 class ActiveTrafficFeedWidget extends StatefulWidget {
@@ -70,56 +71,59 @@ class _ActiveTrafficFeedWidgetState extends State<ActiveTrafficFeedWidget> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.swap_vert_rounded, color: Colors.blue, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Live Traffic Feed',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        Text(
-                          'Real-time Bandwidth Activity',
-                          style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.swap_vert_rounded, color: Colors.blue, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'live_traffic_feed'.tr(),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'realtime_bandwidth_activity'.tr(),
+                        style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 10.5),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 8,
-                        height: 8,
+                        width: 7,
+                        height: 7,
                         decoration: const BoxDecoration(
                           color: Colors.green,
                           shape: BoxShape.circle,
                         ),
                       ).animate(onPlay: (controller) => controller.repeat(reverse: true))
                        .scaleXY(begin: 0.8, end: 1.3, duration: 800.ms),
-                      const SizedBox(width: 6),
-                      const Text(
-                        'LIVE',
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green),
+                      const SizedBox(width: 5),
+                      Text(
+                        'badge_live'.tr(),
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green),
                       ),
                     ],
                   ),
@@ -144,7 +148,7 @@ class _ActiveTrafficFeedWidgetState extends State<ActiveTrafficFeedWidget> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Download', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
+                            Text('download'.tr(), style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
                             Text(
                               '${totalDown.toStringAsFixed(1)} Mbps',
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -170,7 +174,7 @@ class _ActiveTrafficFeedWidgetState extends State<ActiveTrafficFeedWidget> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Upload', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
+                            Text('upload'.tr(), style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
                             Text(
                               '${totalUp.toStringAsFixed(1)} Mbps',
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -227,7 +231,7 @@ class _ActiveTrafficFeedWidgetState extends State<ActiveTrafficFeedWidget> {
                           ),
                         ] else ...[
                           Text(
-                            device.isPaused ? 'Paused' : 'Idle / Offline',
+                            device.isPaused ? 'status_paused'.tr() : 'idle_offline'.tr(),
                             style: TextStyle(
                               fontSize: 11,
                               color: device.isPaused ? colorScheme.error : colorScheme.onSurfaceVariant,

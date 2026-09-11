@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import '../providers/family_provider.dart';
 import '../models/family_models.dart';
 import '../widgets/active_traffic_feed_widget.dart';
@@ -74,27 +73,27 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                   child: Text(
-                    'Pause Internet on ${device.deviceName}',
+                    'pause_internet_on'.tr(namedArgs: {'name': device.deviceName}),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(height: 8),
-                _buildPauseOption(context, Icons.timer, '15 Minutes', () {
+                _buildPauseOption(context, Icons.timer, 'duration_15_mins'.tr(), () {
                   provider.toggleDevicePause(device.id, true, durationMinutes: 15);
                 }),
-                _buildPauseOption(context, Icons.timer_10, '30 Minutes', () {
+                _buildPauseOption(context, Icons.timer_10, 'duration_30_mins'.tr(), () {
                   provider.toggleDevicePause(device.id, true, durationMinutes: 30);
                 }),
-                _buildPauseOption(context, Icons.hourglass_bottom, '1 Hour', () {
+                _buildPauseOption(context, Icons.hourglass_bottom, 'duration_1_hour'.tr(), () {
                   provider.toggleDevicePause(device.id, true, durationMinutes: 60);
                 }),
-                _buildPauseOption(context, Icons.hourglass_top, '2 Hours', () {
+                _buildPauseOption(context, Icons.hourglass_top, 'duration_2_hours'.tr(), () {
                   provider.toggleDevicePause(device.id, true, durationMinutes: 120);
                 }),
-                _buildPauseOption(context, Icons.edit_calendar, 'Custom Duration...', () {
+                _buildPauseOption(context, Icons.edit_calendar, 'custom_duration'.tr(), () {
                   _showCustomDurationDialog(context, device, provider);
                 }),
-                _buildPauseOption(context, Icons.pause_circle_filled, 'Indefinitely', () {
+                _buildPauseOption(context, Icons.pause_circle_filled, 'pause_indefinitely'.tr(), () {
                   provider.toggleDevicePause(device.id, true);
                 }, isDestructive: true),
                 const SizedBox(height: 12),
@@ -134,7 +133,7 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Custom Pause for ${device.deviceName}'),
+          title: Text('custom_pause_device'.tr(namedArgs: {'name': device.deviceName})),
           content: Form(
             key: formKey,
             child: Column(
@@ -144,9 +143,9 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                   controller: minutesController,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: 'Duration in Minutes',
-                    hintText: 'e.g. 45',
-                    suffixText: 'mins',
+                    labelText: 'duration_in_minutes'.tr(),
+                    hintText: 'eg_minutes'.tr(),
+                    suffixText: 'mins'.tr(),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   validator: (val) {
@@ -183,9 +182,9 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
   Future<void> _confirmRemoveDevice(BuildContext context, FamilyDevice device, FamilyProvider provider) async {
     final confirmed = await ConfirmationModal.show(
       context: context,
-      title: 'Remove Device'.tr(),
+      title: 'remove_device'.tr(),
       message: 'Are you sure you want to remove "${device.deviceName}" from your family network?',
-      confirmText: 'Remove'.tr(),
+      confirmText: 'remove'.tr(),
       isDestructive: true,
     );
 
@@ -265,14 +264,14 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  IconButton.filledTonal(
+                    IconButton.filledTonal(
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const FamilyAddDeviceScreen()),
                       );
                     },
                     icon: const Icon(Icons.qr_code_scanner),
-                    tooltip: 'Scan Network for Devices',
+                    tooltip: 'scan_network_devices'.tr(),
                   ),
                 ],
               ),
@@ -282,7 +281,7 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Managed Devices (${devices.length})',
+                    'managed_devices'.tr(namedArgs: {'count': '${devices.length}'}),
                     style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   Row(
@@ -294,7 +293,7 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${provider.devices.where((d) => d.isOnline).length} Online',
+                        'count_online'.tr(namedArgs: {'count': '${provider.devices.where((d) => d.isOnline).length}'}),
                         style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                       ),
                     ],
@@ -324,14 +323,14 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                           Icon(Icons.devices_other, size: 48, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
                           const SizedBox(height: 12),
                           Text(
-                            _searchQuery.isNotEmpty ? 'No matching devices found' : 'No devices configured yet',
+                            _searchQuery.isNotEmpty ? 'no_matching_devices'.tr() : 'no_devices_configured'.tr(),
                             style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             _searchQuery.isNotEmpty
-                                ? 'Try searching with a different device name or MAC address.'
-                                : 'Scan your home network to add kids\' devices or enter MAC addresses manually.',
+                                ? 'search_diff_query'.tr()
+                                : 'scan_or_add_manual'.tr(),
                             textAlign: TextAlign.center,
                             style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13),
                           ),
@@ -373,10 +372,39 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
     );
   }
 
+  String _formatDisplayPolicy(FamilyDevice device) {
+    if (device.isPaused) {
+      return 'policy_paused_restricted'.tr();
+    }
+    final raw = device.activePolicyName;
+    if (raw == null || raw.trim().isEmpty || raw.toLowerCase() == 'default' || raw == 'Default Filter') {
+      return 'default_filter'.tr();
+    }
+    final upper = raw.trim().toUpperCase();
+    if (upper == 'TIKNET_POLICY_FAMILY_SAFE' || upper == 'FAMILY_SAFE' || upper == 'FAMILY SAFE') {
+      return 'family_safe_badge'.tr();
+    }
+    if (upper == 'TIKNET_POLICY_SECURITY_ENHANCED' || upper == 'SECURITY_ENHANCED' || upper == 'SECURITY ENHANCED') {
+      return 'security_enhanced_badge'.tr();
+    }
+    if (upper == 'TIKNET_POLICY_UNFILTERED' || upper == 'UNFILTERED') {
+      return 'unfiltered_badge'.tr();
+    }
+    if (upper == 'TIKNET_POLICY_STUDY_FOCUS' || upper == 'STUDY_FOCUS' || upper == 'STUDY FOCUS') {
+      return 'study_focus_badge'.tr();
+    }
+    if (upper == 'TIKNET_POLICY_CIPA_STRICT' || upper == 'CIPA_STRICT' || upper == 'CIPA STRICT') {
+      return 'cipa_strict_badge'.tr();
+    }
+    if (upper.contains('PAUSED') || upper.contains('RESTRICTED') || upper.contains('BEDTIME')) {
+      return 'policy_paused_restricted'.tr();
+    }
+    final clean = raw.replaceAll('TIKNET_POLICY_', '').replaceAll('_', ' ').trim();
+    return clean.tr();
+  }
+
   Widget _buildDeviceCard(BuildContext context, FamilyDevice device, FamilyProvider provider, ColorScheme colorScheme) {
-    final policyName = device.activePolicyName != null
-        ? device.activePolicyName!.replaceAll('TIKNET_POLICY_', '').replaceAll('_', ' ')
-        : 'Default Filter';
+    final policyName = _formatDisplayPolicy(device);
 
     return Card(
       elevation: 0,
@@ -443,7 +471,7 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        device.isPaused ? 'Paused' : (device.isOnline ? 'Online' : 'Offline'),
+                        device.isPaused ? 'status_paused'.tr() : (device.isOnline ? 'status_online'.tr() : 'status_offline'.tr()),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -486,7 +514,7 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                 IconButton(
                   icon: Icon(Icons.delete_outline, color: colorScheme.error, size: 20),
                   onPressed: () => _confirmRemoveDevice(context, device, provider),
-                  tooltip: 'Remove Device',
+                  tooltip: 'remove_device'.tr(),
                 ),
               ],
             ),
@@ -504,7 +532,7 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            'Paused until ${DateFormat('MMM d, h:mm a').format(device.pauseUntil!.toLocal())}',
+                            'paused_until'.tr(namedArgs: {'time': DateFormat('d MMM, HH:mm').format(device.pauseUntil!.toLocal())}),
                             style: TextStyle(fontSize: 12, color: colorScheme.error, fontWeight: FontWeight.w500),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -515,7 +543,7 @@ class _FamilyDevicesScreenState extends State<FamilyDevicesScreen> {
                 else
                   Expanded(
                     child: Text(
-                      'Internet Access',
+                      'internet_access'.tr(),
                       style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
                     ),
                   ),
