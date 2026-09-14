@@ -346,4 +346,24 @@ class TransactionRepository {
       rethrow;
     }
   }
+
+  /// Estimate payout fee and net amount dynamically from backend
+  Future<Map<String, dynamic>?> estimatePayoutFee(double amount, String paymentMethodId) async {
+    try {
+      final response = await _dio.get(
+        '/partner/wallet/withdrawls/estimate-fee/',
+        queryParameters: {
+          'amount': amount.toString(),
+          'payment_method_id': paymentMethodId,
+        },
+      );
+      if (response.data is Map && response.data['data'] is Map) {
+        return response.data['data'] as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) print('⚠️ [TransactionRepository] Estimate payout fee error: $e');
+      return null;
+    }
+  }
 }

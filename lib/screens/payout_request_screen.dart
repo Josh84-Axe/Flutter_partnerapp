@@ -55,7 +55,6 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
     
     if (_selectedMethod.isNotEmpty) {
       final billingProvider = context.read<BillingProvider>();
-      // Find the method object that matches the selected slug
       final selectedMethodObj = billingProvider.paymentMethods.firstWhere(
         (m) => m['id']?.toString() == _selectedMethod,
         orElse: () => null,
@@ -71,6 +70,22 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
       _feeAmount = methodType == 'mobile_money' ? amount * 0.02 : amount * 0.015;
       _finalAmount = amount - _feeAmount;
     });
+
+    if (amount > 0 && _selectedMethod.isNotEmpty) {
+      final txRepo = context.read<BillingProvider>().transactionRepository;
+      if (txRepo != null) {
+        txRepo.estimatePayoutFee(amount, _selectedMethod).then((quote) {
+          if (mounted && quote != null) {
+            final quotedFee = double.tryParse(quote['fee_amount']?.toString() ?? '') ?? _feeAmount;
+            final quotedNet = double.tryParse(quote['net_payout_amount']?.toString() ?? '') ?? (amount - quotedFee);
+            setState(() {
+              _feeAmount = quotedFee;
+              _finalAmount = quotedNet;
+            });
+          }
+        });
+      }
+    }
   }
 
   @override

@@ -68,6 +68,7 @@ class BillingProvider with ChangeNotifier {
   }
 
   // Getters
+  TransactionRepository? get transactionRepository => _transactionRepository;
   double get walletBalance => _walletBalance;
   double get totalBalance => _walletBalance; // Mapped to current wallet balance
   double get totalRevenue => _totalRevenue;
@@ -195,8 +196,10 @@ class BillingProvider with ChangeNotifier {
       final balanceData = await _walletRepository!.fetchBalance();
       
       if (balanceData != null) {
-        // Handle both 'balance' and 'wallet_balance' keys for safety
-        final balanceVal = balanceData['balance'] ?? balanceData['wallet_balance'];
+        // Handle 'balance', 'wallet_balance', or nested 'wallet' object for safety
+        final dynamic rawWallet = balanceData['wallet'];
+        final dynamic nestedVal = (rawWallet is Map) ? (rawWallet['wallet_balance'] ?? rawWallet['balance']) : null;
+        final balanceVal = balanceData['balance'] ?? balanceData['wallet_balance'] ?? nestedVal;
         _walletBalance = CurrencyUtils.parseAmount(balanceVal);
         if (kDebugMode) debugPrint('✅ [BillingProvider] Wallet balance loaded: $_walletBalance');
       } else {
