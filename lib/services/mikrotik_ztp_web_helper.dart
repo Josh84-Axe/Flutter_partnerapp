@@ -65,7 +65,7 @@ Future<Map<String, dynamic>> executeLocalAgentProvisioning({
         'script_source': scriptSource,
       }),
       requestHeaders: {'Content-Type': 'application/json'},
-    ).timeout(const Duration(seconds: 8));
+    ).timeout(const Duration(seconds: 60));
 
     if (req.status == 200 && req.responseText != null) {
       return jsonDecode(req.responseText!) as Map<String, dynamic>;
@@ -114,7 +114,7 @@ Future<bool> executeWebZtpFormProvisioning({
       if (kDebugMode) debugPrint('🔌 [WebZtpHelper] Found active Tiknet Local Agent on localhost:9876!');
       final res = await executeLocalAgentProvisioning(
         gatewayIp: gatewayIp,
-        scriptSource: scriptSource ?? '/tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;',
+        scriptSource: scriptSource ?? ':do { /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes } on-error={}; :local cnt 0; :while (([:len [/file find name="bootstrap.rsc"]] = 0) and (\$cnt < 20)) do={ :delay 1s; :set cnt (\$cnt + 1); }; :delay 1s; /import file-name=bootstrap.rsc;',
         username: username,
         password: password,
       );
@@ -145,20 +145,22 @@ Future<bool> executeWebZtpFormProvisioning({
       });
       _sendSilentNoCorsRequest('$host/rest/tool/fetch', json1);
 
-      await Future.delayed(const Duration(milliseconds: 1000));
+      await Future.delayed(const Duration(milliseconds: 1500));
 
-      // 2. Payload 2: /rest/system/script (Create import script)
+      // 2. Payload 2: /rest/system/script (Create import script with full execution permissions)
       final json2 = jsonEncode({
         'name': 'import-bootstrap-script',
-        'source': '/import file-name=bootstrap.rsc',
+        'policy': 'ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon',
+        'dont-require-permissions': 'yes',
+        'source': ':delay 1s; /import file-name=bootstrap.rsc;',
       });
       _sendSilentNoCorsRequest('$host/rest/system/script', json2);
 
-      await Future.delayed(const Duration(milliseconds: 800));
+      await Future.delayed(const Duration(milliseconds: 1000));
 
-      // 3. Payload 3: /rest/system/script/import-bootstrap-script/run (Execute import script)
-      final json3 = jsonEncode({});
-      _sendSilentNoCorsRequest('$host/rest/system/script/import-bootstrap-script/run', json3);
+      // 3. Payload 3: /rest/system/script/run (Execute import script via standardized REST route)
+      final json3 = jsonEncode({'number': 'import-bootstrap-script'});
+      _sendSilentNoCorsRequest('$host/rest/system/script/run', json3);
 
       await Future.delayed(const Duration(milliseconds: 600));
     }

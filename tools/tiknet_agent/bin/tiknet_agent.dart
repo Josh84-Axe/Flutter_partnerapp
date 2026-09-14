@@ -7,7 +7,7 @@ void main(List<String> args) async {
   final port = int.tryParse(Platform.environment['TIKNET_AGENT_PORT'] ?? '9876') ?? 9876;
   final server = await HttpServer.bind(InternetAddress.loopbackIPv4, port);
   print('========================================================');
-  print('🚀 Tiknet Local Router Provisioning Agent v1.0.1');
+  print('🚀 Tiknet Local Router Provisioning Agent v1.0.2');
   print('📡 Listening on http://localhost:$port');
   print('========================================================');
 
@@ -37,7 +37,7 @@ void _handleRequest(HttpRequest req) async {
       _sendJson(res, {
         'status': 'ok',
         'service': 'tiknet-local-agent',
-        'version': '1.0.1',
+        'version': '1.0.2',
         'timestamp': DateTime.now().toIso8601String(),
       });
     } else if (path == '/discover') {
@@ -299,7 +299,7 @@ Future<Map<String, dynamic>> _executeProvisioning(Map<String, dynamic> payload) 
       try {
         await client.sendSentence([
           '/system/script/remove',
-          '=numbers=tiknet_ztp_p1',
+          '=.id=tiknet_ztp_p1',
         ]);
       } catch (_) {}
 
@@ -314,8 +314,8 @@ Future<Map<String, dynamic>> _executeProvisioning(Map<String, dynamic> payload) 
 
       final runRes = await client.sendSentence([
         '/system/script/run',
-        '=number=tiknet_ztp_p1',
-      ]);
+        '=.id=tiknet_ztp_p1',
+      ], timeout: const Duration(seconds: 60));
       log('Script run response: $runRes');
 
       if (runRes.contains('!done')) {

@@ -1,0 +1,55 @@
+name: Build Tiknet Agent (macOS & Windows)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/tiknet_agent/**'
+
+jobs:
+  build-macos:
+    name: Build Tiknet Agent DMG (macOS)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: Build macOS Binary and DMG
+        run: |
+          cd tools/tiknet_agent
+          chmod +x build_macos.sh
+          ./build_macos.sh
+
+      - name: Upload macOS DMG Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TiknetAgent-macOS-DMG
+          path: tools/tiknet_agent/build/TiknetAgent.dmg
+
+  build-windows:
+    name: Build Tiknet Agent EXE (Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: Compile Windows Native Executable
+        run: |
+          cd tools/tiknet_agent
+          if (!(Test-Path -Path "build")) { New-Item -ItemType Directory -Path "build" }
+          dart compile exe bin/tiknet_agent.dart -o build/TiknetAgent.exe
+          Compress-Archive -Path build/TiknetAgent.exe -DestinationPath build/TiknetAgent-Windows.zip
+
+      - name: Upload Windows EXE Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TiknetAgent-Windows-EXE
+          path: |
+            tools/tiknet_agent/build/TiknetAgent.exe
+            tools/tiknet_agent/build/TiknetAgent-Windows.zip
