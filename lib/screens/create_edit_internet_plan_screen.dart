@@ -212,10 +212,34 @@ class _CreateEditInternetPlanScreenState extends State<CreateEditInternetPlanScr
                             : [
                                 DropdownMenuItem<int>(value: null, child: Text('none'.tr())),
                                 ...selectablePolicies
-                                    .map((p) => DropdownMenuItem<int>(
-                                          value: int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null),
-                                          child: Text(NetworkPolicyFormatter.format(p['name']?.toString() ?? p['policy_name']?.toString())),
-                                        ))
+                                    .map((p) {
+                                      final isLocked = p['is_locked'] == true;
+                                      final policyId = int.tryParse(p['id']?.toString() ?? '') ?? (p['id'] is int ? p['id'] as int : null);
+                                      final title = NetworkPolicyFormatter.format(p['name']?.toString() ?? p['policy_name']?.toString());
+                                      return DropdownMenuItem<int>(
+                                        value: policyId,
+                                        enabled: !isLocked,
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              title,
+                                              style: TextStyle(
+                                                color: isLocked ? Colors.grey : null,
+                                              ),
+                                            ),
+                                            if (isLocked)
+                                              const Padding(
+                                                padding: EdgeInsets.only(left: 8.0),
+                                                child: Text(
+                                                  '🔒 (Upgrade Required)',
+                                                  style: TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.bold),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      );
+                                    })
                                     ,
                               ],
                         onChanged: (value) => setState(() => _selectedNetworkPolicy = value),
