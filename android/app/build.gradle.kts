@@ -55,8 +55,7 @@ android {
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
             } else {
-                logger.warn("⚠️ Warning: key.properties not found. Release build is falling back to debug signing.")
-                signingConfig = signingConfigs.getByName("debug")
+                throw GradleException("key.properties missing — refusing to sign release with debug key")
             }
         }
     }

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../locator.dart';
 import '../providers/split/network_provider.dart';
 import '../services/mikrotik_ztp_service.dart';
+import '../services/api/api_config.dart';
 
 class RouterZtpWizardScreen extends StatefulWidget {
   final int? routerId;
@@ -915,7 +916,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
           Builder(
             builder: (context) {
               final token = _ztpPayload?['bootstrap_token'] ?? 'CHARGEMENT...';
-              final bootstrapUrl = 'https://staging.wifi-4u.net/v1/bootstrap/$token/';
+              final bootstrapUrl = '${ApiConfig.baseUrl}/bootstrap/$token/';
 
               return Container(
                 padding: const EdgeInsets.all(12),
@@ -988,7 +989,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                       await _loadZtpPayload();
                     }
                     final token = _ztpPayload?['bootstrap_token'] ?? '';
-                    final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
+                    final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
                     await Clipboard.setData(ClipboardData(text: cmd));
 
                     if (mounted) {
@@ -1285,7 +1286,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                                 await _loadZtpPayload();
                               }
                               final token = _ztpPayload?['bootstrap_token'] ?? '';
-                              final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
+                              final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
                               
                               await Clipboard.setData(ClipboardData(text: cmd));
 

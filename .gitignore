@@ -57,4 +57,10 @@ scratch/
 .env.*
 key.properties
 key.pem
+*.jks
+*.keystore
+
+# Block root-level scripts
+/*.dart
+
 

@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-export CLOUDFLARE_ACCOUNT_ID="cdbd00e3efae5135a49ed13ac47e0f68"
-export CLOUDFLARE_API_KEY="ccc371fcab3109566b511d898831bf36a1e00"
-export CLOUDFLARE_EMAIL="sientey@hotmail.com"
+export CLOUDFLARE_ACCOUNT_ID="${CLOUDFLARE_ACCOUNT_ID:-cdbd00e3efae5135a49ed13ac47e0f68}"
+export CLOUDFLARE_API_KEY="${CLOUDFLARE_API_KEY:-}"
+export CLOUDFLARE_EMAIL="${CLOUDFLARE_EMAIL:-}"
 
 echo "📦 Resolving pub dependencies..."
 flutter pub get

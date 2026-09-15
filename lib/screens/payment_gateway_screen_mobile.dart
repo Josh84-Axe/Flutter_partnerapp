@@ -7,6 +7,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dio/dio.dart';
 import '../services/api/token_storage.dart';
+import '../services/api/api_config.dart';
 
 /// Sealed Gateway Wrapper for Mobile with Unified Response Logic (v1.1.101)
 class PaymentGatewayScreen extends StatefulWidget {
@@ -372,7 +373,7 @@ class _PaymentGatewayCinetPayMobileState extends State<_PaymentGatewayCinetPayMo
                     api_key: '${widget.apiKey}',
                     apiKey: '${widget.apiKey}',
                     site_id: ${widget.siteId},
-                    notify_url: 'https://staging.wifi-4u.net/v1/partner/payment/notify/',
+                    notify_url: '${ApiConfig.baseUrl}/partner/payment/notify/',
                     mode: 'PRODUCTION'
                 });
 

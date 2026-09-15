@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
+import '../services/api/api_config.dart';
 
 class PaymentGatewayCinetPay extends StatefulWidget {
   final String email;
@@ -65,7 +66,7 @@ class _PaymentGatewayCinetPayState extends State<PaymentGatewayCinetPay> {
 
       jsData.setProperty('apiKey'.toJS, '297929662685d35c4021b02.21438964'.toJS);
       jsData.setProperty('siteId'.toJS, '105899723'.toJS);
-      jsData.setProperty('notifyUrl'.toJS, 'https://staging.wifi-4u.net/v1/webhooks/cinetpay/'.toJS);
+      jsData.setProperty('notifyUrl'.toJS, '${ApiConfig.baseUrl}/webhooks/cinetpay/'.toJS);
       jsData.setProperty('transactionId'.toJS, txnId.toJS);
       jsData.setProperty('amount'.toJS, widget.amount.toJS);
       jsData.setProperty('currency'.toJS, (widget.currency == 'CFA' ? 'XOF' : widget.currency).toJS);

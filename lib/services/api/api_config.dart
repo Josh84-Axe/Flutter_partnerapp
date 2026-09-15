@@ -15,11 +15,8 @@ class ApiConfig {
   /// TEMPORARY: Hardcoded to true for web builds (bool.fromEnvironment doesn't work reliably on web)
   static const bool useRemoteApi = true; // bool.fromEnvironment('USE_REMOTE_API', defaultValue: true);
 
-  /// External CRM API Configuration
-  static const String crmApiKey = String.fromEnvironment(
-    'CRM_API_KEY',
-    defaultValue: 'QNBBRFCO0rfnxFxS9buqx2cMjTbDwQEd3Zwhew_TXMI',
-  );
+  /// External CRM API Configuration (provided via --dart-define=CRM_API_KEY=...)
+  static const String crmApiKey = String.fromEnvironment('CRM_API_KEY');
   
   /// Coleah CRM Partner API Base URL
   static const String crmBaseUrl = 'https://api.coleah.com/api/cases/external/cases/';

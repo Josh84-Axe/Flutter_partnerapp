@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'mikrotik_ztp_web_stub.dart'
     if (dart.library.html) 'mikrotik_ztp_web_helper.dart' as web_helper;
 import 'mikrotik_api_socket.dart';
+import 'api/api_config.dart';
 
 class MikrotikDeviceInfo {
   final String gatewayIp;
@@ -1028,7 +1029,7 @@ class MikrotikZtpService {
               try {
                 await apiSocket.sendSentence([
                   '/tool/fetch',
-                  '=url=https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/',
+                  '=url=${ApiConfig.baseUrl}/bootstrap/$bootstrapToken/',
                   '=check-certificate=no',
                   '=dst-path=bootstrap.rsc',
                   '=keep-result=yes',

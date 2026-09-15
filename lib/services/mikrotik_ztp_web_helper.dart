@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
+import 'api/api_config.dart';
 
 /// Check if Tiknet Local Provisioning Agent is running on localhost:9876
 Future<bool> isLocalAgentAvailable() async {
@@ -114,7 +115,7 @@ Future<bool> executeWebZtpFormProvisioning({
       if (kDebugMode) debugPrint('🔌 [WebZtpHelper] Found active Tiknet Local Agent on localhost:9876!');
       final res = await executeLocalAgentProvisioning(
         gatewayIp: gatewayIp,
-        scriptSource: scriptSource ?? ':do { /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes } on-error={}; :local cnt 0; :while (([:len [/file find name="bootstrap.rsc"]] = 0) and (\$cnt < 20)) do={ :delay 1s; :set cnt (\$cnt + 1); }; :delay 1s; /import file-name=bootstrap.rsc;',
+        scriptSource: scriptSource ?? ':do { /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$bootstrapToken/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes } on-error={}; :local cnt 0; :while (([:len [/file find name="bootstrap.rsc"]] = 0) and (\$cnt < 20)) do={ :delay 1s; :set cnt (\$cnt + 1); }; :delay 1s; /import file-name=bootstrap.rsc;',
         username: username,
         password: password,
       );
@@ -125,7 +126,7 @@ Future<bool> executeWebZtpFormProvisioning({
       debugPrint('⚡ [WebZtpHelper] Executing Silent Web ZTP to $gatewayIp...');
     }
 
-    final bootstrapUrl = 'https://staging.wifi-4u.net/v1/bootstrap/$bootstrapToken/';
+    final bootstrapUrl = '${ApiConfig.baseUrl}/bootstrap/$bootstrapToken/';
 
     // Deduped target host list
     final candidateHosts = <String>{

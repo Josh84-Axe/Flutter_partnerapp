@@ -2,14 +2,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../flavors.dart';
+import 'api/api_config.dart';
 
 class SupportTicketService {
   final Dio _dio;
   Dio get dio => _dio;
   
-  // As per instructions
-  static const String _baseUrl = 'https://api.coleah.com/api/cases/external/cases/';
-  static const String _apiKey = 'QNBBRFCO0rfnxFxS9buqx2cMjTbDwQEd3Zwhew_TXMI';
+  static String get _baseUrl => ApiConfig.crmBaseUrl;
+  static String get _apiKey => ApiConfig.crmApiKey;
 
   SupportTicketService({Dio? dio}) : _dio = dio ?? Dio();
 
