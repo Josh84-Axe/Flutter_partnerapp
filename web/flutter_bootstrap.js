@@ -2,7 +2,7 @@
 {{flutter_build_config}}
 
 // Safe target version accessor
-var activeVersion = (typeof targetVersion !== 'undefined' && targetVersion) ? targetVersion : '1.2.305';
+var activeVersion = (typeof targetVersion !== 'undefined' && targetVersion) ? targetVersion : '1.2.313';
 
 _flutter.loader.load({
   serviceWorkerSettings: {
@@ -11,16 +11,14 @@ _flutter.loader.load({
   onEntrypointLoaded: async function(engineInitializer) {
     try {
       let appRunner = await engineInitializer.initializeEngine();
-      var loadingDiv = document.getElementById('loading');
-      if (loadingDiv) {
-        loadingDiv.remove();
-      }
       await appRunner.runApp();
+      if (typeof window.hideAppLoading === 'function') {
+        window.hideAppLoading();
+      }
     } catch(err) {
       console.error('❌ Flutter Engine initialization error:', err);
-      var loadingDiv = document.getElementById('loading');
-      if (loadingDiv) {
-        loadingDiv.remove();
+      if (typeof window.hideAppLoading === 'function') {
+        window.hideAppLoading();
       }
     }
   }

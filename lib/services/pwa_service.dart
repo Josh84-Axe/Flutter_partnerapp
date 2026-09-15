@@ -16,4 +16,5 @@ abstract class PwaService {
   void init();
   Future<bool> promptInstall();
   Future<void> applyUpdate();
+  bool checkPostUpdateToast();
 }

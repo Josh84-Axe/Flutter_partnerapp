@@ -57,7 +57,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
     super.initState();
     _ztpService = locator<MikrotikZtpService>();
 
-    _addLog('🚀 [Telemeter Ready] Assistant ZTP initialisé. Prêt pour configuration.');
+    _addLog('ztp_log_assistant_initialized'.tr());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = widget.args ?? ModalRoute.of(context)?.settings.arguments;
@@ -114,7 +114,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
     };
 
     try {
-      _addLog('💾 Enregistrement de la configuration routeur sur le backend...');
+      _addLog('saving_config_backend'.tr());
       Map<String, dynamic>? response;
       if (isEdit) {
         response = await networkProvider.updateRouter(_existingConfig!.slug, data);
@@ -128,7 +128,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
           _adminPassCtrl.text = _passwordController.text;
         });
 
-        _addLog('✅ Configuration enregistrée avec succès. Token ZTP et clés WireGuard générés.');
+        _addLog('ztp_log_config_saved'.tr());
         _startRegistrationPoller();
 
         // Scroll to reveal the ZTP actions panel
@@ -150,7 +150,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
       }
     } catch (e) {
       final errorMsg = ErrorMessageHelper.getDetailedError(e);
-      _addLog('❌ Erreur enregistrement: $errorMsg');
+      _addLog('❌ $errorMsg');
       messenger.showSnackBar(
         SnackBar(
           content: Text(errorMsg),
@@ -180,23 +180,24 @@ class _AddRouterScreenState extends State<AddRouterScreen>
           if (match.status.toLowerCase() == 'online') {
             if (_routerOnlineStatus != 'online') {
               setState(() => _routerOnlineStatus = 'online');
-              _addLog('🎉 [CANARY CONFIRMED] Le routeur "${match.name}" est maintenant EN LIGNE et provisionné !');
+              _addLog('ztp_log_canary_online'.tr(namedArgs: {'name': match.name}));
             }
           } else if (match.status.toLowerCase() == 'handshake') {
             setState(() => _routerOnlineStatus = 'handshake');
-            _addLog('🔵 [TUNNEL DETECTED] Handshake WireGuard reçu du routeur.');
+            _addLog('tunnel_detected_log'.tr());
           }
         }
       } catch (_) {}
     });
   }
 
-  void _copyToClipboard(String text, {String feedback = 'Copié dans le presse-papier !'}) {
+  void _copyToClipboard(String text, {String? feedback}) {
+    final fb = feedback ?? 'network_log_copied'.tr();
     Clipboard.setData(ClipboardData(text: text));
-    _addLog('📋 Commande copiée dans le presse-papier.');
+    _addLog('ztp_log_command_copied'.tr());
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(feedback),
+        content: Text(fb),
         backgroundColor: const Color(0xFF0F172A),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -211,7 +212,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
     final pass = _adminPassCtrl.text;
 
     setState(() => _isAuthenticating = true);
-    _addLog('🔐 [Auth Check] Test des identifiants "$user" sur [$gatewayIp]...');
+    _addLog('auth_check_log'.tr(namedArgs: {'user': user, 'gateway': gatewayIp}));
 
     try {
       final success = await _ztpService.validateRouterCredentials(
@@ -227,18 +228,18 @@ class _AddRouterScreenState extends State<AddRouterScreen>
           _isRouterAuthenticated = success;
         });
         if (success) {
-          _addLog('✅ [Auth Success] Authentification réussie sur le routeur ($gatewayIp) !');
+          _addLog('ztp_log_auth_success'.tr(namedArgs: {'gateway': gatewayIp}));
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✅ Authentification réussie sur le routeur ! Vous pouvez lancer le ZTP 1-Clic.'),
+            SnackBar(
+              content: Text('ztp_log_auth_success_msg'.tr()),
               backgroundColor: Colors.green,
             ),
           );
         } else {
-          _addLog('❌ [Auth Error] Impossible d\'authentifier sur $gatewayIp. Vérifiez le mot de passe admin.');
+          _addLog('ztp_log_auth_error'.tr(namedArgs: {'gateway': gatewayIp}));
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('❌ Authentification échouée. Vérifiez le mot de passe admin du routeur.'),
+            SnackBar(
+              content: Text('ztp_log_auth_error_msg'.tr()),
               backgroundColor: Colors.redAccent,
             ),
           );
@@ -247,7 +248,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
     } catch (e) {
       if (mounted) {
         setState(() => _isAuthenticating = false);
-        _addLog('⚠️ Exception vérification: $e');
+        _addLog('ztp_log_auth_exception'.tr(namedArgs: {'error': e.toString()}));
       }
     }
   }
@@ -256,12 +257,12 @@ class _AddRouterScreenState extends State<AddRouterScreen>
   Future<void> _openWebFigTerminal() async {
     final ip = _gatewayIpController.text.trim().isNotEmpty ? _gatewayIpController.text.trim() : '192.168.88.1';
     final url = 'http://$ip/webfig/#Terminal';
-    _addLog('🌐 Ouverture du Terminal WebFig sur $url...');
+    _addLog('opening_webfig_log'.tr(namedArgs: {'url': url}));
     try {
       final uri = Uri.parse(url);
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
-      _addLog('❌ Erreur ouverture navigateur: $e');
+      _addLog('browser_open_error_log'.tr(namedArgs: {'error': e.toString()}));
     }
   }
 
@@ -277,7 +278,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
       ' Connected User   : $user',
       ' Platform Mode    : ${kIsWeb ? "Web PWA" : "Native Mobile TCP Socket (Port 8728)"}',
       '============================================================',
-      '[$user@MikroTik] > Prêt. Collez ou écrivez votre commande...',
+      'ztp_log_ready_prompt'.tr(namedArgs: {'user': user}),
     ];
 
     showModalBottomSheet(
@@ -310,7 +311,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Terminal MikroTik Direct [$gatewayIp]',
+                            '${'direct_mikrotik_terminal'.tr()} [$gatewayIp]',
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -322,9 +323,9 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
                           ),
-                          child: const Text(
-                            'CONSOLE DIRECTE',
-                            style: TextStyle(fontSize: 10, color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
+                          child: Text(
+                            'direct_console_badge'.tr(),
+                            style: const TextStyle(fontSize: 10, color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -352,7 +353,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                               _copyToClipboard(cmd);
                               setModalState(() {
                                 terminalOutput.add('[$user@MikroTik] > $cmd');
-                                terminalOutput.add('⚡ Exécution du provisionnement ZTP en cours...');
+                                terminalOutput.add('ztp_log_executing_ztp'.tr());
                               });
 
                               final payload = _serverResponse ?? {
@@ -378,11 +379,11 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                               );
 
                               setModalState(() {
-                                terminalOutput.add(res ? '✅ Provisionnement Phase 1 exécuté avec succès !' : '⚠️ Exécution terminée avec des remarques.');
+                                terminalOutput.add(res ? 'ztp_log_exec_success'.tr() : 'ztp_log_exec_remarks'.tr());
                               });
                             },
                             icon: const Icon(Icons.flash_on, size: 14, color: Colors.black),
-                            label: const Text('⚡ Coller & Exécuter ZTP (1-Clic)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black)),
+                            label: Text('paste_and_execute_ztp'.tr(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF38BDF8),
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -455,11 +456,11 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                             child: TextField(
                               controller: cmdController,
                               style: const TextStyle(color: Colors.white, fontFamily: 'monospace', fontSize: 13),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 isDense: true,
                                 border: InputBorder.none,
-                                hintText: 'Tapez une commande RouterOS...',
-                                hintStyle: TextStyle(color: Colors.white38, fontSize: 12),
+                                hintText: 'type_routeros_cmd_hint'.tr(),
+                                hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
                               ),
                               onSubmitted: (val) async {
                                 final cmd = val.trim();
@@ -467,7 +468,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                 cmdController.clear();
                                 setModalState(() {
                                   terminalOutput.add('[$user@MikroTik] > $cmd');
-                                  terminalOutput.add('⚡ Exécution de la commande...');
+                                  terminalOutput.add('ztp_log_executing_cmd'.tr());
                                 });
                                 _addLog('💻 [Terminal Exec] $cmd');
 
@@ -495,7 +496,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                 );
 
                                 setModalState(() {
-                                  terminalOutput.add(res ? '✅ Commande exécutée avec succès !' : '⚠️ Exécution terminée.');
+                                  terminalOutput.add(res ? 'ztp_log_cmd_success'.tr() : 'ztp_log_cmd_finished'.tr());
                                 });
                               },
                             ),
@@ -508,7 +509,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                               cmdController.clear();
                               setModalState(() {
                                 terminalOutput.add('[$user@MikroTik] > $cmd');
-                                terminalOutput.add('⚡ Exécution de la commande...');
+                                terminalOutput.add('ztp_log_executing_cmd'.tr());
                               });
                               _addLog('💻 [Terminal Exec] $cmd');
 
@@ -536,7 +537,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                               );
 
                               setModalState(() {
-                                terminalOutput.add(res ? '✅ Commande exécutée avec succès !' : '⚠️ Exécution terminée.');
+                                terminalOutput.add(res ? 'ztp_log_cmd_success'.tr() : 'ztp_log_cmd_finished'.tr());
                               });
                             },
                           ),
@@ -559,13 +560,18 @@ class _AddRouterScreenState extends State<AddRouterScreen>
       while (rData.containsKey('data') && rData['data'] is Map) {
         rData = rData['data'] as Map<String, dynamic>;
       }
-      return rData['bootstrap_token']?.toString() ??
-          rData['slug']?.toString() ??
-          _nameController.text.trim().toLowerCase();
+      final token = rData['bootstrap_token']?.toString();
+      if (token != null && token.trim().isNotEmpty) return token.trim();
+      final slug = rData['slug']?.toString();
+      if (slug != null && slug.trim().isNotEmpty) return slug.trim();
+      final name = _nameController.text.trim().toLowerCase();
+      if (name.isNotEmpty) return name;
     }
-    return _existingConfig?.bootstrapToken ??
-        _existingConfig?.slug ??
-        _nameController.text.trim().toLowerCase();
+    final token = _existingConfig?.bootstrapToken;
+    if (token != null && token.trim().isNotEmpty) return token.trim();
+    final slug = _existingConfig?.slug;
+    if (slug != null && slug.trim().isNotEmpty) return slug.trim();
+    return _nameController.text.trim().toLowerCase();
   }
 
   String _buildZtpCommand() {
@@ -587,8 +593,8 @@ class _AddRouterScreenState extends State<AddRouterScreen>
         actions: [
           IconButton(
             icon: const Icon(Icons.copy_all, size: 20),
-            tooltip: 'Copier les logs de diagnostic',
-            onPressed: () => _copyToClipboard(_liveTerminalLogs.join('\n'), feedback: 'Logs du Telemeter copiés !'),
+            tooltip: 'copy_diagnostic_logs_tooltip'.tr(),
+            onPressed: () => _copyToClipboard(_liveTerminalLogs.join('\n'), feedback: 'telemetry_log_copied'.tr()),
           ),
         ],
       ),
@@ -637,11 +643,11 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Configuration Matérielle',
+                                      'ztp_hardware_config'.tr(),
                                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: colorScheme.onSurface),
                                     ),
                                     Text(
-                                      'Définissez les paramètres réseau du routeur',
+                                      'ztp_hardware_config_desc'.tr(),
                                       style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                                     ),
                                   ],
@@ -655,8 +661,8 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                           TextFormField(
                             controller: _nameController,
                             decoration: InputDecoration(
-                              labelText: 'Nom du routeur / SSID Wi-Fi',
-                              hintText: 'ex: Tiknet-Salon, Office-Router',
+                              labelText: 'router_name_wifi_ssid'.tr(),
+                              hintText: 'router_name_hint'.tr(),
                               prefixIcon: const Icon(Icons.wifi),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             ),
@@ -679,8 +685,8 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                   : const Icon(Icons.check_circle_outline, size: 20),
                               label: Text(
                                 provider.isLoading
-                                    ? 'Enregistrement en cours...'
-                                    : (hasConfig ? 'Mettre à jour la configuration' : 'Enregistrer la configuration'),
+                                    ? 'saving_in_progress'.tr()
+                                    : (hasConfig ? 'update_configuration'.tr() : 'save_configuration'.tr()),
                                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                               ),
                               style: FilledButton.styleFrom(
@@ -730,7 +736,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Authentification & Terminal',
+                                        'auth_and_terminal_title'.tr(),
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
@@ -738,7 +744,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                         ),
                                       ),
                                       Text(
-                                        'Accédez au routeur pour exécuter le ZTP 1-Clic',
+                                        'ztp_access_router_desc'.tr(),
                                         style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                                       ),
                                     ],
@@ -767,8 +773,8 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                       const SizedBox(width: 4),
                                       Text(
                                         _routerOnlineStatus == 'online'
-                                            ? 'EN LIGNE'
-                                            : (_routerOnlineStatus == 'handshake' ? 'WIREGUARD CONNECTÉ' : 'EN ATTENTE'),
+                                            ? 'online_status_badge'.tr()
+                                            : (_routerOnlineStatus == 'handshake' ? 'wireguard_connected'.tr() : 'pending_status'.tr()),
                                         style: TextStyle(
                                           color: _routerOnlineStatus == 'online' ? Colors.green : Colors.amber,
                                           fontSize: 11,
@@ -793,7 +799,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                       if (_isRouterAuthenticated) setState(() => _isRouterAuthenticated = false);
                                     },
                                     decoration: InputDecoration(
-                                      labelText: 'IP Passerelle Routeur',
+                                      labelText: 'gateway_ip_label'.tr(),
                                       hintText: '192.168.88.1',
                                       isDense: true,
                                       prefixIcon: const Icon(Icons.lan_outlined, size: 18),
@@ -810,7 +816,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                       if (_isRouterAuthenticated) setState(() => _isRouterAuthenticated = false);
                                     },
                                     decoration: InputDecoration(
-                                      labelText: 'Utilisateur',
+                                      labelText: 'username_label'.tr(),
                                       hintText: 'admin',
                                       isDense: true,
                                       prefixIcon: const Icon(Icons.person_outline, size: 18),
@@ -830,8 +836,8 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                 if (_isRouterAuthenticated) setState(() => _isRouterAuthenticated = false);
                               },
                               decoration: InputDecoration(
-                                labelText: 'Mot de passe Admin Routeur',
-                                hintText: 'Laisser vide si aucun mot de passe',
+                                labelText: 'admin_password_label'.tr(),
+                                hintText: 'admin_password_hint'.tr(),
                                 isDense: true,
                                 prefixIcon: const Icon(Icons.lock_outline, size: 18),
                                 suffixIcon: IconButton(
@@ -865,8 +871,8 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                           ),
                                     label: Text(
                                       _isAuthenticating
-                                          ? 'Test en cours...'
-                                          : (_isRouterAuthenticated ? 'Authentifié ✅' : 'Tester Auth'),
+                                          ? 'testing_in_progress'.tr()
+                                          : (_isRouterAuthenticated ? 'authenticated_status'.tr() : 'test_auth_button'.tr()),
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -898,7 +904,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                       color: _isRouterAuthenticated ? Colors.black : Colors.white54,
                                     ),
                                     label: Text(
-                                      _isRouterAuthenticated ? '⚡ Terminal & ZTP 1-Clic' : 'Verrouillé (Auth Requise)',
+                                      _isRouterAuthenticated ? 'terminal_one_click_ztp'.tr() : 'locked_auth_required'.tr(),
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w900,
@@ -924,9 +930,9 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                               child: TextButton.icon(
                                 onPressed: _openWebFigTerminal,
                                 icon: const Icon(Icons.open_in_new, size: 14, color: Colors.grey),
-                                label: const Text(
-                                  'Ouvrir l\'interface WebFig externe (http://192.168.88.1)',
-                                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                                label: Text(
+                                  'open_external_webfig'.tr(),
+                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
                                 ),
                               ),
                             ),

@@ -187,48 +187,40 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
     final colorScheme = scheme;
 
     return Scaffold(
-            backgroundColor: scheme.surface,
-            body: Stack(
-              children: [
-                SafeArea(
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
-                    children: [
-                      const SizedBox(height: 36),
-                      // Logo
-                      Center(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: Image.asset(
-                            F.iconAsset,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+      backgroundColor: scheme.surface,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Logo Header
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 85, maxWidth: 360),
+                      child: Image.asset(
+                        F.name == 'family'
+                            ? 'assets/images/family_shield_logo_light.png'
+                            : 'assets/images/partner_shield_logo_light.png',
+                        fit: BoxFit.contain,
                       ),
-                      const SizedBox(height: 24),
-                      // Title
+                    ),
+                  ),
+                      const SizedBox(height: 14),
                       Text(
                         F.name == 'family'
-                            ? 'login_title_family'.tr()
-                            : F.name == 'campus'
-                                ? 'login_title_campus'.tr()
-                                : 'login_title_partner'.tr(),
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        F.name == 'family'
-                            ? 'Safe digital habits for families.'.tr()
+                            ? 'Habitudes numériques sûres en famille.'
                             : F.name == 'campus'
                                 ? 'onboarding.campusDesc'.tr()
                                 : 'manage_wifi_zone'.tr(),
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               color: scheme.onSurfaceVariant,
                             ),
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
                       Form(
@@ -393,8 +385,9 @@ class _LoginScreenM3State extends State<LoginScreenM3> {
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
-          );
+          ),
+        );
   }
 }

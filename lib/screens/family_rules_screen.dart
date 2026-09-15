@@ -147,15 +147,15 @@ class _FamilyRulesScreenState extends State<FamilyRulesScreen>
             floating: true,
             pinned: true,
             backgroundColor: colorScheme.surface,
-            title: const Text(
-              'Screen Time Rules',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            title: Text(
+              'screen_time_rules'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             bottom: TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'My Rules'),
-                Tab(text: 'Quick Presets'),
+              tabs: [
+                Tab(text: 'my_rules'.tr()),
+                Tab(text: 'quick_presets'.tr()),
               ],
             ),
           ),
@@ -176,7 +176,7 @@ class _FamilyRulesScreenState extends State<FamilyRulesScreen>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddRuleSheet,
         icon: const Icon(Icons.add),
-        label: const Text('New Rule'),
+        label: Text('new_rule'.tr()),
       ),
     );
   }
@@ -590,13 +590,13 @@ class _EmptyState extends StatelessWidget {
                   size: 48, color: colorScheme.primary),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'No Rules Yet',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            Text(
+              'no_rules_yet'.tr(),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              'Set daily time limits and allowed access windows\nfor each device in your home.',
+              'empty_rules_desc'.tr(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 15),
@@ -605,7 +605,7 @@ class _EmptyState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add),
-              label: const Text('Create a Rule'),
+              label: Text('create_a_rule'.tr()),
             ),
           ],
         ),
@@ -709,8 +709,8 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                 children: [
                   Text(
                     _automationType == AutomationType.timeWindow
-                        ? 'New Time Schedule (Curfew)'
-                        : 'New Daily Usage Limit',
+                        ? 'new_time_schedule'.tr()
+                        : 'new_daily_limit'.tr(),
                     style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -718,7 +718,7 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Configure automated access rules and device controls.',
+                    'configure_rules_desc'.tr(),
                     style: TextStyle(
                         color: colorScheme.onSurface.withValues(alpha: 0.6)),
                   ),
@@ -729,12 +729,12 @@ class _AddRuleSheetState extends State<_AddRuleSheet> {
                     segments: [
                       ButtonSegment(
                         value: AutomationType.timeWindow,
-                        label: Text('🕒 ${"Time Schedule".tr()}'),
+                        label: Text('🕒 ${"time_schedule".tr()}'),
                         icon: const Icon(Icons.schedule),
                       ),
                       ButtonSegment(
                         value: AutomationType.dailyCap,
-                        label: Text('⏳ ${"Daily Cap".tr()}'),
+                        label: Text('⏳ ${"daily_cap".tr()}'),
                         icon: const Icon(Icons.hourglass_top),
                       ),
                     ],

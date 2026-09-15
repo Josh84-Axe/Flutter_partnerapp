@@ -14,6 +14,7 @@ import '../services/pwa_service.dart';
 import '../widgets/skeleton_loader.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/pwa_install_dialog.dart';
+import '../widgets/pwa_update_banner.dart';
 import 'package:flutter/foundation.dart';
 
 class CampusDashboardScreen extends StatefulWidget {
@@ -97,7 +98,7 @@ class _CampusDashboardScreenState extends State<CampusDashboardScreen> {
                     padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 0.0),
                     child: Column(
                       children: [
-                        _buildPwaUpdateBanner(context, colorScheme),
+                        const PwaUpdateBanner(),
                         _buildPwaBanner(context, colorScheme),
                         const SizedBox(height: 16),
                         if (provider.profile != null)
@@ -350,61 +351,7 @@ class _CampusDashboardScreenState extends State<CampusDashboardScreen> {
     );
   }
 
-  Widget _buildPwaUpdateBanner(BuildContext context, ColorScheme colorScheme) {
-    if (!kIsWeb) return const SizedBox.shrink();
 
-    final pwa = PwaService();
-    return StreamBuilder<bool>(
-      stream: pwa.updateAvailableStream,
-      initialData: pwa.isUpdateAvailable,
-      builder: (context, snapshot) {
-        final bool isUpdate = snapshot.data ?? pwa.isUpdateAvailable;
-        if (!isUpdate) return const SizedBox.shrink();
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12.0),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.amber.shade800,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.amber.shade900.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.system_update_rounded, color: Colors.white, size: 28),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Update Available!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text('A new version of Tiknet Campus is ready.', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: () => pwa.applyUpdate(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.amber.shade900,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text('Update Now', style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildPwaBanner(BuildContext context, ColorScheme colorScheme) {
     if (!kIsWeb) return const SizedBox.shrink();

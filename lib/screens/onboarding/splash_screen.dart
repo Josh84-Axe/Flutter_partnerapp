@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../utils/app_theme.dart';
 
+import '../../flavors.dart';
+
 class SplashScreen extends StatefulWidget {
   final VoidCallback onComplete;
 
@@ -27,9 +29,11 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/images/logo_tiknet.png',
-              width: 120,
-              height: 120,
+              F.appFlavor == Flavor.family
+                  ? 'assets/images/family_shield_logo_light.png'
+                  : 'assets/images/partner_shield_logo_light.png',
+              height: 80,
+              fit: BoxFit.contain,
             ).animate().fadeIn(duration: 600.ms).scale(delay: 300.ms),
             const SizedBox(height: 24),
             Text(

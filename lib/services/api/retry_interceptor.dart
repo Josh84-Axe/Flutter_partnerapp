@@ -60,6 +60,11 @@ class ApiRetryInterceptor extends Interceptor {
   }
 
   bool _shouldRetry(DioException err) {
+    // Only auto-retry safe/idempotent requests (GET, HEAD) or explicitly marked idempotent extra
+    final method = err.requestOptions.method.toUpperCase();
+    final isSafeMethod = method == 'GET' || method == 'HEAD' || err.requestOptions.extra['idempotent'] == true;
+    if (!isSafeMethod) return false;
+
     return err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.sendTimeout ||

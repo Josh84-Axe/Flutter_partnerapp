@@ -207,29 +207,28 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Image.asset(
-                    'assets/images/logo_tiknet.png',
-                    height: 80,
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 80, maxWidth: 360),
+                      child: Image.asset(
+                        F.appFlavor == Flavor.family
+                            ? 'assets/images/family_shield_logo_light.png'
+                            : 'assets/images/partner_shield_logo_light.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    F.title,
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: colorScheme.primary,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 14),
                   Text(
                     F.appFlavor == Flavor.family
-                        ? 'Protect & manage your home Wi-Fi'
+                        ? 'Habitudes numériques sûres en famille.'
                         : (F.appFlavor == Flavor.campus ? 'Campus Wi-Fi & Student Services' : 'manage_wifi_zone'.tr()),
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: AppTheme.textLight,
                         ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 40),
                   if (!_isLogin) ...[
                     TextFormField(
                       controller: _nameController,

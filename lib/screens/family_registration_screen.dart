@@ -82,6 +82,9 @@ class _FamilyRegistrationScreenState extends State<FamilyRegistrationScreen> {
     'YE': 'Yemen', 'ZM': 'Zambia', 'ZW': 'Zimbabwe',
   };
 
+  static const Set<String> _activeCountries = {'TG', 'GH', 'NG', 'CI', 'BJ', 'GN', 'KE', 'CD'};
+  bool get _isCountryActive => _selectedCountry == null || _activeCountries.contains(_selectedCountry);
+
   @override
   void initState() {
     super.initState();
@@ -141,6 +144,74 @@ class _FamilyRegistrationScreenState extends State<FamilyRegistrationScreen> {
       final phoneWithCode = _phoneNumber?.phoneNumber ?? _phoneController.text.trim();
       if (kDebugMode) debugPrint('📞 [FamilyRegistrationScreen] Phone number: $phoneWithCode');
       
+      // Check if country is outside active operational countries -> Route to Pioneer Lead
+      if (!_isCountryActive) {
+        final countryName = _countries[_selectedCountry] ?? _selectedCountry ?? 'Unknown';
+        if (kDebugMode) debugPrint('🚀 [FamilyRegistrationScreen] Submitting Pioneer expansion lead for $countryName ($_selectedCountry)');
+        
+        final res = await authProvider.submitExpansionLead(
+          userType: 'family',
+          countryCode: _selectedCountry ?? 'XX',
+          countryName: countryName,
+          firstName: _fullNameController.text.trim(),
+          phone: phoneWithCode,
+          email: _emailController.text.trim().isNotEmpty ? _emailController.text.trim() : null,
+          city: _cityController.text.trim().isNotEmpty ? _cityController.text.trim() : null,
+          businessName: _fullNameController.text.trim().isNotEmpty ? '${_fullNameController.text.trim()} Household' : 'Family Household',
+          estimatedRouters: '1',
+          notes: 'Pioneer registration from mobile app (family)',
+        );
+
+        if (res['success'] == true && mounted) {
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Row(
+                children: [
+                  Icon(Icons.rocket_launch, color: Colors.deepOrangeAccent, size: 28),
+                  SizedBox(width: 8),
+                  Expanded(child: Text('Pioneer Request Sent')),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Thank you for joining the Tiknet Pioneer Program in $countryName!',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Our regional network engineering team has received your onboarding request. We will reach out via WhatsApp at $phoneWithCode to coordinate your Family Protect router deployment.',
+                  ),
+                ],
+              ),
+              actions: [
+                FilledButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    context.go('/login', extra: {'app_variant': widget.appVariant});
+                  },
+                  child: const Text('Return to Login'),
+                ),
+              ],
+            ),
+          );
+          return;
+        } else if (mounted) {
+          await ActionFailedAlert.show(
+            context,
+            title: 'Request Failed',
+            message: res['message'] ?? authProvider.error ?? 'Could not submit pioneer request.',
+          );
+          return;
+        }
+        return;
+      }
+
       final success = await authProvider.register(
         firstName: _fullNameController.text.trim(),
         email: _emailController.text.trim(),
@@ -246,6 +317,46 @@ class _FamilyRegistrationScreenState extends State<FamilyRegistrationScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (!_isCountryActive)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.amber.shade400, width: 1.5),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.rocket_launch, color: Colors.deepOrange, size: 22),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Pioneer Expansion: ${_countries[_selectedCountry] ?? _selectedCountry}',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        color: Colors.brown.shade900,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Tiknet Family Protect is expanding to ${_countries[_selectedCountry] ?? 'your region'}! Complete this form to join our Pioneer Family waitlist. Our engineering team will assist with zero-fee hardware onboarding.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.brown.shade800,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       TextFormField(
                         controller: _fullNameController,
                         decoration: InputDecoration(
@@ -544,7 +655,9 @@ class _FamilyRegistrationScreenState extends State<FamilyRegistrationScreen> {
                             ),
                           )
                         : Text(
-                            'register.button.submit'.tr(),
+                            _isCountryActive
+                                ? 'register.button.submit'.tr()
+                                : 'Request Pioneer Onboarding (${_countries[_selectedCountry] ?? _selectedCountry ?? ""}) 🚀',
                             style: const TextStyle(fontSize: 16),
                           ),
                   ),

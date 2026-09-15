@@ -52,11 +52,11 @@ android {
 
     buildTypes {
         getByName("release") {
-            // Use the release signing config if key.properties exists, otherwise fallback to debug.
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
             } else {
-                signingConfigs.getByName("debug")
+                logger.warn("⚠️ Warning: key.properties not found. Release build is falling back to debug signing.")
+                signingConfig = signingConfigs.getByName("debug")
             }
         }
     }

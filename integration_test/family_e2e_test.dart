@@ -16,7 +16,7 @@ void main() {
       
       // Dump text to debug what screen we are on
       final texts = find.byType(Text).evaluate().map((e) => (e.widget as Text).data).toList();
-      print('DEBUG TEXTS ON SCREEN: \${texts.join(', ')}');
+      print("DEBUG TEXTS ON SCREEN: ${texts.join(', ')}");
 
       // Step 1: Onboarding -> tap Get Started to go to Smart Welcome
       final getStartedFinder = find.text('Get Started');

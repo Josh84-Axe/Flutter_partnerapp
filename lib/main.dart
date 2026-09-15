@@ -78,8 +78,9 @@ void _runApp() {
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('fr')],
-      path: 'lib/l10n',
+      path: 'assets/l10n',
       fallbackLocale: const Locale('en'),
+      useOnlyLangCode: true,
       child: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => ThemeProvider()),

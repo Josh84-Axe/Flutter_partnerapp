@@ -17,6 +17,7 @@ import '../widgets/data_usage_card.dart';
 import '../widgets/skeleton_loader.dart';
 import '../services/update_service.dart';
 import '../services/pwa_service.dart';
+import '../widgets/pwa_update_banner.dart';
 import 'package:flutter/foundation.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -249,6 +250,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
+            const PwaUpdateBanner(),
 
             // PWA Install Banner (Web Only)
             // PWA Install Banner (Web Only)

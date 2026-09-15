@@ -423,12 +423,58 @@ class AuthProvider with ChangeNotifier {
       );
       
       _setLoading(false);
+      if (result['success'] != true) {
+        _setError(result['message'] ?? 'Registration failed.');
+        return false;
+      }
       return true;
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [AuthProvider] Register error: $e');
       _setError('Registration error: ${ErrorHandler.getUserFriendlyMessage(e)}');
       _setLoading(false);
       return false;
+    }
+  }
+
+  Future<Map<String, dynamic>> submitExpansionLead({
+    required String userType,
+    required String countryCode,
+    required String countryName,
+    required String firstName,
+    String? lastName,
+    required String phone,
+    String? email,
+    String? city,
+    String? estimatedRouters,
+    String? businessName,
+    String? hardwareModel,
+    String? notes,
+  }) async {
+    _setLoading(true);
+    _setError(null);
+    try {
+      if (_authRepository == null) throw Exception('AuthRepository not initialized');
+      final result = await _authRepository!.submitExpansionLead(
+        userType: userType,
+        countryCode: countryCode,
+        countryName: countryName,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+        email: email,
+        city: city,
+        estimatedRouters: estimatedRouters,
+        businessName: businessName,
+        hardwareModel: hardwareModel,
+        notes: notes,
+      );
+      _setLoading(false);
+      return result;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [AuthProvider] submitExpansionLead error: $e');
+      _setError(ErrorHandler.getUserFriendlyMessage(e));
+      _setLoading(false);
+      return {'success': false, 'message': e.toString()};
     }
   }
 

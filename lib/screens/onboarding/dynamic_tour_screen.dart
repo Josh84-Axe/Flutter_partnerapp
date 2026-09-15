@@ -104,8 +104,11 @@ class _DynamicTourScreenState extends State<DynamicTourScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Image.asset(
-                        'assets/images/logo_tiknet.png',
+                        F.name == 'family'
+                            ? 'assets/images/family_shield_logo_light.png'
+                            : 'assets/images/partner_shield_logo_light.png',
                         height: 32,
+                        fit: BoxFit.contain,
                       ),
                       TextButton(
                         onPressed: () => _finishTour(isLogin: true),

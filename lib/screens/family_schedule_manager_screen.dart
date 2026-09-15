@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/family_provider.dart';
 import '../services/family_api_service.dart';
 import '../models/family_models.dart';
@@ -60,7 +61,7 @@ class _FamilyScheduleManagerScreenState extends State<FamilyScheduleManagerScree
         _schedules[idx] = schedule;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update schedule'), backgroundColor: Colors.red),
+        SnackBar(content: Text('failed_update_schedule'.tr()), backgroundColor: Colors.red),
       );
     }
   }
@@ -69,13 +70,13 @@ class _FamilyScheduleManagerScreenState extends State<FamilyScheduleManagerScree
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Schedule'),
-        content: Text('Remove "${schedule.name}"?'),
+        title: Text('delete_schedule'.tr()),
+        content: Text('remove_schedule_confirm'.tr(namedArgs: {'name': schedule.name})),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('cancel'.tr())),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('delete'.tr(), style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -86,11 +87,11 @@ class _FamilyScheduleManagerScreenState extends State<FamilyScheduleManagerScree
     if (ok && mounted) {
       setState(() => _schedules.remove(schedule));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Schedule deleted'), backgroundColor: Colors.orange),
+        SnackBar(content: Text('schedule_deleted'.tr()), backgroundColor: Colors.orange),
       );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to delete schedule'), backgroundColor: Colors.red),
+        SnackBar(content: Text('failed_delete_schedule'.tr()), backgroundColor: Colors.red),
       );
     }
   }
@@ -108,7 +109,16 @@ class _FamilyScheduleManagerScreenState extends State<FamilyScheduleManagerScree
   }
 
   String _dayName(int day) {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Every day'];
+    final days = [
+      'day_mon'.tr(),
+      'day_tue'.tr(),
+      'day_wed'.tr(),
+      'day_thu'.tr(),
+      'day_fri'.tr(),
+      'day_sat'.tr(),
+      'day_sun'.tr(),
+      'day_everyday'.tr(),
+    ];
     return day < days.length ? days[day] : 'Day $day';
   }
 
@@ -116,19 +126,19 @@ class _FamilyScheduleManagerScreenState extends State<FamilyScheduleManagerScree
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Schedules'),
+        title: Text('manage_schedules'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadSchedules,
-            tooltip: 'Refresh',
+            tooltip: 'refresh'.tr(),
           )
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showNewScheduleModal,
         icon: const Icon(Icons.add),
-        label: const Text('New Schedule'),
+        label: Text('new_schedule'.tr()),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -139,10 +149,10 @@ class _FamilyScheduleManagerScreenState extends State<FamilyScheduleManagerScree
                     children: [
                       Icon(Icons.schedule, size: 64, color: Colors.grey.shade400),
                       const SizedBox(height: 16),
-                      const Text(
-                        'No schedules found.\nCreate one to automate internet access.',
+                      Text(
+                        'no_schedules_found'.tr(),
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                        style: const TextStyle(fontSize: 16, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -258,7 +268,7 @@ class _NewScheduleFormState extends State<_NewScheduleForm> {
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Schedule created!'), backgroundColor: Colors.green),
+          SnackBar(content: Text('schedule_created'.tr()), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
@@ -289,27 +299,27 @@ class _NewScheduleFormState extends State<_NewScheduleForm> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Create New Schedule', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('create_new_schedule'.tr(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Schedule Name (e.g. Bedtime)'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
+                decoration: InputDecoration(labelText: 'schedule_name_hint'.tr()),
+                validator: (v) => v!.isEmpty ? 'required'.tr() : null,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<FamilyDevice>(
                 initialValue: _selectedDevice,
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Select Device',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: InputDecoration(
+                  labelText: 'select_device'.tr(),
+                  border: const OutlineInputBorder(),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
                 items: devices
                     .map((d) => DropdownMenuItem(value: d, child: Text(d.deviceName, overflow: TextOverflow.ellipsis)))
                     .toList(),
                 onChanged: (val) => setState(() => _selectedDevice = val),
-                validator: (v) => v == null ? 'Please select a device' : null,
+                validator: (v) => v == null ? 'please_select_device'.tr() : null,
               ),
               const SizedBox(height: 16),
               _loadingPolicies
@@ -317,10 +327,10 @@ class _NewScheduleFormState extends State<_NewScheduleForm> {
                   : DropdownButtonFormField<ContentPolicy>(
                       initialValue: _selectedPolicy,
                       isExpanded: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Apply Action / Policy',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: InputDecoration(
+                        labelText: 'apply_action_policy'.tr(),
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       items: _policies
                           .map((p) => DropdownMenuItem(
@@ -329,21 +339,21 @@ class _NewScheduleFormState extends State<_NewScheduleForm> {
                               ))
                           .toList(),
                       onChanged: (val) => setState(() => _selectedPolicy = val),
-                      validator: (v) => v == null ? 'Please select a policy' : null,
+                      validator: (v) => v == null ? 'please_select_policy'.tr() : null,
                     ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(
                 initialValue: _selectedDay,
-                decoration: const InputDecoration(labelText: 'Day of Week'),
-                items: const [
-                  DropdownMenuItem(value: 0, child: Text('Monday')),
-                  DropdownMenuItem(value: 1, child: Text('Tuesday')),
-                  DropdownMenuItem(value: 2, child: Text('Wednesday')),
-                  DropdownMenuItem(value: 3, child: Text('Thursday')),
-                  DropdownMenuItem(value: 4, child: Text('Friday')),
-                  DropdownMenuItem(value: 5, child: Text('Saturday')),
-                  DropdownMenuItem(value: 6, child: Text('Sunday')),
-                  DropdownMenuItem(value: 7, child: Text('Everyday')),
+                decoration: InputDecoration(labelText: 'day_of_week'.tr()),
+                items: [
+                  DropdownMenuItem(value: 0, child: Text('day_monday'.tr())),
+                  DropdownMenuItem(value: 1, child: Text('day_tuesday'.tr())),
+                  DropdownMenuItem(value: 2, child: Text('day_wednesday'.tr())),
+                  DropdownMenuItem(value: 3, child: Text('day_thursday'.tr())),
+                  DropdownMenuItem(value: 4, child: Text('day_friday'.tr())),
+                  DropdownMenuItem(value: 5, child: Text('day_saturday'.tr())),
+                  DropdownMenuItem(value: 6, child: Text('day_sunday'.tr())),
+                  DropdownMenuItem(value: 7, child: Text('day_everyday'.tr())),
                 ],
                 onChanged: (val) => setState(() => _selectedDay = val!),
               ),
@@ -353,7 +363,7 @@ class _NewScheduleFormState extends State<_NewScheduleForm> {
                   Expanded(
                     child: ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Start Time'),
+                      title: Text('start_time'.tr()),
                       subtitle: Text(_startTime.format(context)),
                       trailing: const Icon(Icons.access_time),
                       onTap: () async {
@@ -366,7 +376,7 @@ class _NewScheduleFormState extends State<_NewScheduleForm> {
                   Expanded(
                     child: ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('End Time'),
+                      title: Text('end_time'.tr()),
                       subtitle: Text(_endTime.format(context)),
                       trailing: const Icon(Icons.access_time),
                       onTap: () async {
@@ -385,7 +395,7 @@ class _NewScheduleFormState extends State<_NewScheduleForm> {
                         height: 20, width: 20,
                         child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                       )
-                    : const Text('Save Schedule'),
+                    : Text('save_schedule'.tr()),
               ),
               const SizedBox(height: 24),
             ],

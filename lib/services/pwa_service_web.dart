@@ -145,6 +145,20 @@ class PwaServiceWeb implements PwaService {
       html.window.location.reload();
     }
   }
+
+  @override
+  bool checkPostUpdateToast() {
+    try {
+      final flag = html.window.localStorage['show_pwa_update_toast'];
+      if (flag == 'true') {
+        html.window.localStorage.remove('show_pwa_update_toast');
+        return true;
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error checking post-update toast flag: $e');
+    }
+    return false;
+  }
 }
 
 // Global factory for PwaService

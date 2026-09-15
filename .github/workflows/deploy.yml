@@ -12,13 +12,20 @@ jobs:
     name: Build & Deploy 3 Flutter Web Flavors
 
     env:
-      CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY || 'ccc371fcab3109566b511d898831bf36a1e00' }}
-      CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL || 'sientey@hotmail.com' }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || 'cdbd00e3efae5135a49ed13ac47e0f68' }}
+      CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+      CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Validate Cloudflare Credentials
+        run: |
+          if [ -z "$CLOUDFLARE_API_KEY" ] || [ -z "$CLOUDFLARE_EMAIL" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "❌ ERROR: Required Cloudflare secrets (CLOUDFLARE_API_KEY, CLOUDFLARE_EMAIL, CLOUDFLARE_ACCOUNT_ID) are missing or unconfigured in repository secrets."
+            exit 1
+          fi
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2

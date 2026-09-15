@@ -29,7 +29,7 @@
 
   <title>Tiknet App</title>
   <script>
-    var targetVersion = '1.2.305';
+    var targetVersion = '1.2.313';
     window.targetVersion = targetVersion;
     let flavor = 'partner';
     let flavorTitle = 'Tiknet Partner';
@@ -304,41 +304,51 @@
 
     // Service Worker Update Listener & Helper
     function checkServiceWorkerUpdate(reg) {
-      if (!reg) return;
-      
-      const appliedVersion = localStorage.getItem('pwa_applied_version');
-      if (appliedVersion === targetVersion) {
-        window.pwaUpdateAvailable = false;
-        return;
-      }
-
-      function notifyUpdateAvailable() {
-        if (localStorage.getItem('pwa_applied_version') === targetVersion) return;
-        console.log('✨ [ServiceWorker] New PWA version ready:', targetVersion);
+      function notifyUpdateAvailable(newVer) {
+        const ver = newVer || targetVersion;
+        const appliedVersion = localStorage.getItem('pwa_applied_version');
+        if (appliedVersion === ver || appliedVersion === targetVersion) return;
+        
+        console.log('✨ [ServiceWorker] New PWA version ready:', ver);
         window.pwaUpdateAvailable = true;
-        if (window.onPwaUpdateAvailable) window.onPwaUpdateAvailable();
-        window.dispatchEvent(new CustomEvent('pwa_update_available'));
+        window.pwaLatestVersion = ver;
+        if (window.onPwaUpdateAvailable) window.onPwaUpdateAvailable(ver);
+        window.dispatchEvent(new CustomEvent('pwa_update_available', { detail: { version: ver } }));
       }
 
-      reg.addEventListener('updatefound', function () {
-        const newWorker = reg.installing;
-        if (!newWorker) return;
-        newWorker.addEventListener('statechange', function () {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            notifyUpdateAvailable();
+      // 1. Check version.json from server directly
+      fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.version && data.version !== targetVersion) {
+            notifyUpdateAvailable(data.version);
           }
-        });
-      });
+        })
+        .catch(() => {});
 
-      if (reg.waiting && navigator.serviceWorker.controller) {
-        notifyUpdateAvailable();
+      // 2. Service worker lifecycle listener
+      if (reg) {
+        reg.addEventListener('updatefound', function () {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', function () {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              notifyUpdateAvailable(window.pwaLatestVersion || targetVersion);
+            }
+          });
+        });
+
+        if (reg.waiting && navigator.serviceWorker.controller) {
+          notifyUpdateAvailable(window.pwaLatestVersion || targetVersion);
+        }
       }
     }
 
     // Explicit User Action Only: Applies update and reloads page once
     window.applyPwaUpdate = function() {
       try {
-        localStorage.setItem('pwa_applied_version', targetVersion);
+        localStorage.setItem('pwa_applied_version', window.pwaLatestVersion || targetVersion);
+        localStorage.setItem('show_pwa_update_toast', 'true');
       } catch(e) {}
       window.pwaUpdateAvailable = false;
       if ('serviceWorker' in navigator) {

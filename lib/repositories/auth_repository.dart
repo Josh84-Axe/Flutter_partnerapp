@@ -219,8 +219,13 @@ class AuthRepository {
         
         // Parse validation errors
         if (errorData is Map<String, dynamic>) {
-          final errors = <String>[];
+          if (errorData.containsKey('message') && errorData['message'] != null) {
+            final msg = errorData['message'].toString();
+            if (kDebugMode) debugPrint('❌ [AuthRepository] Backend error message: $msg');
+            return {'success': false, 'message': msg};
+          }
           
+          final errors = <String>[];
           errorData.forEach((key, value) {
             if (value is List) {
               errors.addAll(value.map((e) => '$key: ${e.toString()}'));
@@ -255,6 +260,62 @@ class AuthRepository {
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [AuthRepository] Confirm registration error: $e');
       rethrow;
+    }
+  }
+
+  /// Submit a pioneer router expansion lead for emerging countries
+  Future<Map<String, dynamic>> submitExpansionLead({
+    required String userType,
+    required String countryCode,
+    required String countryName,
+    required String firstName,
+    String? lastName,
+    required String phone,
+    String? email,
+    String? city,
+    String? estimatedRouters,
+    String? businessName,
+    String? hardwareModel,
+    String? notes,
+  }) async {
+    try {
+      if (kDebugMode) debugPrint('🚀 [AuthRepository] Submitting expansion lead for: $countryCode ($phone)');
+      final requestData = {
+        'user_type': userType,
+        'country_code': countryCode,
+        'country_name': countryName,
+        'first_name': firstName,
+        'last_name': lastName,
+        'phone': phone,
+        'email': email,
+        'city': city,
+        'estimated_routers': estimatedRouters ?? '1-3',
+        'business_name': businessName,
+        'hardware_model': hardwareModel,
+        'notes': notes,
+      };
+
+      final response = await _dio.post('/public/expansion-lead/', data: requestData);
+      if (kDebugMode) debugPrint('✅ [AuthRepository] Expansion lead response: ${response.data}');
+
+      final responseData = response.data as Map<String, dynamic>?;
+      if (responseData == null) {
+        return {'success': false, 'message': 'Submission failed. Please try again.'};
+      }
+
+      final error = responseData['error'] ?? false;
+      return {
+        'success': error == false,
+        'message': responseData['message'] ?? 'Thank you! Your request has been registered.',
+        'data': responseData['data'],
+      };
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ [AuthRepository] Expansion lead error: $e');
+      if (e is DioException) {
+        final message = e.response?.data?['message'] ?? e.message ?? 'Failed to submit pioneer request.';
+        return {'success': false, 'message': message};
+      }
+      return {'success': false, 'message': e.toString()};
     }
   }
 

@@ -96,6 +96,7 @@ class AuthInterceptor extends Interceptor {
         final dio = Dio(BaseOptions(
           baseUrl: _baseUrl,
           connectTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 15),
         ));
         
         final response = await dio.fetch(requestOptions);
@@ -142,8 +143,14 @@ class AuthInterceptor extends Interceptor {
   /// Queue token refresh to prevent multiple simultaneous refresh calls
   Future<void> _queueRefresh() async {
     if (_isRefreshing) {
-      // Wait for the ongoing refresh to complete
-      return _refreshCompleter!.future;
+      // Wait for the ongoing refresh to complete with a safety timeout
+      return _refreshCompleter!.future.timeout(
+        const Duration(seconds: 20),
+        onTimeout: () {
+          _isRefreshing = false;
+          throw Exception('Token refresh timed out');
+        },
+      );
     }
 
     _isRefreshing = true;
@@ -158,7 +165,11 @@ class AuthInterceptor extends Interceptor {
       // Call the refresh endpoint
       // Partner app MUST use /partner/token/refresh/
       if (kDebugMode) debugPrint('📡 [AuthInterceptor] Calling token refresh endpoint: /partner/token/refresh/');
-      final dio = Dio(BaseOptions(baseUrl: _baseUrl));
+      final dio = Dio(BaseOptions(
+        baseUrl: _baseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+      ));
       final response = await dio.post(
         '/partner/token/refresh/',
         data: {'refresh': refreshToken},

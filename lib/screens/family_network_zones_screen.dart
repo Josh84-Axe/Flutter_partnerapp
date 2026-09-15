@@ -79,10 +79,10 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                   width: double.infinity,
                   color: Colors.orange.shade700,
                   padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: const Text(
-                    'Offline Mode - Showing Cached Data',
+                  child: Text(
+                    'offline_mode_cached'.tr(),
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                   ),
                 ),
               Expanded(
@@ -155,7 +155,7 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                       
                       const SizedBox(height: 4),
                       Text(
-                        isOnline ? 'Online' : 'Offline', 
+                        isOnline ? 'status_online'.tr() : 'status_offline'.tr(), 
                         style: TextStyle(
                           color: color, 
                           fontWeight: FontWeight.bold,
@@ -258,9 +258,9 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                     children: [
                       const Icon(Icons.wifi_lock, size: 28, color: Colors.indigo),
                       const SizedBox(width: 12),
-                      const Text(
-                        'Wi-Fi Credentials',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      Text(
+                        'wifi_credentials'.tr(),
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
                       IconButton(
@@ -320,8 +320,8 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(success
-                                  ? 'Wi-Fi credentials updated successfully!'
-                                  : 'Failed to update Wi-Fi credentials.'),
+                                  ? 'wifi_credentials_updated'.tr()
+                                  : 'wifi_credentials_failed'.tr()),
                               backgroundColor: success ? Colors.green : Colors.red,
                             ),
                           );
@@ -333,7 +333,7 @@ class _FamilyNetworkZonesScreenState extends State<FamilyNetworkZonesScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       icon: isSaving ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.save),
-                      label: Text(isSaving ? 'Updating Router...' : 'Save & Push to Router'),
+                      label: Text(isSaving ? 'updating_router'.tr() : 'save_push_router'.tr()),
                     ),
                   ),
                 ],

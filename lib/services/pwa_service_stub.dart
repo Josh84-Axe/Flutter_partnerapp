@@ -40,4 +40,7 @@ class PwaServiceStub implements PwaService {
 
   @override
   Future<void> applyUpdate() async {}
+
+  @override
+  bool checkPostUpdateToast() => false;
 }

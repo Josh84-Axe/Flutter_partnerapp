@@ -1,10 +1,10 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/family_provider.dart';
 import '../services/family_api_service.dart';
 import '../models/family_models.dart';
-import 'package:intl/intl.dart';
 
 class FamilyAddDeviceScreen extends StatefulWidget {
   const FamilyAddDeviceScreen({super.key});
@@ -73,17 +73,17 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Claim Device'),
+              title: Text('claim_device'.tr()),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Assign a friendly name to this device.', style: Theme.of(context).textTheme.bodyMedium),
+                  Text('assign_friendly_name'.tr(), style: Theme.of(context).textTheme.bodyMedium),
                   const SizedBox(height: 16),
                   TextField(
                     controller: nameController,
                     decoration: InputDecoration(
-                      labelText: 'Device Name',
+                      labelText: 'device_name'.tr(),
                       hintText: 'e.g. Alex\'s iPad',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -96,7 +96,7 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
               actions: [
                 TextButton(
                   onPressed: isSubmitting ? null : () => context.pop(),
-                  child: const Text('Cancel'),
+                  child: Text('cancel'.tr()),
                 ),
                 FilledButton(
                   onPressed: isSubmitting ? null : () async {
@@ -129,7 +129,7 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
                   },
                   child: isSubmitting 
                       ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Claim'),
+                      : Text('claim'.tr()),
                 ),
               ],
             );
@@ -158,7 +158,7 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Add Device Manually'),
+              title: Text('add_device_manually'.tr()),
               content: Form(
                 key: formKey,
                 child: Column(
@@ -167,7 +167,7 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
                     TextFormField(
                       controller: nameController,
                       decoration: InputDecoration(
-                        labelText: 'Device Name',
+                        labelText: 'device_name'.tr(),
                         hintText: 'e.g. Maya\'s Tablet',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -177,7 +177,7 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
                     TextFormField(
                       controller: macController,
                       decoration: InputDecoration(
-                        labelText: 'MAC Address',
+                        labelText: 'mac_address'.tr(),
                         hintText: 'AA:BB:CC:DD:EE:FF',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -193,7 +193,7 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
               actions: [
                 TextButton(
                   onPressed: isSubmitting ? null : () => context.pop(),
-                  child: const Text('Cancel'),
+                  child: Text('cancel'.tr()),
                 ),
                 FilledButton(
                   onPressed: isSubmitting ? null : () async {
@@ -238,7 +238,7 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Network Discovery'),
+        title: Text('network_discovery'.tr()),
         centerTitle: true,
         actions: [
           IconButton(
@@ -251,7 +251,7 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showManualEntryDialog,
         icon: const Icon(Icons.add),
-        label: const Text('Add Manually'),
+        label: Text('add_manually'.tr()),
       ),
     );
   }
@@ -264,9 +264,9 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 24),
-            Text('Scanning Home Network...', style: Theme.of(context).textTheme.titleMedium),
+            Text('scanning_network'.tr(), style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            Text('Looking for new devices', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+            Text('looking_for_new_devices'.tr(), style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
           ],
         ),
       );
@@ -283,7 +283,7 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: _fetchUnclaimedDevices,
-              child: const Text('Try Again'),
+              child: Text('try_again'.tr()),
             ),
           ],
         ),
@@ -297,9 +297,9 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
           children: [
             Icon(Icons.wifi_tethering_off, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
-            Text('No new devices found', style: Theme.of(context).textTheme.titleLarge),
+            Text('no_new_devices_found'.tr(), style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            Text('All connected devices are already managed.', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+            Text('all_devices_managed'.tr(), style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
           ],
         ),
       );
@@ -311,7 +311,7 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            'Found ${_devices.length} Unmanaged Device${_devices.length > 1 ? 's' : ''}',
+            'found_unmanaged_devices'.tr(namedArgs: {'count': '${_devices.length}'}),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
@@ -341,7 +341,7 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
                             Row(
                               children: [
                                 Text(
-                                  device.vendor != 'Unknown Brand' ? device.vendor : (device.hostname.isNotEmpty ? device.hostname : 'Discovered Device'),
+                                  device.vendor != 'Unknown Brand' ? device.vendor : (device.hostname.isNotEmpty ? device.hostname : 'discovered_device'.tr()),
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                 ),
                                 const SizedBox(width: 8),
@@ -374,7 +374,7 @@ class _FamilyAddDeviceScreenState extends State<FamilyAddDeviceScreen> {
                       const SizedBox(width: 8),
                       FilledButton.tonal(
                         onPressed: () => _showClaimDialog(device),
-                        child: const Text('Claim'),
+                        child: Text('claim'.tr()),
                       ),
                     ],
                   ),

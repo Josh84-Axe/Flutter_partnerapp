@@ -49,3 +49,12 @@ app.*.map.json
 
 # Antigravity / AI assistant cache
 .gemini/
+analyze.txt
+missing_fr_keys.json
+*.backup
+scratch/
+.env
+.env.*
+key.properties
+key.pem
+

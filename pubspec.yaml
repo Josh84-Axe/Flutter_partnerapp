@@ -114,13 +114,14 @@ flutter:
   uses-material-design: true
   
   assets:
-    - assets/images/logo_tiknet.png
+    - assets/images/
+    - assets/images/family_shield_logo_light.png
+    - assets/images/partner_shield_logo_light.png
     - assets/icons/
     - assets/branding/
     - assets/html/
     - assets/legal/
     - assets/l10n/
-    - lib/l10n/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
