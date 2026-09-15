@@ -173,7 +173,7 @@ class _PaymentGatewayPaystackMobileState extends State<_PaymentGatewayPaystackMo
     try {
       final token = await TokenStorage().getAccessToken();
       final response = await Dio().get(
-        'https://staging.wifi-4u.net/v1/partner/subscription-plans/check/',
+        '${ApiConfig.baseUrl}/partner/subscription-plans/check/',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       if (response.data != null && response.data['is_active'] == true) {

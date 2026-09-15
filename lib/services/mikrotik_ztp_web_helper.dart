@@ -115,7 +115,7 @@ Future<bool> executeWebZtpFormProvisioning({
       if (kDebugMode) debugPrint('🔌 [WebZtpHelper] Found active Tiknet Local Agent on localhost:9876!');
       final res = await executeLocalAgentProvisioning(
         gatewayIp: gatewayIp,
-        scriptSource: scriptSource ?? ':do { /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$bootstrapToken/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes } on-error={}; :local cnt 0; :while (([:len [/file find name="bootstrap.rsc"]] = 0) and (\$cnt < 20)) do={ :delay 1s; :set cnt (\$cnt + 1); }; :delay 1s; /import file-name=bootstrap.rsc;',
+        scriptSource: scriptSource ?? ':do { /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$bootstrapToken/" check-certificate=yes-without-crl dst-path=bootstrap.rsc keep-result=yes } on-error={}; :local cnt 0; :while (([:len [/file find name="bootstrap.rsc"]] = 0) and (\$cnt < 20)) do={ :delay 1s; :set cnt (\$cnt + 1); }; :delay 1s; /import file-name=bootstrap.rsc;',
         username: username,
         password: password,
       );

@@ -1030,7 +1030,7 @@ class MikrotikZtpService {
                 await apiSocket.sendSentence([
                   '/tool/fetch',
                   '=url=${ApiConfig.baseUrl}/bootstrap/$bootstrapToken/',
-                  '=check-certificate=no',
+                  '=check-certificate=yes-without-crl',
                   '=dst-path=bootstrap.rsc',
                   '=keep-result=yes',
                 ], timeout: const Duration(seconds: 15));

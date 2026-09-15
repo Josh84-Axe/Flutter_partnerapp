@@ -10,6 +10,7 @@ import '../locator.dart';
 import '../models/router_configuration_model.dart';
 import '../providers/split/network_provider.dart';
 import '../services/mikrotik_ztp_service.dart';
+import '../services/api/api_config.dart';
 import '../utils/error_message_helper.dart';
 
 class AddRouterScreen extends StatefulWidget {
@@ -576,7 +577,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
 
   String _buildZtpCommand() {
     final token = _extractBootstrapToken();
-    return ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="https://staging.wifi-4u.net/v1/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
+    return ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$token/" check-certificate=yes-without-crl dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
   }
 
   @override

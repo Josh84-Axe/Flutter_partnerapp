@@ -5,6 +5,8 @@ import 'logging_interceptor.dart';
 import 'token_storage.dart';
 import 'retry_interceptor.dart';
 
+import 'api_config.dart';
+
 /// Factory for creating configured API clients with authentication
 class ApiClientFactory {
   final TokenStorage _tokenStorage;
@@ -16,7 +18,7 @@ class ApiClientFactory {
     String? baseUrl,
     this.onLogout,
   })  : _tokenStorage = tokenStorage,
-        _baseUrl = (baseUrl ?? 'https://staging.wifi-4u.net/v1').endsWith('/') ? (baseUrl ?? 'https://staging.wifi-4u.net/v1') : '${baseUrl ?? 'https://staging.wifi-4u.net/v1'}/' {
+        _baseUrl = (baseUrl ?? ApiConfig.baseUrl).endsWith('/') ? (baseUrl ?? ApiConfig.baseUrl) : '${baseUrl ?? ApiConfig.baseUrl}/' {
     // Print BASE_URL at initialization for debugging
     if (kDebugMode) {
       debugPrint('');
