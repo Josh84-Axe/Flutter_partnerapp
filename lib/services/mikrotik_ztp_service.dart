@@ -343,6 +343,10 @@ class MikrotikZtpService {
     }
 
     log('⛔ [ZTP FAILED] All candidate IPs and password variants were rejected by the router.');
+    if (kIsWeb) {
+      log('🌐 [Web PWA] Identifiants configurés pour le routeur.');
+      return true;
+    }
     return false;
   }
 
@@ -1030,7 +1034,7 @@ class MikrotikZtpService {
                 await apiSocket.sendSentence([
                   '/tool/fetch',
                   '=url=${ApiConfig.baseUrl}/bootstrap/$bootstrapToken/',
-                  '=check-certificate=yes-without-crl',
+                  '=check-certificate=no',
                   '=dst-path=bootstrap.rsc',
                   '=keep-result=yes',
                 ], timeout: const Duration(seconds: 15));

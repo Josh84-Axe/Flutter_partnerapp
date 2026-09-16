@@ -577,7 +577,7 @@ class _AddRouterScreenState extends State<AddRouterScreen>
 
   String _buildZtpCommand() {
     final token = _extractBootstrapToken();
-    return ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$token/" check-certificate=yes-without-crl dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
+    return ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
   }
 
   @override
@@ -924,18 +924,33 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 12),
 
-                            // Subtle WebFig Link
-                            Center(
-                              child: TextButton.icon(
-                                onPressed: _openWebFigTerminal,
-                                icon: const Icon(Icons.open_in_new, size: 14, color: Colors.grey),
-                                label: Text(
-                                  'open_external_webfig'.tr(),
-                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                            // Subtle Copy Command & WebFig Links
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                TextButton.icon(
+                                  onPressed: () => _copyToClipboard(
+                                    _buildZtpCommand(),
+                                    feedback: 'ztp_command_copied'.tr(),
+                                  ),
+                                  icon: const Icon(Icons.copy, size: 14, color: Color(0xFF38BDF8)),
+                                  label: Text(
+                                    'copy_ztp_cmd_btn'.tr(),
+                                    style: const TextStyle(fontSize: 11, color: Color(0xFF38BDF8), fontWeight: FontWeight.bold),
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(width: 16),
+                                TextButton.icon(
+                                  onPressed: _openWebFigTerminal,
+                                  icon: const Icon(Icons.open_in_new, size: 14, color: Colors.grey),
+                                  label: Text(
+                                    'open_external_webfig'.tr(),
+                                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),

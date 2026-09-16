@@ -989,7 +989,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                       await _loadZtpPayload();
                     }
                     final token = _ztpPayload?['bootstrap_token'] ?? '';
-                    final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$token/" check-certificate=yes-without-crl dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
+                    final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
                     await Clipboard.setData(ClipboardData(text: cmd));
 
                     if (mounted) {
@@ -1286,7 +1286,7 @@ class _RouterZtpWizardScreenState extends State<RouterZtpWizardScreen> {
                                 await _loadZtpPayload();
                               }
                               final token = _ztpPayload?['bootstrap_token'] ?? '';
-                              final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$token/" check-certificate=yes-without-crl dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
+                              final cmd = ':if ([/ip dhcp-client find interface=ether1] = "") do={ :do { /ip dhcp-client add interface=ether1 add-default-route=yes use-peer-dns=yes disabled=no } on-error={} }; /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes; :delay 2s; /import file-name=bootstrap.rsc;';
                               
                               await Clipboard.setData(ClipboardData(text: cmd));
 
