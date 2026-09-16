@@ -610,18 +610,35 @@ class MikrotikZtpService {
     final String bootstrapToken = ztpPayload['bootstrap_token'] ?? '';
 
     if (kIsWeb) {
-      onProgress('⚡ Provisionnement Web Automatique en cours...', 0.50);
       final token = ztpPayload['bootstrap_token']?.toString() ?? '';
-      final rName = ztpPayload['router_name']?.toString() ?? 'MikroTik';
-      await web_helper.executeWebZtpFormProvisioning(
-        gatewayIp: gatewayIp,
-        bootstrapToken: token,
-        routerName: rName,
-        username: defaultAdminUsername,
-        password: defaultAdminPassword,
-      );
-      onProgress('✅ Provisionnement Web transmis ! Vérification du tunnel VPN...', 0.75);
-      return true;
+      final hasAgent = await web_helper.isLocalAgentAvailable();
+      if (hasAgent) {
+        onLog?.call('🔌 [Tiknet Agent] Agent local détecté sur http://localhost:9876.');
+        onProgress('⚡ Provisionnement via Tiknet Agent en cours...', 0.50);
+        final res = await web_helper.executeLocalAgentProvisioning(
+          gatewayIp: gatewayIp,
+          scriptSource: ztpPayload['payload_script']?.toString() ??
+              ':do { /tool fetch url="${ApiConfig.baseUrl}/bootstrap/$token/" check-certificate=no dst-path=bootstrap.rsc keep-result=yes } on-error={}; :local cnt 0; :while (([:len [/file find name="bootstrap.rsc"]] = 0) and (\$cnt < 20)) do={ :delay 1s; :set cnt (\$cnt + 1); }; :delay 1s; /import file-name=bootstrap.rsc;',
+          username: defaultAdminUsername,
+          password: defaultAdminPassword,
+        );
+        if (res['success'] == true) {
+          onLog?.call('✅ Commande ZTP exécutée avec succès sur le routeur via l\'Agent Local !');
+          onProgress('✅ Provisionnement validé ! Vérification du tunnel VPN...', 0.85);
+          return true;
+        } else {
+          final errMsg = res['message'] ?? 'Erreur inconnue';
+          onLog?.call('❌ Échec Agent Local: $errMsg');
+          onProgress('❌ Échec: $errMsg', 0.50);
+          return false;
+        }
+      } else {
+        onLog?.call('⚠️ [Tiknet Agent] Agent local non détecté sur http://localhost:9876.');
+        onLog?.call('💡 Lancez TiknetAgent.exe sur votre PC pour activer le 1-Click ZTP.');
+        onLog?.call('📋 Sinon, copiez la commande et collez-la dans le Terminal WebFig / WinBox.');
+        onProgress('⚠️ Agent Local non connecté (lancez TiknetAgent.exe)', 0.50);
+        return false;
+      }
     }
 
     // --- 1. Native Mobile RouterOS API Provisioning over TCP 8728 / REST ---

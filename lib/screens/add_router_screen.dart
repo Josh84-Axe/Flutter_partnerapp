@@ -418,6 +418,22 @@ class _AddRouterScreenState extends State<AddRouterScreen>
                             ),
                             child: const Text('/ip dhcp-client print', style: TextStyle(fontSize: 10, fontFamily: 'monospace')),
                           ),
+                          if (kIsWeb) ...[
+                            const SizedBox(width: 8),
+                            OutlinedButton.icon(
+                              onPressed: () async {
+                                final uri = Uri.parse('https://staging.wifi-4u.net/media/downloads/TiknetAgent.exe');
+                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              },
+                              icon: const Icon(Icons.download, size: 12, color: Colors.amber),
+                              label: const Text('Agent (TiknetAgent.exe)', style: TextStyle(fontSize: 10, color: Colors.amber, fontWeight: FontWeight.bold)),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Colors.amber),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                minimumSize: Size.zero,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

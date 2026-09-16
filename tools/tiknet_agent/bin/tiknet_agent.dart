@@ -297,10 +297,16 @@ Future<Map<String, dynamic>> _executeProvisioning(Map<String, dynamic> payload) 
       log('Injecting and running Phase 1 bootstrap script...');
       // Clean up previous script if any
       try {
-        await client.sendSentence([
-          '/system/script/remove',
-          '=.id=tiknet_ztp_p1',
+        final existing = await client.sendSentence([
+          '/system/script/print',
+          '?name=tiknet_ztp_p1',
         ]);
+        for (final w in existing) {
+          if (w.startsWith('=.id=')) {
+            final id = w.substring(5);
+            await client.sendSentence(['/system/script/remove', '=.id=$id']);
+          }
+        }
       } catch (_) {}
 
       final addRes = await client.sendSentence([
@@ -312,11 +318,19 @@ Future<Map<String, dynamic>> _executeProvisioning(Map<String, dynamic> payload) 
       ]);
       log('Script add response: $addRes');
 
-      final runRes = await client.sendSentence([
+      var runRes = await client.sendSentence([
         '/system/script/run',
-        '=.id=tiknet_ztp_p1',
+        '=number=tiknet_ztp_p1',
       ], timeout: const Duration(seconds: 60));
       log('Script run response: $runRes');
+
+      if (!runRes.contains('!done')) {
+        runRes = await client.sendSentence([
+          '/system/script/run',
+          '=.id=tiknet_ztp_p1',
+        ], timeout: const Duration(seconds: 60));
+        log('Fallback script run response: $runRes');
+      }
 
       if (runRes.contains('!done')) {
         log('✅ Script Phase 1 executed successfully on router hardware!');
