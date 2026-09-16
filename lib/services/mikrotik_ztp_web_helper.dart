@@ -141,6 +141,7 @@ Future<bool> executeWebZtpFormProvisioning({
       final json1 = jsonEncode({
         'url': bootstrapUrl,
         'mode': 'https',
+        'check-certificate': 'no',
         'output': 'file',
         'dst-path': 'bootstrap.rsc',
       });
