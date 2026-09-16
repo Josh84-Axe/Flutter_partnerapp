@@ -16,6 +16,8 @@ cp web/icons/family/Icon-192.png web/icons/Icon-192.png
 cp web/icons/family/Icon-512.png web/icons/Icon-512.png
 cp web/icons/family/Icon-maskable-192.png web/icons/Icon-maskable-192.png
 cp web/icons/family/Icon-maskable-512.png web/icons/Icon-maskable-512.png
+sed -i '' 's/<title>.*<\/title>/<title>Tiknet Family Shield<\/title>/' web/index.html
+sed -i '' 's/apple-mobile-web-app-title" content="[^"]*"/apple-mobile-web-app-title" content="Tiknet Family"/' web/index.html
 flutter build web --release -t lib/main_family.dart --dart-define=APP_VARIANT=family
 mkdir -p build/web
 cp web/_headers build/web/_headers
@@ -31,6 +33,8 @@ cp web/icons/campus/Icon-192.png web/icons/Icon-192.png
 cp web/icons/campus/Icon-512.png web/icons/Icon-512.png
 cp web/icons/campus/Icon-maskable-192.png web/icons/Icon-maskable-192.png
 cp web/icons/campus/Icon-maskable-512.png web/icons/Icon-maskable-512.png
+sed -i '' 's/<title>.*<\/title>/<title>Tiknet Campus<\/title>/' web/index.html
+sed -i '' 's/apple-mobile-web-app-title" content="[^"]*"/apple-mobile-web-app-title" content="Tiknet Campus"/' web/index.html
 flutter build web --release -t lib/main_campus.dart --dart-define=APP_VARIANT=campus
 mkdir -p build/web
 cp web/_headers build/web/_headers
@@ -46,6 +50,8 @@ cp web/icons/partner/Icon-192.png web/icons/Icon-192.png
 cp web/icons/partner/Icon-512.png web/icons/Icon-512.png
 cp web/icons/partner/Icon-maskable-192.png web/icons/Icon-maskable-192.png
 cp web/icons/partner/Icon-maskable-512.png web/icons/Icon-maskable-512.png
+sed -i '' 's/<title>.*<\/title>/<title>Tiknet Partner<\/title>/' web/index.html
+sed -i '' 's/apple-mobile-web-app-title" content="[^"]*"/apple-mobile-web-app-title" content="Tiknet Partner"/' web/index.html
 flutter build web --release -t lib/main_partner.dart --dart-define=APP_VARIANT=partner
 mkdir -p build/web
 cp web/_headers build/web/_headers
