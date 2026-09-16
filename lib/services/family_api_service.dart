@@ -60,7 +60,14 @@ class FamilyApiService {
         throw Exception(body['message'] ?? 'Failed to register device');
       }
     } on DioException catch (e) {
-      final msg = e.response?.data?['message'] ?? e.message ?? 'Failed to register device';
+      String? msg;
+      final resData = e.response?.data;
+      if (resData is Map) {
+        msg = resData['message']?.toString() ?? resData['detail']?.toString();
+      } else if (resData is String && resData.isNotEmpty && !resData.startsWith('<')) {
+        msg = resData;
+      }
+      msg ??= e.message ?? 'Failed to register device';
       throw Exception(msg);
     }
   }

@@ -312,7 +312,14 @@ class AuthRepository {
     } catch (e) {
       if (kDebugMode) debugPrint('❌ [AuthRepository] Expansion lead error: $e');
       if (e is DioException) {
-        final message = e.response?.data?['message'] ?? e.message ?? 'Failed to submit pioneer request.';
+        String? message;
+        final resData = e.response?.data;
+        if (resData is Map) {
+          message = resData['message']?.toString() ?? resData['detail']?.toString();
+        } else if (resData is String && resData.isNotEmpty && !resData.startsWith('<')) {
+          message = resData;
+        }
+        message ??= e.message ?? 'Failed to submit pioneer request.';
         return {'success': false, 'message': message};
       }
       return {'success': false, 'message': e.toString()};
